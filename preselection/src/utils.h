@@ -4,6 +4,7 @@
 #pragma once
 
 #include <limits>
+#include <filesystem>
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -124,13 +125,14 @@ RVec<float> MT(RVec<float> vec_pt, RVec<float> vec_phi, float obj_pt, float obj_
 float fInvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_mass, float obj2_pt, float obj2_eta, float obj2_phi, float obj2_mass);
 RVec<int> VBS_MaxE( RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass );
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
+RVec<float> VfdRfromClosestJet(const ROOT::RVecF &ak4_eta, const ROOT::RVecF &ak4_phi, const ROOT::RVecF &ak8_eta, const ROOT::RVecF &ak8_phi);
 
 /*
 ############################################
 SNAPSHOT
 ############################################
 */
-
-void saveSnapshot(RNode df, const std::string& finalFile, bool isData=false);
+std::string setOutputDirectory(const std::string &dir);
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData = false);
 
 #endif
