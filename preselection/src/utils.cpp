@@ -1,5 +1,6 @@
 #include "utils.h"
 
+
 /*
 ############################################
 DEFINE METADATA
@@ -237,13 +238,59 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
     return good_jet_idx;
 }
 
+// Return for each ak4 jet, the dR from the closest ak8 jet
+RVec<float> VfdRfromClosestJet(const ROOT::RVecF &ak4_eta, const ROOT::RVecF &ak4_phi, const ROOT::RVecF &ak8_eta, const ROOT::RVecF &ak8_phi)
+{
+    RVec<float> vec_minDR = {};
+    for (size_t i = 0; i < ak4_eta.size(); i++)
+    {
+        float mindR = 999.;
+        for (size_t j = 0; j < ak8_eta.size(); j++)
+        {
+            float dR = ROOT::VecOps::DeltaR(ak4_eta.at(i), ak8_eta.at(j), ak4_phi.at(i), ak8_phi.at(j));
+            if (dR < mindR) {
+                mindR = dR;
+            }
+        }
+        vec_minDR.push_back(mindR);
+    }
+    return vec_minDR;
+}
+
 /*
 ############################################
 SNAPSHOT
 ############################################
 */
 
-void saveSnapshot(RNode df, const std::string& finalFile, bool isData) {
+std::string setOutputDirectory(const std::string &dir) {
+    // If on UAF and the USER environment variable is defined, store output on ceph
+    const char* userEnv = getenv("USER");
+    std::string ceph_dir = "/ceph/cms/store/user/";
+    std::string output_dir = "./";
+    if (userEnv != nullptr && std::filesystem::exists(ceph_dir) && std::filesystem::is_directory(ceph_dir)) {
+        output_dir = ceph_dir + std::string(userEnv) + "/vbsvvhAnalysis/preselection/";
+    }
+
+    std::filesystem::path directory_path(output_dir);
+    // Check if the directory exists
+    if (std::filesystem::exists(directory_path)) {
+        std::cerr << "Output directory already exists: " << directory_path << std::endl;
+    }
+    // Try to create the directory and any missing parent directories
+    else if (std::filesystem::create_directories(directory_path)) {
+        std::cout << "Created output directory : " << directory_path << std::endl;
+    }
+    else {
+        std::cerr << "Failed to create output directory: " << directory_path << std::endl;
+        std::exit(EXIT_FAILURE); 
+    }
+
+    return directory_path;
+}
+
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData)
+{
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
     final_variables.push_back("event");
@@ -257,5 +304,5 @@ void saveSnapshot(RNode df, const std::string& finalFile, bool isData) {
     if (!isData)
         final_variables.push_back("LHEReweightingWeight");
 
-    df.Snapshot("Events", "/data/userdata/aaarora/output/run3/" + finalFile + ".root", final_variables);
+    df.Snapshot("Events", outputDir + "/" + outputFileName + ".root", final_variables);
 }

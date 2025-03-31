@@ -17,6 +17,10 @@ using ROOT::VecOps::RVec;
 
 RNode defineCorrectedCols(RNode df);
 
+float looseDFBtagWP(std::string year);
+float mediumDFBtagWP(std::string year);
+float tightDFBtagWP(std::string year);
+
 // RNode METPhiCorrections(correction::CorrectionSet cset_met_2022, correction::CorrectionSet cset_met_2022EE, RNode df);
 // const auto cset_met_2022 = *CorrectionSet::from_file("corrections/met/2022.json");
 // const auto cset_met_2022EE = *CorrectionSet::from_file("corrections/met/2022EE.json");
