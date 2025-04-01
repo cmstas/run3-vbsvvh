@@ -6,6 +6,8 @@
 #include <limits>
 #include <filesystem>
 
+#include "tabulate.hpp"
+
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 
