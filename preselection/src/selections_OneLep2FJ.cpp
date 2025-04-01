@@ -22,7 +22,6 @@ namespace OneLep2FJ {
             .Define("xbb_phi", "ak8jet_phi[xbbscore_idx]")
             .Define("xbb_msoftdrop", "ak8jet_msoftdrop[xbbscore_idx]");
 
-        df = df.Define("xwqqscore_idx", "")
         // jets
         return df;
     }
