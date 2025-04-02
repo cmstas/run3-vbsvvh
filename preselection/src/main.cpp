@@ -5,7 +5,6 @@
 #include "corrections.h"
 #include "utils.h"
 
-#include "selections_ZeroLep3FJ.h"
 #include "selections_OneLep2FJ.h"
 
 #include "argparser.hpp"
@@ -26,22 +25,15 @@ struct MyArgs : public argparse::Args {
     // std::string &variation = kwarg("var", "variation").set_default("nominal");
 };
 
-
 RNode runAnalysis(RNode df, MyArgs args) {
-
     std::cout << " -> Run " << args.ana << "::runAnalysis()" << std::endl;
-
-    if (args.ana == "ZeroLep3FJ") {
-        return ZeroLep3FJ::runPreselection(df);
-    }
-    else if (args.ana == "OneLep2FJ") {
+    if (args.ana == "OneLep2FJ") {
         return OneLep2FJ::runPreselection(df);
     }
     else{
         std::cerr << "Did not recognize analysis namespace: " << args.ana  << std::endl;
         std::exit(EXIT_FAILURE);
     }
-
 }
 
 RNode runDataAnalysis(RNode df_, MyArgs args) {
@@ -56,20 +48,17 @@ RNode runMCAnalysis(RNode df_, MyArgs args) {
     auto df = defineCorrectedCols(df_);
     df = runAnalysis(df, args);
     //df = applyMCWeights(df); //FIXME: causing segfault
-
     return df;
 }
 
-
 int main(int argc, char** argv) {
-
     // Read input args
     auto args = argparse::parse<MyArgs>(argc, argv);
     std::string input_spec = args.spec;
     std::string output_file = args.output;
 
     // Create output directory
-    std::string output_dir = setOutputDirectory(output_dir);
+    std::string output_dir = setOutputDirectory(args.ana);
 
     // Enable multithreading if requested more than one thread
     if (args.nthreads > 1) {

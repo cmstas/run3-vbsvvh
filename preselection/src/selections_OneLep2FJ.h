@@ -9,8 +9,6 @@ using RNode = ROOT::RDF::RNode;
 
 namespace OneLep2FJ {
   RNode TriggerSelections(RNode df);
-  RNode LeptonSelections(RNode df);
-  RNode EventSelections(RNode df);
   RNode runPreselection(RNode df_);
 } // OneLep2FJ
 

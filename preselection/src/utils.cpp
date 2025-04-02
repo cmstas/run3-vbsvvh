@@ -209,13 +209,13 @@ SNAPSHOT
 ############################################
 */
 
-std::string setOutputDirectory(const std::string &dir) {
+std::string setOutputDirectory(const std::string &ana) {
     // If on UAF and the USER environment variable is defined, store output on ceph
     const char* userEnv = getenv("USER");
     std::string storage_dir = "/data/userdata/";
     std::string output_dir = "./";
     if (userEnv != nullptr && std::filesystem::exists(storage_dir) && std::filesystem::is_directory(storage_dir)) {
-        output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/preselection/";
+        output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/preselection/" + ana + "/";
     }
 
     std::filesystem::path directory_path(output_dir);
@@ -243,12 +243,11 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     
     for (auto &&ColName : ColNames) {
         TString colName = ColName;
+        if (colName.Contains("ak4jet_pair_idx"))
+            continue;
         std::string name = colName.Data();
         final_variables.push_back(name);
     }
-
-    if (!isData)
-        final_variables.push_back("LHEReweightingWeight");
 
     df.Snapshot("Events", outputDir + "/" + outputFileName + ".root", final_variables);
 }

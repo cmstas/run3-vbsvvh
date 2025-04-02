@@ -1,15 +1,5 @@
 #include "commonSelections.h"
 
-RNode CommonSelections(RNode df_) {
-    auto df = EventFilters(df_);
-    df = ElectronSelections(df);
-    df = MuonSelections(df);
-    df = AK8JetsSelection(df);
-    df = AK4JetsSelection(df);
-    df = VBSJetsSelection(df);
-    return df;
-}
-
 RNode EventFilters(RNode df_) {
     return df_.Filter("Flag_goodVertices && "
             "Flag_globalSuperTightHalo2016Filter && "
@@ -91,7 +81,7 @@ RNode AK8JetsSelection(RNode df_) {
         .Define("ak8jet_hbbvsqcd", "FatJet_particleNetWithMass_HbbvsQCD[goodAK8Jets]")
         .Define("ak8jet_wvsqcd", "FatJet_particleNetWithMass_WvsQCD[goodAK8Jets]")
         .Define("ak8jet_zvsqcd", "FatJet_particleNetWithMass_ZvsQCD[goodAK8Jets]")
-        .Define("ak8jet_ht", "Sum(goodAK8Jets_pt)")
+        .Define("ak8jet_ht", "Sum(ak8jet_pt)")
         .Define("ak8jet_n", "Sum(goodAK8Jets)");
 }
 
@@ -104,10 +94,35 @@ RNode AK4JetsSelection(RNode df_) {
         .Define("ak4jet_eta", "Jet_eta[goodAK4Jets]")
         .Define("ak4jet_phi", "Jet_phi[goodAK4Jets]")
         .Define("ak4jet_mass", "CorrJet_mass[goodAK4Jets]")
-        .Define("ak4jet_ht", "Sum(CorrJet_pt[goodAK4Jets])")
+        .Define("ak4jet_ht", "Sum(ak4jet_pt)")
         .Define("ak4jet_n", "Sum(goodAK4Jets)");
 }
 
-RNode VBSJetsSelection(RNode df_) {
-    return df_;
+RNode VBSJetSelections(RNode df_, TMVA::Experimental::RBDT &vbstagger) {
+    return df_.Define("ak4jet_pair_idx", "ROOT::VecOps::Combinations(ak4jet_pt, 2)")
+        .Define("jet1_pt", "ROOT::VecOps::Take(ak4jet_pt, ak4jet_pair_idx[0])")
+        .Define("jet1_eta", "ROOT::VecOps::Take(ak4jet_eta, ak4jet_pair_idx[0])")
+        .Define("jet1_phi", "ROOT::VecOps::Take(ak4jet_phi, ak4jet_pair_idx[0])")
+        .Define("jet1_mass", "ROOT::VecOps::Take(ak4jet_mass, ak4jet_pair_idx[0])")
+        .Define("jet2_pt", "ROOT::VecOps::Take(ak4jet_pt, ak4jet_pair_idx[1])")
+        .Define("jet2_eta", "ROOT::VecOps::Take(ak4jet_eta, ak4jet_pair_idx[1])")
+        .Define("jet2_phi", "ROOT::VecOps::Take(ak4jet_phi, ak4jet_pair_idx[1])")
+        .Define("jet2_mass", "ROOT::VecOps::Take(ak4jet_mass, ak4jet_pair_idx[1])")
+        .Define("pt_jj", "jet1_pt + jet2_pt")
+        .Define("deta_jj", "abs(jet1_eta - jet2_eta)")
+        .Define("dphi_jj", "ROOT::VecOps::DeltaPhi(jet1_phi, jet2_phi)")
+        .Define("m_jj", "ROOT::VecOps::InvariantMasses(jet1_pt, jet1_eta, jet1_phi, jet1_mass, jet2_pt, jet2_eta, jet2_phi, jet2_mass)")
+        .Define("VBSTaggerScores", Compute<12, float>(vbstagger), {"jet1_pt", "jet2_pt", "jet1_eta", "jet2_eta", "jet1_phi", "jet2_phi", "jet1_mass", "jet2_mass", "pt_jj", "deta_jj", "dphi_jj", "m_jj"})
+        .Define("VBSTagPairIdx", "ArgMax(VBSTaggerScores)")
+        .Define("vbs1_idx", "ak4jet_pair_idx[0][VBSTagPairIdx]")
+        .Define("vbs2_idx", "ak4jet_pair_idx[1][VBSTagPairIdx]")
+        .Define("vbs_score", "VBSTaggerScores[VBSTagPairIdx]")
+        .Define("vbs1_pt", "ak4jet_pt[vbs1_idx]")
+        .Define("vbs2_pt", "ak4jet_pt[vbs2_idx]")
+        .Define("vbs1_eta", "ak4jet_eta[vbs1_idx]")
+        .Define("vbs2_eta", "ak4jet_eta[vbs2_idx]")
+        .Define("vbs1_phi", "ak4jet_phi[vbs1_idx]")
+        .Define("vbs2_phi", "ak4jet_phi[vbs2_idx]")
+        .Define("vbs1_mass", "ak4jet_mass[vbs1_idx]")
+        .Define("vbs2_mass", "ak4jet_mass[vbs2_idx]");
 }

@@ -2,42 +2,44 @@
 #include "selections_OneLep2FJ.h"
 
 namespace OneLep2FJ {
+    TMVA::Experimental::RBDT vbstagger("VBSTagger", "mva/VBSTagger/OneLep2FJ.root");
+
     RNode TriggerSelections(RNode df_) {
-        return df_.Define("passes_triggers", "HLT_Ele30_WPTight_Gsf || HLT_IsoMu24");
+        return df_.Filter("HLT_Ele30_WPTight_Gsf || HLT_IsoMu24");
     }
 
-    RNode ObjectSelections(RNode df_) {
+    RNode runPreselection(RNode df_) {
         // lepton
-        auto df = df_.Define("isElectron", "nLooseElectrons == 1 && nTightElectrons == 1")
-            .Define("isMuon", "nLooseMuons == 1 && nTightMuons == 1")
+        auto df = EventFilters(df_);
+        df = TriggerSelections(df);
+
+        df = ElectronSelections(df);
+        df = MuonSelections(df);
+
+        df = df_.Define("isElectron", "electron_nloose == 1 && electron_ntight == 1")
+            .Define("isMuon", "muon_nloose == 1 && muon_ntight == 1")
             .Define("lepton_pt", "isElectron ? electron_pt[0] : muon_pt[0]")
             .Define("lepton_eta", "isElectron ? electron_eta[0] : muon_eta[0]")
             .Define("lepton_phi", "isElectron ? electron_phi[0] : muon_phi[0]")
-            .Define("lepton_mass", "isElectron ? electron_mass[0] : muon_mass[0]");
+            .Define("lepton_mass", "isElectron ? electron_mass[0] : muon_mass[0]")
+            .Filter("((muon_nloose == 1 && muon_ntight == 1 && electron_nloose == 0 && electron_ntight == 0) || "
+                "(muon_nloose == 0 && muon_ntight == 0 && electron_nloose == 1 && electron_ntight == 1)) && "
+                "(lepton_pt > 40)");
 
-        df = df.Define("xbbscore_idx", "ak8jet_xbbvsqcd.size() != 0 ? ArgMax(ak8jet_xbbvsqcd) : -999.0")
-            .Define("xbb_score", "xbbscore_idx != -999.0 ? ak8jet_xbbvsqcd[xbbscore_idx] : -999.0")
-            .Define("xbb_pt", "ak8jet_pt[xbbscore_idx]")
-            .Define("xbb_eta", "ak8jet_eta[xbbscore_idx]")
-            .Define("xbb_phi", "ak8jet_phi[xbbscore_idx]")
-            .Define("xbb_msoftdrop", "ak8jet_msoftdrop[xbbscore_idx]");
+        // df = AK8JetsSelection(df);
+        df = AK4JetsSelection(df);
+        df = df.Filter("ak4jet_n >= 2");
+        
+        df = VBSJetSelections(df, vbstagger);
 
+        // df = df.Define("max_hbb_idx", "ak8jet_hbbvsqcd.size() != 0 ? ArgMax(ak8jet_hbbvsqcd) : -999.0")
+        //     .Define("hbb_score", "max_hbb_idx != -999.0 ? ak8jet_hbbvsqcd[max_hbb_idx] : -999.0")
+        //     .Define("hbb_pt", "ak8jet_pt[max_hbb_idx]")
+        //     .Define("hbb_eta", "ak8jet_eta[max_hbb_idx]")
+        //     .Define("hbb_phi", "ak8jet_phi[max_hbb_idx]")
+        //     .Define("hbb_msoftdrop", "ak8jet_msoftdrop[max_hbb_idx]");
         // jets
         return df;
     }
 
-    RNode EventSelections(RNode df_) {
-        auto df = TriggerSelections(df_);
-        df = df.Define("passes_lepton_selection",
-            "((nLooseMuons == 1 && nTightMuons == 1 && nLooseElectrons == 0 && nTightElectrons == 0) || (nLooseMuons == 0 && nTightMuons == 0 && nLooseElectrons == 1 && nTightElectrons == 1)) && "
-            "(lepton_pt > 40)");
-        return df;
-    }
-
-    RNode runPreselection(RNode df_) {
-        auto df = CommonSelections(df_);
-        df = ObjectSelections(df);
-        df = EventSelections(df);
-        return df;
-    }
 } // OneLep2FJ
