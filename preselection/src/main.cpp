@@ -37,17 +37,15 @@ RNode runAnalysis(RNode df, MyArgs args) {
 }
 
 RNode runDataAnalysis(RNode df_, MyArgs args) {
-    auto df = defineCorrectedCols(df_);
-    df = runAnalysis(df, args);
+    auto df = runAnalysis(df_, args);
     df = applyDataWeights(df);
     return df;
 }
 
 RNode runMCAnalysis(RNode df_, MyArgs args) {
     // corrections
-    auto df = defineCorrectedCols(df_);
-    df = runAnalysis(df, args);
-    //df = applyMCWeights(df); //FIXME: causing segfault
+    auto df = runAnalysis(df_, args);
+    df = applyMCWeights(df);
     return df;
 }
 

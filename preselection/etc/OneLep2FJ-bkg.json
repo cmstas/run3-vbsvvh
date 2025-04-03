@@ -1,0 +1,132 @@
+{
+    "samples": {
+        "DYto2L-2Jets_MLL-50_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "DY",
+                "xsec": 6688.0,
+                "lumi": 26.6717,
+                "nevents": 190785840130.25598
+            }
+        },
+        "TTto2L2Nu_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "TTbar",
+                "xsec": 97.45,
+                "lumi": 26.6717,
+                "nevents": 126662555.95479988
+            }
+        },
+        "TTtoLNu2Q_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "TTbar",
+                "xsec": 403.25,
+                "lumi": 26.6717,
+                "nevents": 470733322.0799996
+            }
+        },
+        "WtoLNu-2Jets_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/WtoLNu-2Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "WJets",
+                "xsec": 67710.0,
+                "lumi": 26.6717,
+                "nevents": 1196306023909.64
+            }
+        },
+        "DYto2L-2Jets_MLL-50_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "DY",
+                "xsec": 6688.0,
+                "lumi": 7.9804,
+                "nevents": 107669198926.072
+            }
+        },
+        "TTto2L2Nu_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5_ext1-v2/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "TTbar",
+                "xsec": 97.45,
+                "lumi": 7.9804,
+                "nevents": 84213585.73380001
+            }
+        },
+        "TTtoLNu2Q_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5_ext1-v2/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "TTbar",
+                "xsec": 403.25,
+                "lumi": 7.9804,
+                "nevents": 464130571.34999967
+            }
+        },
+        "WtoLNu-2Jets_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/WtoLNu-2Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "WJets",
+                "xsec": 67710.0,
+                "lumi": 7.9804,
+                "nevents": 1599627861648.4001
+            }
+        }
+    }
+}

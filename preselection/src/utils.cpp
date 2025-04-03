@@ -203,6 +203,19 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
     return vec_minDR;
 }
 
+RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jet_var) {
+    if (Sum(goodJets) >= 2) {
+        return ROOT::VecOps::Combinations(jet_var, 2);
+    } else {
+    // Create properly matched return type: vector of vector
+        RVec<RVec<int>> result;
+        // Add two empty vectors
+        result.emplace_back(RVec<int>{-990});
+        result.emplace_back(RVec<int>{-999});
+        return result;
+    }
+}
+
 /*
 ############################################
 SNAPSHOT
@@ -242,11 +255,10 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     final_variables.push_back("event");
     
     for (auto &&ColName : ColNames) {
-        TString colName = ColName;
-        if (colName.Contains("ak4jet_pair_idx"))
+        if (ColName.starts_with("_")) {
             continue;
-        std::string name = colName.Data();
-        final_variables.push_back(name);
+        }
+        final_variables.push_back(ColName);
     }
 
     df.Snapshot("Events", outputDir + "/" + outputFileName + ".root", final_variables);

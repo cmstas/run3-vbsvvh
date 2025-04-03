@@ -1,0 +1,68 @@
+{
+    "samples": {
+        "VBSWWH_OSWW_5f_NO_T_LO_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/sigs_22/sig_5f_not/VBSWWH_OSWW_5f_NO_T_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig_5f_not",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "VBSWWH_OSWW",
+                "xsec": 0.003213,
+                "lumi": 7.9804,
+                "nevents": 12000.0
+            }
+        },
+        "VBSWWH_SSWW_5f_NO_T_LO_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/sigs_22/sig_5f_not/VBSWWH_SSWW_5f_NO_T_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig_5f_not",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "VBSWWH_SSWW",
+                "xsec": 0.001082,
+                "lumi": 7.9804,
+                "nevents": 12000.0
+            }
+        },
+        "VBSWZH_5f_NO_T_LO_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/sigs_22/sig_5f_not/VBSWZH_5f_NO_T_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig_5f_not",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "VBSWZH",
+                "xsec": 0.001458,
+                "lumi": 7.9804,
+                "nevents": 12000.0
+            }
+        },
+        "VBSZZH_5f_NO_T_LO_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/sigs_22/sig_5f_not/VBSZZH_5f_NO_T_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig_5f_not",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "VBSZZH",
+                "xsec": 0.0007383,
+                "lumi": 7.9804,
+                "nevents": 12000.0
+            }
+        }
+    }
+}

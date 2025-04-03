@@ -1,0 +1,388 @@
+{
+    "samples": {
+        "QCD-4Jets_HT-1000to1200_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 883.7,
+                "lumi": 26.6717,
+                "nevents": 63917753437.15501
+            }
+        },
+        "QCD-4Jets_HT-100to200_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 25400000.0,
+                "lumi": 26.6717,
+                "nevents": 1522198358437750.0
+            }
+        },
+        "QCD-4Jets_HT-1200to1500_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-1200to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 383.5,
+                "lumi": 26.6717,
+                "nevents": 25721949823.177402
+            }
+        },
+        "QCD-4Jets_HT-1500to2000_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-1500to2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 125.2,
+                "lumi": 26.6717,
+                "nevents": 7453921099.668501
+            }
+        },
+        "QCD-4Jets_HT-2000_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 26.49,
+                "lumi": 26.6717,
+                "nevents": 1477054608.2144902
+            }
+        },
+        "QCD-4Jets_HT-200to400_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 1961000.0,
+                "lumi": 26.6717,
+                "nevents": 121865948662281.0
+            }
+        },
+        "QCD-4Jets_HT-400to600_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-400to600_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 95620.0,
+                "lumi": 26.6717,
+                "nevents": 4617342311837.599
+            }
+        },
+        "QCD-4Jets_HT-600to800_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-600to800_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 13540.0,
+                "lumi": 26.6717,
+                "nevents": 808941960017.4001
+            }
+        },
+        "QCD-4Jets_HT-70to100_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-70to100_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 58500000.0,
+                "lumi": 26.6717,
+                "nevents": 1993173899227870.0
+            }
+        },
+        "QCD-4Jets_HT-800to1000_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v2/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 3033.0,
+                "lumi": 26.6717,
+                "nevents": 154074126233.265
+            }
+        },
+        "TTto4Q_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "TTbar",
+                "xsec": 431.5,
+                "lumi": 26.6717,
+                "nevents": 289559775.04
+            }
+        },
+        "QCD-4Jets_HT-40to70_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6-v5/QCD-4Jets_HT-40to70_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "QCD",
+                "xsec": 311400000.0,
+                "lumi": 26.6717,
+                "nevents": 7167887225398500.0
+            }
+        },
+        "QCD-4Jets_HT-1000to1200_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 883.7,
+                "lumi": 7.9804,
+                "nevents": 51497812060.090996
+            }
+        },
+        "QCD-4Jets_HT-100to200_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 25400000.0,
+                "lumi": 7.9804,
+                "nevents": 841311126914780.0
+            }
+        },
+        "QCD-4Jets_HT-1200to1500_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-1200to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 383.5,
+                "lumi": 7.9804,
+                "nevents": 18573391895.3474
+            }
+        },
+        "QCD-4Jets_HT-1500to2000_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-1500to2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 125.2,
+                "lumi": 7.9804,
+                "nevents": 6610739198.833702
+            }
+        },
+        "QCD-4Jets_HT-2000_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 26.49,
+                "lumi": 7.9804,
+                "nevents": 666146904.75993
+            }
+        },
+        "QCD-4Jets_HT-200to400_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 1961000.0,
+                "lumi": 7.9804,
+                "nevents": 43399330973185.0
+            }
+        },
+        "QCD-4Jets_HT-400to600_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-400to600_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 95620.0,
+                "lumi": 7.9804,
+                "nevents": 4011473904154.5
+            }
+        },
+        "QCD-4Jets_HT-40to70_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-40to70_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 311400000.0,
+                "lumi": 7.9804,
+                "nevents": 6980846252739600.0
+            }
+        },
+        "QCD-4Jets_HT-600to800_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-600to800_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 13540.0,
+                "lumi": 7.9804,
+                "nevents": 554738093757.4
+            }
+        },
+        "QCD-4Jets_HT-70to100_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-70to100_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 58500000.0,
+                "lumi": 7.9804,
+                "nevents": 960524982093320.0
+            }
+        },
+        "QCD-4Jets_HT-800to1000_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5-v2/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "QCD",
+                "xsec": 3033.0,
+                "lumi": 7.9804,
+                "nevents": 154859072294.415
+            }
+        },
+        "TTto4Q_2022Re-recoBCD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/Run3Summer22NanoAODv12/130X_mcRun3_2022_realistic_v5_ext1-v2/TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/*_[1-9].root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoBCD",
+                "sample_type": "TTbar",
+                "xsec": 431.5,
+                "lumi": 7.9804,
+                "nevents": 409261887.8400003
+            }
+        }
+    }
+}

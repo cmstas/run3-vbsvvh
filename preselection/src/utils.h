@@ -128,6 +128,8 @@ RVec<float> InvariantPhi(const RVec<float>& vec_pt, const RVec<float>& vec_eta, 
 RVec<float> TransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_phi, float obj_pt, float obj_phi);
 RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_phi, const RVec<float>& ak8_eta, const RVec<float>& ak8_phi);
 
+RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
+
 /*
 ############################################
 SNAPSHOT

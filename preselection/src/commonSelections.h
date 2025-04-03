@@ -3,7 +3,7 @@
 
 #include "ROOT/RDataFrame.hxx"
 
-#include "TMVA/RInferenceUtils.hxx"
+#include "inference.hpp"
 #include "TMVA/RBDT.hxx"
 
 #include "utils.h"
