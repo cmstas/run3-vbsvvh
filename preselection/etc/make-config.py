@@ -80,7 +80,7 @@ class Config:
                 sample_year = self.extract_sample_year(sample)
                 xsec = self.get_xsec_weight(xsecs, sample_name) if self.sample_category != "data" else 1.0
                 num_events = 0
-                files_path = f"{sample}/*_[1-9].root"
+                files_path = f"{sample}/*.root"
                 if self.sample_category != "data":
                     files = glob(files_path)
                     with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
