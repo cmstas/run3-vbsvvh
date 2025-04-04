@@ -97,13 +97,8 @@ int main(int argc, char** argv) {
 
     // Run analysis
     auto df_final = (isData) ? runDataAnalysis(df, args) : runMCAnalysis(df, args);
-
-    // Cutflow
-    if (args.cutflow) {
-        std::cout << " -> Print cutflow" << std::endl;
-        auto cutflow = Cutflow(df_final);
-        cutflow.Print();
-    }
+    
+    auto cutflow = Cutflow(df_final);
 
     // Optionally filter events
     if (!args.cut.empty()){
@@ -113,6 +108,12 @@ int main(int argc, char** argv) {
 
     // Save events to root file
     saveSnapshot(df_final, output_dir, output_file, isData);
+
+    // Print cutflow
+    if (args.cutflow) {
+        std::cout << " -> Print cutflow" << std::endl;
+        cutflow.Print();
+    }    
 
     return 0;
 }
