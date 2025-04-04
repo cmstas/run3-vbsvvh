@@ -3,6 +3,7 @@
 
 #include "ROOT/RDataFrame.hxx"
 
+#include "commonSelections.h"
 #include "utils.h"
 
 using RNode = ROOT::RDF::RNode;

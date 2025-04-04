@@ -66,34 +66,61 @@ CUTFLOW
 ############################################
 */
 
-Cutflow::Cutflow(RNode df, const std::vector<std::string>& cuts) : _df(df), _cuts(cuts){
-    _df = _df.Define("weight2", "weight * weight");
-    _cutflow.push_back(std::make_pair(_df.Sum<double>("weight"), _df.Sum<double>("weight2")));
-    for (size_t i = 0; i < _cuts.size(); i++) {
-        _cutflow.push_back(std::make_pair(_df.Filter(_cuts[i]).Sum<double>("weight"), _df.Filter(_cuts[i]).Sum<double>("weight2")));
+Cutflow::Cutflow(RNode df) : _df(df){
+    for (auto colName : _df.GetDefinedColumnNames()) {
+        if (colName.starts_with("_cut")) {
+            _cuts.push_back(colName);
+        }
+    }
+
+    if (_cuts.size() != 0) { 
+        _df = _df.Define("weight2", "weight * weight");
+        _cutflow.push_back(std::make_pair(_df.Sum<double>("weight"), _df.Sum<double>("weight2")));
+        std::string cut_string = "";
+        for (size_t i = 0; i < _cuts.size(); i++) {
+            if (i == 0) {
+                cut_string = _cuts[i];
+            } else {
+                cut_string += " && " + _cuts[i];
+            }
+            _cutflow.push_back(std::make_pair(_df.Filter(cut_string).Sum<double>("weight"), _df.Filter(cut_string).Sum<double>("weight2")));
+        }        
     }
 }
 
 void Cutflow::Print(std::string output_file) {
-    // Create table with header row
+    if (_cuts.size() == 0) {
+        std::cout << "No cuts _cut_* defined" << std::endl;
+        return;
+    }
     tabulate::Table table;
-    table.add_row({"Cut", "Count", "Error"});
-    
-    // Add initial count row
-    table.add_row({
-        "initialCount",
-        std::to_string(_cutflow[0].first.GetValue()),
-        std::to_string(std::sqrt(_cutflow[0].second.GetValue()))
-    });
-    
-    // Add each cut row
-    for (size_t i = 0; i < _cuts.size(); i++) {
+    table.add_row({"Cut", "Count", "Percent Change"});
+    {
+        std::stringstream ss_count, ss_error;
+        ss_count << std::fixed << std::setprecision(3) << _cutflow[0].first.GetValue();
+        ss_error << std::fixed << std::setprecision(3) << std::sqrt(_cutflow[0].second.GetValue());
         table.add_row({
-            _cuts[i],
-            std::to_string(_cutflow[i+1].first.GetValue()),
-            std::to_string(std::sqrt(_cutflow[i+1].second.GetValue()))
+            "initialCount",
+            ss_count.str() + " +/- " + ss_error.str(),
+            std::string("")
         });
     }
+    
+    for (size_t i = 0; i < _cuts.size(); i++) {
+        std::stringstream ss_count, ss_error, ss_percent;
+        ss_count << std::fixed << std::setprecision(3) << _cutflow[i + 1].first.GetValue();
+        ss_error << std::fixed << std::setprecision(3) << std::sqrt(_cutflow[i + 1].second.GetValue());
+        ss_percent << std::fixed << std::setprecision(3) << 100 * (_cutflow[i].first.GetValue() - _cutflow[i + 1].first.GetValue()) / _cutflow[i].first.GetValue();
+        
+        table.add_row({
+            _cuts[i],
+            ss_count.str() + " +/- " + ss_error.str(),
+            ss_percent.str()
+        });
+    }
+
+    table.column(1).format().font_align(tabulate::FontAlign::center);
+    table.column(2).format().font_align(tabulate::FontAlign::center);
 
     if (!output_file.empty()) {
         std::ofstream out(output_file);
@@ -111,11 +138,11 @@ SELECTION UTILS
 ############################################
 */
 
-float dR(float eta1, float phi1, float eta2, float phi2) {
+float fdR(float eta1, float phi1, float eta2, float phi2) {
     return ROOT::VecOps::DeltaR(eta1, eta2, phi1, phi2);
 }
 
-RVec<float> dR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float obj_eta, float obj_phi) {
+RVec<float> VdR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float obj_eta, float obj_phi) {
     RVec<float> out(vec_eta.size());
     if (obj_eta == -999 || obj_phi == -999) {
         std::fill(out.begin(), out.end(), 1.0f);
@@ -127,7 +154,7 @@ RVec<float> dR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float obj
     return out;
 }
 
-float InvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_mass, 
+float fInvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_mass, 
                     float obj2_pt, float obj2_eta, float obj2_phi, float obj2_mass) {
     TLorentzVector obj1, obj2;
     obj1.SetPtEtaPhiM(obj1_pt, obj1_eta, obj1_phi, obj1_mass);
@@ -135,7 +162,7 @@ float InvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_ma
     return (obj1 + obj2).M();
 }
 
-RVec<float> InvariantMass(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, 
+RVec<float> VInvariantMass(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, 
                           const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass) {
     RVec<float> invMass(vec_pt.size());
     TLorentzVector obj1;
@@ -149,7 +176,7 @@ RVec<float> InvariantMass(const RVec<float>& vec_pt, const RVec<float>& vec_eta,
     return invMass;
 }
 
-RVec<float> InvariantPt(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, 
+RVec<float> VInvariantPt(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, 
                         const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass) {
     RVec<float> invPt(vec_pt.size());
     TLorentzVector obj1;
@@ -163,7 +190,7 @@ RVec<float> InvariantPt(const RVec<float>& vec_pt, const RVec<float>& vec_eta, c
     return invPt;
 }
 
-RVec<float> InvariantPhi(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, 
+RVec<float> VInvariantPhi(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, 
                          const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass) {
     RVec<float> invPhi(vec_pt.size());
     TLorentzVector obj1;
@@ -177,7 +204,7 @@ RVec<float> InvariantPhi(const RVec<float>& vec_pt, const RVec<float>& vec_eta, 
     return invPhi;
 }
 
-RVec<float> TransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_phi, float obj_pt, float obj_phi) {
+RVec<float> VTransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_phi, float obj_pt, float obj_phi) {
     RVec<float> mt(vec_pt.size());
     for (size_t i = 0; i < vec_pt.size(); i++) {
         mt[i] = std::sqrt(2 * vec_pt[i] * obj_pt * (1 - std::cos(ROOT::VecOps::DeltaPhi(vec_phi[i], obj_phi))));
