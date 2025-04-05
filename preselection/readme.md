@@ -12,11 +12,13 @@
 
 ### Prerequisites
 
-- ROOT
-- GCC compiler
 - Python 3.x
+- ROOT
 - Uproot
 - Boost library (for GoldenJSON)
+- Correctionlib
+
+A script to set up the environment is included in `misc/env.sh`
 
 ### Compilation
 
@@ -36,13 +38,13 @@ The inputs for the preselection framework are defined using JSON files. The make
 To generate a configuration file, run the make-config.py script with the appropriate category (bkg, sig, or data):
 
 ```bash
-python3 etc/make-config.py --category <category>
+python3 etc/make-config.py --category <category> --channel <channel>
 ```
 
 For example, to generate a configuration file for background samples:
 
 ```bash
-python3 etc/make-config.py --category bkg
+python3 etc/make-config.py --category bkg --channel OneLep2FJ
 ```
 
 This will create a JSON file in the etc/ directory with the necessary configuration for the specified category.
@@ -52,12 +54,17 @@ This will create a JSON file in the etc/ directory with the necessary configurat
 To run the preselection, use the compiled binary and provide the input specification and output file:
 
 ```bash
-bin/runAnalysis --spec <input_spec> --output <output_file>
+bin/runAnalysis -i <input_spec.json> -a <channel> -n <n_threads>
 ```
 
-#### Command Line Arguments:
+For example,
+
+```bash
+bin/runAnalysis -i etc/OneLep2FJ-bkg.json -a OneLep2FJ -n 64
 ```
---spec: Path to the JSON configuration file defining the input specification.
---output: Path to the output file where the results will be saved.
---nthreads: Number of threads to use for parallel processing (optional).
+
+More command line options can be found by running 
+
+```bash
+bin/runAnalysis --help
 ```

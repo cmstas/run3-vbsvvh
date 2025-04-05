@@ -4,7 +4,7 @@ CPPFLAGS = -g -Wall -O2
 MYINCLUDES = -I include/
 
 ROOTFLAGS = $(shell root-config --libs --cflags --auxcflags)
-ROOTFLAGS += -lMLP -lMinuit -lTreePlayer -lTMVA -lXMLIO  -lMLP -lm
+ROOTFLAGS += -lMLP -lMinuit -lTreePlayer -lTMVA -lXMLIO  -lMLP -lm -lTMVAUtils
 CORRECTIONLIBFLAGS = -I $(shell correction config --incdir --ldflags --rpath)
 
 MAKEFLAGS := --jobs=8
@@ -15,17 +15,21 @@ OBJS = $(patsubst src/%.cpp,build/%.o,$(SRCS))
 TARGET = runAnalysis
 
 BUILD_DIR = build/
+BIN_DIR = bin
 
-all: oogabooga
+all: main
 
-oogabooga: $(OBJS)
-	$(CXX) $(CPPFLAGS) $(MYINCLUDES) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS) $(OBJS) -o bin/$(TARGET)
+main: $(OBJS) | $(BIN_DIR)
+	$(CXX) $(CPPFLAGS) $(MYINCLUDES) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS) $(OBJS) -o $(BIN_DIR)/$(TARGET)
 
 build/%.o: src/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(MYINCLUDES) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
 .DELETE_ON_ERROR:
 
@@ -36,4 +40,4 @@ clean:
 clearplots:
 	$(RM)
 
-.PHONY: all oogabooga clean clearplots
+.PHONY: all main clean clearplots

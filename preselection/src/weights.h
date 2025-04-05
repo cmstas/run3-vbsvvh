@@ -5,6 +5,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <iostream>
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RDFHelpers.hxx"
