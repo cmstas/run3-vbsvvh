@@ -24,7 +24,7 @@ using ROOT::VecOps::RVec;
 GOLDEN JSON
 ############################################
 */
-RNode applyGoldenJSONWeight(lumiMask golden, RNode df);
+RNode applyGoldenJSONWeight(const lumiMask& golden, RNode df);
 const auto LumiMask = lumiMask::fromJSON("corrections/goldenJson/Cert_Collisions2022_355100_362760_Golden.json");
 
 /*

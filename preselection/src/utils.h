@@ -57,7 +57,7 @@ public:
         std::sort(m_accept.begin(), m_accept.end());
     }
 
-    bool accept(Run run, LumiBlock lumi) const { 
+    double accept(Run run, LumiBlock lumi) const { 
         return std::binary_search(m_accept.begin(), m_accept.end(), LumiBlockRange(run, lumi, lumi)); 
     }
 

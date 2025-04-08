@@ -7,8 +7,8 @@ GOLDEN JSON
 ############################################
 */
 
-RNode applyGoldenJSONWeight(lumiMask golden, RNode df){
-    auto goldenjson = [&golden](unsigned int &run, unsigned int &luminosityBlock){return golden.accept(run, luminosityBlock);};
+RNode applyGoldenJSONWeight(const lumiMask& golden, RNode df){
+    auto goldenjson = [&golden](unsigned int &run, unsigned int &luminosityBlock){ return golden.accept(run, luminosityBlock); };
     return df.Define("_goldenJSON", goldenjson, {"run", "luminosityBlock"});
 }
 

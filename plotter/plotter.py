@@ -108,6 +108,7 @@ class Plotter:
                 Path("plots").mkdir(parents=True, exist_ok=True)
                 fig.tight_layout()
                 plt.savefig(f"plots/{histogram.var}.png")
+                print(f"Saved {histogram.var} plot")
 
             plt.close(fig)
 
