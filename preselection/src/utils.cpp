@@ -237,7 +237,7 @@ RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jet_va
     // Create properly matched return type: vector of vector
         RVec<RVec<int>> result;
         // Add two empty vectors
-        result.emplace_back(RVec<int>{-990});
+        result.emplace_back(RVec<int>{-999});
         result.emplace_back(RVec<int>{-999});
         return result;
     }
@@ -280,10 +280,13 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
     final_variables.push_back("event");
+    final_variables.push_back("LHEReweightingWeight");
     
     for (auto &&ColName : ColNames) {
         if (ColName.starts_with("_")) {
-            continue;
+            if (ColName.starts_with("_cut")) {
+            } else
+                continue;
         }
         final_variables.push_back(ColName);
     }

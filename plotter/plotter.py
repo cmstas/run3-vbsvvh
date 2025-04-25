@@ -32,7 +32,7 @@ class Hist2D:
     hist_sig: list = field(default_factory=list)
 
 class Plotter:
-    def __init__(self, sig=None, bkg=None, data=None, bkg_samples_labels=None, cut=None, year=None):
+    def __init__(self, sig=None, bkg=None, data=None, bkg_samples_labels=None, sig_samples_labels=None, cut=None, year=None):
         self.year = year
         if data:
             self.df_data = r.RDataFrame("Events", data).Filter(cut) if cut else r.RDataFrame("Events", data)
@@ -40,7 +40,12 @@ class Plotter:
             self.df_data = None
     
         if sig:
-            self.df_sig = r.RDataFrame("Events", sig).Filter(cut) if cut else r.RDataFrame("Events", sig)
+            if isinstance(sig, str):
+                self.df_sig = r.RDataFrame("Events", sig).Filter(cut) if cut else r.RDataFrame("Events", sig)
+            if isinstance(sig, list):
+                self.df_sig = [r.RDataFrame("Events", s).Filter(cut) if cut else r.RDataFrame("Events", s) for s in sig]
+                self.sig_samples_labels = sig_samples_labels
+                assert sig_samples_labels is not None, "Signal samples labels must be provided for multiple signal samples"
         else:
             self.df_sig = None
         
@@ -73,8 +78,14 @@ class Plotter:
                 ax_ratio = None
 
             if histogram.hist_sig:
-                histogram.hist_sig[0].Scale(1000)
-                hep.histplot(histogram.hist_sig, label="Signal x 1000", ax=ax_main, histtype="step", color="red", linewidth=2, yerr=False)
+                if isinstance(histogram.hist_sig, list):
+                    histogram.hist_sig = [h.GetValue() for h in histogram.hist_sig]
+                    for h in histogram.hist_sig:
+                        h.Scale(1000)
+                for i, hist in enumerate(histogram.hist_sig):
+                    hep.histplot(hist, ax=ax_main, histtype="step", label=f"Signal {self.sig_samples_labels[i]} x 1000", linewidth=2, yerr=False)
+            elif histogram.hist_sig:
+                hep.histplot(histogram.hist_sig, ax=ax_main, histtype="fill", label="Signal")
 
             if histogram.hist_bkg and self.bkg_samples_labels is None:
                 hep.histplot(histogram.hist_bkg, ax=ax_main, histtype="fill", label="Background")
@@ -125,7 +136,14 @@ class Plotter:
                 if self.df_data:
                     histogram.hist_data = [self.df_data.Histo1D((histogram.var, histogram.var, *histogram.binning), histogram.var, "weight")]
                 if self.df_sig:
-                    histogram.hist_sig = [self.df_sig.Histo1D((histogram.var, histogram.var, *histogram.binning), histogram.var, "weight")]
+                    if isinstance(self.df_sig, list):
+                        histogram.hist_sig = []
+                        for sig in self.df_sig:
+                            histogram.hist_sig.append(
+                                sig.Histo1D((histogram.var, histogram.var, *histogram.binning), histogram.var, "weight")
+                            )
+                    else:
+                        histogram.hist_sig = self.df_sig.Histo1D((histogram.var, histogram.var, *histogram.binning), histogram.var, "weight")
                 if self.df_bkg:
                     histogram.hist_bkg = []
                     if self.bkg_samples_labels is None:

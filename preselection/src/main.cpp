@@ -103,7 +103,27 @@ int main(int argc, char** argv) {
     // Optionally filter events
     if (!args.cut.empty()){
         std::cout << " -> Filter events with cut :" << args.cut << std::endl; 
-        df_final = df_final.Filter(args.cut);
+        std::vector<std::string> _cuts;
+        for (auto colName : df_final.GetDefinedColumnNames()) {
+            if (colName.starts_with("_cut")) {
+                if (colName == args.cut) {
+                    _cuts.push_back(colName);
+                    break;
+                }
+                _cuts.push_back(colName);
+            }
+        }
+        std::string cut_string = "";
+        if (_cuts.size() != 0) { 
+            for (size_t i = 0; i < _cuts.size(); i++) {
+                if (i == 0) {
+                    cut_string = _cuts[i];
+                } else {
+                    cut_string += " && " + _cuts[i];
+                }
+            }
+        }
+        df_final = df_final.Filter(cut_string);
     }
 
     // Save events to root file

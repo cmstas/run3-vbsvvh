@@ -1,11 +1,19 @@
 CXX = g++
-CPPFLAGS = -g -Wall -O2
+CPPFLAGS = -g -O2 -std=c++20
 
-MYINCLUDES = -I include/
+PROJDIR = $(shell ( cd $$CMSSW_BASE/src && /bin/pwd ))
+BOOST_BASE = $(shell ( cd $(PROJDIR) && scram tool info boost ) | grep -e '^BOOST_BASE' | sed 's/.*=//')
+ONNX_BASE = $(shell ( cd $(PROJDIR) && scram tool info onnxruntime ) | grep -e '^ONNXRUNTIME_BASE' | sed 's/.*=//')
 
 ROOTFLAGS = $(shell root-config --libs --cflags --auxcflags)
 ROOTFLAGS += -lMLP -lMinuit -lTreePlayer -lTMVA -lXMLIO  -lMLP -lm -lTMVAUtils
+
 CORRECTIONLIBFLAGS = -I $(shell correction config --incdir --ldflags --rpath)
+
+ONNX_FLAGS = -I $(ONNX_BASE)/include -L $(ONNX_BASE)/lib -lonnxruntime
+BOOST_FLAGS = -I $(BOOST_BASE)/include -L $(BOOST_BASE)/lib
+
+MY_FLAGS = -I include/ $(ONNX_FLAGS) $(BOOST_FLAGS) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS)
 
 MAKEFLAGS := --jobs=8
 
@@ -20,10 +28,10 @@ BIN_DIR = bin
 all: main
 
 main: $(OBJS) | $(BIN_DIR)
-	$(CXX) $(CPPFLAGS) $(MYINCLUDES) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS) $(OBJS) -o $(BIN_DIR)/$(TARGET)
+	$(CXX) $(CPPFLAGS) $(MY_FLAGS) $(OBJS) -o $(BIN_DIR)/$(TARGET)
 
 build/%.o: src/%.cpp | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(MYINCLUDES) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(MY_FLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

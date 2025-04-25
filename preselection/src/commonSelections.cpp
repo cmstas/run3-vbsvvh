@@ -75,9 +75,8 @@ RNode AK8JetsSelection(RNode df_) {
         .Define("ak8jet_mass", "FatJet_mass[_good_ak8jets]")
         .Define("ak8jet_msoftdrop", "FatJet_msoftdrop[_good_ak8jets]")
         .Define("ak8jet_nConstituents", "FatJet_nConstituents[_good_ak8jets]")
-        .Define("ak8jet_hbbvsqcd", "FatJet_particleNetWithMass_HbbvsQCD[_good_ak8jets]")
-        .Define("ak8jet_wvsqcd", "FatJet_particleNetWithMass_WvsQCD[_good_ak8jets]")
-        .Define("ak8jet_zvsqcd", "FatJet_particleNetWithMass_ZvsQCD[_good_ak8jets]")
+        .Define("ak8jet_xbbvsqcd", "FatJet_particleNet_XbbVsQCD[_good_ak8jets]")
+        .Define("ak8jet_xqqvsqcd", "FatJet_particleNet_XqqVsQCD[_good_ak8jets]")
         .Define("ak8jet_ht", "Sum(ak8jet_pt)")
         .Define("ak8jet_n", "Sum(_good_ak8jets)");
 }

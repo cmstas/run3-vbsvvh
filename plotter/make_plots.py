@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from plotter import *
 
 hists = [
@@ -20,12 +22,15 @@ hists = [
         Hist1D("vbs_dphijj", r"$\Delta \phi_{jj}$", (40, 0, 3.14)),
         Hist1D("vbs_mjj", r"$m_{jj}$ (GeV)", (40, 0, 2000)),
         Hist1D("vbs_ptjj", r"$p_T^{jj}$ (GeV)", (40, 0, 1000)),
+        Hist1D("vbs_score", r"VBS Tagger score", (40, 0, 1)),
         Hist1D("hbb_pt", r"$p_T^{bb}$ (GeV)", (40, 0, 1000)),
+        Hist1D("hbb_score", r"Hbb ParticleNet score", (40, 0, 1)),
         Hist1D("hbb_eta", r"$\eta^{bb}$", (40, -2.5, 2.5)),
         Hist1D("hbb_phi", r"$\phi^{bb}$", (40, -3.14, 3.14)),
         Hist1D("wqq_pt", r"$p_T^{qq}$ (GeV)", (40, 0, 1000)),
         Hist1D("wqq_eta", r"$\eta^{qq}$", (40, -2.5, 2.5)),
         Hist1D("wqq_phi", r"$\phi^{qq}$", (40, -3.14, 3.14)),
+        Hist1D("wqq_score", r"Wqq ParticleNet score", (40, 0, 1)),
     ]
 
 bkg_samples_labels = {
@@ -37,5 +42,6 @@ bkg_samples_labels = {
 
 BASE_PATH = "/data/userdata/aaarora/vbsvvhAnalysis/preselection/OneLep2FJ/"
 
-plotter = Plotter(bkg=[BASE_PATH + "bkg.root"], bkg_samples_labels=bkg_samples_labels)
+plotter = Plotter(sig=[BASE_PATH + "sig_1_5.root", BASE_PATH + "sig.root", BASE_PATH + "sig_2_0.root"], sig_samples_labels=["1.5", "1.7", "2.0"])
+# plotter = Plotter(sig=[BASE_PATH + "sig.root"])
 plotter.make_plots(hists, save=True)
