@@ -8,11 +8,12 @@
 
 using RNode = ROOT::RDF::RNode;
 
-RNode CommonSelections(RNode df);
+RNode CommonSelections(RNode df, bool runSPANet = false);
 RNode EventFilters(RNode df);
 RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
 RNode VBSJetsSelection(RNode df);
+RNode RunSPANetInference(RNode df);
 
 
 #endif // COMMONSELECTIONS_H
