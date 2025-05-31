@@ -6,6 +6,8 @@
 #include <limits>
 #include <filesystem>
 
+#include "tabulate.hpp"
+
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 
@@ -55,7 +57,7 @@ public:
         std::sort(m_accept.begin(), m_accept.end());
     }
 
-    bool accept(Run run, LumiBlock lumi) const { 
+    double accept(Run run, LumiBlock lumi) const { 
         return std::binary_search(m_accept.begin(), m_accept.end(), LumiBlockRange(run, lumi, lumi)); 
     }
 
@@ -103,8 +105,8 @@ CUTFLOW
 
 class Cutflow {
 public:
-    Cutflow(RNode df, const std::vector<std::string>& cuts);
-    void Print(std::string output_file);
+    Cutflow(RNode df);
+    void Print(std::string output_file = "");
 private:
     RNode _df;
     std::vector<std::string> _cuts;
@@ -117,15 +119,16 @@ SELECTION UTILS
 ############################################
 */
 
-RVec<float> VfDeltaR (RVec<float> vec_eta, RVec<float> vec_phi, float obj_eta, float obj_phi);
-RVec<float> VfInvariantMass(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> vec_phi, RVec<float> vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
-RVec<float> VfInvariantPt(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> vec_phi, RVec<float> vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
-RVec<float> VfInvariantPhi(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> vec_phi, RVec<float> vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
-RVec<float> MT(RVec<float> vec_pt, RVec<float> vec_phi, float obj_pt, float obj_phi);
-float fInvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_mass, float obj2_pt, float obj2_eta, float obj2_phi, float obj2_mass);
-RVec<int> VBS_MaxE( RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass );
-RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
-RVec<float> VfdRfromClosestJet(const ROOT::RVecF &ak4_eta, const ROOT::RVecF &ak4_phi, const ROOT::RVecF &ak8_eta, const ROOT::RVecF &ak8_phi);
+float fdR(float eta1, float phi1, float eta2, float phi2);
+float fInvariantMass(float pt1, float eta1, float phi1, float mass1, float pt2, float eta2, float phi2, float mass2);
+RVec<float> VdR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float obj_eta, float obj_phi);
+RVec<float> VInvariantMass(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
+RVec<float> VInvariantPt(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
+RVec<float> VInvariantPhi(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
+RVec<float> VTransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_phi, float obj_pt, float obj_phi);
+RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_phi, const RVec<float>& ak8_eta, const RVec<float>& ak8_phi);
+
+RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 
 /*
 ############################################

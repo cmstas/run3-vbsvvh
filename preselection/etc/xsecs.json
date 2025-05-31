@@ -1,7 +1,8 @@
 {
     "DYto2L-2Jets_MLL-50" : 6688.0,
-    "TTto2L2Nu": 98.032,
-    "TTtoLNu2Q": 405.55,
+    "TTto2L2Nu": 97.45,
+    "TTtoLNu2Q": 403.25,
+    "TTto4Q": 431.5,
     "WtoLNu-2Jets": 67710.0,
     "QCD-4Jets_HT-40to70": 311400000.0,
     "QCD-4Jets_HT-70to100": 58500000.0,
@@ -17,5 +18,7 @@
     "VBSWWH_OSWW_5f_LO": 0.003213,
     "VBSWWH_SSWW_5f_LO": 0.001082,
     "VBSWZH_5f_LO": 0.001458,
-    "VBSZZH_5f_LO": 0.0007383
+    "VBSZZH_5f_LO": 0.0007383,
+    "WWtoLNu2Q": 48.94,
+    "WZtoLNu2Q": 15.87
 }

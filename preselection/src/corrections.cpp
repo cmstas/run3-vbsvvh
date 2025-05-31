@@ -37,18 +37,6 @@
 //     return -1;
 // }
 
-
-// CORRECTIONS
-RNode defineCorrectedCols(RNode df) {
-    return df.Define("CorrJet_pt", "Jet_pt")
-            .Define("CorrJet_mass", "Jet_mass")
-            .Define("CorrFatJet_pt", "FatJet_pt")
-            .Define("CorrFatJet_mass", "FatJet_mass")
-            .Define("CorrMET_pt", "MET_pt")
-            .Define("CorrMET_phi", "MET_phi");
-}
-
-
 // RNode JMS_Corrections(correction::CorrectionSet cset_jet_mass_scale, RNode df, std::string variation) { 
 //     auto eval_correction = [cset_jet_mass_scale, variation] (std::string year, float mass) {
 //         double scaleVal = 1. + 0.05 * cset_jet_mass_scale.at("JMS")->evaluate({year, variation});
@@ -116,20 +104,20 @@ RNode defineCorrectedCols(RNode df) {
 //     //     return std::make_pair(pt_corr, phi_corr);
 //     // };
 //     // return df.Define("MET_phicorr", eval_correction, {"sample_category", "sample_year", "MET_pt", "MET_phi", "PV_npvs", "run"})
-//     //         .Redefine("CorrMET_pt", "MET_phicorr.first")
-//     //         .Redefine("CorrMET_phi", "MET_phicorr.second");
+//     //         .Redefine("MET_pt", "MET_phicorr.first")
+//     //         .Redefine("MET_phi", "MET_phicorr.second");
 // }
 
 // RNode METUnclusteredCorrections(RNode df, std::string variation) {
 //     if (variation == "up") {
-//         return df.Define("MET_uncert_dx", "CorrMET_pt * TMath::Cos(CorrMET_phi) + MET_MetUnclustEnUpDeltaX")
-//                 .Define("MET_uncert_dy", "CorrMET_pt * TMath::Sin(CorrMET_phi) + MET_MetUnclustEnUpDeltaY")
-//                 .Redefine("CorrMET_pt", "TMath::Sqrt(MET_uncert_dx * MET_uncert_dx + MET_uncert_dy * MET_uncert_dy)");
+//         return df.Define("MET_uncert_dx", "MET_pt * TMath::Cos(MET_phi) + MET_MetUnclustEnUpDeltaX")
+//                 .Define("MET_uncert_dy", "MET_pt * TMath::Sin(MET_phi) + MET_MetUnclustEnUpDeltaY")
+//                 .Redefine("MET_pt", "TMath::Sqrt(MET_uncert_dx * MET_uncert_dx + MET_uncert_dy * MET_uncert_dy)");
 //     }
 //     else if (variation == "down") {
-//         return df.Define("MET_uncert_dx", "CorrMET_pt * TMath::Cos(CorrMET_phi) - MET_MetUnclustEnUpDeltaX")
-//                 .Define("MET_uncert_dy", "CorrMET_pt * TMath::Sin(CorrMET_phi) - MET_MetUnclustEnUpDeltaY")
-//                 .Redefine("CorrMET_pt", "TMath::Sqrt(MET_uncert_dx * MET_uncert_dx + MET_uncert_dy * MET_uncert_dy)");
+//         return df.Define("MET_uncert_dx", "MET_pt * TMath::Cos(MET_phi) - MET_MetUnclustEnUpDeltaX")
+//                 .Define("MET_uncert_dy", "MET_pt * TMath::Sin(MET_phi) - MET_MetUnclustEnUpDeltaY")
+//                 .Redefine("MET_pt", "TMath::Sqrt(MET_uncert_dx * MET_uncert_dx + MET_uncert_dy * MET_uncert_dy)");
 //     }
 //     return df;
 // }
@@ -219,12 +207,12 @@ RNode defineCorrectedCols(RNode df) {
 //         }
 //         return jec_factors;
 //     };
-//     auto df_jetcorr = df.Redefine("CorrJet_pt", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_pt"})
-//                         .Redefine("CorrJet_mass", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_mass"})
-//                         .Redefine("CorrFatJet_pt", eval_correction, {"sample_year", "FatJet_pt", "FatJet_eta", "FatJet_pt"})
-//                         .Redefine("CorrFatJet_mass", eval_correction, {"sample_year", "FatJet_pt", "FatJet_eta", "FatJet_mass"});
+//     auto df_jetcorr = df.Redefine("Jet_pt", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_pt"})
+//                         .Redefine("Jet_mass", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_mass"})
+//                         .Redefine("FatJet_pt", eval_correction, {"sample_year", "FatJet_pt", "FatJet_eta", "FatJet_pt"})
+//                         .Redefine("FatJet_mass", eval_correction, {"sample_year", "FatJet_pt", "FatJet_eta", "FatJet_mass"});
 
-//     auto correctmet = [JEC_type](std::string year, RVec<float> corrjet_pt, RVec<float> jet_phi, RVec<float> jet_pt, float MET_pt, float MET_phi) {
+//     auto correctmet = [JEC_type](std::string year, RVec<float> Jet_pt, RVec<float> jet_phi, RVec<float> jet_pt, float MET_pt, float MET_phi) {
 //         if (year == "2016preVFP") {
 //             if (JEC_type.find("2016post") != std::string::npos || JEC_type.find("2017") != std::string::npos || JEC_type.find("2018") != std::string::npos) {
 //                 return MET_pt;
@@ -245,19 +233,19 @@ RNode defineCorrectedCols(RNode df) {
 //                 return MET_pt;
 //             }
 //         }
-//         if (corrjet_pt.empty()) {
+//         if (Jet_pt.empty()) {
 //             return MET_pt;
 //         }
 //         float px = MET_pt * TMath::Cos(MET_phi);
 //         float py = MET_pt * TMath::Sin(MET_phi);
-//         for (size_t i = 0; i < corrjet_pt.size(); i++) {
-//             px += (corrjet_pt[i] - jet_pt[i]) * TMath::Cos(jet_phi[i]);
-//             py += (corrjet_pt[i] - jet_pt[i]) * TMath::Sin(jet_phi[i]);
+//         for (size_t i = 0; i < Jet_pt.size(); i++) {
+//             px += (Jet_pt[i] - jet_pt[i]) * TMath::Cos(jet_phi[i]);
+//             py += (Jet_pt[i] - jet_pt[i]) * TMath::Sin(jet_phi[i]);
 //         }
 //         return (float)TMath::Sqrt(px * px + py * py);
 //     };
 
-//     return df_jetcorr.Redefine("CorrMET_pt", correctmet, {"sample_year", "CorrJet_pt", "Jet_phi", "Jet_pt", "MET_pt", "MET_phi"});
+//     return df_jetcorr.Redefine("MET_pt", correctmet, {"sample_year", "Jet_pt", "Jet_phi", "Jet_pt", "MET_pt", "MET_phi"});
 // }
 
 // RNode JetEnergyResolution(correction::CorrectionSet cset_jerc_2016preVFP, correction::CorrectionSet cset_jerc_2016postVFP, correction::CorrectionSet cset_jerc_2017, correction::CorrectionSet cset_jerc_2018, correction::CorrectionSet cset_jer_smear, RNode df, std::string variation) {
@@ -305,6 +293,6 @@ RNode defineCorrectedCols(RNode df) {
 //         }
 //         return jer_factors;
 //     };
-//     return df.Redefine("CorrJet_pt", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_pt"})
-//             .Redefine("CorrJet_mass", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_mass"});
+//     return df.Redefine("Jet_pt", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_pt"})
+//             .Redefine("Jet_mass", eval_correction, {"sample_year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_mass"});
 // }   

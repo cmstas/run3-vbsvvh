@@ -6,13 +6,13 @@ import uproot
 import concurrent.futures
 
 class Config:
-    def __init__(self, sample_category : str, samples: str):
+    def __init__(self, sample_category : str, channel : str, samples: str, nthreads: int = 8):
         self.sample_category = sample_category
         self.samples = sorted(glob(samples))
         self.config = {"samples": {}}
 
-        self.process_samples(xsecs)
-        self.write_config(f"{sample_category}.json")
+        self.process_samples(xsecs, nthreads)
+        self.write_config(f"{channel}-{sample_category}.json")
 
     def write_config(self, output_file):
         with open(output_file, "w") as f:
@@ -57,7 +57,10 @@ class Config:
             "DY": "DY",
             "TTto": "TTbar",
             "Wto": "WJets",
-            "VBS": "VBS"
+            "VBS": "VBS", 
+            "QCD": "QCD",
+            "WW": "Boson",
+            "WZ": "Boson"
         }
         for key, value in sample_type_mapping.items():
             if key in sample_name:
@@ -72,23 +75,18 @@ class Config:
         else:
             return re.search(r"/([^/]+)_TuneCP5", sample).group(1)
 
-    def process_samples(self, xsecs):
+    def process_samples(self, xsecs, nthreads):
         for sample in self.samples:
             try:
                 sample_name = self.get_sample_name(sample)
                 sample_year = self.extract_sample_year(sample)
                 xsec = self.get_xsec_weight(xsecs, sample_name) if self.sample_category != "data" else 1.0
                 num_events = 0
-                files_path = f"{sample}/output_1.ro*"
+                files_path = f"{sample}/*.root"
                 if self.sample_category != "data":
                     files = glob(files_path)
-                    def process_file(file):
-                        with uproot.open(file) as upf:
-                            return sum(upf["Runs"]["genEventSumw"].array())
-
-                    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-                        results = list(executor.map(process_file, files))
-                    
+                    with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
+                        results = list(executor.map(self._process_file, files))
                     num_events = sum(results)
                 else:
                     num_events = 1.0
@@ -110,10 +108,18 @@ class Config:
                 )
             except Exception as e:
                 print(f"Error in {sample}: {e}")
+    
+    @staticmethod
+    def _process_file(file):
+        with uproot.open(file) as upf:
+            return sum(upf["Runs"]["genEventSumw"].array())
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
+    argparser.add_argument("--channel", type=str, help="channel", required=True)
     argparser.add_argument("--category", help="categories: bkg, sig or data", required=True)
+    argparser.add_argument("--config", help="paths file", default="paths.json")
+    argparser.add_argument("-n, --nthreads", type=int, default=8, help="number of threads to use for processing files")
     args = argparser.parse_args()
 
     if not args.category or not any(cat in args.category for cat in ["bkg", "sig", "data"]):
@@ -122,10 +128,12 @@ if __name__ == "__main__":
     with open("xsecs.json", "r") as f_xsecs:
         xsecs = json.load(f_xsecs)
 
-    skim_paths = {
-        "bkg": "/ceph/cms/store/user/aaarora/skims/bkg/*/*/*",
-        "data": "/ceph/cms/store/user/aaarora/skims/data/*/*/*",
-        "sig": "/ceph/cms/store/user/aaarora/skims/sig/*/*/*"
-    }
+    with open(args.config, "r") as f:
+        skim_paths = json.load(f)
 
-    config = Config(args.category, skim_paths[args.category])
+    if args.channel not in skim_paths:
+        raise ValueError(f"No skim paths found for channel {args.channel}")
+    if args.category not in skim_paths[args.channel]:
+        raise ValueError(f"No skim paths found for category {args.category}")
+    
+    config = Config(args.category, args.channel, skim_paths[args.channel][args.category])

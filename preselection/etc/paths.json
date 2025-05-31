@@ -1,0 +1,12 @@
+{
+    "ZeroLep3FJ": {
+        "bkg": "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/bkg/*/*/*",
+        "data": "/ceph/cms/store/user/aaarora/skims/ZeroLep3FJ/data/*/*/*",
+        "sig": "/ceph/cms/store/user/aaarora/skims/SIGNAL/*/*/*"
+    },
+    "OneLep2FJ": {
+        "bkg": "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/*/*/*",
+        "data": "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/data/*/*/*",
+        "sig": "/ceph/cms/store/user/aaarora/skims/SIGNAL/*/*/*"
+    }
+}
