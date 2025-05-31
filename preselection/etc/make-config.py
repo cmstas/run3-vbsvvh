@@ -58,7 +58,9 @@ class Config:
             "TTto": "TTbar",
             "Wto": "WJets",
             "VBS": "VBS", 
-            "QCD": "QCD"
+            "QCD": "QCD",
+            "WW": "Boson",
+            "WZ": "Boson"
         }
         for key, value in sample_type_mapping.items():
             if key in sample_name:

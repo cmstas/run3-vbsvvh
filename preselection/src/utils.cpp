@@ -280,7 +280,10 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
     final_variables.push_back("event");
-    final_variables.push_back("LHEReweightingWeight");
+
+    if (!isData) {
+        final_variables.push_back("LHEReweightingWeight");
+    }
     
     for (auto &&ColName : ColNames) {
         if (ColName.starts_with("_")) {

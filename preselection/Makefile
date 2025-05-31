@@ -13,7 +13,7 @@ CORRECTIONLIBFLAGS = -I $(shell correction config --incdir --ldflags --rpath)
 ONNX_FLAGS = -I $(ONNX_BASE)/include -L $(ONNX_BASE)/lib -lonnxruntime
 BOOST_FLAGS = -I $(BOOST_BASE)/include -L $(BOOST_BASE)/lib
 
-MY_FLAGS = -I include/ $(ONNX_FLAGS) $(BOOST_FLAGS) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS)
+MY_FLAGS = -I include/ -I $(PROJDIR) $(ONNX_FLAGS) $(BOOST_FLAGS) $(ROOTFLAGS) $(CORRECTIONLIBFLAGS)
 
 MAKEFLAGS := --jobs=8
 

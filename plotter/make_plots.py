@@ -37,11 +37,12 @@ bkg_samples_labels = {
         "DY": "Drell-Yan",
         "TTbar": r"$t\bar t$",
         "WJets": "W + Jets",
-        "QCD": "QCD"
-    }
+        "QCD": "QCD",
+        "Boson": "Boson"
+}
 
 BASE_PATH = "/data/userdata/aaarora/vbsvvhAnalysis/preselection/OneLep2FJ/"
 
-plotter = Plotter(sig=[BASE_PATH + "sig_1_5.root", BASE_PATH + "sig.root", BASE_PATH + "sig_2_0.root"], sig_samples_labels=["1.5", "1.7", "2.0"])
-# plotter = Plotter(sig=[BASE_PATH + "sig.root"])
+# plotter = Plotter(sig=[BASE_PATH + "sig_1_5.root", BASE_PATH + "sig.root", BASE_PATH + "sig_2_0.root"], sig_samples_labels=["1.5", "1.7", "2.0"])
+plotter = Plotter(bkg=[BASE_PATH + "bkg.root"], bkg_samples_labels=bkg_samples_labels, data=[BASE_PATH + "data.root"])
 plotter.make_plots(hists, save=True)

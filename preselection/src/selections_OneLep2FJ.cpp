@@ -58,9 +58,14 @@ namespace OneLep2FJ {
             .Define("wqq_eta", "_max_wqq_idx != -999 ? ak8jet_eta[_xqq_candidates][_max_wqq_idx] : -999.0f")
             .Define("wqq_phi", "_max_wqq_idx != -999 ? ak8jet_phi[_xqq_candidates][_max_wqq_idx] : -999.0f")
             .Define("wqq_msoftdrop", "_max_wqq_idx != -999 ? ak8jet_msoftdrop[_xqq_candidates][_max_wqq_idx] : -999.0f");
+        
+        df = df.Define("_cut_hbb", "hbb_score > 0")
+            .Define("_cut_wqq", "wqq_score > 0");
 
-        df = df.Define("_cut_hbb", "hbb_score > 0.2")
-            .Define("_cut_wqq", "wqq_score > 0.2");
+        df = df.Define("st", "lepton_pt + vbs1_pt + vbs2_pt + hbb_pt + wqq_pt")
+            .Define("_cut_st", "st > 1000")
+            .Define("_cut_hbb_score", "hbb_score > 0.2")
+            .Define("_cut_wqq_score", "wqq_score > 0.2");
 
         return df;
     }
