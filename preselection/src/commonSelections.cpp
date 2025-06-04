@@ -90,7 +90,10 @@ RNode AK4JetsSelection(RNode df_) {
         .Define("ak4jet_phi", "Jet_phi[_good_ak4jets]")
         .Define("ak4jet_mass", "Jet_mass[_good_ak4jets]")
         .Define("ak4jet_ht", "Sum(ak4jet_pt)")
-        .Define("ak4jet_n", "Sum(_good_ak4jets)");
+        .Define("ak4jet_n", "Sum(_good_ak4jets)")
+        .Define("ak4jet_isTightBTag", "Jet_btagDeepFlavB[_good_ak4jets] > 0.7183")
+        .Define("ak4jet_isMediumBTag", "Jet_btagDeepFlavB[_good_ak4jets] > 0.3086")
+        .Define("ak4jet_isLooseBTag", "Jet_btagDeepFlavB[_good_ak4jets] > 0.0583");
 }
 
 RNode VBSJetSelections(RNode df_, TMVA::Experimental::RBDT &vbstagger) {

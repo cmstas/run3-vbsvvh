@@ -1,6 +1,5 @@
 #include "utils.h"
 
-
 /*
 ############################################
 DEFINE METADATA
@@ -241,6 +240,23 @@ RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jet_va
         result.emplace_back(RVec<int>{-999});
         return result;
     }
+}
+
+int get_hadronic_gauge_boson_idx(RVec<int> pdgId, RVec<short> motherIdx) {
+    for (size_t i = 0; i < pdgId.size(); ++i) {
+        if (abs(pdgId[i]) <= 5 && (abs(pdgId[motherIdx[i]]) == 24 || abs(pdgId[motherIdx[i]]) == 23)) {
+            int current_idx = motherIdx[i];
+            while (current_idx != 2 || current_idx != 3) {
+                if (abs(pdgId[motherIdx[current_idx]]) == 24 || abs(pdgId[motherIdx[current_idx]]) == 23) {
+                       current_idx = motherIdx[current_idx];
+                } else {
+                    break;
+                }
+            }
+            return current_idx;
+        }
+    }
+    return -1;
 }
 
 /*

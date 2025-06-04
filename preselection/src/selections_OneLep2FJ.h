@@ -2,6 +2,8 @@
 #define SELECTIONS_ONELEP_H
 
 #include "ROOT/RDataFrame.hxx"
+#include "spanet.hpp"
+#include "inference.hpp"
 
 #include "commonSelections.h"
 #include "utils.h"

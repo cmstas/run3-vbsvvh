@@ -1,0 +1,20 @@
+{
+    "samples": {
+        "TTtoLNu2Q_2022Re-recoE+PromptFG": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/OneLep2FJ/bkg/Run3Summer22EENanoAODv12/130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "sample_category": "bkg",
+                "sample_year": "2022Re-recoE+PromptFG",
+                "sample_type": "TTbar",
+                "xsec": 403.25,
+                "lumi": 26.6717,
+                "nevents": 92051060200.4791
+            }
+        }
+    }
+}
