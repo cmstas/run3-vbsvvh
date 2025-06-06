@@ -1,28 +1,23 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RDFHelpers.hxx"
+#include "ROOT/RLogger.hxx"
 
 #include "weights.h"
 #include "corrections.h"
 #include "utils.h"
-
+ 
 #include "selections_OneLep2FJ.h"
 
 #include "argparser.hpp"
 
 struct MyArgs : public argparse::Args {
-    std::string &spec = kwarg("i,input", "spec.json path");
-    std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection");
     int &nthreads = kwarg("n,nthreads", "number of threads").set_default(1);
     bool &cutflow = flag("cutflow", "print cutflow");
+    bool &debug = flag("debug", "enable debug mode").set_default(false);
+    std::string &spec = kwarg("i,input", "spec.json path");
+    std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection");
     std::string &cut = kwarg("cut", "cut on final snapshot").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
-
-    // uncertainty flags, will uncomment as we add them
-    // std::string &jec = kwarg("jec", "JEC").set_default("");
-    // bool &METUnclustered = flag("met", "MET unclustered");
-    // bool &JMS = flag("jms", "JMS");
-    // bool &JMR = flag("jmr", "JMR");
-    // std::string &variation = kwarg("var", "variation").set_default("nominal");
 };
 
 RNode runAnalysis(RNode df, MyArgs args) {
@@ -67,6 +62,10 @@ int main(int argc, char** argv) {
     ROOT::RDataFrame df_ = ROOT::RDF::Experimental::FromSpec(input_spec);
     ROOT::RDF::Experimental::AddProgressBar(df_);
 
+    if (args.debug) {
+        std::cout << " -> Debug mode enabled" << std::endl;
+        auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
+    }
     // Define metadata
     auto df = defineMetadata(df_);
 
