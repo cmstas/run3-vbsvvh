@@ -242,21 +242,57 @@ RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jet_va
     }
 }
 
+RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass) {
+    // find pair of jets with max delta eta
+    RVec<int> good_jet_idx = {};
+    RVec<float> Jet_P = {};
+    for (size_t i = 0; i < Jet_pt.size(); i++) {
+        TLorentzVector jet;
+        jet.SetPtEtaPhiM(Jet_pt[i], Jet_eta[i], Jet_phi[i], Jet_mass[i]);
+        Jet_P.push_back(jet.P());
+    }
+    int Nvbfjet1 = -1;
+    int Nvbfjet2 = -1;
+    float maxvbfjetdeta = 0;
+    for (size_t i = 0; i < Jet_eta.size(); i++) {
+        for (size_t j = i+1; j < Jet_eta.size(); j++) {
+            float deta = std::abs(Jet_eta[i] - Jet_eta[j]);
+            if (deta > maxvbfjetdeta) {
+                maxvbfjetdeta = deta;
+                Nvbfjet1 = i;
+                Nvbfjet2 = j;
+            }
+        }
+    }
+    if (Jet_P[Nvbfjet1] > Jet_P[Nvbfjet2]) {
+        good_jet_idx.push_back(Nvbfjet1);
+        good_jet_idx.push_back(Nvbfjet2);
+    }
+    else {
+        good_jet_idx.push_back(Nvbfjet2);
+        good_jet_idx.push_back(Nvbfjet1);
+    }
+    return good_jet_idx;
+}
+
 int get_hadronic_gauge_boson_idx(RVec<int> pdgId, RVec<short> motherIdx) {
     for (size_t i = 0; i < pdgId.size(); ++i) {
         if (abs(pdgId[i]) <= 5 && (abs(pdgId[motherIdx[i]]) == 24 || abs(pdgId[motherIdx[i]]) == 23)) {
+            int first_mother_idx = motherIdx[i];
             int current_idx = motherIdx[i];
-            while (current_idx != 2 || current_idx != 3) {
+            while (current_idx != 2 && current_idx != 3) { 
                 if (abs(pdgId[motherIdx[current_idx]]) == 24 || abs(pdgId[motherIdx[current_idx]]) == 23) {
-                       current_idx = motherIdx[current_idx];
+                    current_idx = motherIdx[current_idx];
                 } else {
                     break;
                 }
             }
-            return current_idx;
+            if (current_idx == 2 || current_idx == 3) {
+                return first_mother_idx;
+            }
         }
     }
-    return -1;
+    return -1; // Not found
 }
 
 /*

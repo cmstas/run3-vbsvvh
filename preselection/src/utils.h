@@ -129,6 +129,7 @@ RVec<float> VTransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_ph
 RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_phi, const RVec<float>& ak8_eta, const RVec<float>& ak8_phi);
 
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
+RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
 int get_hadronic_gauge_boson_idx(RVec<int> pdgId, RVec<short> motherIdx);
 
 /*

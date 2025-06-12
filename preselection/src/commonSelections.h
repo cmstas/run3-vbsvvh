@@ -11,11 +11,12 @@
 
 using RNode = ROOT::RDF::RNode;
 
-RNode EventFilters(RNode df);
-RNode ElectronSelections(RNode df);
-RNode MuonSelections(RNode df);
-RNode AK8JetsSelection(RNode df);
-RNode AK4JetsSelection(RNode df);
-RNode VBSJetSelections(RNode df_, TMVA::Experimental::RBDT &vbstagger);
-
+namespace CommonSelections {
+    RNode EventFilters(RNode df);
+    RNode ElectronSelections(RNode df);
+    RNode MuonSelections(RNode df);
+    RNode AK8JetsSelection(RNode df);
+    RNode AK4JetsSelection(RNode df);
+    RNode VBSJetSelections(RNode df_, TMVA::Experimental::RBDT &vbstagger);
+}
 #endif // COMMONSELECTIONS_H

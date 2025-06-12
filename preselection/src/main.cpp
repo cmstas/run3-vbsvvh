@@ -23,12 +23,41 @@ struct MyArgs : public argparse::Args {
 RNode runAnalysis(RNode df, MyArgs args) {
     std::cout << " -> Run " << args.ana << "::runAnalysis()" << std::endl;
     if (args.ana == "OneLep2FJ") {
-        return OneLep2FJ::runPreselection(df);
+        df = OneLep2FJ::runPreselection(df);
     }
     else{
         std::cerr << "Did not recognize analysis namespace: " << args.ana  << std::endl;
         std::exit(EXIT_FAILURE);
     }
+
+    if (!args.cut.empty()){
+        std::cout << " -> Filter events with cut :" << args.cut << std::endl; 
+        std::vector<std::string> _cuts;
+        for (auto colName : df.GetDefinedColumnNames()) {
+            if (colName.starts_with("_cut")) {
+                if (colName == args.cut) {
+                    _cuts.push_back(colName);
+                    break;
+                }
+                _cuts.push_back(colName);
+            }
+        }
+        std::string cut_string = "";
+        if (_cuts.size() != 0) { 
+            for (size_t i = 0; i < _cuts.size(); i++) {
+                if (i == 0) {
+                    cut_string = _cuts[i];
+                } else {
+                    cut_string += " && " + _cuts[i];
+                }
+            }
+        }
+        df = df.Filter(cut_string);
+    }
+    else {
+        std::cout << " -> No cut specified!" << std::endl;
+    }
+    return df;
 }
 
 RNode runDataAnalysis(RNode df_, MyArgs args) {
@@ -57,15 +86,16 @@ int main(int argc, char** argv) {
     if (args.nthreads > 1) {
         ROOT::EnableImplicitMT(args.nthreads);
     }
+    // add debugging
+    if (args.debug) {
+        std::cout << " -> Debug mode enabled" << std::endl;
+        auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
+    }
 
     // Load df
     ROOT::RDataFrame df_ = ROOT::RDF::Experimental::FromSpec(input_spec);
     ROOT::RDF::Experimental::AddProgressBar(df_);
 
-    if (args.debug) {
-        std::cout << " -> Debug mode enabled" << std::endl;
-        auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
-    }
     // Define metadata
     auto df = defineMetadata(df_);
 
@@ -98,32 +128,6 @@ int main(int argc, char** argv) {
     auto df_final = (isData) ? runDataAnalysis(df, args) : runMCAnalysis(df, args);
     
     auto cutflow = Cutflow(df_final);
-
-    // Optionally filter events
-    if (!args.cut.empty()){
-        std::cout << " -> Filter events with cut :" << args.cut << std::endl; 
-        std::vector<std::string> _cuts;
-        for (auto colName : df_final.GetDefinedColumnNames()) {
-            if (colName.starts_with("_cut")) {
-                if (colName == args.cut) {
-                    _cuts.push_back(colName);
-                    break;
-                }
-                _cuts.push_back(colName);
-            }
-        }
-        std::string cut_string = "";
-        if (_cuts.size() != 0) { 
-            for (size_t i = 0; i < _cuts.size(); i++) {
-                if (i == 0) {
-                    cut_string = _cuts[i];
-                } else {
-                    cut_string += " && " + _cuts[i];
-                }
-            }
-        }
-        df_final = df_final.Filter(cut_string);
-    }
 
     // Save events to root file
     saveSnapshot(df_final, output_dir, output_file, isData);
