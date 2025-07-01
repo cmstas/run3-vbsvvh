@@ -61,7 +61,7 @@ public:
         return std::binary_search(m_accept.begin(), m_accept.end(), LumiBlockRange(run, lumi, lumi)); 
     }
 
-    static lumiMask fromJSON(const std::string& fileName, lumiMask::Run firstRun=0, lumiMask::Run lastRun=0);
+    static lumiMask fromJSON(const std::vector<std::string>& fileNames, lumiMask::Run firstRun=0, lumiMask::Run lastRun=0);
 
 private:
     std::vector<LumiBlockRange> m_accept;
@@ -130,7 +130,9 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
 
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
-int get_hadronic_gauge_boson_idx(RVec<int> pdgId, RVec<short> motherIdx);
+int get_hadronic_gauge_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx);
+int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx);
+std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float lepton_eta, float lepton_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi);
 
 /*
 ############################################

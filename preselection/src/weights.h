@@ -25,7 +25,10 @@ GOLDEN JSON
 ############################################
 */
 RNode applyGoldenJSONWeight(const lumiMask& golden, RNode df);
-const auto LumiMask = lumiMask::fromJSON("corrections/goldenJson/Cert_Collisions2022_355100_362760_Golden.json");
+const auto LumiMask = lumiMask::fromJSON({"etc/goldenJson/Cert_Collisions2022_355100_362760_Golden.json", 
+    "etc/goldenJson/Cert_Collisions2023_366442_370790_Golden.json", 
+    "etc/goldenJson/Cert_Collisions2024_378981_386951_Golden.json"
+});
 
 /*
 ############################################

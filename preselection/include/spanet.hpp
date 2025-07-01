@@ -32,7 +32,7 @@ namespace SPANet {
                           "vbs_detection_probability",
                           "EVENT/isSignal"},
               ak4_input_shape{static_cast<int64_t>(batch_size), 10, 8},
-              ak8_input_shape{static_cast<int64_t>(batch_size), 3, 8},
+              ak8_input_shape{static_cast<int64_t>(batch_size), 3, 9},
               met_input_shape{static_cast<int64_t>(batch_size), 1, 3},
               lepton_input_shape{static_cast<int64_t>(batch_size), 1, 5},
               ak4_mask_shape{static_cast<int64_t>(batch_size), 10},
@@ -56,7 +56,7 @@ namespace SPANet {
             }
             
             ak4_flat_jets.resize(batch_size * 10 * 8, 0.0f);
-            ak8_flat_jets.resize(batch_size * 3 * 8, 0.0f);
+            ak8_flat_jets.resize(batch_size * 3 * 9, 0.0f);
             met_inputs.resize(batch_size * 3, 0.0f);
             lepton_inputs.resize(batch_size * 5, 0.0f);
             
@@ -99,7 +99,7 @@ namespace SPANet {
             std::vector<float> ak4_pt, ak4_eta, ak4_phi, ak4_mass;
             std::vector<int> ak4_isTightBTag, ak4_isMediumBTag, ak4_isLooseBTag;
             std::vector<float> ak8_pt, ak8_eta, ak8_phi, ak8_mass;
-            std::vector<float> ak8_HbbScore, ak8_WqqScore;
+            std::vector<float> ak8_XbbScore, ak8_XqqScore, ak8_XccScore;
             std::vector<unsigned char> ak8_nConstituents;
             float met_pt, met_phi;
             float lep_pt, lep_eta, lep_phi, lep_mass;
@@ -132,8 +132,9 @@ inline std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::
     auto ak8_eta_vec = df.Take<RVecF>("FatJet_eta").GetValue();
     auto ak8_phi_vec = df.Take<RVecF>("FatJet_phi").GetValue();
     auto ak8_mass_vec = df.Take<RVecF>("FatJet_mass").GetValue();
-    auto ak8_HbbScore_vec = df.Take<RVecF>("FatJet_particleNet_XbbVsQCD").GetValue();
-    auto ak8_WqqScore_vec = df.Take<RVecF>("FatJet_particleNet_XqqVsQCD").GetValue();
+    auto ak8_XbbScore_vec = df.Take<RVecF>("FatJet_particleNet_XbbVsQCD").GetValue();
+    auto ak8_XqqScore_vec = df.Take<RVecF>("FatJet_particleNet_XqqVsQCD").GetValue();
+    auto ak8_XccScore_vec = df.Take<RVecF>("FatJet_particleNet_XccVsQCD").GetValue();
     auto ak8_nConstituents_vec = df.Take<RVecUC>("FatJet_nConstituents").GetValue();
     
     auto met_pt_vec = df.Take<float>("MET_pt").GetValue();
@@ -163,8 +164,9 @@ inline std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::
         event.ak8_eta.assign(ak8_eta_vec[i].begin(), ak8_eta_vec[i].end());
         event.ak8_phi.assign(ak8_phi_vec[i].begin(), ak8_phi_vec[i].end());
         event.ak8_mass.assign(ak8_mass_vec[i].begin(), ak8_mass_vec[i].end());
-        event.ak8_HbbScore.assign(ak8_HbbScore_vec[i].begin(), ak8_HbbScore_vec[i].end());
-        event.ak8_WqqScore.assign(ak8_WqqScore_vec[i].begin(), ak8_WqqScore_vec[i].end());
+        event.ak8_XbbScore.assign(ak8_XbbScore_vec[i].begin(), ak8_XbbScore_vec[i].end());
+        event.ak8_XqqScore.assign(ak8_XqqScore_vec[i].begin(), ak8_XqqScore_vec[i].end());
+        event.ak8_XccScore.assign(ak8_XccScore_vec[i].begin(), ak8_XccScore_vec[i].end());
         event.ak8_nConstituents.assign(ak8_nConstituents_vec[i].begin(), ak8_nConstituents_vec[i].end());
         
         event.met_pt = met_pt_vec[i];
@@ -277,7 +279,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
         std::vector<EventData> batch_events(events.begin() + start_idx, events.begin() + end_idx);
         
         std::vector<int64_t> current_ak4_shape = {static_cast<int64_t>(current_batch_size), 10, 8};
-        std::vector<int64_t> current_ak8_shape = {static_cast<int64_t>(current_batch_size), 3, 8};
+        std::vector<int64_t> current_ak8_shape = {static_cast<int64_t>(current_batch_size), 3, 9};
         std::vector<int64_t> current_met_shape = {static_cast<int64_t>(current_batch_size), 1, 3};
         std::vector<int64_t> current_lepton_shape = {static_cast<int64_t>(current_batch_size), 1, 5};
         std::vector<int64_t> current_ak4_mask_shape = {static_cast<int64_t>(current_batch_size), 10};
@@ -288,7 +290,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
         fillBatchTensors(batch_events, current_batch_size);
         
         std::vector<Ort::Value> input_tensors;
-        input_tensors.reserve(6);
+        input_tensors.reserve(8);
         
         input_tensors.push_back(Ort::Value::CreateTensor<float>(
             memory_info, ak4_flat_jets.data(), current_batch_size * 10 * 8,
@@ -299,7 +301,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
             current_ak4_mask_shape.data(), current_ak4_mask_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info, ak8_flat_jets.data(), current_batch_size * 3 * 8,
+            memory_info, ak8_flat_jets.data(), current_batch_size * 3 * 9,
             current_ak8_shape.data(), current_ak8_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<bool>(
@@ -349,7 +351,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
 
 inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventData>& events, size_t actual_batch_size) {
     std::fill(ak4_flat_jets.begin(), ak4_flat_jets.begin() + actual_batch_size * 10 * 8, 0.0f);
-    std::fill(ak8_flat_jets.begin(), ak8_flat_jets.begin() + actual_batch_size * 3 * 8, 0.0f);
+    std::fill(ak8_flat_jets.begin(), ak8_flat_jets.begin() + actual_batch_size * 3 * 9, 0.0f);
     std::fill(ak4_mask_char.begin(), ak4_mask_char.begin() + actual_batch_size * 10, 0);
     std::fill(ak8_mask_char.begin(), ak8_mask_char.begin() + actual_batch_size * 3, 0);
     
@@ -375,15 +377,16 @@ inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventDat
         for (size_t i = 0; i < max_ak8; ++i) {
             ak8_mask_char[batch_idx * 3 + i] = 1;
             
-            const size_t base_idx = batch_idx * 3 * 8 + i * 8;
+            const size_t base_idx = batch_idx * 3 * 9 + i * 9;
             ak8_flat_jets[base_idx]     = std::log(event.ak8_mass[i] + 1.0f);
             ak8_flat_jets[base_idx + 1] = std::log(event.ak8_pt[i] + 1.0f);
             ak8_flat_jets[base_idx + 2] = event.ak8_eta[i];
             ak8_flat_jets[base_idx + 3] = std::sin(event.ak8_phi[i]);
             ak8_flat_jets[base_idx + 4] = std::cos(event.ak8_phi[i]);
             ak8_flat_jets[base_idx + 5] = static_cast<float>(event.ak8_nConstituents[i]);
-            ak8_flat_jets[base_idx + 6] = event.ak8_HbbScore[i];
-            ak8_flat_jets[base_idx + 7] = event.ak8_WqqScore[i];
+            ak8_flat_jets[base_idx + 6] = event.ak8_XbbScore[i];
+            ak8_flat_jets[base_idx + 7] = event.ak8_XqqScore[i];
+            ak8_flat_jets[base_idx + 8] = event.ak8_XccScore[i];
         }
         
         // Fill event inputs

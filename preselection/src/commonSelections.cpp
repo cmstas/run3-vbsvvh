@@ -94,6 +94,9 @@ namespace CommonSelections {
             .Redefine("FatJet_nConstituents", "FatJet_nConstituents[_good_ak8jets]")
             .Redefine("FatJet_particleNet_XbbVsQCD", "FatJet_particleNet_XbbVsQCD[_good_ak8jets]")
             .Redefine("FatJet_particleNet_XqqVsQCD", "FatJet_particleNet_XqqVsQCD[_good_ak8jets]")
+            .Redefine("FatJet_particleNetWithMass_WvsQCD", "FatJet_particleNetWithMass_WvsQCD[_good_ak8jets]")
+            .Redefine("FatJet_particleNetWithMass_ZvsQCD", "FatJet_particleNetWithMass_ZvsQCD[_good_ak8jets]")
+            .Redefine("FatJet_particleNetWithMass_HbbvsQCD", "FatJet_particleNetWithMass_HbbvsQCD[_good_ak8jets]")
             .Define("FatJet_ht", "Sum(FatJet_pt[_good_ak8jets])");
     }
 

@@ -21,24 +21,76 @@ ROOT::RVec<float> get_dR(float eta1, float phi1, ROOT::RVec<float> eta2, ROOT::R
     return dR;
 }
                        
-int get_hadronic_gauge_boson_idx(ROOT::RVec<int> pdgId, ROOT::RVec<int> motherIdx) {
-    int final_choice = -1;
+int get_hadronic_gauge_boson_idx(ROOT::RVec<int> pdgId, ROOT::RVec<short> motherIdx) {
+    ROOT::RVec<int> quarkIdxs;
+
     for (size_t i = 0; i < pdgId.size(); ++i) {
-        if (abs(pdgId[i]) <= 5 && (abs(pdgId[motherIdx[i]]) == 24 || abs(pdgId[motherIdx[i]]) == 23)) {
-            int current_idx = motherIdx[i];
-            while (current_idx != 2 && current_idx != 3) { 
-                if (abs(pdgId[motherIdx[current_idx]]) == 24 || abs(pdgId[motherIdx[current_idx]]) == 23) {
-                    current_idx = motherIdx[current_idx];
-                } else {
-                    break;
-                }
-            }
-            final_choice = current_idx;
-            break;
+        if (std::abs(pdgId[i]) <= 5 && motherIdx[i] >= 0) {
+            quarkIdxs.push_back(i);
         }
     }
-    return final_choice;
+
+    for (size_t i = 0; i < quarkIdxs.size(); ++i) {
+        for (size_t j = i + 1; j < quarkIdxs.size(); ++j) {
+            int qi = quarkIdxs[i];
+            int qj = quarkIdxs[j];
+
+            int mi = motherIdx[qi];
+            int mj = motherIdx[qj];
+
+            if (mi == mj && (std::abs(pdgId[mi]) == 24 || std::abs(pdgId[mi]) == 23)) {
+                int current = mi;
+                while (motherIdx[current] >= 0 && 
+                       (std::abs(pdgId[motherIdx[current]]) == 24 || std::abs(pdgId[motherIdx[current]]) == 23)) {
+                    current = motherIdx[current];
+                }
+
+                if (current == 2 || current == 3) {
+                    return mi;
+                }
+            }
+        }
+    }
+
+    return -1; // No valid hadronic V found
 }
+
+int get_higgs_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<short>& motherIdx) {
+    const int bId = 5;
+    const int hId = 25;
+    ROOT::RVec<int> bIndices, bBarIndices;
+
+    for (size_t i = 0; i < pdgId.size(); ++i) {
+        if (pdgId[i] == bId) bIndices.push_back(i);
+        else if (pdgId[i] == -bId) bBarIndices.push_back(i);
+    }
+
+    auto traceToTopHiggs = [&](int idx) {
+        while (idx >= 0 && pdgId[idx] == hId && motherIdx[idx] >= 0 && pdgId[motherIdx[idx]] == hId) {
+            idx = motherIdx[idx];
+        }
+        return (pdgId[idx] == hId) ? idx : -1;
+    };
+
+    for (int bIdx : bIndices) {
+        for (int bBarIdx : bBarIndices) {
+            int motherB = motherIdx[bIdx];
+            int motherBBar = motherIdx[bBarIdx];
+
+            if (motherB == -1 || motherBBar == -1) continue;
+            if (motherB != motherBBar) continue;
+            if (pdgId[motherB] != hId) continue;
+
+            int topHiggsIdx = traceToTopHiggs(motherB);
+            if (topHiggsIdx == 4) {
+                return motherB;
+            }
+        }
+    }
+
+    return -1; // No valid pair found
+}                    
+                       
 """
 )
 
@@ -321,8 +373,10 @@ def genMatching(input_file, isSignal):
         df = df.Define("GenPart_motherPdgId", "Take(GenPart_pdgId, GenPart_genPartIdxMother)") \
             .Filter("Sum((GenPart_pdgId == 11 || GenPart_pdgId == 13) && (abs(GenPart_motherPdgId) == 24)) == 1")
         
-        df = df.Define("Higgs_eta", "GenPart_eta[4]") \
-            .Define("Higgs_phi", "GenPart_phi[4]") \
+        df = df.Define("Higgs_idx", "get_higgs_boson_idx(GenPart_pdgId, GenPart_genPartIdxMother)") \
+            .Filter("Higgs_idx != -1") \
+            .Define("Higgs_eta", "GenPart_eta[Higgs_idx]") \
+            .Define("Higgs_phi", "GenPart_phi[Higgs_idx]") \
             .Define("VBSJet1_eta", "GenPart_eta[5]") \
             .Define("VBSJet1_phi", "GenPart_phi[5]") \
             .Define("VBSJet2_eta", "GenPart_eta[6]") \
@@ -331,12 +385,12 @@ def genMatching(input_file, isSignal):
             .Filter("V_idx != -1") \
             .Define("V_eta", "GenPart_eta[V_idx]") \
             .Define("V_phi", "GenPart_phi[V_idx]") \
-            .Define("qs_from_v", "abs(GenPart_pdgId) <= 5 && (abs(GenPart_motherPdgId == 24) || abs(GenPart_motherPdgId == 23))") \
+            .Define("qs_from_v", "abs(GenPart_pdgId) <= 5 && GenPart_genPartIdxMother == V_idx") \
             .Define("V_q1_eta", "GenPart_eta[qs_from_v][0]") \
             .Define("V_q1_phi", "GenPart_phi[qs_from_v][0]") \
             .Define("V_q2_eta", "GenPart_eta[qs_from_v][1]") \
             .Define("V_q2_phi", "GenPart_phi[qs_from_v][1]") \
-            .Define("bs_from_higgs", "abs(GenPart_pdgId) == 5 && abs(GenPart_motherPdgId) == 25") \
+            .Define("bs_from_higgs", "abs(GenPart_pdgId) == 5 && GenPart_genPartIdxMother == Higgs_idx") \
             .Define("b1_eta", "GenPart_eta[bs_from_higgs][0]") \
             .Define("b1_phi", "GenPart_phi[bs_from_higgs][0]") \
             .Define("b2_eta", "GenPart_eta[bs_from_higgs][1]") \
