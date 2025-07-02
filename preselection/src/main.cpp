@@ -1,51 +1,66 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RDFHelpers.hxx"
+#include "ROOT/RLogger.hxx"
 
 #include "weights.h"
 #include "corrections.h"
 #include "utils.h"
+#include "selections.h"
 
-#include "selections_OneLep2FJ.h"
-
+#include "spanet.hpp"
 #include "argparser.hpp"
 
 struct MyArgs : public argparse::Args {
+    int &nthreads = kwarg("n,nthreads", "number of threads used for spanet inference").set_default(64);
+    bool &cutflow = flag("cutflow", "print cutflow");
+    bool &debug = flag("debug", "enable debug mode").set_default(false);
     std::string &spec = kwarg("i,input", "spec.json path");
     std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection");
-    int &nthreads = kwarg("n,nthreads", "number of threads").set_default(1);
-    bool &cutflow = flag("cutflow", "print cutflow");
     std::string &cut = kwarg("cut", "cut on final snapshot").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
-
-    // uncertainty flags, will uncomment as we add them
-    // std::string &jec = kwarg("jec", "JEC").set_default("");
-    // bool &METUnclustered = flag("met", "MET unclustered");
-    // bool &JMS = flag("jms", "JMS");
-    // bool &JMR = flag("jmr", "JMR");
-    // std::string &variation = kwarg("var", "variation").set_default("nominal");
 };
 
-RNode runAnalysis(RNode df, MyArgs args) {
+RNode runAnalysis(RNode df, MyArgs args, SPANet::SPANetInference &spanet_inference) {
     std::cout << " -> Run " << args.ana << "::runAnalysis()" << std::endl;
-    if (args.ana == "OneLep2FJ") {
-        return OneLep2FJ::runPreselection(df);
-    }
-    else{
-        std::cerr << "Did not recognize analysis namespace: " << args.ana  << std::endl;
+    std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
+    if (std::find(channels.begin(), channels.end(), args.ana) == channels.end()) {
+        std::cerr << "Did not recognize analysis tag: " << args.ana << std::endl;
         std::exit(EXIT_FAILURE);
     }
-}
+    df = runPreselection(df, args.ana, spanet_inference);
 
-RNode runDataAnalysis(RNode df_, MyArgs args) {
-    auto df = runAnalysis(df_, args);
-    df = applyDataWeights(df);
-    return df;
-}
-
-RNode runMCAnalysis(RNode df_, MyArgs args) {
-    // corrections
-    auto df = runAnalysis(df_, args);
-    df = applyMCWeights(df);
+    if (!args.cut.empty()){
+        std::cout << " -> Filter events with cut :" << args.cut << std::endl; 
+        std::vector<std::string> _cuts;
+        auto colNames = df.GetDefinedColumnNames();
+        if (std::find(colNames.begin(), colNames.end(), args.cut) == colNames.end()) {
+            std::cerr << "Cut " << args.cut << " not found in DataFrame columns!" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        for (auto colName : colNames) {
+            if (colName.starts_with("_cut")) {
+                if (colName == args.cut) {
+                    _cuts.push_back(colName);
+                    break;
+                }
+                _cuts.push_back(colName);
+            }
+        }
+        std::string cut_string = "";
+        if (_cuts.size() != 0) { 
+            for (size_t i = 0; i < _cuts.size(); i++) {
+                if (i == 0) {
+                    cut_string = _cuts[i];
+                } else {
+                    cut_string += " && " + _cuts[i];
+                }
+            }
+        }
+        df = df.Filter(cut_string);
+    }
+    else {
+        std::cout << " -> No cut specified!" << std::endl;
+    }
     return df;
 }
 
@@ -59,8 +74,12 @@ int main(int argc, char** argv) {
     std::string output_dir = setOutputDirectory(args.ana);
 
     // Enable multithreading if requested more than one thread
-    if (args.nthreads > 1) {
-        ROOT::EnableImplicitMT(args.nthreads);
+    SPANet::SPANetInference spanet_inference("spanet/spanet_v2.onnx", args.nthreads);
+
+    // add debugging
+    if (args.debug) {
+        std::cout << " -> Debug mode enabled" << std::endl;
+        auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
     }
 
     // Load df
@@ -96,38 +115,20 @@ int main(int argc, char** argv) {
     }
 
     // Run analysis
-    auto df_final = (isData) ? runDataAnalysis(df, args) : runMCAnalysis(df, args);
-    
-    auto cutflow = Cutflow(df_final);
-
-    // Optionally filter events
-    if (!args.cut.empty()){
-        std::cout << " -> Filter events with cut :" << args.cut << std::endl; 
-        std::vector<std::string> _cuts;
-        for (auto colName : df_final.GetDefinedColumnNames()) {
-            if (colName.starts_with("_cut")) {
-                if (colName == args.cut) {
-                    _cuts.push_back(colName);
-                    break;
-                }
-                _cuts.push_back(colName);
-            }
-        }
-        std::string cut_string = "";
-        if (_cuts.size() != 0) { 
-            for (size_t i = 0; i < _cuts.size(); i++) {
-                if (i == 0) {
-                    cut_string = _cuts[i];
-                } else {
-                    cut_string += " && " + _cuts[i];
-                }
-            }
-        }
-        df_final = df_final.Filter(cut_string);
+    if (isData) {
+        std::cout << " -> Running data analysis" << std::endl;
+        df = runAnalysis(df, args, spanet_inference);
+        df = applyDataWeights(df);
+    } else {
+        std::cout << " -> Running MC analysis" << std::endl;
+        df = runAnalysis(df, args, spanet_inference);
+        df = applyMCWeights(df);
     }
 
+    auto cutflow = Cutflow(df);
+
     // Save events to root file
-    saveSnapshot(df_final, output_dir, output_file, isData);
+    saveSnapshot(df, output_dir, output_file, isData);
 
     // Print cutflow
     if (args.cutflow) {

@@ -11,7 +11,7 @@
 - `build/`: Directory where the object files will be placed.
 
 ### Prerequisites
-
+Included in CMSSW 15_0_4:
 - Python 3.x
 - ROOT
 - Uproot

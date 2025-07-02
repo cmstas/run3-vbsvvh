@@ -1,13 +1,12 @@
 #include "utils.h"
 
-
 /*
 ############################################
-DEFINE METADATA
+RDF UTILS
 ############################################
 */
 
-RNode defineMetadata(RNode df){
+RNode defineMetadata(RNode df) {
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
         .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
         .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
@@ -18,9 +17,23 @@ RNode defineMetadata(RNode df){
         .Define("isData", "sample_category == \"data\"");
 }
 
+RNode removeDuplicates(RNode df){
+    return df.Filter(FilterOnePerKind(), {"run", "luminosityBlock", "event"}, "REMOVED DUPLICATES");
+}
+
+RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName) {
+    for (const auto& colName : df.GetColumnNames()) {
+        if (colName.starts_with(objectName + "_")) {
+            df = df.Redefine(colName, colName + "[" + maskName + "]");
+        }
+    }
+    df = df.Redefine("n" + objectName, "Sum(" + maskName + ")");
+    return df;
+}
+
 /*
 ############################################
-LUMIMASK
+LUMIMASK - GOLDEN JSON
 ############################################
 */
 
@@ -29,35 +42,29 @@ bool operator< ( const lumiMask::LumiBlockRange& lh, const lumiMask::LumiBlockRa
     return ( lh.run() == rh.run() ) ? ( lh.lastLumi() < rh.firstLumi() ) : lh.run() < rh.run();
 }
 
-lumiMask lumiMask::fromJSON(const std::string& file, lumiMask::Run firstRun, lumiMask::Run lastRun)
+lumiMask lumiMask::fromJSON(const std::vector<std::string>& files, lumiMask::Run firstRun, lumiMask::Run lastRun)
 {
   const bool noRunFilter = ( firstRun == 0 ) && ( lastRun == 0 );
-  boost::property_tree::ptree ptree;
-  boost::property_tree::read_json(file, ptree);
 
   std::vector<lumiMask::LumiBlockRange> accept;
-  for ( const auto& runEntry : ptree ) {
-    const lumiMask::Run run = std::stoul(runEntry.first);
-    if ( noRunFilter || ( ( firstRun <= run ) && ( run <= lastRun ) ) ) {
-      for ( const auto& lrEntry : runEntry.second ) {
-        const auto lrNd = lrEntry.second;
-        const lumiMask::LumiBlock firstLumi = std::stoul(lrNd.begin()->second.data());
-        const lumiMask::LumiBlock lastLumi  = std::stoul((++lrNd.begin())->second.data());
-        accept.emplace_back(run, firstLumi, lastLumi);
-      }
+
+  for ( const auto& file : files ) {
+    boost::property_tree::ptree ptree;
+    boost::property_tree::read_json(file, ptree);
+    for ( const auto& runEntry : ptree ) {
+        const lumiMask::Run run = std::stoul(runEntry.first);
+        if ( noRunFilter || ( ( firstRun <= run ) && ( run <= lastRun ) ) ) {
+        for ( const auto& lrEntry : runEntry.second ) {
+            const auto lrNd = lrEntry.second;
+            const lumiMask::LumiBlock firstLumi = std::stoul(lrNd.begin()->second.data());
+            const lumiMask::LumiBlock lastLumi  = std::stoul((++lrNd.begin())->second.data());
+            accept.emplace_back(run, firstLumi, lastLumi);
+        }
+        }
     }
   }
+  
   return lumiMask(accept);
-}
-
-/*
-############################################
-REMOVE DUPLICATES
-############################################
-*/
-
-RNode removeDuplicates(RNode df){
-    return df.Filter(FilterOnePerKind(), {"run", "luminosityBlock", "event"}, "REMOVED DUPLICATES");
 }
 
 /*
@@ -154,6 +161,24 @@ RVec<float> VdR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float ob
     return out;
 }
 
+RVec<float> VVdR(const RVec<float>& vec_eta1, const RVec<float>& vec_phi1, const RVec<float>& vec_eta2, const RVec<float>& vec_phi2) {
+    if (vec_eta2.empty()) {
+        return RVec<float>(vec_eta1.size(), 999.0f);
+    }
+    RVec<float> out(vec_eta1.size());
+    for (size_t i = 0; i < vec_eta1.size(); i++) {
+        float mindR = 999.;
+        for (size_t j = 0; j < vec_eta2.size(); j++) {
+            float dR = ROOT::VecOps::DeltaR(vec_eta1[i], vec_eta2[j], vec_phi1[i], vec_phi2[j]);
+            if (dR < mindR) {
+                mindR = dR;
+            }
+        }
+        out[i] = mindR;
+    }
+    return out;
+}
+
 float fInvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_mass, 
                     float obj2_pt, float obj2_eta, float obj2_phi, float obj2_mass) {
     TLorentzVector obj1, obj2;
@@ -241,6 +266,202 @@ RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jet_va
         result.emplace_back(RVec<int>{-999});
         return result;
     }
+}
+
+RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass) {
+    // find pair of jets with max delta eta
+    RVec<int> good_jet_idx = {};
+    RVec<float> Jet_Pt = {};
+    for (size_t i = 0; i < Jet_pt.size(); i++) {
+        TLorentzVector jet;
+        jet.SetPtEtaPhiM(Jet_pt[i], Jet_eta[i], Jet_phi[i], Jet_mass[i]);
+        Jet_Pt.push_back(jet.Pt());
+    }
+    int Nvbfjet1 = -1;
+    int Nvbfjet2 = -1;
+    float maxvbfjetdeta = 0;
+    for (size_t i = 0; i < Jet_eta.size(); i++) {
+        for (size_t j = i+1; j < Jet_eta.size(); j++) {
+            float deta = std::abs(Jet_eta[i] - Jet_eta[j]);
+            if (deta > maxvbfjetdeta) {
+                maxvbfjetdeta = deta;
+                Nvbfjet1 = i;
+                Nvbfjet2 = j;
+            }
+        }
+    }
+    if (Jet_Pt[Nvbfjet1] > Jet_Pt[Nvbfjet2]) {
+        good_jet_idx.push_back(Nvbfjet1);
+        good_jet_idx.push_back(Nvbfjet2);
+    }
+    else {
+        good_jet_idx.push_back(Nvbfjet2);
+        good_jet_idx.push_back(Nvbfjet1);
+    }
+    return good_jet_idx;
+}
+
+int get_hadronic_gauge_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
+    RVec<int> quarkIdxs;
+    for (size_t i = 0; i < pdgId.size(); ++i) {
+        if (std::abs(pdgId[i]) <= 5 && motherIdx[i] >= 0) {
+            quarkIdxs.push_back(i);
+        }
+    }
+    for (size_t i = 0; i < quarkIdxs.size(); ++i) {
+        for (size_t j = i + 1; j < quarkIdxs.size(); ++j) {
+            int qi = quarkIdxs[i];
+            int qj = quarkIdxs[j];
+
+            int mi = motherIdx[qi];
+            int mj = motherIdx[qj];
+
+            if (mi == mj && (std::abs(pdgId[mi]) == 24 || std::abs(pdgId[mi]) == 23)) {
+                int current = mi;
+                while (motherIdx[current] >= 0 && 
+                       (std::abs(pdgId[motherIdx[current]]) == 24 || std::abs(pdgId[motherIdx[current]]) == 23)) {
+                    current = motherIdx[current];
+                }
+
+                if (current == 2 || current == 3) {
+                    return mi;
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
+    const int bId = 5;
+    const int hId = 25;
+    RVec<int> bIndices, bBarIndices;
+
+    for (size_t i = 0; i < pdgId.size(); ++i) {
+        if (pdgId[i] == bId) bIndices.push_back(i);
+        else if (pdgId[i] == -bId) bBarIndices.push_back(i);
+    }
+
+    auto traceToTopHiggs = [&](int idx) {
+        while (idx >= 0 && pdgId[idx] == hId && motherIdx[idx] >= 0 && pdgId[motherIdx[idx]] == hId) {
+            idx = motherIdx[idx];
+        }
+        return (pdgId[idx] == hId) ? idx : -1;
+    };
+
+    for (int bIdx : bIndices) {
+        for (int bBarIdx : bBarIndices) {
+            int motherB = motherIdx[bIdx];
+            int motherBBar = motherIdx[bBarIdx];
+
+            if (motherB == -1 || motherBBar == -1) continue;
+            if (motherB != motherBBar) continue;
+            if (pdgId[motherB] != hId) continue;
+
+            int topHiggsIdx = traceToTopHiggs(motherB);
+            if (topHiggsIdx == 4) {
+                return motherB;
+            }
+        }
+    }
+    return -1;
+}                    
+
+std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float lepton_eta, float lepton_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi) {
+    // check if bh detection is higher than bv detection, if it is then prioritize bh assignment, else prioritize bv assignment.
+    // We mush make sure that bh and bv are not assigned to the same jet, and also that they have dR > 0.8
+    // assignment scores are [[score, idx], [score, idx], [score, idx]]
+    int bh_idx = -1;
+    int bv_idx = -1;
+    
+    auto checkOverlap = [&](int jet_idx) -> bool {
+        if (jet_idx < 0 || jet_idx >= FatJet_eta.size()) return true;
+        
+        // Check overlap with leptons
+            float dR_lep = ROOT::VecOps::DeltaR(FatJet_eta[jet_idx], lepton_eta, FatJet_phi[jet_idx], lepton_phi);
+            if (dR_lep < 0.8) return true;
+        
+        // Check overlap with VBS jets
+        if (vbs1_eta != -999 && vbs1_phi != -999) {
+            float dR = ROOT::VecOps::DeltaR(FatJet_eta[jet_idx], vbs1_eta, FatJet_phi[jet_idx], vbs1_phi);
+            if (dR < 0.8) return true;
+        }
+        if (vbs2_eta != -999 && vbs2_phi != -999) {
+            float dR = ROOT::VecOps::DeltaR(FatJet_eta[jet_idx], vbs2_eta, FatJet_phi[jet_idx], vbs2_phi);
+            if (dR < 0.8) return true;
+        }
+        
+        return false;
+    };
+    
+    if (bh_detection >= bv_detection) {
+        for (size_t i = 0; i < bh_assignment.size(); i++) {
+            int candidate_bh_idx = static_cast<int>(bh_assignment[i][1]);
+            if (checkOverlap(candidate_bh_idx)) continue;
+            
+            bool valid = true;
+            for (size_t j = 0; j < bv_assignment.size(); j++) {
+                int candidate_bv_idx = static_cast<int>(bv_assignment[j][1]);
+                if (candidate_bv_idx < 0 || candidate_bv_idx >= FatJet_eta.size()) continue;
+                float dR = ROOT::VecOps::DeltaR(FatJet_eta[candidate_bh_idx], FatJet_eta[candidate_bv_idx], FatJet_phi[candidate_bh_idx], FatJet_phi[candidate_bv_idx]);
+                if (candidate_bh_idx == candidate_bv_idx || dR < 0.8) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                bh_idx = candidate_bh_idx;
+                break;
+            }
+        }
+        for (size_t j = 0; j < bv_assignment.size(); j++) {
+            int candidate_bv_idx = static_cast<int>(bv_assignment[j][1]);
+            if (candidate_bv_idx < 0
+                || candidate_bv_idx >= FatJet_eta.size()
+                || candidate_bv_idx == bh_idx
+                || bh_idx < 0
+                || checkOverlap(candidate_bv_idx)) continue;
+            float dR = ROOT::VecOps::DeltaR(FatJet_eta[bh_idx], FatJet_eta[candidate_bv_idx], FatJet_phi[bh_idx], FatJet_phi[candidate_bv_idx]);
+            if (dR >= 0.8) {
+                bv_idx = candidate_bv_idx;
+                break;
+            }
+        }
+    } else {
+        for (size_t j = 0; j < bv_assignment.size(); j++) {
+            int candidate_bv_idx = static_cast<int>(bv_assignment[j][1]);
+            if (checkOverlap(candidate_bv_idx)) continue;
+            
+            bool valid = true;
+            for (size_t i = 0; i < bh_assignment.size(); i++) {
+                int candidate_bh_idx = static_cast<int>(bh_assignment[i][1]);
+                if (candidate_bh_idx < 0 || candidate_bh_idx >= FatJet_eta.size()) continue;
+                float dR = ROOT::VecOps::DeltaR(FatJet_eta[candidate_bh_idx], FatJet_eta[candidate_bv_idx], FatJet_phi[candidate_bh_idx], FatJet_phi[candidate_bv_idx]);
+                if (candidate_bh_idx == candidate_bv_idx || dR < 0.8) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                bv_idx = candidate_bv_idx;
+                break;
+            }
+        for (size_t i = 0; i < bh_assignment.size(); i++) {
+            int candidate_bh_idx = static_cast<int>(bh_assignment[i][1]);
+            if (candidate_bh_idx < 0
+                || candidate_bh_idx >= FatJet_eta.size()
+                || candidate_bh_idx == bv_idx
+                || bv_idx < 0
+                || checkOverlap(candidate_bh_idx)) continue;
+            float dR = ROOT::VecOps::DeltaR(FatJet_eta[candidate_bh_idx], FatJet_eta[bv_idx], FatJet_phi[candidate_bh_idx], FatJet_phi[bv_idx]);
+            if (dR >= 0.8) {
+                bh_idx = candidate_bh_idx;
+                break;
+            }
+        }
+        }
+    } 
+    return std::make_pair(bh_idx, bv_idx);
 }
 
 /*
