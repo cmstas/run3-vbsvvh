@@ -140,10 +140,10 @@ inline std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::
     auto met_pt_vec = df.Take<float>("MET_pt").GetValue();
     auto met_phi_vec = df.Take<float>("MET_phi").GetValue();
     
-    auto lep_pt_vec = df.Take<float>("lepton_pt").GetValue();
-    auto lep_eta_vec = df.Take<float>("lepton_eta").GetValue();
-    auto lep_phi_vec = df.Take<float>("lepton_phi").GetValue();
-    auto lep_mass_vec = df.Take<float>("lepton_mass").GetValue();
+    auto lep_pt_vec = df.Take<RVecF>("Lepton_pt").GetValue();
+    auto lep_eta_vec = df.Take<RVecF>("Lepton_eta").GetValue();
+    auto lep_phi_vec = df.Take<RVecF>("Lepton_phi").GetValue();
+    auto lep_mass_vec = df.Take<RVecF>("Lepton_mass").GetValue();
 
     std::vector<EventData> events;
     size_t n_events = ak4_pt_vec.size();
@@ -172,10 +172,10 @@ inline std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::
         event.met_pt = met_pt_vec[i];
         event.met_phi = met_phi_vec[i];
         
-        event.lep_pt = lep_pt_vec[i];
-        event.lep_eta = lep_eta_vec[i];
-        event.lep_phi = lep_phi_vec[i];
-        event.lep_mass = lep_mass_vec[i];
+        event.lep_pt = lep_pt_vec[i][0];
+        event.lep_eta = lep_eta_vec[i][0];
+        event.lep_phi = lep_phi_vec[i][0];
+        event.lep_mass = lep_mass_vec[i][0];
         
         events.push_back(std::move(event));
     }

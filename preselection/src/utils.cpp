@@ -2,7 +2,7 @@
 
 /*
 ############################################
-DEFINE METADATA
+RDF UTILS
 ############################################
 */
 
@@ -17,9 +17,23 @@ RNode defineMetadata(RNode df) {
         .Define("isData", "sample_category == \"data\"");
 }
 
+RNode removeDuplicates(RNode df){
+    return df.Filter(FilterOnePerKind(), {"run", "luminosityBlock", "event"}, "REMOVED DUPLICATES");
+}
+
+RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName) {
+    for (const auto& colName : df.GetColumnNames()) {
+        if (colName.starts_with(objectName + "_")) {
+            df = df.Redefine(colName, colName + "[" + maskName + "]");
+        }
+    }
+    df = df.Redefine("n" + objectName, "Sum(" + maskName + ")");
+    return df;
+}
+
 /*
 ############################################
-LUMIMASK
+LUMIMASK - GOLDEN JSON
 ############################################
 */
 
@@ -51,16 +65,6 @@ lumiMask lumiMask::fromJSON(const std::vector<std::string>& files, lumiMask::Run
   }
   
   return lumiMask(accept);
-}
-
-/*
-############################################
-REMOVE DUPLICATES
-############################################
-*/
-
-RNode removeDuplicates(RNode df){
-    return df.Filter(FilterOnePerKind(), {"run", "luminosityBlock", "event"}, "REMOVED DUPLICATES");
 }
 
 /*
@@ -153,6 +157,24 @@ RVec<float> VdR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float ob
     }
     for (size_t i = 0; i < vec_eta.size(); i++) {
         out[i] = ROOT::VecOps::DeltaR(vec_eta[i], obj_eta, vec_phi[i], obj_phi);
+    }
+    return out;
+}
+
+RVec<float> VVdR(const RVec<float>& vec_eta1, const RVec<float>& vec_phi1, const RVec<float>& vec_eta2, const RVec<float>& vec_phi2) {
+    if (vec_eta2.empty()) {
+        return RVec<float>(vec_eta1.size(), 999.0f);
+    }
+    RVec<float> out(vec_eta1.size());
+    for (size_t i = 0; i < vec_eta1.size(); i++) {
+        float mindR = 999.;
+        for (size_t j = 0; j < vec_eta2.size(); j++) {
+            float dR = ROOT::VecOps::DeltaR(vec_eta1[i], vec_eta2[j], vec_phi1[i], vec_phi2[j]);
+            if (dR < mindR) {
+                mindR = dR;
+            }
+        }
+        out[i] = mindR;
     }
     return out;
 }

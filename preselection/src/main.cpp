@@ -5,13 +5,13 @@
 #include "weights.h"
 #include "corrections.h"
 #include "utils.h"
- 
-#include "selections_OneLep2FJ.h"
+#include "selections.h"
 
+#include "spanet.hpp"
 #include "argparser.hpp"
 
 struct MyArgs : public argparse::Args {
-    int &nthreads = kwarg("n,nthreads", "number of threads").set_default(1);
+    int &nthreads = kwarg("n,nthreads", "number of threads used for spanet inference").set_default(64);
     bool &cutflow = flag("cutflow", "print cutflow");
     bool &debug = flag("debug", "enable debug mode").set_default(false);
     std::string &spec = kwarg("i,input", "spec.json path");
@@ -20,20 +20,24 @@ struct MyArgs : public argparse::Args {
     std::string &output = kwarg("o,output", "output root file").set_default("");
 };
 
-RNode runAnalysis(RNode df, MyArgs args) {
+RNode runAnalysis(RNode df, MyArgs args, SPANet::SPANetInference &spanet_inference) {
     std::cout << " -> Run " << args.ana << "::runAnalysis()" << std::endl;
-    if (args.ana == "OneLep2FJ") {
-        df = OneLep2FJ::runPreselection(df);
-    }
-    else{
-        std::cerr << "Did not recognize analysis namespace: " << args.ana  << std::endl;
+    std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
+    if (std::find(channels.begin(), channels.end(), args.ana) == channels.end()) {
+        std::cerr << "Did not recognize analysis tag: " << args.ana << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    df = runPreselection(df, args.ana, spanet_inference);
 
     if (!args.cut.empty()){
         std::cout << " -> Filter events with cut :" << args.cut << std::endl; 
         std::vector<std::string> _cuts;
-        for (auto colName : df.GetDefinedColumnNames()) {
+        auto colNames = df.GetDefinedColumnNames();
+        if (std::find(colNames.begin(), colNames.end(), args.cut) == colNames.end()) {
+            std::cerr << "Cut " << args.cut << " not found in DataFrame columns!" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        for (auto colName : colNames) {
             if (colName.starts_with("_cut")) {
                 if (colName == args.cut) {
                     _cuts.push_back(colName);
@@ -60,19 +64,6 @@ RNode runAnalysis(RNode df, MyArgs args) {
     return df;
 }
 
-RNode runDataAnalysis(RNode df_, MyArgs args) {
-    auto df = runAnalysis(df_, args);
-    df = applyDataWeights(df);
-    return df;
-}
-
-RNode runMCAnalysis(RNode df_, MyArgs args) {
-    // corrections
-    auto df = runAnalysis(df_, args);
-    df = applyMCWeights(df);
-    return df;
-}
-
 int main(int argc, char** argv) {
     // Read input args
     auto args = argparse::parse<MyArgs>(argc, argv);
@@ -83,9 +74,8 @@ int main(int argc, char** argv) {
     std::string output_dir = setOutputDirectory(args.ana);
 
     // Enable multithreading if requested more than one thread
-    if (args.nthreads > 1) {
-        ROOT::EnableImplicitMT(args.nthreads);
-    }
+    SPANet::SPANetInference spanet_inference("spanet/spanet_v2.onnx", args.nthreads);
+
     // add debugging
     if (args.debug) {
         std::cout << " -> Debug mode enabled" << std::endl;
@@ -125,12 +115,20 @@ int main(int argc, char** argv) {
     }
 
     // Run analysis
-    auto df_final = (isData) ? runDataAnalysis(df, args) : runMCAnalysis(df, args);
-    
-    auto cutflow = Cutflow(df_final);
+    if (isData) {
+        std::cout << " -> Running data analysis" << std::endl;
+        df = runAnalysis(df, args, spanet_inference);
+        df = applyDataWeights(df);
+    } else {
+        std::cout << " -> Running MC analysis" << std::endl;
+        df = runAnalysis(df, args, spanet_inference);
+        df = applyMCWeights(df);
+    }
+
+    auto cutflow = Cutflow(df);
 
     // Save events to root file
-    saveSnapshot(df_final, output_dir, output_file, isData);
+    saveSnapshot(df, output_dir, output_file, isData);
 
     // Print cutflow
     if (args.cutflow) {
