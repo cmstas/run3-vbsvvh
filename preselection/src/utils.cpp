@@ -22,7 +22,8 @@ RNode removeDuplicates(RNode df){
 }
 
 RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName) {
-    for (const auto& colName : df.GetColumnNames()) {
+    auto columnNames = df.GetColumnNames();
+    for (const auto& colName : columnNames) {
         if (colName.starts_with(objectName + "_")) {
             df = df.Redefine(colName, colName + "[" + maskName + "]");
         }
@@ -162,6 +163,9 @@ RVec<float> VdR(const RVec<float>& vec_eta, const RVec<float>& vec_phi, float ob
 }
 
 RVec<float> VVdR(const RVec<float>& vec_eta1, const RVec<float>& vec_phi1, const RVec<float>& vec_eta2, const RVec<float>& vec_phi2) {
+    if (vec_eta1.empty()) {
+        return RVec<float>();
+    }
     if (vec_eta2.empty()) {
         return RVec<float>(vec_eta1.size(), 999.0f);
     }

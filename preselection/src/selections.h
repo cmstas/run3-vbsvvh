@@ -28,6 +28,6 @@ RNode MuonSelections(RNode df);
 RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
 
-RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_inference);
+RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session);
 
 #endif // SELECTIONS_H

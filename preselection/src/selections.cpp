@@ -47,7 +47,6 @@ RNode ElectronSelections(RNode df_) {
             "Electron_lostHits == 0")
         .Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)")
         .Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)");
-
     return applyObjectMask(df, "_tightElectrons", "Electron");
 }
 
@@ -72,12 +71,12 @@ RNode MuonSelections(RNode df_) {
 }
 
 RNode LeptonSelections(RNode df_) {
-    return df_.Define("_isElectron", "nElectron_Loose == 1 && nElectron_Tight == 1 && nMuon_Loose == 0 && nMuon_Tight == 0")
-        .Define("_isMuon", "nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0")
-        .Define("Lepton_pt", "_isElectron ? Electron_pt : _isMuon ? Muon_pt : ROOT::VecOps::RVec<float>()")
-        .Define("Lepton_eta", "_isElectron ? Electron_eta : _isMuon ? Muon_eta : ROOT::VecOps::RVec<float>()")
-        .Define("Lepton_phi", "_isElectron ? Electron_phi : _isMuon ? Muon_phi : ROOT::VecOps::RVec<float>()")
-        .Define("Lepton_mass", "_isElectron ? Electron_mass : _isMuon ? Muon_mass : ROOT::VecOps::RVec<float>()");
+    auto df = ElectronSelections(df_);
+    df = MuonSelections(df);
+    return df.Define("Lepton_pt", "Concatenate(Electron_pt, Muon_pt)")
+        .Define("Lepton_eta", "Concatenate(Electron_eta, Muon_eta)")
+        .Define("Lepton_phi", "Concatenate(Electron_phi, Muon_phi)")
+        .Define("Lepton_mass", "Concatenate(Electron_mass, Muon_mass)");
 }
 
 RNode AK4JetsSelection(RNode df_) {
@@ -89,45 +88,39 @@ RNode AK4JetsSelection(RNode df_) {
         .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.7183")
         .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.3086")
         .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0583");
-
     df = applyObjectMask(df, "_good_ak4jets", "Jet");
     
-    return df.Redefine("nJet", "Sum(_good_ak4jets)")
-        .Define("Jet_ht", "Sum(Jet_pt)");
+    return df.Define("Jet_ht", "Sum(Jet_pt)");
 }
 
 RNode AK8JetsSelection(RNode df_) {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "Lepton_eta", "Lepton_phi"})
-        .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
+        .Define("_good_ak8jets", "_dR_ak8_lep > 0.4 && "
             "FatJet_pt > 250 && "
             "abs(FatJet_eta) <= 2.5 && "
-            "FatJet_nConstituents >= 2 && "
             "FatJet_mass > 50 && "
             "FatJet_msoftdrop > 40 && "
             "FatJet_jetId > 0");
     df = applyObjectMask(df, "_good_ak8jets", "FatJet");
 
-    return df.Redefine("nFatJet", "Sum(_good_ak8jets)")
-        .Define("FatJet_ht", "Sum(FatJet_pt[_good_ak8jets])");
+    return df.Define("FatJet_ht", "Sum(FatJet_pt)");
 }
 
-RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_inference) {
-    // lepton
+RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session) {
     auto df = EventFilters(df_);
     df = TriggerSelections(df, channel, TriggerMap);
-    
-    df = ElectronSelections(df);
-    df = MuonSelections(df);
     df = LeptonSelections(df);
-
-    df = df.Define("_cut_lepton", "((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-        "(Lepton_pt > 40)");
-
     df = AK4JetsSelection(df);
     df = AK8JetsSelection(df);
 
-    df = spanet_inference.RunSPANetInference(df);
+    // channel-specific selections
+    if (channel == "1Lep2FJ") {
+        df = df.Define("_cut_lepton", "((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+            "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+            "(Lepton_pt[0] > 40)");
+    }
+
+    df = spanet_session.RunSPANetInference(df);
 
     return df;
 }
