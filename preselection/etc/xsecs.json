@@ -15,10 +15,10 @@
     "QCD-4Jets_HT-1200to1500": 383.5,
     "QCD-4Jets_HT-1500to2000": 125.2,
     "QCD-4Jets_HT-2000": 26.49,
-    "VBSWWH_OSWW_5f_LO": 0.003213,
-    "VBSWWH_SSWW_5f_LO": 0.001082,
-    "VBSWZH_5f_LO": 0.001458,
-    "VBSZZH_5f_LO": 0.0007383,
     "WWtoLNu2Q": 48.94,
-    "WZtoLNu2Q": 15.87
+    "WZtoLNu2Q": 15.87,
+
+    "VBSWWH_SSWW_5f_LO": 0.000736,
+    "VBSWZH_5f_LO": 0.001138,
+    "VBSZZH_5f_LO": 0.0004478
 }

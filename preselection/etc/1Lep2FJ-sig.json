@@ -1,0 +1,52 @@
+{
+    "samples": {
+        "VBSWWH_SSWW_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/SIGNAL/Run3Summer24/private/VBSWWH_SSWW_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.000736,
+                "lumi": 109.08,
+                "nevents": 150000.0
+            }
+        },
+        "VBSWZH_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/SIGNAL/Run3Summer24/private/VBSWZH_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.001138,
+                "lumi": 109.08,
+                "nevents": 150000.0
+            }
+        },
+        "VBSZZH_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/SIGNAL/Run3Summer24/private/VBSZZH_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.0004478,
+                "lumi": 109.08,
+                "nevents": 150000.0
+            }
+        }
+    }
+}

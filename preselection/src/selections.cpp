@@ -120,7 +120,7 @@ RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &s
             "(Lepton_pt[0] > 40)");
     }
 
-    df = spanet_session.RunSPANetInference(df);
+    // df = spanet_session.RunSPANetInference(df);
 
     return df;
 }

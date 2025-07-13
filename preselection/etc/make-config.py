@@ -30,6 +30,8 @@ class Config:
             return "2022Re-recoE+PromptFG"
         elif "22" in sample:
             return "2022Re-recoBCD"
+        elif "24" in sample:
+            return "2024"
         else:
             raise ValueError(f"Error: year not found for {sample}")
 
@@ -44,7 +46,8 @@ class Config:
     def get_lumi(year):
         lumi = {
             "2022Re-recoBCD": 7.9804,
-            "2022Re-recoE+PromptFG": 26.6717
+            "2022Re-recoE+PromptFG": 26.6717,
+            "2024": 109.08
         }
         if year in lumi:
             return lumi[year]
