@@ -1,0 +1,22 @@
+executable              = runProduction.sh
+
+arguments               = /eos/user/a/aaarora/gridpacks_new_5f_not/VBSWWH_SSWW_5f_LO_el8_amd64_gcc10_CMSSW_12_4_8_tarball.tar.xz VBSWWH_SSWW_5f_LO 3000 $(request_cpus) 
+
+log                     = logs/$(Cluster).$(Process).log
+output                  = logs/$(Cluster).$(Process).out
+error                   = logs/$(Cluster).$(Process).err
+
+request_cpus            = 8
+request_memory          = 8 GB 
+
+universe                = vanilla
+
++JobFlavour             = "nextweek"
+MY.WantOS               = "el8" 
+
+on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0)
+max_retries             = 3
+requirements            = Machine =!= LastRemoteHost
+
+
+queue 50
