@@ -1,0 +1,7 @@
+import model HHVBF_UFO-5FSwithYukawa
+
+define w = w+ w-
+
+generate p p > w z h j j $t QCD=0
+
+output VBSWZH_5f_LO -nojpeg
