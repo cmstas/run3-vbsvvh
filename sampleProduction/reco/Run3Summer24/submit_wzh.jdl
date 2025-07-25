@@ -1,6 +1,6 @@
 executable              = runProduction.sh
 
-arguments               = /eos/user/a/aaarora/gridpacks_new_5f_not/VBSWZH_5f_LO_el8_amd64_gcc10_CMSSW_12_4_8_tarball.tar.xz VBSWZH_5f_LO 3000 $(request_cpus) 
+arguments               = /eos/user/a/aaarora/gridpacks_new_5f_not_c2v_1p7/VBSWZH_5f_LO_el8_amd64_gcc10_CMSSW_12_4_8_tarball.tar.xz VBSWZH_C2V1p5_5f_LO 3000 $(request_cpus) 
 
 log                     = logs/$(Cluster).$(Process).log
 output                  = logs/$(Cluster).$(Process).out

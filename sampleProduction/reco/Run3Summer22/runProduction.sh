@@ -19,6 +19,7 @@ curl -s -k https://cms-pdmv-prod.web.cern.ch/mcm/public/restapi/requests/get_fra
 # replace the gridpack in the fragment
 sed -i "s|cms.vstring('/cvmfs/cms.cern.ch/phys_generator/gridpacks/PdmV/Run3Summer22/MadGraph5_aMCatNLO/DY/DYto2L-2Jets_MLL-50_amcatnloFXFX-pythia8_slc7_amd64_gcc10_CMSSW_12_4_8_tarball.tar.xz')|cms.vstring('$GRIDPACK')|g" Configuration/GenProduction/python/$FRAGMENT-fragment.py
 sed -i "s|cms.untracked.uint32(5000)|cms.untracked.uint32(${EVENTS})|g" Configuration/GenProduction/python/$FRAGMENT-fragment.py
+sed -i "s|generateConcurrently = cms.untracked.bool(False)|generateConcurrently = cms.untracked.bool(True)|g" Configuration/GenProduction/python/$FRAGMENT-fragment.py
 
 sed -i '/processParameters = cms.vstring(/,/)/c\processParameters = cms.vstring(\
         '\''SpaceShower:dipoleRecoil = on'\'',\
