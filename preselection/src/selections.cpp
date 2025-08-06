@@ -85,12 +85,14 @@ RNode AK4JetsSelection(RNode df_) {
             "Jet_pt > 20 && "
             "abs(Jet_eta) < 4.7 && "
             "Jet_jetId >= 2")
-        .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.7183")
-        .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.3086")
-        .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0583");
+        .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.6708")
+        .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.2480")
+        .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0485");
+        // .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.7183")
+        // .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.3086")
+        // .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0583");
     df = applyObjectMask(df, "_good_ak4jets", "Jet");
-    
-    return df.Define("Jet_ht", "Sum(Jet_pt)");
+    return df;
 }
 
 RNode AK8JetsSelection(RNode df_) {
@@ -102,8 +104,7 @@ RNode AK8JetsSelection(RNode df_) {
             "FatJet_msoftdrop > 40 && "
             "FatJet_jetId > 0");
     df = applyObjectMask(df, "_good_ak8jets", "FatJet");
-
-    return df.Define("FatJet_ht", "Sum(FatJet_pt)");
+    return df;
 }
 
 RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session) {
@@ -120,7 +121,9 @@ RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &s
             "(Lepton_pt[0] > 40)");
     }
 
-    // df = spanet_session.RunSPANetInference(df);
+    df = spanet_session.RunSPANetInference(df);
+
+    
 
     return df;
 }

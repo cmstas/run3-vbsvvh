@@ -371,7 +371,7 @@ int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
     return -1;
 }                    
 
-std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float lepton_eta, float lepton_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi) {
+std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi) {
     // check if bh detection is higher than bv detection, if it is then prioritize bh assignment, else prioritize bv assignment.
     // We mush make sure that bh and bv are not assigned to the same jet, and also that they have dR > 0.8
     // assignment scores are [[score, idx], [score, idx], [score, idx]]
@@ -380,10 +380,6 @@ std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std
     
     auto checkOverlap = [&](int jet_idx) -> bool {
         if (jet_idx < 0 || jet_idx >= FatJet_eta.size()) return true;
-        
-        // Check overlap with leptons
-            float dR_lep = ROOT::VecOps::DeltaR(FatJet_eta[jet_idx], lepton_eta, FatJet_phi[jet_idx], lepton_phi);
-            if (dR_lep < 0.8) return true;
         
         // Check overlap with VBS jets
         if (vbs1_eta != -999 && vbs1_phi != -999) {
@@ -506,10 +502,6 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     std::vector<std::string> final_variables;
     final_variables.push_back("event");
 
-    if (!isData) {
-        final_variables.push_back("LHEReweightingWeight");
-    }
-    
     for (auto &&ColName : ColNames) {
         if (ColName.starts_with("_")) {
             if (ColName.starts_with("_cut")) {

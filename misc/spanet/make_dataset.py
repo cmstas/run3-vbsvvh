@@ -5,12 +5,24 @@ r.EnableImplicitMT(64)
 
 import h5py
 
-import uproot
 import awkward as ak
 import numpy as np
 
 N_MAX_JETS = 10
 N_MAX_FATJETS = 3
+
+BTAGGING_SCORES = {
+    "2022": {
+        "Loose": 0.0583,
+        "Medium": 0.3086,
+        "Tight": 0.7183
+    },
+    "2024": {
+        "Loose": 0.0485,
+        "Medium": 0.2480,
+        "Tight": 0.6708 
+    }
+}
 
 r.gInterpreter.Declare("""
 ROOT::RVec<float> get_dR(float eta1, float phi1, ROOT::RVec<float> eta2, ROOT::RVec<float> phi2) {
@@ -20,39 +32,87 @@ ROOT::RVec<float> get_dR(float eta1, float phi1, ROOT::RVec<float> eta2, ROOT::R
     }
     return dR;
 }
-                       
-int get_hadronic_gauge_boson_idx(ROOT::RVec<int> pdgId, ROOT::RVec<short> motherIdx) {
-    ROOT::RVec<int> quarkIdxs;
 
-    for (size_t i = 0; i < pdgId.size(); ++i) {
-        if (std::abs(pdgId[i]) <= 5 && motherIdx[i] >= 0) {
-            quarkIdxs.push_back(i);
+int find_matching_jet(ROOT::RVec<float> dR_values, float dR_cut, ROOT::RVec<int> excluded_indices, int max_jets = 10) {
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_jets) continue; // Skip indices beyond padding limit
+        bool is_excluded = false;
+        for (int excl_idx : excluded_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (!is_excluded) {
+            return idx;
         }
     }
+    return -1;
+}
 
-    for (size_t i = 0; i < quarkIdxs.size(); ++i) {
-        for (size_t j = i + 1; j < quarkIdxs.size(); ++j) {
-            int qi = quarkIdxs[i];
-            int qj = quarkIdxs[j];
+int find_matching_fatjet(ROOT::RVec<float> dR_values, float dR_cut, ROOT::RVec<int> excluded_indices, int max_fatjets = 3) {
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_fatjets) continue; // Skip indices beyond padding limit
+        bool is_excluded = false;
+        for (int excl_idx : excluded_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (!is_excluded) {
+            return idx;
+        }
+    }
+    return -1;
+}
+                       
+int num_hadronic_gauge_bosons(ROOT::RVec<int> pdgId, ROOT::RVec<short> motherIdx) {
+    // particles at idx 2 and 3 are hadronic gauge bosons, go down the decay chain to see if they decay hadronically or leptonically
 
-            int mi = motherIdx[qi];
-            int mj = motherIdx[qj];
-
-            if (mi == mj && (std::abs(pdgId[mi]) == 24 || std::abs(pdgId[mi]) == 23)) {
-                int current = mi;
-                while (motherIdx[current] >= 0 && 
-                       (std::abs(pdgId[motherIdx[current]]) == 24 || std::abs(pdgId[motherIdx[current]]) == 23)) {
-                    current = motherIdx[current];
-                }
-
-                if (current == 2 || current == 3) {
-                    return mi;
+    // recursively check the mother particles
+    auto daughterIdx = [&] (int idx) {
+        ROOT::RVec<int> daughters;
+        for (size_t i = 0; i < pdgId.size(); ++i) {
+            if (motherIdx[i] == idx) {
+                daughters.push_back(i);
+            }
+        }
+        return daughters;
+    };
+                       
+    std::function<bool(int)> is_hadronic = [&] (int idx) -> bool {
+        if (idx < 0 || idx >= pdgId.size()) return false;
+        if (pdgId[idx] == 23 || pdgId[idx] == 24 || pdgId[idx] == -24) {
+            // Check if it has hadronic daughters
+            auto daughters = daughterIdx(idx);
+            // if daughter is another gauge boson, keep going down the chain
+            for (int daughter : daughters) {
+                if (pdgId[daughter] == 23 || pdgId[daughter] == 24 || pdgId[daughter] == -24) {
+                    if (is_hadronic(daughter)) {
+                        return true;
+                    }
+                } else if (abs(pdgId[daughter]) < 6) {
+                    // If it has a quark daughter, it's hadronic
+                    return true;
+                } else if (abs(pdgId[daughter]) == 11 || abs(pdgId[daughter]) == 13 || abs(pdgId[daughter]) == 15) {
+                    // If it has a lepton daughter, it's leptonic
+                    return false;
                 }
             }
         }
-    }
+        return false;
+    };
 
-    return -1; // No valid hadronic V found
+    // return 0 if both are leptonic, 1 if only genpart 2 is hadronic, 2 if only genpart 3 is hadronic, 3 if both are hadronic
+    int count = 0;
+    if (is_hadronic(2)) count += 1;
+    if (is_hadronic(3)) count += 2;
+    return count;
 }
 
 int get_higgs_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<short>& motherIdx) {
@@ -110,17 +170,15 @@ def get_array_names(isSignal=False):
         # AK4 jets
         "Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "Jet_btagDeepFlavB",
         # AK8 jets
-        "FatJet_pt", "FatJet_eta", "FatJet_phi", "FatJet_mass", 
-        "FatJet_nConstituents", "FatJet_particleNet_XbbVsQCD", "FatJet_particleNet_XqqVsQCD",
+        "FatJet_pt", "FatJet_eta", "FatJet_phi", "FatJet_mass", "FatJet_nConstituents", 
+        "FatJet_globalParT3_Xbb", "FatJet_globalParT3_Xcc", "FatJet_globalParT3_Xcs", "FatJet_globalParT3_Xqq", "FatJet_globalParT3_QCD",
         # Global
-        "MET_pt", "MET_phi",
-        # Leptons
-        "lepton_pt", "lepton_eta", "lepton_phi", "lepton_mass",
+        "PuppiMET_pt", "PuppiMET_phi",
         # Event-level features
-        "FatJet_hbb_idx", "FatJet_vqq_idx",
-        "Jet_hbb1_idx", "Jet_hbb2_idx", "Jet_vqq1_idx", "Jet_vqq2_idx",
+        "FatJet_hbb_idx", "FatJet_v1qq_idx", "FatJet_v2qq_idx",
+        "Jet_hbb1_idx", "Jet_hbb2_idx", "Jet_v1q1_idx", "Jet_v1q2_idx", "Jet_v2q1_idx", "Jet_v2q2_idx",
         "Jet_vbs1_idx", "Jet_vbs2_idx",
-        "hbb_isBoosted", "hbb_isResolved", "vqq_isBoosted", "vqq_isResolved",
+        "hbb_isBoosted", "hbb_isResolved", "v1qq_isBoosted", "v1qq_isResolved", "v2qq_isBoosted", "v2qq_isResolved",
     ]
 
     if isSignal:
@@ -128,34 +186,19 @@ def get_array_names(isSignal=False):
     
     return arrays
 
-def filter_signal_events(data):
-    """Filter signal events that have exactly one lepton from W decay."""
-    lepton_mask = (
-        (abs(data.GenPart_pdgId) == 11) | (abs(data.GenPart_pdgId) == 13)
-    ) & (abs(data.GenPart_motherPdgId) == 24)
-
-    event_mask = ak.sum(ak.fill_none(lepton_mask, False), axis=1) == 1
-    return data[event_mask]
-
 def calculate_met_features(data):
     """Add MET phi-related features."""
-    data["MET_cosphi"] = np.cos(data["MET_phi"])
-    data["MET_sinphi"] = np.sin(data["MET_phi"])
-    return data
-
-def calculate_lepton_features(data):
-    """Add lepton phi-related features."""
-    data["lepton_cosphi"] = np.cos(data["lepton_phi"])
-    data["lepton_sinphi"] = np.sin(data["lepton_phi"])
+    data["MET_cosphi"] = np.cos(data["PuppiMET_phi"])
+    data["MET_sinphi"] = np.sin(data["PuppiMET_phi"])
     return data
 
 def calculate_jet_features(data):
     """Add AK4 jet features."""
     data["Jet_cosphi"] = np.cos(data["Jet_phi"])
     data["Jet_sinphi"] = np.sin(data["Jet_phi"])
-    data["Jet_isLooseBTag"] = data["Jet_btagDeepFlavB"] > 0.0583
-    data["Jet_isMediumBTag"] = data["Jet_btagDeepFlavB"] > 0.3086
-    data["Jet_isTightBTag"] = data["Jet_btagDeepFlavB"] > 0.7183
+    data["Jet_isLooseBTag"] = data["Jet_btagDeepFlavB"] > BTAGGING_SCORES["2024"]["Loose"]
+    data["Jet_isMediumBTag"] = data["Jet_btagDeepFlavB"] > BTAGGING_SCORES["2024"]["Medium"]
+    data["Jet_isTightBTag"] = data["Jet_btagDeepFlavB"] > BTAGGING_SCORES["2024"]["Tight"]
     data["Jet_MASK"] = ak.ones_like(data["Jet_pt"], dtype=bool)
     return data
 
@@ -165,67 +208,6 @@ def calculate_fatjet_features(data):
     data["FatJet_sinphi"] = np.sin(data["FatJet_phi"])
     data["FatJet_MASK"] = ak.ones_like(data["FatJet_pt"], dtype=bool)
     return data
-
-def electronSelections(df):
-    return df.Define("Electron_SC_eta", "Electron_eta + Electron_deltaEtaSC") \
-        .Define("_looseElectrons", 
-            "Electron_pt > 7 &&"
-            "abs(Electron_SC_eta) < 2.5 && "
-            "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || (abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
-            "abs(Electron_sip3d) < 8 && "
-            "Electron_cutBased >= 2 && "
-            "Electron_pfRelIso03_all < 0.4 && "
-            "Electron_lostHits <= 1") \
-        .Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)") \
-        .Define("_tightElectrons", "_looseElectrons &&" 
-            "Electron_pt > 30 && "
-            "Electron_cutBased >= 4 && "
-            "Electron_pfRelIso03_all < 0.15 && "
-            "Electron_hoe < 0.1 && "
-            "Electron_eInvMinusPInv > -0.04 && "
-            "((abs(Electron_SC_eta) <= 1.479 && Electron_sieie < 0.011) || Electron_sieie <= 0.030) && "
-            "Electron_convVeto == true && "
-            "Electron_tightCharge == 2 && "
-            "Electron_lostHits == 0") \
-        .Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)") \
-        .Redefine("Electron_pt", "Electron_pt[_tightElectrons]") \
-        .Redefine("Electron_eta", "Electron_eta[_tightElectrons]") \
-        .Redefine("Electron_SC_eta", "Electron_SC_eta[_tightElectrons]") \
-        .Redefine("Electron_phi", "Electron_phi[_tightElectrons]") \
-        .Redefine("Electron_mass", "Electron_mass[_tightElectrons]")
-
-def muonSelections(df):
-    return df.Define("_looseMuons", 
-            "Muon_pt > 5 && "
-            "Muon_pfIsoId >= 2 && "
-            "abs(Muon_eta) < 2.4 && "
-            "abs(Muon_dxy) < 0.2 && "
-            "abs(Muon_dz) < 0.5 && "
-            "abs(Muon_sip3d) < 8 && "
-            "Muon_looseId == 1") \
-        .Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)") \
-        .Define("_tightMuons", "_looseMuons && "
-            "Muon_pt > 30 && "
-            "Muon_pfIsoId > 4 && "
-            "Muon_tightCharge == 2 && "
-            "Muon_highPurity && "
-            "Muon_tightId") \
-        .Define("nMuon_Tight", "nMuon_Loose == 0 ? 0 : Sum(_tightMuons)") \
-        .Redefine("Muon_pt", "Muon_pt[_tightMuons]") \
-        .Redefine("Muon_eta", "Muon_eta[_tightMuons]") \
-        .Redefine("Muon_phi", "Muon_phi[_tightMuons]") \
-        .Redefine("Muon_mass", "Muon_mass[_tightMuons]")
-    
-def leptonSelections(df):
-    df = electronSelections(df)
-    df = muonSelections(df)
-    return df.Define("_isLepton", "(nElectron_Loose + nMuon_Loose == 1) && (nElectron_Tight + nMuon_Tight == 1)") \
-        .Define("_isElectron", "nElectron_Loose == 1 && nMuon_Loose == 0 && nElectron_Tight == 1 && nMuon_Tight == 0") \
-        .Define("_isMuon", "nElectron_Loose == 0 && nMuon_Loose == 1 && nElectron_Tight == 0 && nMuon_Tight == 1") \
-        .Define("lepton_pt", "_isElectron ? Electron_pt[0] : Muon_pt[0]") \
-        .Define("lepton_eta", "_isElectron ? Electron_eta[0] : Muon_eta[0]") \
-        .Define("lepton_phi", "_isElectron ? Electron_phi[0] : Muon_phi[0]") \
-        .Define("lepton_mass", "_isElectron ? Electron_mass[0] : Muon_mass[0]")
 
 def pad_jet_arrays(data, n_max_jets):
     """Pad or truncate AK4 jet arrays."""
@@ -246,7 +228,7 @@ def pad_fatjet_arrays(data, n_max_fatjets):
     """Pad or truncate AK8 fatjet arrays."""
     fatjet_arrays = [
         "pt", "eta", "mass", "cosphi", "sinphi", "nConstituents",
-        "particleNet_XbbVsQCD", "particleNet_XqqVsQCD"
+        "globalParT3_Xbb", "globalParT3_Xcc", "globalParT3_Xcs", "globalParT3_Xqq", "globalParT3_QCD"
     ]
     
     for arr in fatjet_arrays:
@@ -261,13 +243,9 @@ def prepare_dataset(input_dataframe, isSignal=False):
     
     data = ak.from_rdataframe(input_dataframe, arrays)
 
-    if isSignal:
-        data = filter_signal_events(data)
-
     data = calculate_met_features(data)
     data = calculate_jet_features(data)
     data = calculate_fatjet_features(data)
-    data = calculate_lepton_features(data)
     
     data = pad_jet_arrays(data, N_MAX_JETS)
     data = pad_fatjet_arrays(data, N_MAX_FATJETS)
@@ -278,10 +256,10 @@ def make_dataset(dataframes, output_path):
     sig_df, bkg_df = dataframes
 
     data_sig = prepare_dataset(sig_df, isSignal=True)
-    data_bkg = prepare_dataset(bkg_df)
+    # data_bkg = prepare_dataset(bkg_df)
 
     data_sig["isSignal"] = True
-    data_bkg["isSignal"] = False
+    # data_bkg["isSignal"] = False
 
     # data = ak.concatenate([data_sig, data_bkg], axis=0)
     data = data_sig
@@ -306,30 +284,29 @@ def make_dataset(dataframes, output_path):
         "INPUTS/AK8Jets/cosphi": data["FatJet_cosphi"],
         "INPUTS/AK8Jets/mass": data["FatJet_mass"],
         "INPUTS/AK8Jets/nConstituents": data["FatJet_nConstituents"],
-        "INPUTS/AK8Jets/particleNet_XbbVsQCD": data["FatJet_particleNet_XbbVsQCD"],
-        "INPUTS/AK8Jets/particleNet_XqqVsQCD": data["FatJet_particleNet_XqqVsQCD"],
+        "INPUTS/AK8Jets/parT_Xbb": data["FatJet_globalParT3_Xbb"],
+        "INPUTS/AK8Jets/parT_Xqq": data["FatJet_globalParT3_Xqq"],
+        "INPUTS/AK8Jets/parT_Xcc": data["FatJet_globalParT3_Xcc"],
+        "INPUTS/AK8Jets/parT_Xcs": data["FatJet_globalParT3_Xcs"],
+        "INPUTS/AK8Jets/parT_QCD": data["FatJet_globalParT3_QCD"],
         
         # MET
-        "INPUTS/MET/pt": data["MET_pt"],
+        "INPUTS/MET/pt": data["PuppiMET_pt"],
         "INPUTS/MET/sinphi": data["MET_sinphi"],
         "INPUTS/MET/cosphi": data["MET_cosphi"],
 
-        # Leptons
-        "INPUTS/Lepton/pt": data["lepton_pt"],
-        "INPUTS/Lepton/eta": data["lepton_eta"],
-        "INPUTS/Lepton/sinphi": data["lepton_sinphi"],
-        "INPUTS/Lepton/cosphi": data["lepton_cosphi"],
-        "INPUTS/Lepton/mass": data["lepton_mass"],
-        
         # Targets - Higgs
         "TARGETS/h/b1": data["Jet_hbb1_idx"],
         "TARGETS/h/b2": data["Jet_hbb2_idx"],
         "TARGETS/bh/bb": data["FatJet_hbb_idx"],
         
         # Targets - Vector boson
-        "TARGETS/v/vq1": data["Jet_vqq1_idx"],
-        "TARGETS/v/vq2": data["Jet_vqq2_idx"],
-        "TARGETS/bv/qq": data["FatJet_vqq_idx"],
+        "TARGETS/v1/v1q1": data["Jet_v1q1_idx"],
+        "TARGETS/v1/v1q2": data["Jet_v1q2_idx"],
+        "TARGETS/v2/v2q1": data["Jet_v2q1_idx"],
+        "TARGETS/v2/v2q2": data["Jet_v2q2_idx"],
+        "TARGETS/bv1/qq1": data["FatJet_v1qq_idx"],
+        "TARGETS/bv2/qq2": data["FatJet_v2qq_idx"],
         
         # Targets - VBS
         "TARGETS/vbs/vbsq1": data["Jet_vbs1_idx"],
@@ -362,17 +339,15 @@ def genMatching(input_file, isSignal):
         .Redefine("FatJet_phi", "FatJet_phi[ak8_jets]") \
         .Redefine("FatJet_mass", "FatJet_mass[ak8_jets]") \
         .Redefine("FatJet_nConstituents", "FatJet_nConstituents[ak8_jets]") \
-        .Redefine("FatJet_particleNet_XbbVsQCD", "FatJet_particleNet_XbbVsQCD[ak8_jets]") \
-        .Redefine("FatJet_particleNet_XqqVsQCD", "FatJet_particleNet_XqqVsQCD[ak8_jets]")
+        .Redefine("FatJet_globalParT3_Xbb", "FatJet_globalParT3_Xbb[ak8_jets]") \
+        .Redefine("FatJet_globalParT3_Xcc", "FatJet_globalParT3_Xcc[ak8_jets]") \
+        .Redefine("FatJet_globalParT3_Xcs", "FatJet_globalParT3_Xcs[ak8_jets]") \
+        .Redefine("FatJet_globalParT3_Xqq", "FatJet_globalParT3_Xqq[ak8_jets]") \
+        .Redefine("FatJet_globalParT3_QCD", "FatJet_globalParT3_QCD[ak8_jets]")
     
-    df = leptonSelections(df)
-    df = df.Filter("_isLepton && Sum(jets) >= 2 && Sum(ak8_jets) >= 1")
-
     # define bb, qq definition
     if (isSignal):
-        df = df.Define("GenPart_motherPdgId", "Take(GenPart_pdgId, GenPart_genPartIdxMother)") \
-            .Filter("Sum((GenPart_pdgId == 11 || GenPart_pdgId == 13) && (abs(GenPart_motherPdgId) == 24)) == 1")
-        
+        df = df.Define("GenPart_motherPdgId", "Take(GenPart_pdgId, GenPart_genPartIdxMother)")
         df = df.Define("Higgs_idx", "get_higgs_boson_idx(GenPart_pdgId, GenPart_genPartIdxMother)") \
             .Filter("Higgs_idx != -1") \
             .Define("Higgs_eta", "GenPart_eta[Higgs_idx]") \
@@ -381,84 +356,121 @@ def genMatching(input_file, isSignal):
             .Define("VBSJet1_phi", "GenPart_phi[5]") \
             .Define("VBSJet2_eta", "GenPart_eta[6]") \
             .Define("VBSJet2_phi", "GenPart_phi[6]") \
-            .Define("V_idx", "get_hadronic_gauge_boson_idx(GenPart_pdgId, GenPart_genPartIdxMother)") \
-            .Filter("V_idx != -1") \
-            .Define("V_eta", "GenPart_eta[V_idx]") \
-            .Define("V_phi", "GenPart_phi[V_idx]") \
-            .Define("qs_from_v", "abs(GenPart_pdgId) <= 5 && GenPart_genPartIdxMother == V_idx") \
-            .Define("V_q1_eta", "GenPart_eta[qs_from_v][0]") \
-            .Define("V_q1_phi", "GenPart_phi[qs_from_v][0]") \
-            .Define("V_q2_eta", "GenPart_eta[qs_from_v][1]") \
-            .Define("V_q2_phi", "GenPart_phi[qs_from_v][1]") \
+            .Define("num_v", "num_hadronic_gauge_bosons(GenPart_pdgId, GenPart_genPartIdxMother)") \
+            .Define("V1_idx", "num_v == 1 ? 2 : num_v == 2 ? 3 : num_v == 3 ? 2 : -1") \
+            .Define("V2_idx", "num_v == 3 ? 3 : -1") \
+            .Define("V1_eta", "V1_idx != -1 ? GenPart_eta[V1_idx] : -999") \
+            .Define("V1_phi", "V1_idx != -1 ? GenPart_phi[V1_idx] : -999") \
+            .Define("V2_eta", "V2_idx != -1 ? GenPart_eta[V2_idx] : -999") \
+            .Define("V2_phi", "V2_idx != -1 ? GenPart_phi[V2_idx] : -999") \
+            .Define("qs_from_v1", "abs(GenPart_pdgId) <= 5 && GenPart_genPartIdxMother == V1_idx") \
+            .Define("qs_from_v2", "abs(GenPart_pdgId) <= 5 && GenPart_genPartIdxMother == V2_idx") \
+            .Define("V1_q1_eta", "GenPart_eta[qs_from_v1][0]") \
+            .Define("V1_q1_phi", "GenPart_phi[qs_from_v1][0]") \
+            .Define("V1_q2_eta", "GenPart_eta[qs_from_v1][1]") \
+            .Define("V1_q2_phi", "GenPart_phi[qs_from_v1][1]") \
+            .Define("V2_q1_eta", "GenPart_eta[qs_from_v2][0]") \
+            .Define("V2_q1_phi", "GenPart_phi[qs_from_v2][0]") \
+            .Define("V2_q2_eta", "GenPart_eta[qs_from_v2][1]") \
+            .Define("V2_q2_phi", "GenPart_phi[qs_from_v2][1]") \
             .Define("bs_from_higgs", "abs(GenPart_pdgId) == 5 && GenPart_genPartIdxMother == Higgs_idx") \
             .Define("b1_eta", "GenPart_eta[bs_from_higgs][0]") \
             .Define("b1_phi", "GenPart_phi[bs_from_higgs][0]") \
             .Define("b2_eta", "GenPart_eta[bs_from_higgs][1]") \
             .Define("b2_phi", "GenPart_phi[bs_from_higgs][1]")
 
-        # VBS matching        
-        df = df.Define("vbs1_dR", "get_dR(VBSJet1_eta, VBSJet1_phi, Jet_eta, Jet_phi)") \
+        # VBS matching - Use argsort approach with bounds checking
+        df = df.Filter("Jet_pt.size() > 0") \
+            .Define("vbs1_dR", "get_dR(VBSJet1_eta, VBSJet1_phi, Jet_eta, Jet_phi)") \
             .Define("vbs2_dR", "get_dR(VBSJet2_eta, VBSJet2_phi, Jet_eta, Jet_phi)") \
-            .Define("vbs1_closest_jet", "ROOT::VecOps::Min(vbs1_dR)") \
-            .Define("vbs2_closest_jet", "ROOT::VecOps::Min(vbs2_dR)") \
-            .Define("Jet_vbs1_idx", "(vbs1_closest_jet < 0.4) ? (int)ROOT::VecOps::ArgMin(vbs1_dR) : -1") \
-            .Define("Jet_vbs2_idx", "(vbs2_closest_jet < 0.4) ? (int)ROOT::VecOps::ArgMin(vbs2_dR) : -1") \
-            .Filter("(Jet_vbs1_idx != Jet_vbs2_idx)")
+            .Define("Jet_vbs1_idx_temp", "find_matching_jet(vbs1_dR, 0.4, ROOT::RVec<int>{}, 10)") \
+            .Define("Jet_vbs2_idx_temp", "find_matching_jet(vbs2_dR, 0.4, ROOT::RVec<int>{Jet_vbs1_idx_temp}, 10)") \
+            .Define("Jet_vbs1_idx", "Jet_vbs1_idx_temp >= 0 && Jet_vbs1_idx_temp < 10 ? Jet_vbs1_idx_temp : -1") \
+            .Define("Jet_vbs2_idx", "Jet_vbs2_idx_temp >= 0 && Jet_vbs2_idx_temp < 10 ? Jet_vbs2_idx_temp : -1") \
+            .Filter("(Jet_vbs1_idx != -1 && Jet_vbs2_idx != -1)")
 
-        # Boosted Hbb matching
-        df = df.Define("hbb_fatjet_dR", "get_dR(Higgs_eta, Higgs_phi, FatJet_eta, FatJet_phi)") \
+        # Boosted Hbb matching - Use argsort approach with bounds checking
+        df = df.Filter("FatJet_pt.size() > 0") \
+            .Define("hbb_fatjet_dR", "get_dR(Higgs_eta, Higgs_phi, FatJet_eta, FatJet_phi)") \
             .Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b1_phi, b2_eta, b2_phi)") \
-            .Define("hbb_fatjet_idx_temp", "(int)ROOT::VecOps::ArgMin(hbb_fatjet_dR)") \
-            .Define("hbb_fatjet_candidate_b1_dR", "ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b1_eta, b1_phi)") \
-            .Define("hbb_fatjet_candidate_b2_dR", "ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b2_eta, b2_phi)") \
-            .Define("hbb_isBoosted", "Min(hbb_fatjet_dR) < 0.8 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8") \
-            .Define("FatJet_hbb_idx", "hbb_isBoosted ? (int)ROOT::VecOps::ArgMin(hbb_fatjet_dR) : -1")
+            .Define("hbb_fatjet_idx_temp", "find_matching_fatjet(hbb_fatjet_dR, 0.8, ROOT::RVec<int>{}, 3)") \
+            .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b1_eta, b1_phi) : 999.0") \
+            .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b2_eta, b2_phi) : 999.0") \
+            .Define("hbb_isBoosted", "hbb_fatjet_idx_temp != -1 && hbb_fatjet_idx_temp < 3 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8") \
+            .Define("FatJet_hbb_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1")
         
-        # Resolved Hbb matching
+        # Resolved Hbb matching - Use argsort approach with bounds checking
         df = df.Define("b1_jet_dR", "get_dR(b1_eta, b1_phi, Jet_eta, Jet_phi)") \
             .Define("b2_jet_dR", "get_dR(b2_eta, b2_phi, Jet_eta, Jet_phi)") \
-            .Define("b1_closest_jet", "ROOT::VecOps::Min(b1_jet_dR)") \
-            .Define("b2_closest_jet", "ROOT::VecOps::Min(b2_jet_dR)") \
-            .Define("b1_closest_jet_idx", "(int)ROOT::VecOps::ArgMin(b1_jet_dR)") \
-            .Define("b2_closest_jet_idx", "(int)ROOT::VecOps::ArgMin(b2_jet_dR)") \
-            .Define("hbb_isResolved", "b1_closest_jet < 0.4 && b2_closest_jet < 0.4 && (b1_closest_jet_idx != b2_closest_jet_idx)") \
-            .Define("Jet_hbb1_idx", "(hbb_isResolved && b1_closest_jet_idx != Jet_vbs1_idx && b1_closest_jet_idx != Jet_vbs2_idx) ? b1_closest_jet_idx : -1") \
-            .Define("Jet_hbb2_idx", "(hbb_isResolved && b2_closest_jet_idx != Jet_vbs1_idx && b2_closest_jet_idx != Jet_vbs2_idx) ? b2_closest_jet_idx : -1")
+            .Define("excluded_jets_for_hbb", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx}") \
+            .Define("Jet_hbb1_idx_temp", "!hbb_isBoosted ? find_matching_jet(b1_jet_dR, 0.4, excluded_jets_for_hbb, 10) : -1") \
+            .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx_temp}") \
+            .Define("Jet_hbb2_idx_temp", "!hbb_isBoosted && Jet_hbb1_idx_temp != -1 ? find_matching_jet(b2_jet_dR, 0.4, excluded_jets_for_hbb2, 10) : -1") \
+            .Define("Jet_hbb1_idx", "Jet_hbb1_idx_temp >= 0 && Jet_hbb1_idx_temp < 10 ? Jet_hbb1_idx_temp : -1") \
+            .Define("Jet_hbb2_idx", "Jet_hbb2_idx_temp >= 0 && Jet_hbb2_idx_temp < 10 ? Jet_hbb2_idx_temp : -1") \
+            .Define("hbb_isResolved", "!hbb_isBoosted && Jet_hbb1_idx != -1 && Jet_hbb2_idx != -1")
 
-        # Boosted Vqq matching
-        df = df.Define("vqq_fatjet_dR", "get_dR(V_eta, V_phi, FatJet_eta, FatJet_phi)") \
-            .Define("vqq_dR", "ROOT::VecOps::DeltaR(V_q1_eta, V_q1_phi, V_q2_eta, V_q2_phi)") \
-            .Define("vqq_fatjet_idx_temp", "(int)ROOT::VecOps::ArgMin(vqq_fatjet_dR)") \
-            .Define("vqq_fatjet_candidate_q1_dR", "ROOT::VecOps::DeltaR(FatJet_eta[vqq_fatjet_idx_temp], FatJet_phi[vqq_fatjet_idx_temp], V_q1_eta, V_q1_phi)") \
-            .Define("vqq_fatjet_candidate_q2_dR", "ROOT::VecOps::DeltaR(FatJet_eta[vqq_fatjet_idx_temp], FatJet_phi[vqq_fatjet_idx_temp], V_q2_eta, V_q2_phi)") \
-            .Define("vqq_isBoosted", "Min(vqq_fatjet_dR) < 0.8 && vqq_dR < 0.8 && vqq_fatjet_candidate_q1_dR < 0.8 && vqq_fatjet_candidate_q2_dR < 0.8") \
-            .Define("FatJet_vqq_idx", "(vqq_isBoosted && FatJet_hbb_idx != vqq_fatjet_idx_temp) ? (int)ROOT::VecOps::ArgMin(vqq_fatjet_dR) : -1") \
+        # Boosted V1qq matching - Use argsort approach with bounds checking
+        df = df.Define("v1qq_fatjet_dR", "V1_idx != -1 ? get_dR(V1_eta, V1_phi, FatJet_eta, FatJet_phi) : ROOT::RVec<float>()") \
+            .Define("v1qq_dR", "V1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0") \
+            .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{FatJet_hbb_idx}") \
+            .Define("v1qq_fatjet_idx_temp", "V1_idx != -1 && v1qq_fatjet_dR.size() > 0 ? find_matching_fatjet(v1qq_fatjet_dR, 0.8, excluded_fatjets_for_v1, 3) : -1") \
+            .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_eta, V1_q1_phi) : 999.0") \
+            .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_eta, V1_q2_phi) : 999.0") \
+            .Define("v1qq_isBoosted", "V1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8") \
+            .Define("FatJet_v1qq_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1")
+
+        # Boosted V2qq matching - Use argsort approach with bounds checking
+        df = df.Define("v2qq_fatjet_dR", "V2_idx != -1 ? get_dR(V2_eta, V2_phi, FatJet_eta, FatJet_phi) : ROOT::RVec<float>()") \
+            .Define("v2qq_dR", "V2_idx != -1 ? ROOT::VecOps::DeltaR(V2_q1_eta, V2_q1_phi, V2_q2_eta, V2_q2_phi) : 999.0") \
+            .Define("excluded_fatjets_for_v2", "ROOT::RVec<int>{FatJet_hbb_idx, FatJet_v1qq_idx}") \
+            .Define("v2qq_fatjet_idx_temp", "V2_idx != -1 && v2qq_fatjet_dR.size() > 0 ? find_matching_fatjet(v2qq_fatjet_dR, 0.8, excluded_fatjets_for_v2, 3) : -1") \
+            .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q1_eta, V2_q1_phi) : 999.0") \
+            .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q2_eta, V2_q2_phi) : 999.0") \
+            .Define("v2qq_isBoosted", "V2_idx != -1 && v2qq_fatjet_idx_temp != -1 && v2qq_fatjet_idx_temp < 3 && v2qq_dR < 0.8 && v2qq_fatjet_candidate_q1_dR < 0.8 && v2qq_fatjet_candidate_q2_dR < 0.8") \
+            .Define("FatJet_v2qq_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1")
         
-        # Resolved Vqq matching
-        df = df.Define("q1_jet_dR", "get_dR(V_q1_eta, V_q1_phi, Jet_eta, Jet_phi)") \
-            .Define("q2_jet_dR", "get_dR(V_q2_eta, V_q2_phi, Jet_eta, Jet_phi)") \
-            .Define("q1_closest_jet", "ROOT::VecOps::Min(q1_jet_dR)") \
-            .Define("q2_closest_jet", "ROOT::VecOps::Min(q2_jet_dR)") \
-            .Define("q1_closest_jet_idx", "(int)ROOT::VecOps::ArgMin(q1_jet_dR)") \
-            .Define("q2_closest_jet_idx", "(int)ROOT::VecOps::ArgMin(q2_jet_dR)") \
-            .Define("vqq_isResolved", "q1_closest_jet < 0.4 && q2_closest_jet < 0.4 && (q1_closest_jet_idx != q2_closest_jet_idx)") \
-            .Define("Jet_vqq1_idx", "(vqq_isResolved && q1_closest_jet_idx != Jet_hbb1_idx && q1_closest_jet_idx != Jet_hbb2_idx && q1_closest_jet_idx != Jet_vbs1_idx && q1_closest_jet_idx != Jet_vbs2_idx) ? q1_closest_jet_idx : -1") \
-            .Define("Jet_vqq2_idx", "(vqq_isResolved && q2_closest_jet_idx != Jet_hbb1_idx && q2_closest_jet_idx != Jet_hbb2_idx && q2_closest_jet_idx != Jet_vbs1_idx && q2_closest_jet_idx != Jet_vbs2_idx) ? q2_closest_jet_idx : -1")
+        # Resolved V1qq matching - Use argsort approach with bounds checking
+        df = df.Define("v1q1_jet_dR", "V1_idx != -1 ? get_dR(V1_q1_eta, V1_q1_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
+            .Define("v1q2_jet_dR", "V1_idx != -1 ? get_dR(V1_q2_eta, V1_q2_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
+            .Define("excluded_jets_for_v1q1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx}") \
+            .Define("Jet_v1q1_idx_temp", "V1_idx != -1 && !v1qq_isBoosted && v1q1_jet_dR.size() > 0 ? find_matching_jet(v1q1_jet_dR, 0.4, excluded_jets_for_v1q1, 10) : -1") \
+            .Define("excluded_jets_for_v1q2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx_temp}") \
+            .Define("Jet_v1q2_idx_temp", "V1_idx != -1 && !v1qq_isBoosted && Jet_v1q1_idx_temp != -1 && v1q2_jet_dR.size() > 0 ? find_matching_jet(v1q2_jet_dR, 0.4, excluded_jets_for_v1q2, 10) : -1") \
+            .Define("Jet_v1q1_idx", "Jet_v1q1_idx_temp >= 0 && Jet_v1q1_idx_temp < 10 ? Jet_v1q1_idx_temp : -1") \
+            .Define("Jet_v1q2_idx", "Jet_v1q2_idx_temp >= 0 && Jet_v1q2_idx_temp < 10 ? Jet_v1q2_idx_temp : -1") \
+            .Define("v1qq_isResolved", "V1_idx != -1 && !v1qq_isBoosted && Jet_v1q1_idx != -1 && Jet_v1q2_idx != -1")
+
+        # Resolved V2qq matching - Use argsort approach with bounds checking
+        df = df.Define("v2q1_jet_dR", "V2_idx != -1 ? get_dR(V2_q1_eta, V2_q1_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
+            .Define("v2q2_jet_dR", "V2_idx != -1 ? get_dR(V2_q2_eta, V2_q2_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
+            .Define("excluded_jets_for_v2q1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx, Jet_v1q2_idx}") \
+            .Define("Jet_v2q1_idx_temp", "V2_idx != -1 && !v2qq_isBoosted && v2q1_jet_dR.size() > 0 ? find_matching_jet(v2q1_jet_dR, 0.4, excluded_jets_for_v2q1, 10) : -1") \
+            .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx, Jet_v1q2_idx, Jet_v2q1_idx_temp}") \
+            .Define("Jet_v2q2_idx_temp", "V2_idx != -1 && !v2qq_isBoosted && Jet_v2q1_idx_temp != -1 && v2q2_jet_dR.size() > 0 ? find_matching_jet(v2q2_jet_dR, 0.4, excluded_jets_for_v2q2, 10) : -1") \
+            .Define("Jet_v2q1_idx", "Jet_v2q1_idx_temp >= 0 && Jet_v2q1_idx_temp < 10 ? Jet_v2q1_idx_temp : -1") \
+            .Define("Jet_v2q2_idx", "Jet_v2q2_idx_temp >= 0 && Jet_v2q2_idx_temp < 10 ? Jet_v2q2_idx_temp : -1") \
+            .Define("v2qq_isResolved", "V2_idx != -1 && !v2qq_isBoosted && Jet_v2q1_idx != -1 && Jet_v2q2_idx != -1")
 
     else:
         df = df.Define("FatJet_hbb_idx", "-1") \
             .Define("Jet_hbb1_idx", "-1") \
             .Define("Jet_hbb2_idx", "-1") \
-            .Define("FatJet_vqq_idx", "-1") \
-            .Define("Jet_vqq1_idx", "-1") \
-            .Define("Jet_vqq2_idx", "-1") \
+            .Define("FatJet_v1qq_idx", "-1") \
+            .Define("FatJet_v2qq_idx", "-1") \
+            .Define("Jet_v1q1_idx", "-1") \
+            .Define("Jet_v1q2_idx", "-1") \
+            .Define("Jet_v2q1_idx", "-1") \
+            .Define("Jet_v2q2_idx", "-1") \
             .Define("Jet_vbs1_idx", "-1") \
             .Define("Jet_vbs2_idx", "-1") \
             .Define("hbb_isBoosted", "false") \
             .Define("hbb_isResolved", "false") \
-            .Define("vqq_isBoosted", "false") \
-            .Define("vqq_isResolved", "false") \
-            .Filter("event % 10 == 0")
+            .Define("v1qq_isBoosted", "false") \
+            .Define("v1qq_isResolved", "false") \
+            .Define("v2qq_isBoosted", "false") \
+            .Define("v2qq_isResolved", "false") \
+            .Filter("event % 5 == 0")
     return df
 
 if __name__ == "__main__":
@@ -466,16 +478,20 @@ if __name__ == "__main__":
     parser.add_argument("--train", action="store_true", help="Is this a training sample?")
     args = parser.parse_args()
 
-    # Open the input file
-    if args.train:
-        suffix = "_train"
-    else:
-        suffix = "_test"
+    # if args.train:
+    #     suffix = "_train"
+    # else:
+    #     suffix = "_test"
 
-    df_sig = genMatching(f"OneLep2FJ-sig{suffix}.json", isSignal=True)
-    df_bkg = genMatching(f"OneLep2FJ-bkg{suffix}.json", isSignal=False)
+    # df_sig = genMatching(f"OneLep2FJ-sig{suffix}.json", isSignal=True)
+    # df_bkg = genMatching(f"OneLep2FJ-bkg{suffix}.json", isSignal=False)
 
+    df_bkg = None
+    df_sig = genMatching(f"/home/users/aaarora/phys/run3/run3-vbsvvh/preselection/etc/1Lep2FJ-sig.json", isSignal=True)
+    # df_bkg = genMatching(f"/home/users/aaarora/phys/run3/SPANet/input_proc/1Lep2FJ1.5-bkg.json", isSignal=False)
+
+    # df_sig.Snapshot("Events", "out.root", get_array_names(isSignal=True))
     print("Number of evts in sig: ", df_sig.Count().GetValue())
-    print("Number of evts in bkg: ", df_bkg.Count().GetValue())
+    # print("Number of evts in bkg: ", df_bkg.Count().GetValue())
     
-    make_dataset((df_sig, df_bkg), output_path=f"output{suffix}.h5")
+    make_dataset((df_sig, df_bkg), output_path=f"../data/output.h5")

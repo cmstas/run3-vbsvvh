@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from dataclasses import dataclass, field
 import traceback
-from typing import List, Dict, Optional, Union, Tuple
 
 import ROOT as r
 r.EnableImplicitMT()

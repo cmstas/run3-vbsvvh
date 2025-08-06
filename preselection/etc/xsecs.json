@@ -3,7 +3,9 @@
     "TTto2L2Nu": 97.45,
     "TTtoLNu2Q": 403.25,
     "TTto4Q": 431.5,
+
     "WtoLNu-2Jets": 67710.0,
+
     "QCD-4Jets_HT-40to70": 311400000.0,
     "QCD-4Jets_HT-70to100": 58500000.0,
     "QCD-4Jets_HT-100to200": 25400000.0,
@@ -15,10 +17,18 @@
     "QCD-4Jets_HT-1200to1500": 383.5,
     "QCD-4Jets_HT-1500to2000": 125.2,
     "QCD-4Jets_HT-2000": 26.49,
+
     "WWtoLNu2Q": 48.94,
     "WZtoLNu2Q": 15.87,
 
-    "VBSWWH_SSWW_5f_LO": 0.000736,
-    "VBSWZH_5f_LO": 0.001138,
-    "VBSZZH_5f_LO": 0.0004478
+    "VBSWWH_OSWW_C2V1p5_5f_LO": 0.002585,
+    "VBSWWH_SSWW_C2V1p5_5f_LO": 0.000736,
+    "VBSWZH_C2V1p5_5f_LO": 0.001138,
+    "VBSZZH_C2V1p5_5f_LO": 0.0004478,
+
+    "VBSWWH_OSWW_C2V1p7_5f_LO": 0.003172,
+    "VBSWWH_SSWW_C2V1p7_5f_LO": 0.001077,
+    "VBSWZH_C2V1p7_5f_LO": 0.001474,
+    "VBSZZH_C2V1p7_5f_LO": 0.0007434
+    
 }

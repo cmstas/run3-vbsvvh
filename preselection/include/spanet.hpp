@@ -19,26 +19,28 @@ namespace SPANet {
         SPANetInference(const std::string &model_path, size_t batch_size = 64) 
             : batch_size(batch_size),
               memory_info(Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault)),
-              input_names{"AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask", "MET_data", "MET_mask", "Lepton_data", "Lepton_mask"},
-              output_names{"h_assignment_probability", 
-                          "v_assignment_probability", 
+              input_names{"AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask", "MET_data", "MET_mask"},
+              output_names{"h_assignment_probability",
                           "bh_assignment_probability", 
-                          "bv_assignment_probability",
+                          "v1_assignment_probability", 
+                          "v2_assignment_probability", 
+                          "bv1_assignment_probability",
+                          "bv2_assignment_probability",
                           "vbs_assignment_probability",
                           "h_detection_probability",
-                          "v_detection_probability",
                           "bh_detection_probability",
-                          "bv_detection_probability",
+                          "v1_detection_probability",
+                          "v2_detection_probability",
+                          "bv1_detection_probability",
+                          "bv2_detection_probability",
                           "vbs_detection_probability",
                           "EVENT/isSignal"},
               ak4_input_shape{static_cast<int64_t>(batch_size), 10, 8},
-              ak8_input_shape{static_cast<int64_t>(batch_size), 3, 9},
+              ak8_input_shape{static_cast<int64_t>(batch_size), 3, 11},
               met_input_shape{static_cast<int64_t>(batch_size), 1, 3},
-              lepton_input_shape{static_cast<int64_t>(batch_size), 1, 5},
               ak4_mask_shape{static_cast<int64_t>(batch_size), 10},
               ak8_mask_shape{static_cast<int64_t>(batch_size), 3},
               met_mask_shape{static_cast<int64_t>(batch_size), 1},
-              lepton_mask_shape{static_cast<int64_t>(batch_size), 1},
               top_k(3) {
             
             Ort::SessionOptions sessionOptions;
@@ -56,14 +58,12 @@ namespace SPANet {
             }
             
             ak4_flat_jets.resize(batch_size * 10 * 8, 0.0f);
-            ak8_flat_jets.resize(batch_size * 3 * 9, 0.0f);
+            ak8_flat_jets.resize(batch_size * 3 * 11, 0.0f);
             met_inputs.resize(batch_size * 3, 0.0f);
-            lepton_inputs.resize(batch_size * 5, 0.0f);
             
             ak4_mask_char.resize(batch_size * 10, 0);
             ak8_mask_char.resize(batch_size * 3, 0);
             met_mask_char.resize(batch_size * 1, 1);
-            lepton_mask_char.resize(batch_size * 1, 1);
         }
         
         RNode RunSPANetInference(RNode df);
@@ -80,29 +80,24 @@ namespace SPANet {
         std::vector<int64_t> ak4_input_shape;
         std::vector<int64_t> ak8_input_shape;
         std::vector<int64_t> met_input_shape;
-        std::vector<int64_t> lepton_input_shape;
         std::vector<int64_t> ak4_mask_shape;
         std::vector<int64_t> ak8_mask_shape;
         std::vector<int64_t> met_mask_shape;
-        std::vector<int64_t> lepton_mask_shape;
         
         std::vector<float> ak4_flat_jets;
         std::vector<float> ak8_flat_jets;
         std::vector<float> met_inputs;
-        std::vector<float> lepton_inputs;
         std::vector<char> ak4_mask_char;
         std::vector<char> ak8_mask_char;
         std::vector<char> met_mask_char;
-        std::vector<char> lepton_mask_char;
         
         struct EventData {
             std::vector<float> ak4_pt, ak4_eta, ak4_phi, ak4_mass;
             std::vector<int> ak4_isTightBTag, ak4_isMediumBTag, ak4_isLooseBTag;
             std::vector<float> ak8_pt, ak8_eta, ak8_phi, ak8_mass;
-            std::vector<float> ak8_XbbScore, ak8_XqqScore, ak8_XccScore;
+            std::vector<float> ak8_XbbScore, ak8_XqqScore, ak8_XccScore, ak8_XcsScore, ak8_XqcdScore;
             std::vector<unsigned char> ak8_nConstituents;
             float met_pt, met_phi;
-            float lep_pt, lep_eta, lep_phi, lep_mass;
         };
         
         std::vector<std::vector<std::vector<std::vector<float>>>> runBatchInference(const std::vector<EventData>& events);
@@ -132,19 +127,17 @@ inline std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::
     auto ak8_eta_vec = df.Take<RVecF>("FatJet_eta").GetValue();
     auto ak8_phi_vec = df.Take<RVecF>("FatJet_phi").GetValue();
     auto ak8_mass_vec = df.Take<RVecF>("FatJet_mass").GetValue();
-    auto ak8_XbbScore_vec = df.Take<RVecF>("FatJet_particleNet_XbbVsQCD").GetValue();
-    auto ak8_XqqScore_vec = df.Take<RVecF>("FatJet_particleNet_XqqVsQCD").GetValue();
-    auto ak8_XccScore_vec = df.Take<RVecF>("FatJet_particleNet_XccVsQCD").GetValue();
+    
     auto ak8_nConstituents_vec = df.Take<RVecUC>("FatJet_nConstituents").GetValue();
-    
-    auto met_pt_vec = df.Take<float>("MET_pt").GetValue();
-    auto met_phi_vec = df.Take<float>("MET_phi").GetValue();
-    
-    auto lep_pt_vec = df.Take<RVecF>("Lepton_pt").GetValue();
-    auto lep_eta_vec = df.Take<RVecF>("Lepton_eta").GetValue();
-    auto lep_phi_vec = df.Take<RVecF>("Lepton_phi").GetValue();
-    auto lep_mass_vec = df.Take<RVecF>("Lepton_mass").GetValue();
+    auto ak8_XbbScore_vec = df.Take<RVecF>("FatJet_globalParT3_Xbb").GetValue();
+    auto ak8_XqqScore_vec = df.Take<RVecF>("FatJet_globalParT3_Xqq").GetValue();
+    auto ak8_XccScore_vec = df.Take<RVecF>("FatJet_globalParT3_Xcc").GetValue();
+    auto ak8_XcsScore_vec = df.Take<RVecF>("FatJet_globalParT3_Xcs").GetValue();
+    auto ak8_XqcdScore_vec = df.Take<RVecF>("FatJet_globalParT3_QCD").GetValue();
 
+    auto met_pt_vec = df.Take<float>("PuppiMET_pt").GetValue();
+    auto met_phi_vec = df.Take<float>("PuppiMET_phi").GetValue();
+    
     std::vector<EventData> events;
     size_t n_events = ak4_pt_vec.size();
     events.reserve(n_events);
@@ -164,18 +157,15 @@ inline std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::
         event.ak8_eta.assign(ak8_eta_vec[i].begin(), ak8_eta_vec[i].end());
         event.ak8_phi.assign(ak8_phi_vec[i].begin(), ak8_phi_vec[i].end());
         event.ak8_mass.assign(ak8_mass_vec[i].begin(), ak8_mass_vec[i].end());
+        event.ak8_nConstituents.assign(ak8_nConstituents_vec[i].begin(), ak8_nConstituents_vec[i].end());
         event.ak8_XbbScore.assign(ak8_XbbScore_vec[i].begin(), ak8_XbbScore_vec[i].end());
         event.ak8_XqqScore.assign(ak8_XqqScore_vec[i].begin(), ak8_XqqScore_vec[i].end());
         event.ak8_XccScore.assign(ak8_XccScore_vec[i].begin(), ak8_XccScore_vec[i].end());
-        event.ak8_nConstituents.assign(ak8_nConstituents_vec[i].begin(), ak8_nConstituents_vec[i].end());
+        event.ak8_XcsScore.assign(ak8_XcsScore_vec[i].begin(), ak8_XcsScore_vec[i].end());
+        event.ak8_XqcdScore.assign(ak8_XqcdScore_vec[i].begin(), ak8_XqcdScore_vec[i].end());
         
         event.met_pt = met_pt_vec[i];
         event.met_phi = met_phi_vec[i];
-        
-        event.lep_pt = lep_pt_vec[i][0];
-        event.lep_eta = lep_eta_vec[i][0];
-        event.lep_phi = lep_phi_vec[i][0];
-        event.lep_mass = lep_mass_vec[i][0];
         
         events.push_back(std::move(event));
     }
@@ -195,7 +185,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
         
 
         // ASSIGNMENT PROBABILITIES
-        if (tensor_idx < 5) { 
+        if (tensor_idx < 7) { 
             static thread_local std::vector<std::pair<float, size_t>> value_idx_pairs;
             
             if (output_shape.size() == 3) { // [batch, jets, jets] - always jet pair assignment
@@ -259,7 +249,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
         } 
         
             // DETECTION PROBABILITIES
-        else if (tensor_idx < 10) { 
+        else if (tensor_idx < 14) { 
             // Detection probabilities have shape [batch_size], one value per event
             batch_results[batch_idx][tensor_idx] = {{output_data[batch_idx]}};
         } 
@@ -279,13 +269,11 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
         std::vector<EventData> batch_events(events.begin() + start_idx, events.begin() + end_idx);
         
         std::vector<int64_t> current_ak4_shape = {static_cast<int64_t>(current_batch_size), 10, 8};
-        std::vector<int64_t> current_ak8_shape = {static_cast<int64_t>(current_batch_size), 3, 9};
+        std::vector<int64_t> current_ak8_shape = {static_cast<int64_t>(current_batch_size), 3, 11};
         std::vector<int64_t> current_met_shape = {static_cast<int64_t>(current_batch_size), 1, 3};
-        std::vector<int64_t> current_lepton_shape = {static_cast<int64_t>(current_batch_size), 1, 5};
         std::vector<int64_t> current_ak4_mask_shape = {static_cast<int64_t>(current_batch_size), 10};
         std::vector<int64_t> current_ak8_mask_shape = {static_cast<int64_t>(current_batch_size), 3};
         std::vector<int64_t> current_met_mask_shape = {static_cast<int64_t>(current_batch_size), 1};
-        std::vector<int64_t> current_lepton_mask_shape = {static_cast<int64_t>(current_batch_size), 1};
 
         fillBatchTensors(batch_events, current_batch_size);
         
@@ -301,7 +289,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
             current_ak4_mask_shape.data(), current_ak4_mask_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info, ak8_flat_jets.data(), current_batch_size * 3 * 9,
+            memory_info, ak8_flat_jets.data(), current_batch_size * 3 * 11,
             current_ak8_shape.data(), current_ak8_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<bool>(
@@ -316,14 +304,6 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
             memory_info, reinterpret_cast<bool*>(met_mask_char.data()), current_batch_size * 1,
             current_met_mask_shape.data(), current_met_mask_shape.size()));
 
-        input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info, lepton_inputs.data(), current_batch_size * 5,
-            current_lepton_shape.data(), current_lepton_shape.size()));
-
-        input_tensors.push_back(Ort::Value::CreateTensor<bool>(
-            memory_info, reinterpret_cast<bool*>(lepton_mask_char.data()), current_batch_size * 1,
-            current_lepton_mask_shape.data(), current_lepton_mask_shape.size()));
-        
         auto output_tensors = session->Run(
             Ort::RunOptions{nullptr},
             input_names.data(), input_tensors.data(), input_tensors.size(),
@@ -351,7 +331,7 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
 
 inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventData>& events, size_t actual_batch_size) {
     std::fill(ak4_flat_jets.begin(), ak4_flat_jets.begin() + actual_batch_size * 10 * 8, 0.0f);
-    std::fill(ak8_flat_jets.begin(), ak8_flat_jets.begin() + actual_batch_size * 3 * 9, 0.0f);
+    std::fill(ak8_flat_jets.begin(), ak8_flat_jets.begin() + actual_batch_size * 3 * 11, 0.0f);
     std::fill(ak4_mask_char.begin(), ak4_mask_char.begin() + actual_batch_size * 10, 0);
     std::fill(ak8_mask_char.begin(), ak8_mask_char.begin() + actual_batch_size * 3, 0);
     
@@ -377,7 +357,7 @@ inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventDat
         for (size_t i = 0; i < max_ak8; ++i) {
             ak8_mask_char[batch_idx * 3 + i] = 1;
             
-            const size_t base_idx = batch_idx * 3 * 9 + i * 9;
+            const size_t base_idx = batch_idx * 3 * 11 + i * 11;
             ak8_flat_jets[base_idx]     = std::log(event.ak8_mass[i] + 1.0f);
             ak8_flat_jets[base_idx + 1] = std::log(event.ak8_pt[i] + 1.0f);
             ak8_flat_jets[base_idx + 2] = event.ak8_eta[i];
@@ -387,6 +367,8 @@ inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventDat
             ak8_flat_jets[base_idx + 6] = event.ak8_XbbScore[i];
             ak8_flat_jets[base_idx + 7] = event.ak8_XqqScore[i];
             ak8_flat_jets[base_idx + 8] = event.ak8_XccScore[i];
+            ak8_flat_jets[base_idx + 9] = event.ak8_XcsScore[i];
+            ak8_flat_jets[base_idx + 10] = event.ak8_XqcdScore[i];
         }
         
         // Fill event inputs
@@ -396,65 +378,70 @@ inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventDat
         met_inputs[event_base_idx + 2] = std::cos(event.met_phi);
         
         met_mask_char[batch_idx] = 1;
-
-        const size_t lepton_base_idx = batch_idx * 5;
-        lepton_inputs[lepton_base_idx]     = std::log(event.lep_pt + 1.0f);
-        lepton_inputs[lepton_base_idx + 1] = event.lep_eta;
-        lepton_inputs[lepton_base_idx + 2] = std::sin(event.lep_phi);
-        lepton_inputs[lepton_base_idx + 3] = std::cos(event.lep_phi);
-        lepton_inputs[lepton_base_idx + 4] = std::log(event.lep_mass + 1.0f);
-        
-        lepton_mask_char[batch_idx] = 1;
     }
 }
 
 inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>>& all_outputs) {
     // Create separate vectors for each output type to match expected format
-    std::vector<std::vector<std::vector<float>>> h_assignment_prob, v_assignment_prob, bh_assignment_prob, bv_assignment_prob, vbs_assignment_prob;
-    std::vector<float> h_detection_prob, v_detection_prob, bh_detection_prob, bv_detection_prob, vbs_detection_prob, event_signal_prob;
-    
+    std::vector<std::vector<std::vector<float>>> h_assignment_prob, bh_assignment_prob, v1_assignment_prob, v2_assignment_prob, bv1_assignment_prob, bv2_assignment_prob, vbs_assignment_prob;
+    std::vector<float> h_detection_prob, bh_detection_prob, v1_detection_prob, v2_detection_prob, bv1_detection_prob, bv2_detection_prob, vbs_detection_prob, event_signal_prob;
+
     // Reserve space for efficiency
     size_t n_events = all_outputs.size();
     h_assignment_prob.reserve(n_events);
-    v_assignment_prob.reserve(n_events);
     bh_assignment_prob.reserve(n_events);
-    bv_assignment_prob.reserve(n_events);
+    v1_assignment_prob.reserve(n_events);
+    v2_assignment_prob.reserve(n_events);
+    bv1_assignment_prob.reserve(n_events);
+    bv2_assignment_prob.reserve(n_events);
     vbs_assignment_prob.reserve(n_events);
     h_detection_prob.reserve(n_events);
-    v_detection_prob.reserve(n_events);
     bh_detection_prob.reserve(n_events);
-    bv_detection_prob.reserve(n_events);
+    v1_detection_prob.reserve(n_events);
+    v2_detection_prob.reserve(n_events);
+    bv1_detection_prob.reserve(n_events);
+    bv2_detection_prob.reserve(n_events);
     vbs_detection_prob.reserve(n_events);
     event_signal_prob.reserve(n_events);
     
     // Extract outputs for each event
     for (const auto& event_outputs : all_outputs) {
         h_assignment_prob.push_back(event_outputs[0]);
-        v_assignment_prob.push_back(event_outputs[1]);
-        bh_assignment_prob.push_back(event_outputs[2]);
-        bv_assignment_prob.push_back(event_outputs[3]);
-        vbs_assignment_prob.push_back(event_outputs[4]);
-        
-        h_detection_prob.push_back(event_outputs[5][0][0]);
-        v_detection_prob.push_back(event_outputs[6][0][0]);
-        bh_detection_prob.push_back(event_outputs[7][0][0]);
-        bv_detection_prob.push_back(event_outputs[8][0][0]);
-        vbs_detection_prob.push_back(event_outputs[9][0][0]);
-        
-        event_signal_prob.push_back(event_outputs[10][0][0]);
+        bh_assignment_prob.push_back(event_outputs[1]);
+        v1_assignment_prob.push_back(event_outputs[2]);
+        v2_assignment_prob.push_back(event_outputs[3]);
+        bv1_assignment_prob.push_back(event_outputs[4]);
+        bv2_assignment_prob.push_back(event_outputs[5]);
+        vbs_assignment_prob.push_back(event_outputs[6]);
+
+        h_detection_prob.push_back(event_outputs[7][0][0]);
+        bh_detection_prob.push_back(event_outputs[8][0][0]);
+        v1_detection_prob.push_back(event_outputs[9][0][0]);
+        v2_detection_prob.push_back(event_outputs[10][0][0]);
+        bv1_detection_prob.push_back(event_outputs[11][0][0]);
+        bv2_detection_prob.push_back(event_outputs[12][0][0]);
+        vbs_detection_prob.push_back(event_outputs[13][0][0]);
+
+        event_signal_prob.push_back(event_outputs[14][0][0]);
     }
     
     auto getHAssignment = [h_assignment_prob](unsigned int slot, ULong64_t entry) {
         return h_assignment_prob[entry];
     };
-    auto getVAssignment = [v_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return v_assignment_prob[entry];
-    };
     auto getBHAssignment = [bh_assignment_prob](unsigned int slot, ULong64_t entry) {
         return bh_assignment_prob[entry];
     };
-    auto getBVAssignment = [bv_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return bv_assignment_prob[entry];
+    auto getV1Assignment = [v1_assignment_prob](unsigned int slot, ULong64_t entry) {
+        return v1_assignment_prob[entry];
+    };
+    auto getV2Assignment = [v2_assignment_prob](unsigned int slot, ULong64_t entry) {
+        return v2_assignment_prob[entry];
+    };
+    auto getBV1Assignment = [bv1_assignment_prob](unsigned int slot, ULong64_t entry) {
+        return bv1_assignment_prob[entry];
+    };
+    auto getBV2Assignment = [bv2_assignment_prob](unsigned int slot, ULong64_t entry) {
+        return bv2_assignment_prob[entry];
     };
     auto getVBSAssignment = [vbs_assignment_prob](unsigned int slot, ULong64_t entry) {
         return vbs_assignment_prob[entry];
@@ -462,14 +449,20 @@ inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, cons
     auto getHDetection = [h_detection_prob](unsigned int slot, ULong64_t entry) {
         return h_detection_prob[entry];
     };
-    auto getVDetection = [v_detection_prob](unsigned int slot, ULong64_t entry) {
-        return v_detection_prob[entry];
-    };
     auto getBHDetection = [bh_detection_prob](unsigned int slot, ULong64_t entry) {
         return bh_detection_prob[entry];
     };
-    auto getBVDetection = [bv_detection_prob](unsigned int slot, ULong64_t entry) {
-        return bv_detection_prob[entry];
+    auto getV1Detection = [v1_detection_prob](unsigned int slot, ULong64_t entry) {
+        return v1_detection_prob[entry];
+    };
+    auto getV2Detection = [v2_detection_prob](unsigned int slot, ULong64_t entry) {
+        return v2_detection_prob[entry];
+    };
+    auto getBV1Detection = [bv1_detection_prob](unsigned int slot, ULong64_t entry) {
+        return bv1_detection_prob[entry];
+    };
+    auto getBV2Detection = [bv2_detection_prob](unsigned int slot, ULong64_t entry) {
+        return bv2_detection_prob[entry];
     };
     auto getVBSDetection = [vbs_detection_prob](unsigned int slot, ULong64_t entry) {
         return vbs_detection_prob[entry];
@@ -480,14 +473,18 @@ inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, cons
     
     // Add all SPANet outputs using DefineSlotEntry for proper entry mapping
     return df.DefineSlotEntry("spanet_h_assignment", getHAssignment, {})
-             .DefineSlotEntry("spanet_v_assignment", getVAssignment, {})
              .DefineSlotEntry("spanet_bh_assignment", getBHAssignment, {})
-             .DefineSlotEntry("spanet_bv_assignment", getBVAssignment, {})
+             .DefineSlotEntry("spanet_v1_assignment", getV1Assignment, {})
+             .DefineSlotEntry("spanet_v2_assignment", getV2Assignment, {})
+             .DefineSlotEntry("spanet_bv1_assignment", getBV1Assignment, {})
+             .DefineSlotEntry("spanet_bv2_assignment", getBV2Assignment, {})
              .DefineSlotEntry("spanet_vbs_assignment", getVBSAssignment, {})
              .DefineSlotEntry("spanet_h_detection", getHDetection, {})
-             .DefineSlotEntry("spanet_v_detection", getVDetection, {})
              .DefineSlotEntry("spanet_bh_detection", getBHDetection, {})
-             .DefineSlotEntry("spanet_bv_detection", getBVDetection, {})
+             .DefineSlotEntry("spanet_v1_detection", getV1Detection, {})
+             .DefineSlotEntry("spanet_v2_detection", getV2Detection, {})
+             .DefineSlotEntry("spanet_bv1_detection", getBV1Detection, {})
+             .DefineSlotEntry("spanet_bv2_detection", getBV2Detection, {})
              .DefineSlotEntry("spanet_vbs_detection", getVBSDetection, {})
              .DefineSlotEntry("spanet_event_signal", getEventSignal, {});
 }
