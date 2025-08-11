@@ -29,5 +29,6 @@ RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
 
 RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session);
-
+RNode GenLevelSelections(RNode df_);
+RNode ParseSpanet(RNode df_);
 #endif // SELECTIONS_H

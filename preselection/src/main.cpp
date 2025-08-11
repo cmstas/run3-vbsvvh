@@ -11,7 +11,7 @@
 #include "argparser.hpp"
 
 struct MyArgs : public argparse::Args {
-    int &nthreads = kwarg("n,nthreads", "number of threads used for spanet inference").set_default(64);
+    int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
     bool &cutflow = flag("cutflow", "print cutflow");
     bool &debug = flag("debug", "enable debug mode").set_default(false);
     std::string &spec = kwarg("i,input", "spec.json path");
@@ -73,8 +73,7 @@ int main(int argc, char** argv) {
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana);
 
-    // Enable multithreading if requested more than one thread
-    SPANet::SPANetInference spanet_inference("spanet/spanet_v2.onnx", args.nthreads);
+    SPANet::SPANetInference spanet_inference("spanet/spanet_w_det_loss_v2.onnx", args.batch_size);
 
     // add debugging
     if (args.debug) {
@@ -122,6 +121,7 @@ int main(int argc, char** argv) {
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = runAnalysis(df, args, spanet_inference);
+        // add genLevel info
         df = applyMCWeights(df);
     }
 

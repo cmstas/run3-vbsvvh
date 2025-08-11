@@ -198,23 +198,23 @@ RNode applyDataWeights(RNode df_) {
 }
 
 RNode applyMCWeights(RNode df_) {
-    auto df = applyPileupScaleFactors(pileupScaleFactors, pileupScaleFactors_yearmap, df_);
-    df = applyMuonIDScaleFactors(muonScaleFactors, muonIDScaleFactors_yearmap, df);
-    df = applyMuonRecoScaleFactors(muonScaleFactors, muonRecoScaleFactors_yearmap, df);
-    df = applyMuonTriggerScaleFactors(muonScaleFactors, muonTriggerScaleFactors_yearmap, df);
+    // auto df = applyPileupScaleFactors(pileupScaleFactors, pileupScaleFactors_yearmap, df_);
+    // df = applyMuonIDScaleFactors(muonScaleFactors, muonIDScaleFactors_yearmap, df);
+    // df = applyMuonRecoScaleFactors(muonScaleFactors, muonRecoScaleFactors_yearmap, df);
+    // df = applyMuonTriggerScaleFactors(muonScaleFactors, muonTriggerScaleFactors_yearmap, df);
 
-    df = applyElectronIDScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
-    df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
-    df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
+    // df = applyElectronIDScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
+    // df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
+    // df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
-    return df.Define("weight", 
-        "weight_muonid[0] * "
-        "weight_muonreco[0] * "
-        "weight_muontrigger[0] * "
-        "weight_electronid[0] * "
-        "weight_electronreco[0] * "
-        "weight_electrontrigger[0] * "
-        "weight_pileup[0] * "
+    return df_.Define("weight", 
+        // "weight_muonid[0] * "
+        // "weight_muonreco[0] * "
+        // "weight_muontrigger[0] * "
+        // "weight_electronid[0] * "
+        // "weight_electronreco[0] * "
+        // "weight_electrontrigger[0] * "
+        // "weight_pileup[0] * "
         "genWeight * "
         "xsec_weight");
 }
