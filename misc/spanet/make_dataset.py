@@ -33,7 +33,9 @@ ROOT::RVec<float> get_dR(float eta1, float phi1, ROOT::RVec<float> eta2, ROOT::R
     return dR;
 }
 
-int find_matching_jet(ROOT::RVec<float> dR_values, float dR_cut, ROOT::RVec<int> excluded_indices, int max_jets = 10) {
+int find_matching_jet(ROOT::RVec<float> dR_values, ROOT::RVec<int> excluded_indices) {
+    int max_jets = 10;
+    const float dR_cut = 0.4f;
     auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
     for (int idx : sorted_indices) {
         if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
@@ -52,7 +54,9 @@ int find_matching_jet(ROOT::RVec<float> dR_values, float dR_cut, ROOT::RVec<int>
     return -1;
 }
 
-int find_matching_fatjet(ROOT::RVec<float> dR_values, float dR_cut, ROOT::RVec<int> excluded_indices, int max_fatjets = 3) {
+int find_matching_fatjet(ROOT::RVec<float> dR_values, ROOT::RVec<int> excluded_indices) {
+    int max_fatjets = 3;
+    const float dR_cut = 0.8f;
     auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
     for (int idx : sorted_indices) {
         if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
@@ -72,9 +76,7 @@ int find_matching_fatjet(ROOT::RVec<float> dR_values, float dR_cut, ROOT::RVec<i
 }
                        
 int num_hadronic_gauge_bosons(ROOT::RVec<int> pdgId, ROOT::RVec<short> motherIdx) {
-    // particles at idx 2 and 3 are hadronic gauge bosons, go down the decay chain to see if they decay hadronically or leptonically
-
-    // recursively check the mother particles
+    // particles at idx 2 and 3 are hadronic gauge bosons
     auto daughterIdx = [&] (int idx) {
         ROOT::RVec<int> daughters;
         for (size_t i = 0; i < pdgId.size(); ++i) {
@@ -88,19 +90,15 @@ int num_hadronic_gauge_bosons(ROOT::RVec<int> pdgId, ROOT::RVec<short> motherIdx
     std::function<bool(int)> is_hadronic = [&] (int idx) -> bool {
         if (idx < 0 || idx >= pdgId.size()) return false;
         if (pdgId[idx] == 23 || pdgId[idx] == 24 || pdgId[idx] == -24) {
-            // Check if it has hadronic daughters
             auto daughters = daughterIdx(idx);
-            // if daughter is another gauge boson, keep going down the chain
             for (int daughter : daughters) {
                 if (pdgId[daughter] == 23 || pdgId[daughter] == 24 || pdgId[daughter] == -24) {
                     if (is_hadronic(daughter)) {
                         return true;
                     }
                 } else if (abs(pdgId[daughter]) < 6) {
-                    // If it has a quark daughter, it's hadronic
                     return true;
                 } else if (abs(pdgId[daughter]) == 11 || abs(pdgId[daughter]) == 13 || abs(pdgId[daughter]) == 15) {
-                    // If it has a lepton daughter, it's leptonic
                     return false;
                 }
             }
@@ -148,7 +146,7 @@ int get_higgs_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<short>& motherIdx) {
         }
     }
 
-    return -1; // No valid pair found
+    return -1;
 }                    
                        
 """
@@ -256,13 +254,15 @@ def make_dataset(dataframes, output_path):
     sig_df, bkg_df = dataframes
 
     data_sig = prepare_dataset(sig_df, isSignal=True)
-    # data_bkg = prepare_dataset(bkg_df)
-
     data_sig["isSignal"] = True
-    # data_bkg["isSignal"] = False
 
-    # data = ak.concatenate([data_sig, data_bkg], axis=0)
-    data = data_sig
+    if bkg_df is not None:
+        data_bkg = prepare_dataset(bkg_df)
+        data_bkg["isSignal"] = False
+
+        data = ak.concatenate([data_sig, data_bkg], axis=0)
+    else:
+        data = data_sig
 
     datasets = {
         # AK4 Jets
@@ -349,7 +349,6 @@ def genMatching(input_file, isSignal):
     if (isSignal):
         df = df.Define("GenPart_motherPdgId", "Take(GenPart_pdgId, GenPart_genPartIdxMother)")
         df = df.Define("Higgs_idx", "get_higgs_boson_idx(GenPart_pdgId, GenPart_genPartIdxMother)") \
-            .Filter("Higgs_idx != -1") \
             .Define("Higgs_eta", "GenPart_eta[Higgs_idx]") \
             .Define("Higgs_phi", "GenPart_phi[Higgs_idx]") \
             .Define("VBSJet1_eta", "GenPart_eta[5]") \
@@ -383,17 +382,16 @@ def genMatching(input_file, isSignal):
         df = df.Filter("Jet_pt.size() > 0") \
             .Define("vbs1_dR", "get_dR(VBSJet1_eta, VBSJet1_phi, Jet_eta, Jet_phi)") \
             .Define("vbs2_dR", "get_dR(VBSJet2_eta, VBSJet2_phi, Jet_eta, Jet_phi)") \
-            .Define("Jet_vbs1_idx_temp", "find_matching_jet(vbs1_dR, 0.4, ROOT::RVec<int>{}, 10)") \
-            .Define("Jet_vbs2_idx_temp", "find_matching_jet(vbs2_dR, 0.4, ROOT::RVec<int>{Jet_vbs1_idx_temp}, 10)") \
+            .Define("Jet_vbs1_idx_temp", "find_matching_jet(vbs1_dR, ROOT::RVec<int>{})") \
+            .Define("Jet_vbs2_idx_temp", "find_matching_jet(vbs2_dR, ROOT::RVec<int>{Jet_vbs1_idx_temp})") \
             .Define("Jet_vbs1_idx", "Jet_vbs1_idx_temp >= 0 && Jet_vbs1_idx_temp < 10 ? Jet_vbs1_idx_temp : -1") \
-            .Define("Jet_vbs2_idx", "Jet_vbs2_idx_temp >= 0 && Jet_vbs2_idx_temp < 10 ? Jet_vbs2_idx_temp : -1") \
-            .Filter("(Jet_vbs1_idx != -1 && Jet_vbs2_idx != -1)")
+            .Define("Jet_vbs2_idx", "Jet_vbs2_idx_temp >= 0 && Jet_vbs2_idx_temp < 10 ? Jet_vbs2_idx_temp : -1")
 
         # Boosted Hbb matching - Use argsort approach with bounds checking
         df = df.Filter("FatJet_pt.size() > 0") \
             .Define("hbb_fatjet_dR", "get_dR(Higgs_eta, Higgs_phi, FatJet_eta, FatJet_phi)") \
             .Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b1_phi, b2_eta, b2_phi)") \
-            .Define("hbb_fatjet_idx_temp", "find_matching_fatjet(hbb_fatjet_dR, 0.8, ROOT::RVec<int>{}, 3)") \
+            .Define("hbb_fatjet_idx_temp", "Higgs_idx != -1 && hbb_fatjet_dR.size() > 0 ? find_matching_fatjet(hbb_fatjet_dR, ROOT::RVec<int>{}) : -1") \
             .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b1_eta, b1_phi) : 999.0") \
             .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b2_eta, b2_phi) : 999.0") \
             .Define("hbb_isBoosted", "hbb_fatjet_idx_temp != -1 && hbb_fatjet_idx_temp < 3 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8") \
@@ -403,9 +401,9 @@ def genMatching(input_file, isSignal):
         df = df.Define("b1_jet_dR", "get_dR(b1_eta, b1_phi, Jet_eta, Jet_phi)") \
             .Define("b2_jet_dR", "get_dR(b2_eta, b2_phi, Jet_eta, Jet_phi)") \
             .Define("excluded_jets_for_hbb", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx}") \
-            .Define("Jet_hbb1_idx_temp", "!hbb_isBoosted ? find_matching_jet(b1_jet_dR, 0.4, excluded_jets_for_hbb, 10) : -1") \
+            .Define("Jet_hbb1_idx_temp", "Higgs_idx != -1 && b1_jet_dR.size() > 0 ? find_matching_jet(b1_jet_dR, excluded_jets_for_hbb) : -1") \
             .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx_temp}") \
-            .Define("Jet_hbb2_idx_temp", "!hbb_isBoosted && Jet_hbb1_idx_temp != -1 ? find_matching_jet(b2_jet_dR, 0.4, excluded_jets_for_hbb2, 10) : -1") \
+            .Define("Jet_hbb2_idx_temp", "Higgs_idx != -1 && b2_jet_dR.size() > 0 ? find_matching_jet(b2_jet_dR, excluded_jets_for_hbb2) : -1") \
             .Define("Jet_hbb1_idx", "Jet_hbb1_idx_temp >= 0 && Jet_hbb1_idx_temp < 10 ? Jet_hbb1_idx_temp : -1") \
             .Define("Jet_hbb2_idx", "Jet_hbb2_idx_temp >= 0 && Jet_hbb2_idx_temp < 10 ? Jet_hbb2_idx_temp : -1") \
             .Define("hbb_isResolved", "!hbb_isBoosted && Jet_hbb1_idx != -1 && Jet_hbb2_idx != -1")
@@ -414,7 +412,7 @@ def genMatching(input_file, isSignal):
         df = df.Define("v1qq_fatjet_dR", "V1_idx != -1 ? get_dR(V1_eta, V1_phi, FatJet_eta, FatJet_phi) : ROOT::RVec<float>()") \
             .Define("v1qq_dR", "V1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0") \
             .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{FatJet_hbb_idx}") \
-            .Define("v1qq_fatjet_idx_temp", "V1_idx != -1 && v1qq_fatjet_dR.size() > 0 ? find_matching_fatjet(v1qq_fatjet_dR, 0.8, excluded_fatjets_for_v1, 3) : -1") \
+            .Define("v1qq_fatjet_idx_temp", "V1_idx != -1 && v1qq_fatjet_dR.size() > 0 ? find_matching_fatjet(v1qq_fatjet_dR, excluded_fatjets_for_v1) : -1") \
             .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_eta, V1_q1_phi) : 999.0") \
             .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_eta, V1_q2_phi) : 999.0") \
             .Define("v1qq_isBoosted", "V1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8") \
@@ -424,7 +422,7 @@ def genMatching(input_file, isSignal):
         df = df.Define("v2qq_fatjet_dR", "V2_idx != -1 ? get_dR(V2_eta, V2_phi, FatJet_eta, FatJet_phi) : ROOT::RVec<float>()") \
             .Define("v2qq_dR", "V2_idx != -1 ? ROOT::VecOps::DeltaR(V2_q1_eta, V2_q1_phi, V2_q2_eta, V2_q2_phi) : 999.0") \
             .Define("excluded_fatjets_for_v2", "ROOT::RVec<int>{FatJet_hbb_idx, FatJet_v1qq_idx}") \
-            .Define("v2qq_fatjet_idx_temp", "V2_idx != -1 && v2qq_fatjet_dR.size() > 0 ? find_matching_fatjet(v2qq_fatjet_dR, 0.8, excluded_fatjets_for_v2, 3) : -1") \
+            .Define("v2qq_fatjet_idx_temp", "V2_idx != -1 && v2qq_fatjet_dR.size() > 0 ? find_matching_fatjet(v2qq_fatjet_dR, excluded_fatjets_for_v2) : -1") \
             .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q1_eta, V2_q1_phi) : 999.0") \
             .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q2_eta, V2_q2_phi) : 999.0") \
             .Define("v2qq_isBoosted", "V2_idx != -1 && v2qq_fatjet_idx_temp != -1 && v2qq_fatjet_idx_temp < 3 && v2qq_dR < 0.8 && v2qq_fatjet_candidate_q1_dR < 0.8 && v2qq_fatjet_candidate_q2_dR < 0.8") \
@@ -434,9 +432,9 @@ def genMatching(input_file, isSignal):
         df = df.Define("v1q1_jet_dR", "V1_idx != -1 ? get_dR(V1_q1_eta, V1_q1_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
             .Define("v1q2_jet_dR", "V1_idx != -1 ? get_dR(V1_q2_eta, V1_q2_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
             .Define("excluded_jets_for_v1q1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx}") \
-            .Define("Jet_v1q1_idx_temp", "V1_idx != -1 && !v1qq_isBoosted && v1q1_jet_dR.size() > 0 ? find_matching_jet(v1q1_jet_dR, 0.4, excluded_jets_for_v1q1, 10) : -1") \
+            .Define("Jet_v1q1_idx_temp", "V1_idx != -1 && v1q1_jet_dR.size() > 0 ? find_matching_jet(v1q1_jet_dR, excluded_jets_for_v1q1) : -1") \
             .Define("excluded_jets_for_v1q2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx_temp}") \
-            .Define("Jet_v1q2_idx_temp", "V1_idx != -1 && !v1qq_isBoosted && Jet_v1q1_idx_temp != -1 && v1q2_jet_dR.size() > 0 ? find_matching_jet(v1q2_jet_dR, 0.4, excluded_jets_for_v1q2, 10) : -1") \
+            .Define("Jet_v1q2_idx_temp", "V1_idx != -1 && v1q2_jet_dR.size() > 0 ? find_matching_jet(v1q2_jet_dR, excluded_jets_for_v1q2) : -1") \
             .Define("Jet_v1q1_idx", "Jet_v1q1_idx_temp >= 0 && Jet_v1q1_idx_temp < 10 ? Jet_v1q1_idx_temp : -1") \
             .Define("Jet_v1q2_idx", "Jet_v1q2_idx_temp >= 0 && Jet_v1q2_idx_temp < 10 ? Jet_v1q2_idx_temp : -1") \
             .Define("v1qq_isResolved", "V1_idx != -1 && !v1qq_isBoosted && Jet_v1q1_idx != -1 && Jet_v1q2_idx != -1")
@@ -445,9 +443,9 @@ def genMatching(input_file, isSignal):
         df = df.Define("v2q1_jet_dR", "V2_idx != -1 ? get_dR(V2_q1_eta, V2_q1_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
             .Define("v2q2_jet_dR", "V2_idx != -1 ? get_dR(V2_q2_eta, V2_q2_phi, Jet_eta, Jet_phi) : ROOT::RVec<float>()") \
             .Define("excluded_jets_for_v2q1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx, Jet_v1q2_idx}") \
-            .Define("Jet_v2q1_idx_temp", "V2_idx != -1 && !v2qq_isBoosted && v2q1_jet_dR.size() > 0 ? find_matching_jet(v2q1_jet_dR, 0.4, excluded_jets_for_v2q1, 10) : -1") \
+            .Define("Jet_v2q1_idx_temp", "V2_idx != -1 && v2q1_jet_dR.size() > 0 ? find_matching_jet(v2q1_jet_dR, excluded_jets_for_v2q1) : -1") \
             .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx, Jet_v1q2_idx, Jet_v2q1_idx_temp}") \
-            .Define("Jet_v2q2_idx_temp", "V2_idx != -1 && !v2qq_isBoosted && Jet_v2q1_idx_temp != -1 && v2q2_jet_dR.size() > 0 ? find_matching_jet(v2q2_jet_dR, 0.4, excluded_jets_for_v2q2, 10) : -1") \
+            .Define("Jet_v2q2_idx_temp", "V2_idx != -1 && v2q2_jet_dR.size() > 0 ? find_matching_jet(v2q2_jet_dR, excluded_jets_for_v2q2) : -1") \
             .Define("Jet_v2q1_idx", "Jet_v2q1_idx_temp >= 0 && Jet_v2q1_idx_temp < 10 ? Jet_v2q1_idx_temp : -1") \
             .Define("Jet_v2q2_idx", "Jet_v2q2_idx_temp >= 0 && Jet_v2q2_idx_temp < 10 ? Jet_v2q2_idx_temp : -1") \
             .Define("v2qq_isResolved", "V2_idx != -1 && !v2qq_isBoosted && Jet_v2q1_idx != -1 && Jet_v2q2_idx != -1")
@@ -474,18 +472,6 @@ def genMatching(input_file, isSignal):
     return df
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("--train", action="store_true", help="Is this a training sample?")
-    args = parser.parse_args()
-
-    # if args.train:
-    #     suffix = "_train"
-    # else:
-    #     suffix = "_test"
-
-    # df_sig = genMatching(f"OneLep2FJ-sig{suffix}.json", isSignal=True)
-    # df_bkg = genMatching(f"OneLep2FJ-bkg{suffix}.json", isSignal=False)
-
     df_bkg = None
     df_sig = genMatching(f"/home/users/aaarora/phys/run3/run3-vbsvvh/preselection/etc/1Lep2FJ-sig.json", isSignal=True)
     # df_bkg = genMatching(f"/home/users/aaarora/phys/run3/SPANet/input_proc/1Lep2FJ1.5-bkg.json", isSignal=False)

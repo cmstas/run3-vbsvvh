@@ -184,7 +184,6 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
         const float* output_data = output_tensor.GetTensorData<float>();
         
 
-        // ASSIGNMENT PROBABILITIES
         if (tensor_idx < 7) { 
             static thread_local std::vector<std::pair<float, size_t>> value_idx_pairs;
             
@@ -193,15 +192,13 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
                 size_t jets_dim2 = output_shape[2];
                 size_t offset = batch_idx * jets_dim1 * jets_dim2;
                 
-                // Triangular size = n*(n-1)/2
                 size_t tri_size = (jets_dim1 * (jets_dim1 - 1)) / 2;
                 value_idx_pairs.clear();
                 value_idx_pairs.reserve(tri_size);
                 
-                // Find values and their indices from upper triangular matrix only
                 for (size_t i = 0; i < jets_dim1; ++i) {
                     size_t row_offset = offset + i * jets_dim2;
-                    for (size_t j = i + 1; j < jets_dim2; ++j) { // Only upper triangular: i < j
+                    for (size_t j = i + 1; j < jets_dim2; ++j) { 
                         value_idx_pairs.emplace_back(output_data[row_offset + j], i * jets_dim2 + j);
                     }
                 }
@@ -248,17 +245,13 @@ inline std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetI
             } // [batch, jets]
         } 
         
-            // DETECTION PROBABILITIES
         else if (tensor_idx < 14) { 
-            // Detection probabilities have shape [batch_size], one value per event
             batch_results[batch_idx][tensor_idx] = {{output_data[batch_idx]}};
         } 
             
-            // EVENT-LEVEL OUTPUT
         else {
-            // Event-level output has shape [batch_size, 2] for [background, signal]
             size_t offset = batch_idx * 2;
-            batch_results[batch_idx][tensor_idx] = {{output_data[offset + 1]}}; // Take signal probability
+            batch_results[batch_idx][tensor_idx] = {{output_data[offset + 1]}}; 
         }
     };
 
@@ -371,7 +364,6 @@ inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventDat
             ak8_flat_jets[base_idx + 10] = event.ak8_XqcdScore[i];
         }
         
-        // Fill event inputs
         const size_t event_base_idx = batch_idx * 3;
         met_inputs[event_base_idx]     = std::log(event.met_pt + 1.0f);
         met_inputs[event_base_idx + 1] = std::sin(event.met_phi);
@@ -382,11 +374,9 @@ inline void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventDat
 }
 
 inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>>& all_outputs) {
-    // Create separate vectors for each output type to match expected format
     std::vector<std::vector<std::vector<float>>> h_assignment_prob, bh_assignment_prob, v1_assignment_prob, v2_assignment_prob, bv1_assignment_prob, bv2_assignment_prob, vbs_assignment_prob;
     std::vector<float> h_detection_prob, bh_detection_prob, v1_detection_prob, v2_detection_prob, bv1_detection_prob, bv2_detection_prob, vbs_detection_prob, event_signal_prob;
 
-    // Reserve space for efficiency
     size_t n_events = all_outputs.size();
     h_assignment_prob.reserve(n_events);
     bh_assignment_prob.reserve(n_events);
@@ -404,7 +394,6 @@ inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, cons
     vbs_detection_prob.reserve(n_events);
     event_signal_prob.reserve(n_events);
     
-    // Extract outputs for each event
     for (const auto& event_outputs : all_outputs) {
         h_assignment_prob.push_back(event_outputs[0]);
         bh_assignment_prob.push_back(event_outputs[1]);
@@ -471,7 +460,6 @@ inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, cons
         return event_signal_prob[entry];
     };
     
-    // Add all SPANet outputs using DefineSlotEntry for proper entry mapping
     return df.DefineSlotEntry("spanet_h_assignment", getHAssignment, {})
              .DefineSlotEntry("spanet_bh_assignment", getBHAssignment, {})
              .DefineSlotEntry("spanet_v1_assignment", getV1Assignment, {})
@@ -490,7 +478,6 @@ inline RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, cons
 }
 
 inline RNode SPANet::SPANetInference::RunSPANetInference(RNode df) {
-    // Efficient data extraction with timing
     auto start_time = std::chrono::high_resolution_clock::now();
     auto events = extractEventsFromDataFrame(df);
     auto extract_time = std::chrono::high_resolution_clock::now();
@@ -499,14 +486,12 @@ inline RNode SPANet::SPANetInference::RunSPANetInference(RNode df) {
     auto all_outputs = runBatchInference(events);
     auto inference_time = std::chrono::high_resolution_clock::now();
     
-    // Free event data memory as soon as possible
     events.clear();
     events.shrink_to_fit();
     
     auto result = addSPANetOutputsToDataFrame(df, all_outputs);
     auto end_time = std::chrono::high_resolution_clock::now();
     
-    // Report timing for profiling
     auto extract_ms = std::chrono::duration_cast<std::chrono::milliseconds>(extract_time - start_time).count();
     auto inference_ms = std::chrono::duration_cast<std::chrono::milliseconds>(inference_time - extract_time).count();
     auto output_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - inference_time).count();

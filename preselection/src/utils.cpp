@@ -305,35 +305,42 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
     return good_jet_idx;
 }
 
-int get_hadronic_gauge_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
-    RVec<int> quarkIdxs;
-    for (size_t i = 0; i < pdgId.size(); ++i) {
-        if (std::abs(pdgId[i]) <= 5 && motherIdx[i] >= 0) {
-            quarkIdxs.push_back(i);
+int num_hadronic_gauge_bosons(RVec<int> pdgId, RVec<short> motherIdx) {
+    // particles at idx 2 and 3 are hadronic gauge bosons
+    auto daughterIdx = [&] (int idx) {
+        RVec<int> daughters;
+        for (size_t i = 0; i < pdgId.size(); ++i) {
+            if (motherIdx[i] == idx) {
+                daughters.push_back(i);
+            }
         }
-    }
-    for (size_t i = 0; i < quarkIdxs.size(); ++i) {
-        for (size_t j = i + 1; j < quarkIdxs.size(); ++j) {
-            int qi = quarkIdxs[i];
-            int qj = quarkIdxs[j];
-
-            int mi = motherIdx[qi];
-            int mj = motherIdx[qj];
-
-            if (mi == mj && (std::abs(pdgId[mi]) == 24 || std::abs(pdgId[mi]) == 23)) {
-                int current = mi;
-                while (motherIdx[current] >= 0 && 
-                       (std::abs(pdgId[motherIdx[current]]) == 24 || std::abs(pdgId[motherIdx[current]]) == 23)) {
-                    current = motherIdx[current];
-                }
-
-                if (current == 2 || current == 3) {
-                    return mi;
+        return daughters;
+    };
+                       
+    std::function<bool(int)> is_hadronic = [&] (int idx) -> bool {
+        if (idx < 0 || idx >= pdgId.size()) return false;
+        if (pdgId[idx] == 23 || pdgId[idx] == 24 || pdgId[idx] == -24) {
+            auto daughters = daughterIdx(idx);
+            for (int daughter : daughters) {
+                if (pdgId[daughter] == 23 || pdgId[daughter] == 24 || pdgId[daughter] == -24) {
+                    if (is_hadronic(daughter)) {
+                        return true;
+                    }
+                } else if (abs(pdgId[daughter]) < 6) {
+                    return true;
+                } else if (abs(pdgId[daughter]) == 11 || abs(pdgId[daughter]) == 13 || abs(pdgId[daughter]) == 15) {
+                    return false;
                 }
             }
         }
-    }
-    return -1;
+        return false;
+    };
+
+    // return 0 if both are leptonic, 1 if only genpart 2 is hadronic, 2 if only genpart 3 is hadronic, 3 if both are hadronic
+    int count = 0;
+    if (is_hadronic(2)) count += 1;
+    if (is_hadronic(3)) count += 2;
+    return count;
 }
 
 int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
@@ -369,7 +376,7 @@ int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
         }
     }
     return -1;
-}                    
+}
 
 std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi) {
     // check if bh detection is higher than bv detection, if it is then prioritize bh assignment, else prioritize bv assignment.
@@ -462,6 +469,113 @@ std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std
         }
     } 
     return std::make_pair(bh_idx, bv_idx);
+}
+
+int find_matching_jet(RVec<float> dR_values, RVec<int> excluded_indices) {
+    int max_jets = 10;
+    const float dR_cut = 0.4f;
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break;
+        if (idx >= max_jets) continue;
+        bool is_excluded = false;
+        for (int excl_idx : excluded_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (!is_excluded) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+int find_matching_fatjet(RVec<float> dR_values, RVec<int> excluded_indices) {
+    int max_fatjets = 3;
+    const float dR_cut = 0.8f;
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break;
+        if (idx >= max_fatjets) continue;
+        bool is_excluded = false;
+        for (int excl_idx : excluded_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (!is_excluded) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+int find_matching_jet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices) {
+    int max_jets = 10;
+    if (check_idx == -1 || dR_values.empty()) return -1;
+
+    const float dR_cut = 0.4f;
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break;
+        if (idx >= max_jets) continue;
+        bool is_excluded = false;
+        for (int excl_idx : excluded_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (!is_excluded) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+int find_matching_fatjet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices) {
+    int max_fatjets = 3;
+    if (check_idx == -1 || dR_values.empty()) return -1;
+    
+    const float dR_cut = 0.8f;
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break;
+        if (idx >= max_fatjets) continue;
+        bool is_excluded = false;
+        for (int excl_idx : excluded_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (!is_excluded) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+RVec<float> get_dR(float eta1, float phi1, RVec<float> eta2, RVec<float> phi2) {
+    RVec<float> dR;
+    for (size_t i = 0; i < eta2.size(); ++i) {
+        dR.push_back(ROOT::VecOps::DeltaR(eta1, eta2[i], phi1, phi2[i]));
+    }
+    return dR;
+}
+
+RVec<float> get_dR_conditional(int idx, float eta1, float phi1, RVec<float> eta2, RVec<float> phi2) {
+    if (idx == -1) {
+        return RVec<float>();
+    }
+    RVec<float> dR;
+    for (size_t i = 0; i < eta2.size(); ++i) {
+        dR.push_back(ROOT::VecOps::DeltaR(eta1, eta2[i], phi1, phi2[i]));
+    }
+    return dR;
 }
 
 /*

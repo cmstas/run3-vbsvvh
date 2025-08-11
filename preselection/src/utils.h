@@ -126,9 +126,19 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
 
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
-int get_hadronic_gauge_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx);
+int num_hadronic_gauge_bosons(RVec<int> pdgId, RVec<short> motherIdx);
 int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx);
 std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float lepton_eta, float lepton_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi);
+
+RVec<float> get_dR(float eta1, float phi1, RVec<float> eta2, RVec<float> phi2);
+RVec<float> get_dR_conditional(int idx, float eta1, float phi1, RVec<float> eta2, RVec<float> phi2);
+
+int find_matching_jet(RVec<float> dR_values, RVec<int> excluded_indices);
+int find_matching_fatjet(RVec<float> dR_values, RVec<int> excluded_indices);
+int find_matching_jet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices);
+int find_matching_fatjet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices);
+
+
 
 /*
 ############################################

@@ -73,8 +73,7 @@ int main(int argc, char** argv) {
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana);
 
-    // Enable multithreading if requested more than one thread
-    SPANet::SPANetInference spanet_inference("spanet/spanet.onnx", args.batch_size);
+    SPANet::SPANetInference spanet_inference("spanet/spanet_w_det_loss.onnx", args.batch_size);
 
     // add debugging
     if (args.debug) {
