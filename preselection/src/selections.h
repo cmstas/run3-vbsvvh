@@ -16,9 +16,9 @@ using RNode = ROOT::RDF::RNode;
 const std::unordered_map<std::string, std::string> TriggerMap = {
     {"1Lep2FJ", "HLT_Ele30_WPTight_Gsf || HLT_IsoMu24"},
     {"1Lep1FJ", "HLT_Ele30_WPTight_Gsf || HLT_IsoMu24"},
-    {"0Lep3FJ", "HLT_BLAH"},
-    {"0Lep2FJ", "HLT_BLAH"},
-    {"0Lep2FJMET", "HLT_BLAH"},
+    //{"0Lep3FJ", "HLT_BLAH"},
+    //{"0Lep2FJ", "HLT_BLAH"},
+    //{"0Lep2FJMET", "HLT_BLAH"},
 };
 
 RNode EventFilters(RNode df);
