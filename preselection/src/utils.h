@@ -145,7 +145,7 @@ std::vector<int> assign_all_objects(std::vector<std::vector<float>> vbs_assignme
 SNAPSHOT
 ############################################
 */
-std::string setOutputDirectory(const std::string &dir);
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData = false);
+std::string setOutputDirectory(const std::string &ana, const std::string &output_subdir);
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData, bool dumpInput);
 
 #endif

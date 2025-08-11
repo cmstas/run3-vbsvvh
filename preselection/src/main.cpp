@@ -18,6 +18,8 @@ struct MyArgs : public argparse::Args {
     std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection");
     std::string &cut = kwarg("cut", "cut on final snapshot").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
+    std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
+    bool &dumpInput = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
 };
 
 RNode runAnalysis(RNode df, MyArgs args, SPANet::SPANetInference &spanet_inference) {
@@ -71,7 +73,7 @@ int main(int argc, char** argv) {
     std::string output_file = args.output;
 
     // Create output directory
-    std::string output_dir = setOutputDirectory(args.ana);
+    std::string output_dir = setOutputDirectory(args.ana, args.output_subdir);
 
     SPANet::SPANetInference spanet_inference("spanet/spanet_w_det_loss_v2.onnx", args.batch_size);
 
@@ -128,7 +130,7 @@ int main(int argc, char** argv) {
     auto cutflow = Cutflow(df);
 
     // Save events to root file
-    saveSnapshot(df, output_dir, output_file, isData);
+    saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
 
     // Print cutflow
     if (args.cutflow) {
