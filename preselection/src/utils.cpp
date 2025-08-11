@@ -378,99 +378,6 @@ int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
     return -1;
 }
 
-std::pair<int, int> bh_bv_idx(std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> bv_assignment, float bh_detection, float bv_detection, RVec<float> FatJet_eta, RVec<float> FatJet_phi, float vbs1_eta, float vbs1_phi, float vbs2_eta, float vbs2_phi) {
-    // check if bh detection is higher than bv detection, if it is then prioritize bh assignment, else prioritize bv assignment.
-    // We mush make sure that bh and bv are not assigned to the same jet, and also that they have dR > 0.8
-    // assignment scores are [[score, idx], [score, idx], [score, idx]]
-    int bh_idx = -1;
-    int bv_idx = -1;
-    
-    auto checkOverlap = [&](int jet_idx) -> bool {
-        if (jet_idx < 0 || jet_idx >= FatJet_eta.size()) return true;
-        
-        // Check overlap with VBS jets
-        if (vbs1_eta != -999 && vbs1_phi != -999) {
-            float dR = ROOT::VecOps::DeltaR(FatJet_eta[jet_idx], vbs1_eta, FatJet_phi[jet_idx], vbs1_phi);
-            if (dR < 0.8) return true;
-        }
-        if (vbs2_eta != -999 && vbs2_phi != -999) {
-            float dR = ROOT::VecOps::DeltaR(FatJet_eta[jet_idx], vbs2_eta, FatJet_phi[jet_idx], vbs2_phi);
-            if (dR < 0.8) return true;
-        }
-        
-        return false;
-    };
-    
-    if (bh_detection >= bv_detection) {
-        for (size_t i = 0; i < bh_assignment.size(); i++) {
-            int candidate_bh_idx = static_cast<int>(bh_assignment[i][1]);
-            if (checkOverlap(candidate_bh_idx)) continue;
-            
-            bool valid = true;
-            for (size_t j = 0; j < bv_assignment.size(); j++) {
-                int candidate_bv_idx = static_cast<int>(bv_assignment[j][1]);
-                if (candidate_bv_idx < 0 || candidate_bv_idx >= FatJet_eta.size()) continue;
-                float dR = ROOT::VecOps::DeltaR(FatJet_eta[candidate_bh_idx], FatJet_eta[candidate_bv_idx], FatJet_phi[candidate_bh_idx], FatJet_phi[candidate_bv_idx]);
-                if (candidate_bh_idx == candidate_bv_idx || dR < 0.8) {
-                    valid = false;
-                    break;
-                }
-            }
-            if (valid) {
-                bh_idx = candidate_bh_idx;
-                break;
-            }
-        }
-        for (size_t j = 0; j < bv_assignment.size(); j++) {
-            int candidate_bv_idx = static_cast<int>(bv_assignment[j][1]);
-            if (candidate_bv_idx < 0
-                || candidate_bv_idx >= FatJet_eta.size()
-                || candidate_bv_idx == bh_idx
-                || bh_idx < 0
-                || checkOverlap(candidate_bv_idx)) continue;
-            float dR = ROOT::VecOps::DeltaR(FatJet_eta[bh_idx], FatJet_eta[candidate_bv_idx], FatJet_phi[bh_idx], FatJet_phi[candidate_bv_idx]);
-            if (dR >= 0.8) {
-                bv_idx = candidate_bv_idx;
-                break;
-            }
-        }
-    } else {
-        for (size_t j = 0; j < bv_assignment.size(); j++) {
-            int candidate_bv_idx = static_cast<int>(bv_assignment[j][1]);
-            if (checkOverlap(candidate_bv_idx)) continue;
-            
-            bool valid = true;
-            for (size_t i = 0; i < bh_assignment.size(); i++) {
-                int candidate_bh_idx = static_cast<int>(bh_assignment[i][1]);
-                if (candidate_bh_idx < 0 || candidate_bh_idx >= FatJet_eta.size()) continue;
-                float dR = ROOT::VecOps::DeltaR(FatJet_eta[candidate_bh_idx], FatJet_eta[candidate_bv_idx], FatJet_phi[candidate_bh_idx], FatJet_phi[candidate_bv_idx]);
-                if (candidate_bh_idx == candidate_bv_idx || dR < 0.8) {
-                    valid = false;
-                    break;
-                }
-            }
-            if (valid) {
-                bv_idx = candidate_bv_idx;
-                break;
-            }
-        for (size_t i = 0; i < bh_assignment.size(); i++) {
-            int candidate_bh_idx = static_cast<int>(bh_assignment[i][1]);
-            if (candidate_bh_idx < 0
-                || candidate_bh_idx >= FatJet_eta.size()
-                || candidate_bh_idx == bv_idx
-                || bv_idx < 0
-                || checkOverlap(candidate_bh_idx)) continue;
-            float dR = ROOT::VecOps::DeltaR(FatJet_eta[candidate_bh_idx], FatJet_eta[bv_idx], FatJet_phi[candidate_bh_idx], FatJet_phi[bv_idx]);
-            if (dR >= 0.8) {
-                bh_idx = candidate_bh_idx;
-                break;
-            }
-        }
-        }
-    } 
-    return std::make_pair(bh_idx, bv_idx);
-}
-
 int find_matching_jet(RVec<float> dR_values, RVec<int> excluded_indices) {
     int max_jets = 10;
     const float dR_cut = 0.4f;
@@ -576,6 +483,218 @@ RVec<float> get_dR_conditional(int idx, float eta1, float phi1, RVec<float> eta2
         dR.push_back(ROOT::VecOps::DeltaR(eta1, eta2[i], phi1, phi2[i]));
     }
     return dR;
+}
+
+std::vector<int> assign_all_objects(
+    std::vector<std::vector<float>> vbs_assignment,
+    std::vector<std::vector<float>> h_assignment, 
+    std::vector<std::vector<float>> bh_assignment,
+    std::vector<std::vector<float>> v1_assignment,
+    std::vector<std::vector<float>> v2_assignment,
+    std::vector<std::vector<float>> bv1_assignment,
+    std::vector<std::vector<float>> bv2_assignment,
+    float vbs_detection,
+    float h_detection,
+    float bh_detection,
+    float v1_detection,
+    float v2_detection,
+    float bv1_detection,
+    float bv2_detection,
+    RVec<float> Jet_eta,
+    RVec<float> Jet_phi,
+    RVec<float> FatJet_eta,
+    RVec<float> FatJet_phi
+) {
+    std::vector<int> result(11, -1);
+    std::vector<int> assigned_jets;
+    std::vector<int> assigned_fatjets;
+    
+    std::vector<std::pair<float, int>> detection_order = {
+        {vbs_detection, 0},
+        {h_detection, 1},
+        {bh_detection, 2},
+        {v1_detection, 3},
+        {v2_detection, 4},
+        {bv1_detection, 5},
+        {bv2_detection, 6} 
+    };
+    
+    std::sort(detection_order.begin(), detection_order.end(), 
+        [](const auto& a, const auto& b) {
+            return a.first > b.first;
+        });
+    
+    auto checkJetOverlap = [&](int jet_idx, const std::vector<int>& assigned) -> bool {
+        if (jet_idx < 0 || jet_idx >= Jet_eta.size()) return true;
+        return std::find(assigned.begin(), assigned.end(), jet_idx) != assigned.end();
+    };
+    
+    auto checkFatJetOverlap = [&](int fatjet_idx, const std::vector<int>& assigned) -> bool {
+        if (fatjet_idx < 0 || fatjet_idx >= FatJet_eta.size()) return true;
+        return std::find(assigned.begin(), assigned.end(), fatjet_idx) != assigned.end();
+    };
+    
+    auto checkDeltaR = [&](int idx1, int idx2, bool is_fatjet1, bool is_fatjet2) -> bool {
+        if (idx1 < 0 || idx2 < 0) return true;
+        
+        float eta1 = is_fatjet1 ? FatJet_eta[idx1] : Jet_eta[idx1];
+        float phi1 = is_fatjet1 ? FatJet_phi[idx1] : Jet_phi[idx1];
+        float eta2 = is_fatjet2 ? FatJet_eta[idx2] : Jet_eta[idx2];
+        float phi2 = is_fatjet2 ? FatJet_phi[idx2] : Jet_phi[idx2];
+        
+        float dR = ROOT::VecOps::DeltaR(eta1, eta2, phi1, phi2);
+        if (is_fatjet1 || is_fatjet2) {
+            return dR >= 0.8;
+        }
+        return dR >= 0.4;
+    };
+    
+    auto checkAllOverlaps = [&](int candidate_idx, bool is_fatjet) -> bool {
+        for (int assigned_jet : assigned_jets) {
+            if (!checkDeltaR(candidate_idx, assigned_jet, is_fatjet, false)) {
+                return false;
+            }
+        }
+        for (int assigned_fatjet : assigned_fatjets) {
+            if (!checkDeltaR(candidate_idx, assigned_fatjet, is_fatjet, true)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    
+    for (const auto& [prob, obj_type] : detection_order) {
+        switch (obj_type) {
+            case 0: {
+                for (size_t i = 0; i < vbs_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(vbs_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(vbs_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[0] = j1_candidate;
+                        result[1] = j2_candidate;
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 1: {
+                for (size_t i = 0; i < h_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(h_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(h_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[2] = j1_candidate;  // h1_idx
+                        result[3] = j2_candidate;  // h2_idx
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 2: {
+                for (size_t i = 0; i < bh_assignment.size(); i++) {
+                    int fatjet_candidate = static_cast<int>(bh_assignment[i][1]);
+                    
+                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
+                        checkAllOverlaps(fatjet_candidate, true)) {
+                        
+                        result[4] = fatjet_candidate;  // bh_idx
+                        assigned_fatjets.push_back(fatjet_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 3: {
+                for (size_t i = 0; i < v1_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(v1_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(v1_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[5] = j1_candidate;  // v1_j1_idx
+                        result[6] = j2_candidate;  // v1_j2_idx
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 4: {
+                for (size_t i = 0; i < v2_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(v2_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(v2_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[7] = j1_candidate;  // v2_j1_idx
+                        result[8] = j2_candidate;  // v2_j2_idx
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 5: {
+                for (size_t i = 0; i < bv1_assignment.size(); i++) {
+                    int fatjet_candidate = static_cast<int>(bv1_assignment[i][1]);
+                    
+                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
+                        checkAllOverlaps(fatjet_candidate, true)) {
+                        
+                        result[9] = fatjet_candidate;  // bv1_idx
+                        assigned_fatjets.push_back(fatjet_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 6: {
+                for (size_t i = 0; i < bv2_assignment.size(); i++) {
+                    int fatjet_candidate = static_cast<int>(bv2_assignment[i][1]);
+                    
+                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
+                        checkAllOverlaps(fatjet_candidate, true)) {
+                        
+                        result[10] = fatjet_candidate;  // bv2_idx
+                        assigned_fatjets.push_back(fatjet_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    
+    return result;
 }
 
 /*
