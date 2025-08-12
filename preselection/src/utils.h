@@ -126,8 +126,11 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
 
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
-int num_hadronic_gauge_bosons(RVec<int> pdgId, RVec<short> motherIdx);
-int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx);
+RVec<int> get_higgs_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx);
+int findLastIndex(int current_idx, int current_pdgId, RVec<int>& pdgId, RVec<short>& motherIdx);
+RVec<int> get_v_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx);
+RVec<int> get_vbs_quarks_idxs(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx);
+
 
 RVec<float> get_dR(float eta1, float phi1, RVec<float> eta2, RVec<float> phi2);
 RVec<float> get_dR_conditional(int idx, float eta1, float phi1, RVec<float> eta2, RVec<float> phi2);

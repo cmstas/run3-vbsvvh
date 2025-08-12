@@ -137,17 +137,17 @@ RNode ParseSpanet(RNode df_){
         "spanet_v1_detection", "spanet_v2_detection", "spanet_bv1_detection", "spanet_bv2_detection",
         "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"
     })
-    .Define("vbs1_idx", "_all_assignments[0]")
-    .Define("vbs2_idx", "_all_assignments[1]")
-    .Define("h1_idx", "_all_assignments[2]")
-    .Define("h2_idx", "_all_assignments[3]")
-    .Define("bh_idx", "_all_assignments[4]")
-    .Define("v1_j1_idx", "_all_assignments[5]")
-    .Define("v1_j2_idx", "_all_assignments[6]")
-    .Define("v2_j1_idx", "_all_assignments[7]")
-    .Define("v2_j2_idx", "_all_assignments[8]")
-    .Define("bv1_idx", "_all_assignments[9]")
-    .Define("bv2_idx", "_all_assignments[10]");
+        .Define("vbs1_idx", "_all_assignments[0]")
+        .Define("vbs2_idx", "_all_assignments[1]")
+        .Define("h1_idx", "_all_assignments[2]")
+        .Define("h2_idx", "_all_assignments[3]")
+        .Define("bh_idx", "_all_assignments[4]")
+        .Define("v1_j1_idx", "_all_assignments[5]")
+        .Define("v1_j2_idx", "_all_assignments[6]")
+        .Define("v2_j1_idx", "_all_assignments[7]")
+        .Define("v2_j2_idx", "_all_assignments[8]")
+        .Define("bv1_idx", "_all_assignments[9]")
+        .Define("bv2_idx", "_all_assignments[10]");
 
     // VBS jet variables
     df = df.Define("spanet_vbs1_pt", "vbs1_idx >= 0 ? Jet_pt[vbs1_idx] : -999.0f")
@@ -176,10 +176,10 @@ RNode ParseSpanet(RNode df_){
 
     // Boosted Higgs variables
     df = df.Define("spanet_bh_eta", "bh_idx >= 0 ? FatJet_eta[bh_idx] : -999.0f")
-        .Define("spanet_bh_phi", "bh_idx >= 0 ? FatJet_phi[bh_idx] : -999.0f")
-        .Define("spanet_bh_msoftdrop", "bh_idx >= 0 ? FatJet_msoftdrop[bh_idx] : -999.0f")
-        .Define("spanet_bh_pt", "bh_idx >= 0 ? FatJet_pt[bh_idx] : -999.0f")
-        .Define("spanet_bh_score", "bh_idx >= 0 ? FatJet_globalParT3_Xbb[bh_idx] / (FatJet_globalParT3_Xbb[bh_idx] + FatJet_globalParT3_QCD[bh_idx]) : -999.0f");
+            .Define("spanet_bh_phi", "bh_idx >= 0 ? FatJet_phi[bh_idx] : -999.0f")
+            .Define("spanet_bh_msoftdrop", "bh_idx >= 0 ? FatJet_msoftdrop[bh_idx] : -999.0f")
+            .Define("spanet_bh_pt", "bh_idx >= 0 ? FatJet_pt[bh_idx] : -999.0f")
+            .Define("spanet_bh_score", "bh_idx >= 0 ? FatJet_globalParT3_Xbb[bh_idx] / (FatJet_globalParT3_Xbb[bh_idx] + FatJet_globalParT3_QCD[bh_idx]) : -999.0f");
 
     // Resolved V1 variables
     df = df.Define("spanet_v1_j1_pt", "v1_j1_idx >= 0 ? Jet_pt[v1_j1_idx] : -999.0f")
@@ -207,56 +207,56 @@ RNode ParseSpanet(RNode df_){
 
     // Boosted V1 variables
     df = df.Define("spanet_bv1_eta", "bv1_idx >= 0 ? FatJet_eta[bv1_idx] : -999.0f")
-        .Define("spanet_bv1_phi", "bv1_idx >= 0 ? FatJet_phi[bv1_idx] : -999.0f")
-        .Define("spanet_bv1_msoftdrop", "bv1_idx >= 0 ? FatJet_msoftdrop[bv1_idx] : -999.0f")
-        .Define("spanet_bv1_pt", "bv1_idx >= 0 ? FatJet_pt[bv1_idx] : -999.0f")
-        .Define("spanet_bv1_score", "bv1_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv1_idx] : -999.0f")
-        .Define("spanet_bv1_w_score", "bv1_idx >= 0 ? FatJet_globalParT3_Xqq[bv1_idx] / (FatJet_globalParT3_Xqq[bv1_idx] + FatJet_globalParT3_Xcs[bv1_idx] + FatJet_globalParT3_QCD[bv1_idx]) : -999.0f");
+            .Define("spanet_bv1_phi", "bv1_idx >= 0 ? FatJet_phi[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_msoftdrop", "bv1_idx >= 0 ? FatJet_msoftdrop[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_pt", "bv1_idx >= 0 ? FatJet_pt[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_score", "bv1_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_w_score", "bv1_idx >= 0 ? FatJet_globalParT3_Xqq[bv1_idx] / (FatJet_globalParT3_Xqq[bv1_idx] + FatJet_globalParT3_Xcs[bv1_idx] + FatJet_globalParT3_QCD[bv1_idx]) : -999.0f");
 
     // Boosted V2 final_variables
     df = df.Define("spanet_bv2_eta", "bv2_idx >= 0 ? FatJet_eta[bv2_idx] : -999.0f")
-        .Define("spanet_bv2_phi", "bv2_idx >= 0 ? FatJet_phi[bv2_idx] : -999.0f")
-        .Define("spanet_bv2_msoftdrop", "bv2_idx >= 0 ? FatJet_msoftdrop[bv2_idx] : -999.0f")
-        .Define("spanet_bv2_pt", "bv2_idx >= 0 ? FatJet_pt[bv2_idx] : -999.0f")
-        .Define("spanet_bv2_score", "bv2_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv2_idx] : -999.0f")
-        .Define("spanet_bv2_w_score", "bv2_idx >= 0 ? FatJet_globalParT3_Xqq[bv2_idx] / (FatJet_globalParT3_Xqq[bv2_idx] + FatJet_globalParT3_Xcs[bv2_idx] + FatJet_globalParT3_QCD[bv2_idx]) : -999.0f");
+            .Define("spanet_bv2_phi", "bv2_idx >= 0 ? FatJet_phi[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_msoftdrop", "bv2_idx >= 0 ? FatJet_msoftdrop[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_pt", "bv2_idx >= 0 ? FatJet_pt[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_score", "bv2_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_w_score", "bv2_idx >= 0 ? FatJet_globalParT3_Xqq[bv2_idx] / (FatJet_globalParT3_Xqq[bv2_idx] + FatJet_globalParT3_Xcs[bv2_idx] + FatJet_globalParT3_QCD[bv2_idx]) : -999.0f");
 
     return df;
 }
 
 RNode GenLevelSelections(RNode df_) {
-    auto df = df_.Define("Higgs_idx", get_higgs_boson_idx, {"GenPart_pdgId", "GenPart_genPartIdxMother"})
-            .Define("Higgs_eta", "GenPart_eta[Higgs_idx]")
-            .Define("Higgs_phi", "GenPart_phi[Higgs_idx]")
-            .Define("VBSJet1_eta", "GenPart_eta[5]")
-            .Define("VBSJet1_phi", "GenPart_phi[5]")
-            .Define("VBSJet2_eta", "GenPart_eta[6]")
-            .Define("VBSJet2_phi", "GenPart_phi[6]")
-            .Define("num_v", num_hadronic_gauge_bosons, {"GenPart_pdgId", "GenPart_genPartIdxMother"})
-            .Define("V1_idx", "num_v == 1 ? 2 : num_v == 2 ? 3 : num_v == 3 ? 2 : -1")
-            .Define("V2_idx", "num_v == 3 ? 3 : -1")
-            .Define("V1_eta", "V1_idx != -1 ? GenPart_eta[V1_idx] : -999")
-            .Define("V1_phi", "V1_idx != -1 ? GenPart_phi[V1_idx] : -999")
-            .Define("V2_eta", "V2_idx != -1 ? GenPart_eta[V2_idx] : -999")
-            .Define("V2_phi", "V2_idx != -1 ? GenPart_phi[V2_idx] : -999")
-            .Define("qs_from_v1", "abs(GenPart_pdgId) <= 5 && GenPart_genPartIdxMother == V1_idx")
-            .Define("qs_from_v2", "abs(GenPart_pdgId) <= 5 && GenPart_genPartIdxMother == V2_idx")
-            .Define("V1_q1_eta", "GenPart_eta[qs_from_v1][0]")
-            .Define("V1_q1_phi", "GenPart_phi[qs_from_v1][0]")
-            .Define("V1_q2_eta", "GenPart_eta[qs_from_v1][1]")
-            .Define("V1_q2_phi", "GenPart_phi[qs_from_v1][1]")
-            .Define("V2_q1_eta", "GenPart_eta[qs_from_v2][0]")
-            .Define("V2_q1_phi", "GenPart_phi[qs_from_v2][0]")
-            .Define("V2_q2_eta", "GenPart_eta[qs_from_v2][1]")
-            .Define("V2_q2_phi", "GenPart_phi[qs_from_v2][1]")
-            .Define("bs_from_higgs", "abs(GenPart_pdgId) == 5 && GenPart_genPartIdxMother == Higgs_idx")
-            .Define("b1_eta", "GenPart_eta[bs_from_higgs][0]")
-            .Define("b1_phi", "GenPart_phi[bs_from_higgs][0]")
-            .Define("b2_eta", "GenPart_eta[bs_from_higgs][1]")
-            .Define("b2_phi", "GenPart_phi[bs_from_higgs][1]");
+    auto df = df_.Define("higgs_info", get_higgs_boson_idx, {"GenPart_pdgId", "GenPart_status", "GenPart_genPartIdxMother"})
+            .Define("Higgs_idx", "higgs_info[0]")
+            .Define("Higgs_eta", "Higgs_idx >= 0 ? GenPart_eta[Higgs_idx] : -999.0f")
+            .Define("Higgs_phi", "Higgs_idx >= 0 ? GenPart_phi[Higgs_idx] : -999.0f")
+            .Define("b1_eta", "higgs_info[1] >= 0 ? GenPart_eta[higgs_info[1]] : -999.0f")
+            .Define("b1_phi", "higgs_info[1] >= 0 ? GenPart_phi[higgs_info[1]] : -999.0f")
+            .Define("b2_eta", "higgs_info[2] >= 0 ? GenPart_eta[higgs_info[2]] : -999.0f")
+            .Define("b2_phi", "higgs_info[2] >= 0 ? GenPart_phi[higgs_info[2]] : -999.0f");
 
-    df = df.Filter("Jet_pt.size() > 0")
-            .Define("vbs1_dR", get_dR, {"VBSJet1_eta", "VBSJet1_phi", "Jet_eta", "Jet_phi"})
+    df = df.Define("vboson_info", get_v_boson_idx, {"GenPart_pdgId", "GenPart_status", "GenPart_genPartIdxMother"})
+            .Define("V1_idx", "vboson_info[0]")
+            .Define("V1_eta", "V1_idx >= 0 ? GenPart_eta[V1_idx] : -999.0f")
+            .Define("V1_phi", "V1_idx >= 0 ? GenPart_phi[V1_idx] : -999.0f")
+            .Define("V1_q1_eta", "vboson_info[1] >= 0 ? GenPart_eta[vboson_info[1]] : -999.0f")
+            .Define("V1_q1_phi", "vboson_info[1] >= 0 ? GenPart_phi[vboson_info[1]] : -999.0f")
+            .Define("V1_q2_eta", "vboson_info[2] >= 0 ? GenPart_eta[vboson_info[2]] : -999.0f")
+            .Define("V1_q2_phi", "vboson_info[2] >= 0 ? GenPart_phi[vboson_info[2]] : -999.0f")
+            .Define("V2_idx", "vboson_info[3]")
+            .Define("V2_eta", "V2_idx >= 0 ? GenPart_eta[V2_idx] : -999.0f")
+            .Define("V2_phi", "V2_idx >= 0 ? GenPart_phi[V2_idx] : -999.0f")
+            .Define("V2_q1_eta", "vboson_info[4] >= 0 ? GenPart_eta[vboson_info[4]] : -999.0f")
+            .Define("V2_q1_phi", "vboson_info[4] >= 0 ? GenPart_phi[vboson_info[4]] : -999.0f")
+            .Define("V2_q2_eta", "vboson_info[5] >= 0 ? GenPart_eta[vboson_info[5]] : -999.0f")
+            .Define("V2_q2_phi", "vboson_info[5] >= 0 ? GenPart_phi[vboson_info[5]] : -999.0f");
+
+    df = df.Define("vbs_info", get_vbs_quarks_idxs, {"GenPart_pdgId", "GenPart_status", "GenPart_genPartIdxMother"})
+            .Define("VBSJet1_eta", "vbs_info[0] >= 0 ? GenPart_eta[vbs_info[0]] : -999.0f")
+            .Define("VBSJet1_phi", "vbs_info[0] >= 0 ? GenPart_phi[vbs_info[0]] : -999.0f")
+            .Define("VBSJet2_eta", "vbs_info[1] >= 0 ? GenPart_eta[vbs_info[1]] : -999.0f")
+            .Define("VBSJet2_phi", "vbs_info[1] >= 0 ? GenPart_phi[vbs_info[1]] : -999.0f");
+
+    df = df.Define("vbs1_dR", get_dR, {"VBSJet1_eta", "VBSJet1_phi", "Jet_eta", "Jet_phi"})
             .Define("vbs2_dR", get_dR, {"VBSJet2_eta", "VBSJet2_phi", "Jet_eta", "Jet_phi"})
             .Define("empty_exclusions", "ROOT::RVec<int>{}")
             .Define("vbs1_idx_temp", find_matching_jet, {"vbs1_dR", "empty_exclusions"})
@@ -266,8 +266,7 @@ RNode GenLevelSelections(RNode df_) {
             .Define("gen_vbs2_idx", "vbs2_idx_temp >= 0 && vbs2_idx_temp < 10 ? vbs2_idx_temp : -1")
             .Filter("(gen_vbs1_idx != -1 && gen_vbs2_idx != -1)");
 
-    df = df.Filter("FatJet_pt.size() > 0")
-            .Define("hbb_fatjet_dR", get_dR, {"Higgs_eta", "Higgs_phi", "FatJet_eta", "FatJet_phi"})
+    df = df.Define("hbb_fatjet_dR", get_dR, {"Higgs_eta", "Higgs_phi", "FatJet_eta", "FatJet_phi"})
             .Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b1_phi, b2_eta, b2_phi)")
             .Define("empty_fatjet_exclusions", "ROOT::RVec<int>{}")
             .Define("hbb_fatjet_idx_temp", find_matching_fatjet_conditional, {"Higgs_idx", "hbb_fatjet_dR", "empty_fatjet_exclusions"})
@@ -277,23 +276,23 @@ RNode GenLevelSelections(RNode df_) {
             .Define("gen_bh_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1");
 
     df = df.Define("b1_jet_dR", get_dR, {"b1_eta", "b1_phi", "Jet_eta", "Jet_phi"})
-          .Define("b2_jet_dR", get_dR, {"b2_eta", "b2_phi", "Jet_eta", "Jet_phi"})
-          .Define("excluded_jets_for_hbb", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx}")
-          .Define("h1_idx_temp", find_matching_jet_conditional, {"Higgs_idx", "b1_jet_dR", "excluded_jets_for_hbb"})
-          .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx, h1_idx_temp}")
-          .Define("Jet_hbb2_idx_temp", find_matching_jet_conditional, {"Higgs_idx", "b2_jet_dR", "excluded_jets_for_hbb2"})
-          .Define("gen_h1_idx", "h1_idx_temp >= 0 && h1_idx_temp < 10 ? h1_idx_temp : -1")
-          .Define("gen_h2_idx", "Jet_hbb2_idx_temp >= 0 && Jet_hbb2_idx_temp < 10 ? Jet_hbb2_idx_temp : -1")
-          .Define("hbb_isResolved", "!hbb_isBoosted && gen_h1_idx != -1 && gen_h2_idx != -1");
+            .Define("b2_jet_dR", get_dR, {"b2_eta", "b2_phi", "Jet_eta", "Jet_phi"})
+            .Define("excluded_jets_for_hbb", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx}")
+            .Define("h1_idx_temp", find_matching_jet_conditional, {"Higgs_idx", "b1_jet_dR", "excluded_jets_for_hbb"})
+            .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx, h1_idx_temp}")
+            .Define("Jet_hbb2_idx_temp", find_matching_jet_conditional, {"Higgs_idx", "b2_jet_dR", "excluded_jets_for_hbb2"})
+            .Define("gen_h1_idx", "h1_idx_temp >= 0 && h1_idx_temp < 10 ? h1_idx_temp : -1")
+            .Define("gen_h2_idx", "Jet_hbb2_idx_temp >= 0 && Jet_hbb2_idx_temp < 10 ? Jet_hbb2_idx_temp : -1")
+            .Define("hbb_isResolved", "!hbb_isBoosted && gen_h1_idx != -1 && gen_h2_idx != -1");
 
     df = df.Define("v1qq_fatjet_dR", get_dR_conditional, {"V1_idx", "V1_eta", "V1_phi", "FatJet_eta", "FatJet_phi"})
-              .Define("v1qq_dR", "V1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0")
-              .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{gen_bh_idx}")
-              .Define("v1qq_fatjet_idx_temp", find_matching_fatjet_conditional, {"V1_idx", "v1qq_fatjet_dR", "excluded_fatjets_for_v1"})
-              .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_eta, V1_q1_phi) : 999.0")
-              .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_eta, V1_q2_phi) : 999.0")
-              .Define("v1qq_isBoosted", "V1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8")
-              .Define("gen_bv1_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1");
+            .Define("v1qq_dR", "V1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0")
+            .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{gen_bh_idx}")
+            .Define("v1qq_fatjet_idx_temp", find_matching_fatjet_conditional, {"V1_idx", "v1qq_fatjet_dR", "excluded_fatjets_for_v1"})
+            .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_eta, V1_q1_phi) : 999.0")
+            .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_eta, V1_q2_phi) : 999.0")
+            .Define("v1qq_isBoosted", "V1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8")
+            .Define("gen_bv1_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1");
 
     df = df.Define("v2qq_fatjet_dR", get_dR_conditional, {"V2_idx", "V2_eta", "V2_phi", "FatJet_eta", "FatJet_phi"})
             .Define("v2qq_dR", "V2_idx != -1 ? ROOT::VecOps::DeltaR(V2_q1_eta, V2_q1_phi, V2_q2_eta, V2_q2_phi) : 999.0")

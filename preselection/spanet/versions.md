@@ -1,5 +1,1 @@
-- spanet.onnx: base version without detection loss term
-
-- spanet_w_det_loss.onnx: with detection loss term
-
-- spanet_w_det_loss_v2.onnx: with detection loss term + retrained with looser constraints on vbs jets
+- spanet_assign_1p0_detect_0p5: assignment loss 1.0 detection loss 0.5
