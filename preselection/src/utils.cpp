@@ -305,77 +305,126 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
     return good_jet_idx;
 }
 
-int num_hadronic_gauge_bosons(RVec<int> pdgId, RVec<short> motherIdx) {
-    // particles at idx 2 and 3 are hadronic gauge bosons
-    auto daughterIdx = [&] (int idx) {
-        RVec<int> daughters;
-        for (size_t i = 0; i < pdgId.size(); ++i) {
-            if (motherIdx[i] == idx) {
-                daughters.push_back(i);
-            }
+RVec<int> get_higgs_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx) {
+    // output [h1, b1, b2]
+    RVec<int> result = {-1, -1, -1};
+    
+    int higgs_idx = -1;
+    RVec<int> hdecay_idx;
+    
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_status = status[igen];
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == 0 && part_status == 22 && part_pdgId == 25) {
+            higgs_idx = igen;
+            break;
         }
-        return daughters;
-    };
-                       
-    std::function<bool(int)> is_hadronic = [&] (int idx) -> bool {
-        if (idx < 0 || idx >= pdgId.size()) return false;
-        if (pdgId[idx] == 23 || pdgId[idx] == 24 || pdgId[idx] == -24) {
-            auto daughters = daughterIdx(idx);
-            for (int daughter : daughters) {
-                if (pdgId[daughter] == 23 || pdgId[daughter] == 24 || pdgId[daughter] == -24) {
-                    if (is_hadronic(daughter)) {
-                        return true;
+    }
+    
+    if (higgs_idx == -1) return result;
+    
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int mother_idx = motherIdx[igen];
+        if (mother_idx > 0 && mother_idx < pdgId.size()) {
+            int mother_pdgId = pdgId[mother_idx];
+            int part_pdgId = pdgId[igen];
+            
+            if (mother_pdgId == 25 && part_pdgId != 25) {
+                hdecay_idx.push_back(igen);
                     }
-                } else if (abs(pdgId[daughter]) < 6) {
-                    return true;
-                } else if (abs(pdgId[daughter]) == 11 || abs(pdgId[daughter]) == 13 || abs(pdgId[daughter]) == 15) {
-                    return false;
+        }
+    }
+    
+    result[0] = higgs_idx;
+    if (hdecay_idx.size() >= 1) result[1] = hdecay_idx[0];
+    if (hdecay_idx.size() >= 2) result[2] = hdecay_idx[1];
+    
+    return result;
                 }
+
+int findLastIndex(int current_idx, int current_pdgId, RVec<int>& pdgId, RVec<short>& motherIdx) {
+    int outIdx = current_idx;
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == current_idx) {
+            if (part_pdgId == current_pdgId) {
+                outIdx = findLastIndex(igen, part_pdgId, pdgId, motherIdx);
             }
         }
-        return false;
-    };
-
-    // return 0 if both are leptonic, 1 if only genpart 2 is hadronic, 2 if only genpart 3 is hadronic, 3 if both are hadronic
-    int count = 0;
-    if (is_hadronic(2)) count += 1;
-    if (is_hadronic(3)) count += 2;
-    return count;
+    }
+    return outIdx;
 }
 
-int get_higgs_boson_idx(RVec<int>& pdgId, RVec<short>& motherIdx) {
-    const int bId = 5;
-    const int hId = 25;
-    RVec<int> bIndices, bBarIndices;
+RVec<int> get_v_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx) {
+    // output [v1, v1d1, v1d2, v2, v2d1, v2d2]
+    RVec<int> result = {-1, -1, -1, -1, -1, -1};
+    
+    RVec<int> firstVs_idx;
 
-    for (size_t i = 0; i < pdgId.size(); ++i) {
-        if (pdgId[i] == bId) bIndices.push_back(i);
-        else if (pdgId[i] == -bId) bBarIndices.push_back(i);
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_status = status[igen];
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == 0 && part_status == 22 && (part_pdgId == 23 || abs(part_pdgId) == 24)) {
+            firstVs_idx.push_back(igen);
     }
-
-    auto traceToTopHiggs = [&](int idx) {
-        while (idx >= 0 && pdgId[idx] == hId && motherIdx[idx] >= 0 && pdgId[motherIdx[idx]] == hId) {
-            idx = motherIdx[idx];
-        }
-        return (pdgId[idx] == hId) ? idx : -1;
-    };
-
-    for (int bIdx : bIndices) {
-        for (int bBarIdx : bBarIndices) {
-            int motherB = motherIdx[bIdx];
-            int motherBBar = motherIdx[bBarIdx];
-
-            if (motherB == -1 || motherBBar == -1) continue;
-            if (motherB != motherBBar) continue;
-            if (pdgId[motherB] != hId) continue;
-
-            int topHiggsIdx = traceToTopHiggs(motherB);
-            if (topHiggsIdx == 4) {
-                return motherB;
+    }
+    
+    if (firstVs_idx.size() < 2) return result;
+    
+    result[0] = firstVs_idx[0];
+    result[3] = firstVs_idx[1];
+    
+    for (int iV = 0; iV < 2; ++iV) {
+        int firstV_idx = (iV == 0) ? result[0] : result[3];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        RVec<int> vdecays_idx;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                vdecays_idx.push_back(igen);
             }
         }
+        
+        if (iV == 0) {
+            if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
+            if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
+        } else {
+            if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
+            if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
+        }
     }
-    return -1;
+    
+    return result;
+}
+
+RVec<int> get_vbs_quarks_idxs(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx) {
+    RVec<int> result = {-1, -1};
+    RVec<int> vbsquarks_idx;
+    
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_status = status[igen];
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+
+        if (mother_idx == 0 && part_status == 23 && abs(part_pdgId) <= 6 && abs(part_pdgId) >= 1) {
+            vbsquarks_idx.push_back(igen);
+        }
+    }
+    
+    if (vbsquarks_idx.size() >= 1) result[0] = vbsquarks_idx[0];
+    if (vbsquarks_idx.size() >= 2) result[1] = vbsquarks_idx[1];
+    
+    return result;
 }
 
 int find_matching_jet(RVec<float> dR_values, RVec<int> excluded_indices) {
@@ -765,6 +814,7 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         }
     }
 
-    std::string outputFile = outputDir + "/" + outputFileName + ".root" df.Snapshot("Events", output_file, final_variables);
+    std::string outputFile = outputDir + "/" + outputFileName + ".root";
+    df.Snapshot("Events", outputFile, final_variables);
     std::cout << " -> Stored output file: " << outputFile << std::endl;
 }
