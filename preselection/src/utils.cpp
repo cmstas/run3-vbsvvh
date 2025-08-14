@@ -372,16 +372,44 @@ RVec<int> get_v_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& moth
         
         if (mother_idx == 0 && part_status == 22 && (part_pdgId == 23 || abs(part_pdgId) == 24)) {
             firstVs_idx.push_back(igen);
-    }
+        }
     }
     
     if (firstVs_idx.size() < 2) return result;
     
-    result[0] = firstVs_idx[0];
-    result[3] = firstVs_idx[1];
+    RVec<int> hadronic_V_indices;
+    RVec<int> leptonic_V_indices;
     
-    for (int iV = 0; iV < 2; ++iV) {
-        int firstV_idx = (iV == 0) ? result[0] : result[3];
+    for (size_t iV = 0; iV < firstVs_idx.size() && iV < 2; ++iV) {
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        int hadronic_daughters = 0;
+        int leptonic_daughters = 0;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) {
+                    hadronic_daughters++;
+                } else {
+                    leptonic_daughters++;
+                }
+            }
+        }
+        
+        if (hadronic_daughters > 0) {
+            hadronic_V_indices.push_back(iV);
+        } else if (leptonic_daughters > 0) {
+            leptonic_V_indices.push_back(iV);
+        }
+    }
+    
+    if (hadronic_V_indices.size() > 0) {
+        int iV = hadronic_V_indices[0];
+        int firstV_idx = firstVs_idx[iV];
         int firstV_pdgId = pdgId[firstV_idx];
         
         int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
@@ -391,17 +419,42 @@ RVec<int> get_v_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& moth
         for (size_t igen = 0; igen < pdgId.size(); ++igen) {
             int mother_idx = motherIdx[igen];
             if (mother_idx == lastV_idx) {
-                vdecays_idx.push_back(igen);
+                if (abs(pdgId[igen]) <= 6) { // quarks only
+                   vdecays_idx.push_back(igen);
+                }
             }
         }
         
-        if (iV == 0) {
-            if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
-            if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
-        } else {
-            if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
-            if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
+        if (vdecays_idx.size() != 0) {
+            result[0] = lastV_idx;
         }
+        if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
+        if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
+    }
+    
+    if (hadronic_V_indices.size() >= 2) {
+        int iV = hadronic_V_indices[1];
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        RVec<int> vdecays_idx;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) {
+                   vdecays_idx.push_back(igen);
+                }
+            }
+        }
+        
+        if (vdecays_idx.size() != 0) {
+            result[3] = lastV_idx;
+        }
+        if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
+        if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
     }
     
     return result;
