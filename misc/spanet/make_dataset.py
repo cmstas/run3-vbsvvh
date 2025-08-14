@@ -75,13 +75,13 @@ int find_matching_fatjet(ROOT::RVec<float> dR_values, ROOT::RVec<int> excluded_i
     return -1;
 }
                        
-ROOT::RVec<int> get_higgs_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
-    // output [h1, b1, b2]
+ROOT::RVec<int> findHiggsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
     ROOT::RVec<int> result = {-1, -1, -1};
     
     int higgs_idx = -1;
     ROOT::RVec<int> hdecay_idx;
     
+    // Find intermediate Higgs with status 22 and mother_idx 0
     for (size_t igen = 0; igen < pdgId.size(); ++igen) {
         int part_status = status[igen];
         int part_pdgId = pdgId[igen];
@@ -95,6 +95,7 @@ ROOT::RVec<int> get_higgs_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& sta
     
     if (higgs_idx == -1) return result;
     
+    // Find first daughters of Higgs (non-Higgs particles with Higgs mother)
     for (size_t igen = 0; igen < pdgId.size(); ++igen) {
         int mother_idx = motherIdx[igen];
         if (mother_idx > 0 && mother_idx < pdgId.size()) {
@@ -129,8 +130,8 @@ int findLastIndex(int current_idx, int current_pdgId, ROOT::RVec<int>& pdgId, RO
     return outIdx;
 }
 
-ROOT::RVec<int> get_v_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
-    // output [v1, v1d1, v1d2, v2, v2d1, v2d2]
+ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+    // Returns: [v1_idx, v1_d1_idx, v1_d2_idx, v2_idx, v2_d1_idx, v2_d2_idx] or [-1, -1, -1, -1, -1, -1]
     ROOT::RVec<int> result = {-1, -1, -1, -1, -1, -1};
     
     ROOT::RVec<int> firstVs_idx;
@@ -147,11 +148,39 @@ ROOT::RVec<int> get_v_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status,
     
     if (firstVs_idx.size() < 2) return result;
     
-    result[0] = firstVs_idx[0];
-    result[3] = firstVs_idx[1];
+    ROOT::RVec<int> hadronic_V_indices;
+    ROOT::RVec<int> leptonic_V_indices;
     
-    for (int iV = 0; iV < 2; ++iV) {
-        int firstV_idx = (iV == 0) ? result[0] : result[3];
+    for (size_t iV = 0; iV < firstVs_idx.size() && iV < 2; ++iV) {
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        int hadronic_daughters = 0;
+        int leptonic_daughters = 0;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) {
+                    hadronic_daughters++;
+                } else {
+                    leptonic_daughters++;
+                }
+            }
+        }
+        
+        if (hadronic_daughters > 0) {
+            hadronic_V_indices.push_back(iV);
+        } else if (leptonic_daughters > 0) {
+            leptonic_V_indices.push_back(iV);
+        }
+    }
+    
+    if (hadronic_V_indices.size() > 0) {
+        int iV = hadronic_V_indices[0];
+        int firstV_idx = firstVs_idx[iV];
         int firstV_pdgId = pdgId[firstV_idx];
         
         int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
@@ -161,26 +190,53 @@ ROOT::RVec<int> get_v_boson_idx(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status,
         for (size_t igen = 0; igen < pdgId.size(); ++igen) {
             int mother_idx = motherIdx[igen];
             if (mother_idx == lastV_idx) {
-                vdecays_idx.push_back(igen);
+                if (abs(pdgId[igen]) <= 6) { // quarks only
+                   vdecays_idx.push_back(igen);
+                }
             }
         }
         
-        if (iV == 0) {
-            if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
-            if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
-        } else {
-            if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
-            if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
+        if (vdecays_idx.size() != 0) {
+            result[0] = lastV_idx;
         }
+        if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
+        if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
+    }
+    
+    if (hadronic_V_indices.size() >= 2) {
+        int iV = hadronic_V_indices[1];
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        ROOT::RVec<int> vdecays_idx;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) {
+                   vdecays_idx.push_back(igen);
+                }
+            }
+        }
+        
+        if (vdecays_idx.size() != 0) {
+            result[3] = lastV_idx;
+        }
+        if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
+        if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
     }
     
     return result;
 }
 
-ROOT::RVec<int> get_vbs_quarks_idxs(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+ROOT::RVec<int> findVBSQuarks(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+    // Returns: [vbs1_idx, vbs2_idx] or [-1, -1]
     ROOT::RVec<int> result = {-1, -1};
     ROOT::RVec<int> vbsquarks_idx;
     
+    // Find outgoing quarks with status 23 and mother_idx 0
     for (size_t igen = 0; igen < pdgId.size(); ++igen) {
         int part_status = status[igen];
         int part_pdgId = pdgId[igen];
@@ -394,7 +450,7 @@ def genMatching(input_file, isSignal):
     
     # define bb, qq definition
     if (isSignal):
-        df = df.Define("higgs_info", "get_higgs_boson_idx(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+        df = df.Define("higgs_info", "findHiggsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
             .Define("Higgs_idx", "higgs_info[0]") \
             .Define("Higgs_eta", "Higgs_idx >= 0 ? GenPart_eta[Higgs_idx] : -999.0") \
             .Define("Higgs_phi", "Higgs_idx >= 0 ? GenPart_phi[Higgs_idx] : -999.0") \
@@ -403,7 +459,7 @@ def genMatching(input_file, isSignal):
             .Define("b2_eta", "higgs_info[2] >= 0 ? GenPart_eta[higgs_info[2]] : -999.0") \
             .Define("b2_phi", "higgs_info[2] >= 0 ? GenPart_phi[higgs_info[2]] : -999.0")
                     
-        df = df.Define("vboson_info", "get_v_boson_idx(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+        df = df.Define("vboson_info", "findVBosonsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
             .Define("V1_idx", "vboson_info[0]") \
             .Define("V1_eta", "V1_idx >= 0 ? GenPart_eta[V1_idx] : -999.0") \
             .Define("V1_phi", "V1_idx >= 0 ? GenPart_phi[V1_idx] : -999.0") \
@@ -419,7 +475,7 @@ def genMatching(input_file, isSignal):
             .Define("V2_q2_eta", "vboson_info[5] >= 0 ? GenPart_eta[vboson_info[5]] : -999.0") \
             .Define("V2_q2_phi", "vboson_info[5] >= 0 ? GenPart_phi[vboson_info[5]] : -999.0")
             
-        df = df.Define("vbs_info", "get_vbs_quarks_idxs(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+        df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
             .Define("VBSJet1_eta", "vbs_info[0] >= 0 ? GenPart_eta[vbs_info[0]] : -999.0") \
             .Define("VBSJet1_phi", "vbs_info[0] >= 0 ? GenPart_phi[vbs_info[0]] : -999.0") \
             .Define("VBSJet2_eta", "vbs_info[1] >= 0 ? GenPart_eta[vbs_info[1]] : -999.0") \
