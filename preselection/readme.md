@@ -22,9 +22,12 @@ A script to set up the environment is included in `misc/env.sh`
 
 ### Compilation
 
-To compile the preselection framework, navigate to the `preselection` directory and run:
+To set up and compile the preselection framework, navigate to the top level directory and run:
 
 ```bash
+cd misc/CMSSW_15_0_4/src/
+cmsenv
+cd ../../../preselection/
 make
 ```
 
@@ -35,16 +38,16 @@ This will compile the source files and place the binary in the bin/ directory.
 The inputs for the preselection framework are defined using JSON files. The make-config.py script in the etc/ directory is used to generate these JSON configuration files, specifics will have to be adapted by the analyzer.
 
 #### Generating Configuration Files
-To generate a configuration file, run the make-config.py script with the appropriate category (bkg, sig, or data):
+To generate a configuration file, run the make-config.py script with the appropriate category (bkg, sig, or data). The script expects to be run from within `etc/`.
 
 ```bash
-python3 etc/make-config.py --category <category> --channel <channel>
+python3 make-config.py --category <category> --channel <channel>
 ```
 
 For example, to generate a configuration file for background samples:
 
 ```bash
-python3 etc/make-config.py --category bkg --channel OneLep2FJ
+python3 make-config.py --category bkg --channel 1Lep2FJ
 ```
 
 This will create a JSON file in the etc/ directory with the necessary configuration for the specified category.
@@ -60,7 +63,7 @@ bin/runAnalysis -i <input_spec.json> -a <channel> -n <n_threads>
 For example,
 
 ```bash
-bin/runAnalysis -i etc/OneLep2FJ-bkg.json -a OneLep2FJ -n 64
+bin/runAnalysis -i etc/1Lep2FJ-bkg.json -a 1Lep2FJ -n 64
 ```
 
 More command line options can be found by running 
