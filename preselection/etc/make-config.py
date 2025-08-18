@@ -128,47 +128,44 @@ class Config:
 
     def process_samples(self, xsecs, nthreads):
         for sample in self.samples:
-            try:
 
-                # Get the dataset name
-                dataset_name = os.path.basename(os.path.dirname(sample))
-                print(dataset_name)
-                if dataset_name.startswith("TTbb"):
-                    print("    -> Skipping ttbb for now, we don't have an xsec for it.")
-                    continue
+            # Get the dataset name
+            dataset_name = os.path.basename(os.path.dirname(sample))
+            print(dataset_name)
+            if dataset_name.startswith("TTbb"):
+                print("    -> Skipping ttbb for now, we don't have an xsec for it.")
+                continue
 
-                # Get the info about the sample
-                sample_name = self.get_sample_name(sample)
-                process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
-                sample_year = self.extract_sample_year(sample)
-                num_events = 0
-                files_path = f"{sample}/*.root"
-                if self.sample_category != "data":
-                    files = glob(files_path)
-                    with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
-                        results = list(executor.map(self._process_file, files))
-                    num_events = sum(results)
-                else:
-                    num_events = 1.0
-                self.config["samples"].update(
-                    {
-                        f"{sample_name}_{sample_year}": {
-                            "trees": ["Events"],
-                            "files": [files_path],
-                            "metadata": {
-                                "sample_name_withyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
-                                "sample_category": self.sample_category,
-                                "sample_year": sample_year,
-                                "sample_type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
-                                "xsec": xsec,
-                                "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
-                                "nevents": num_events
-                            }
+            # Get the info about the sample
+            sample_name = self.get_sample_name(sample)
+            process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
+            sample_year = self.extract_sample_year(sample)
+            num_events = 0
+            files_path = f"{sample}/*.root"
+            if self.sample_category != "data":
+                files = glob(files_path)
+                with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
+                    results = list(executor.map(self._process_file, files))
+                num_events = sum(results)
+            else:
+                num_events = 1.0
+            self.config["samples"].update(
+                {
+                    f"{sample_name}_{sample_year}": {
+                        "trees": ["Events"],
+                        "files": [files_path],
+                        "metadata": {
+                            "sample_name_withyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
+                            "sample_category": self.sample_category,
+                            "sample_year": sample_year,
+                            "sample_type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
+                            "xsec": xsec,
+                            "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
+                            "nevents": num_events
                         }
                     }
-                )
-            except Exception as e:
-                print(f"Error in {sample}: {e}")
+                }
+            )
     
     @staticmethod
     def _process_file(file):
