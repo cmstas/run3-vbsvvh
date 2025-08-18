@@ -51,7 +51,11 @@ class Config:
 
     # From a dataset name, get the short version (as defined in the xsec dict)
     @staticmethod
-    def get_sample_short_name(dataset_name,xsec_dict):
+    def get_sample_name_and_xsec(dataset_name,xsec_dict,is_data):
+
+        # Data is data
+        if is_data:
+            return("data",1)
 
         # The short name for this dataset, as defined in the xsec dict
         dataset_name_short = ""
@@ -70,7 +74,9 @@ class Config:
         if match_xsec_name < 1:
             raise Exception(f"Failed to find xsec name match for the dataset \"{dataset_name}\"")
 
-        return(dataset_name_short)
+        xsec = xsec_dict[dataset_name_short]
+
+        return(dataset_name_short,xsec)
 
 
     @staticmethod
@@ -123,11 +129,18 @@ class Config:
     def process_samples(self, xsecs, nthreads):
         for sample in self.samples:
             try:
-                sample_name = self.get_sample_name(sample)
+
+                # Get the dataset name
                 dataset_name = os.path.basename(os.path.dirname(sample))
-                process_name_sync_with_xsec_name = self.get_sample_short_name(dataset_name,xsecs)
+                print(dataset_name)
+                if dataset_name.startswith("TTbb"):
+                    print("    -> Skipping ttbb for now, we don't have an xsec for it.")
+                    continue
+
+                # Get the info about the sample
+                sample_name = self.get_sample_name(sample)
+                process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
                 sample_year = self.extract_sample_year(sample)
-                xsec = self.get_xsec_weight(xsecs, sample_name) if self.sample_category != "data" else 1.0
                 num_events = 0
                 files_path = f"{sample}/*.root"
                 if self.sample_category != "data":
