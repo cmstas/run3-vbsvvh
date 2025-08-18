@@ -7,6 +7,6 @@
     "1Lep2FJ": {
         "bkg": "/ceph/cms/store/user/aaarora/skims/1Lep2FJ/bkg/*/*/*",
         "data": "/ceph/cms/store/user/aaarora/skims/1Lep2FJ/data/*/*/*",
-        "sig": "/ceph/cms/store/user/aaarora/skims/Run3Summer24/*/*1p5*"
+        "sig": "/ceph/cms/store/user/aaarora/skims/Run3Summer24/*/*"
     }
 }
