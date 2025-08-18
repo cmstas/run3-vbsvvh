@@ -1,4 +1,5 @@
 from glob import glob
+import os
 import json
 import re
 import argparse
@@ -32,8 +33,45 @@ class Config:
             return "2022Re-recoBCD"
         elif "24" in sample:
             return "2024"
+        elif "UL16" in sample and "APV" in sample:
+            return "2016preVFP"
+        elif "UL16" in sample and not "APV" in sample:
+            return "2016postVFP"
+        elif "UL17" in sample or "UL2017" in sample or "Run2017" in sample:
+            return "2017"
+        elif "UL18" in sample or "UL2018" in sample or "Run2018" in sample:
+            return "2018"
+        elif ("Run2016B" in sample or "Run2016C" in sample or "Run2016D" in sample or "Run2016E" in sample or "Run2016F" in sample) and "HIPM" in sample:
+            return "2016preVFP"
+        elif ("Run2016F" in sample or "Run2016G" in sample or "Run2016H" in sample) and not "HIPM" in sample:
+            return "2016postVFP"
         else:
             raise ValueError(f"Error: year not found for {sample}")
+
+
+    # From a dataset name, get the short version (as defined in the xsec dict)
+    @staticmethod
+    def get_sample_short_name(dataset_name,xsec_dict):
+
+        # The short name for this dataset, as defined in the xsec dict
+        dataset_name_short = ""
+
+        # Loop through the xsec dict and get the name that matches this dataset
+        # Raise error if no matches, or if more than one matches
+        match_xsec_name = 0
+        for xsec_name in xsec_dict:
+            if dataset_name.startswith(xsec_name):
+                match_xsec_name += 1
+                if match_xsec_name > 1:
+                    raise Exception(f"More than one xsec name matches the dataset \"{dataset_name}\"")
+                else:
+                    dataset_name_short = xsec_name
+                    dataset_xsec = xsec_dict[xsec_name]
+        if match_xsec_name < 1:
+            raise Exception(f"Failed to find xsec name match for the dataset \"{dataset_name}\"")
+
+        return(dataset_name_short)
+
 
     @staticmethod
     def get_xsec_weight(xsecs, sample):
@@ -45,6 +83,10 @@ class Config:
     @staticmethod
     def get_lumi(year):
         lumi = {
+            "2016preVFP": 19.52,
+            "2016postVFP": 16.81,
+            "2017": 41.48,
+            "2018": 59.83,
             "2022Re-recoBCD": 7.9804,
             "2022Re-recoE+PromptFG": 26.6717,
             "2024": 109.08
@@ -82,6 +124,8 @@ class Config:
         for sample in self.samples:
             try:
                 sample_name = self.get_sample_name(sample)
+                dataset_name = os.path.basename(os.path.dirname(sample))
+                process_name_sync_with_xsec_name = self.get_sample_short_name(dataset_name,xsecs)
                 sample_year = self.extract_sample_year(sample)
                 xsec = self.get_xsec_weight(xsecs, sample_name) if self.sample_category != "data" else 1.0
                 num_events = 0
@@ -99,6 +143,7 @@ class Config:
                             "trees": ["Events"],
                             "files": [files_path],
                             "metadata": {
+                                "sample_name_withyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
                                 "sample_category": self.sample_category,
                                 "sample_year": sample_year,
                                 "sample_type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
@@ -122,13 +167,14 @@ if __name__ == "__main__":
     argparser.add_argument("--channel", type=str, help="channel", required=True)
     argparser.add_argument("--category", help="categories: bkg, sig or data", required=True)
     argparser.add_argument("--config", help="paths file", default="paths.json")
+    argparser.add_argument("--xsecs", help="xsec file", default="xsecs.json")
     argparser.add_argument("-n, --nthreads", type=int, default=8, help="number of threads to use for processing files")
     args = argparser.parse_args()
 
     if not args.category or not any(cat in args.category for cat in ["bkg", "sig", "data"]):
         raise ValueError("Please provide a valid category")
 
-    with open("xsecs.json", "r") as f_xsecs:
+    with open(args.xsecs, "r") as f_xsecs:
         xsecs = json.load(f_xsecs)
 
     with open(args.config, "r") as f:
