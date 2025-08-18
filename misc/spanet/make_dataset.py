@@ -25,24 +25,31 @@ BTAGGING_SCORES = {
 }
 
 r.gInterpreter.Declare("""
-int find_matching_jet(float target_eta, float target_phi, ROOT::RVec<int> excluded_jet_indices, ROOT::RVec<int> excluded_fatjet_indices, ROOT::RVec<float> jet_eta, ROOT::RVec<float> jet_phi, ROOT::RVec<float> fatjet_eta, ROOT::RVec<float> fatjet_phi) {
+int find_matching_jet(int target_idx, float target_eta, float target_phi, ROOT::RVec<int> already_matched_jet_indices, ROOT::RVec<int> already_matched_fatjet_indices, ROOT::RVec<float> jet_eta, ROOT::RVec<float> jet_phi, ROOT::RVec<float> fatjet_eta, ROOT::RVec<float> fatjet_phi) {
     int max_jets = 10;
+    int max_fatjets = 3;
     const float dR_cut = 0.4f;
     const float fatjet_overlap_cut = 0.8f;
     const float jet_overlap_cut = 0.4f;
+                       
+    if (target_idx < 0) {
+        return -1;
+    }
     
     // Calculate dR values for all jets
     ROOT::RVec<float> dR_values;
     for (size_t i = 0; i < jet_eta.size(); ++i) {
-        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, target_phi, jet_eta[i], jet_phi[i]));
+        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, jet_eta[i], target_phi, jet_phi[i]));
     }
     
     auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
     for (int idx : sorted_indices) {
         if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
         if (idx >= max_jets) continue; // Skip indices beyond padding limit
+        
+        // Check if this jet is in the excluded list
         bool is_excluded = false;
-        for (int excl_idx : excluded_jet_indices) {
+        for (int excl_idx : already_matched_jet_indices) {
             if (idx == excl_idx) {
                 is_excluded = true;
                 break;
@@ -50,87 +57,91 @@ int find_matching_jet(float target_eta, float target_phi, ROOT::RVec<int> exclud
         }
         if (is_excluded) continue;
         
-        // Check overlap with other jets (already matched)
-        bool overlaps_other_jet = false;
-        for (int excl_idx : excluded_jet_indices) {
-            if (excl_idx >= 0 && excl_idx < jet_eta.size()) {
-                float dR_other_jet = ROOT::VecOps::DeltaR(jet_eta[idx], jet_phi[idx], jet_eta[excl_idx], jet_phi[excl_idx]);
-                if (dR_other_jet < jet_overlap_cut) {
-                    overlaps_other_jet = true;
-                    break;
-                }
-            }
-        }
-        if (overlaps_other_jet) continue;
-        
-        // Check overlap with excluded fatjets
-        bool overlaps_fatjet = false;
-        for (int excl_fj_idx : excluded_fatjet_indices) {
-            if (excl_fj_idx >= 0 && excl_fj_idx < fatjet_eta.size()) {
-                float dR_fatjet = ROOT::VecOps::DeltaR(jet_eta[idx], jet_phi[idx], fatjet_eta[excl_fj_idx], fatjet_phi[excl_fj_idx]);
-                if (dR_fatjet < fatjet_overlap_cut) {
-                    overlaps_fatjet = true;
-                    break;
-                }
-            }
-        }
-        if (!overlaps_fatjet) {
-            return idx;
-        }
-    }
-    return -1;
-}
-
-int find_matching_fatjet(float target_eta, float target_phi, ROOT::RVec<int> excluded_jet_indices, ROOT::RVec<int> excluded_fatjet_indices, ROOT::RVec<float> jet_eta, ROOT::RVec<float> jet_phi, ROOT::RVec<float> fatjet_eta, ROOT::RVec<float> fatjet_phi) {
-    int max_fatjets = 3;
-    const float dR_cut = 0.8f;
-    const float jet_overlap_cut = 0.8f;
-    const float fatjet_overlap_cut = 0.8f;
-    
-    // Calculate dR values for all fatjets
-    ROOT::RVec<float> dR_values;
-    for (size_t i = 0; i < fatjet_eta.size(); ++i) {
-        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, target_phi, fatjet_eta[i], fatjet_phi[i]));
-    }
-    
-    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
-    for (int idx : sorted_indices) {
-        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
-        if (idx >= max_fatjets) continue; // Skip indices beyond padding limit
-        bool is_excluded = false;
-        for (int excl_idx : excluded_fatjet_indices) {
-            if (idx == excl_idx) {
-                is_excluded = true;
-                break;
-            }
-        }
-        if (is_excluded) continue;
-        
-        // Check overlap with other fatjets (already matched)
-        bool overlaps_other_fatjet = false;
-        for (int excl_idx : excluded_fatjet_indices) {
-            if (excl_idx >= 0 && excl_idx < fatjet_eta.size()) {
-                float dR_other_fatjet = ROOT::VecOps::DeltaR(fatjet_eta[idx], fatjet_phi[idx], fatjet_eta[excl_idx], fatjet_phi[excl_idx]);
-                if (dR_other_fatjet < fatjet_overlap_cut) {
-                    overlaps_other_fatjet = true;
-                    break;
-                }
-            }
-        }
-        if (overlaps_other_fatjet) continue;
-        
-        // Check overlap with excluded jets
         bool overlaps_jet = false;
-        for (int excl_j_idx : excluded_jet_indices) {
-            if (excl_j_idx >= 0 && excl_j_idx < jet_eta.size()) {
-                float dR_jet = ROOT::VecOps::DeltaR(fatjet_eta[idx], fatjet_phi[idx], jet_eta[excl_j_idx], jet_phi[excl_j_idx]);
+        for (int matched_j_idx : already_matched_jet_indices) {
+            if (matched_j_idx >= 0 && matched_j_idx < max_jets) {
+                float dR_jet = ROOT::VecOps::DeltaR(jet_eta[idx], jet_eta[matched_j_idx], jet_phi[idx], jet_phi[matched_j_idx]);
                 if (dR_jet < jet_overlap_cut) {
                     overlaps_jet = true;
                     break;
                 }
             }
         }
-        if (!overlaps_jet) {
+
+        // Check overlap with matched fatjets only
+        bool overlaps_fatjet = false;
+        for (int matched_fj_idx : already_matched_fatjet_indices) {
+            if (matched_fj_idx >= 0 && matched_fj_idx < max_fatjets) {
+                float dR_fatjet = ROOT::VecOps::DeltaR(jet_eta[idx], fatjet_eta[matched_fj_idx], jet_phi[idx], fatjet_phi[matched_fj_idx]);
+                if (dR_fatjet < fatjet_overlap_cut) {
+                    overlaps_fatjet = true;
+                    break;
+                }
+            }
+        }
+        if (!overlaps_jet && !overlaps_fatjet) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+int find_matching_fatjet(int target_idx, float target_eta, float target_phi, ROOT::RVec<int> already_matched_jet_indices, ROOT::RVec<int> already_matched_fatjet_indices, ROOT::RVec<float> jet_eta, ROOT::RVec<float> jet_phi, ROOT::RVec<float> fatjet_eta, ROOT::RVec<float> fatjet_phi) {
+    int max_jets = 10;
+    int max_fatjets = 3;
+    const float dR_cut = 0.8f;
+    const float fatjet_overlap_cut = 0.8f;
+    const float jet_overlap_cut = 0.8f;
+    
+    if (target_idx < 0) {
+        return -1;
+    }
+                       
+    // Calculate dR values for all fatjets
+    ROOT::RVec<float> dR_values;
+    for (size_t i = 0; i < fatjet_eta.size(); ++i) {
+        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, fatjet_eta[i], target_phi, fatjet_phi[i]));
+    }
+    
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_fatjets) continue; // Skip indices beyond padding limit
+        
+        // Check if this fatjet is in the excluded list
+        bool is_excluded = false;
+        for (int excl_idx : already_matched_fatjet_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (is_excluded) continue;
+
+        // Check overlap with matched jets only
+        bool overlaps_jet = false;
+        for (int matched_j_idx : already_matched_jet_indices) {
+            if (matched_j_idx >= 0 && matched_j_idx < max_jets) {
+                float dR_jet = ROOT::VecOps::DeltaR(fatjet_eta[idx], jet_eta[matched_j_idx], fatjet_phi[idx], jet_phi[matched_j_idx]);
+                if (dR_jet < jet_overlap_cut) {
+                    overlaps_jet = true;
+                    break;
+                }
+            }
+        }
+        
+        bool overlaps_fatjet = false;
+        for (int matched_fj_idx : already_matched_fatjet_indices) {
+            if (matched_fj_idx >= 0 && matched_fj_idx < max_fatjets) {
+                float dR_fatjet = ROOT::VecOps::DeltaR(fatjet_eta[idx], fatjet_eta[matched_fj_idx], fatjet_phi[idx], fatjet_phi[matched_fj_idx]);
+                if (dR_fatjet < fatjet_overlap_cut) {
+                    overlaps_fatjet = true;
+                    break;
+                }
+            }
+        }
+
+        if (!overlaps_jet && !overlaps_fatjet) {
             return idx;
         }
     }
@@ -337,10 +348,9 @@ def get_array_names(isSignal=False):
         # Global
         "PuppiMET_pt", "PuppiMET_phi",
         # Event-level features
-        "FatJet_hbb_idx", "FatJet_v1qq_idx", "FatJet_v2qq_idx",
-        "Jet_hbb1_idx", "Jet_hbb2_idx", "Jet_v1q1_idx", "Jet_v1q2_idx", "Jet_v2q1_idx", "Jet_v2q2_idx",
-        "Jet_vbs1_idx", "Jet_vbs2_idx",
-        "hbb_isBoosted", "hbb_isResolved", "v1qq_isBoosted", "v1qq_isResolved", "v2qq_isBoosted", "v2qq_isResolved",
+        "truth_hbb_idx", "truth_v1qq_idx", "truth_v2qq_idx",
+        "truth_hbb1_idx", "truth_hbb2_idx", "truth_v1q1_idx", "truth_v1q2_idx", "truth_v2q1_idx", "truth_v2q2_idx",
+        "truth_vbs1_idx", "truth_vbs2_idx"
     ]
 
     if isSignal:
@@ -460,21 +470,21 @@ def make_dataset(dataframes, output_path):
         "INPUTS/MET/cosphi": data["MET_cosphi"],
 
         # Targets - Higgs
-        "TARGETS/h/b1": data["Jet_hbb1_idx"],
-        "TARGETS/h/b2": data["Jet_hbb2_idx"],
-        "TARGETS/bh/bb": data["FatJet_hbb_idx"],
+        "TARGETS/h/b1": data["truth_hbb1_idx"],
+        "TARGETS/h/b2": data["truth_hbb2_idx"],
+        "TARGETS/bh/bb": data["truth_hbb_idx"],
         
         # Targets - Vector boson
-        "TARGETS/v1/v1q1": data["Jet_v1q1_idx"],
-        "TARGETS/v1/v1q2": data["Jet_v1q2_idx"],
-        "TARGETS/v2/v2q1": data["Jet_v2q1_idx"],
-        "TARGETS/v2/v2q2": data["Jet_v2q2_idx"],
-        "TARGETS/bv1/qq1": data["FatJet_v1qq_idx"],
-        "TARGETS/bv2/qq2": data["FatJet_v2qq_idx"],
+        "TARGETS/v1/v1q1": data["truth_v1q1_idx"],
+        "TARGETS/v1/v1q2": data["truth_v1q2_idx"],
+        "TARGETS/v2/v2q1": data["truth_v2q1_idx"],
+        "TARGETS/v2/v2q2": data["truth_v2q2_idx"],
+        "TARGETS/bv1/qq1": data["truth_v1qq_idx"],
+        "TARGETS/bv2/qq2": data["truth_v2qq_idx"],
         
         # Targets - VBS
-        "TARGETS/vbs/vbsq1": data["Jet_vbs1_idx"],
-        "TARGETS/vbs/vbsq2": data["Jet_vbs2_idx"],
+        "TARGETS/vbs/vbsq1": data["truth_vbs1_idx"],
+        "TARGETS/vbs/vbsq2": data["truth_vbs2_idx"],
         
         # Classification
         "CLASSIFICATIONS/EVENT/isSignal": data["isSignal"],
@@ -515,110 +525,112 @@ def genMatching(input_file, isSignal):
             .Define("Higgs_idx", "higgs_info[0]") \
             .Define("Higgs_eta", "Higgs_idx >= 0 ? GenPart_eta[Higgs_idx] : -999.0") \
             .Define("Higgs_phi", "Higgs_idx >= 0 ? GenPart_phi[Higgs_idx] : -999.0") \
-            .Define("b1_eta", "higgs_info[1] >= 0 ? GenPart_eta[higgs_info[1]] : -999.0") \
-            .Define("b1_phi", "higgs_info[1] >= 0 ? GenPart_phi[higgs_info[1]] : -999.0") \
-            .Define("b2_eta", "higgs_info[2] >= 0 ? GenPart_eta[higgs_info[2]] : -999.0") \
-            .Define("b2_phi", "higgs_info[2] >= 0 ? GenPart_phi[higgs_info[2]] : -999.0")
-                    
+            .Define("b1_idx", "higgs_info[1]") \
+            .Define("b1_eta", "b1_idx >= 0 ? GenPart_eta[b1_idx] : -999.0") \
+            .Define("b1_phi", "b1_idx >= 0 ? GenPart_phi[b1_idx] : -999.0") \
+            .Define("b2_idx", "higgs_info[2]") \
+            .Define("b2_eta", "b2_idx >= 0 ? GenPart_eta[b2_idx] : -999.0") \
+            .Define("b2_phi", "b2_idx >= 0 ? GenPart_phi[b2_idx] : -999.0")
+
         df = df.Define("vboson_info", "findVBosonsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
             .Define("V1_idx", "vboson_info[0]") \
             .Define("V1_eta", "V1_idx >= 0 ? GenPart_eta[V1_idx] : -999.0") \
             .Define("V1_phi", "V1_idx >= 0 ? GenPart_phi[V1_idx] : -999.0") \
-            .Define("V1_q1_eta", "vboson_info[1] >= 0 ? GenPart_eta[vboson_info[1]] : -999.0") \
-            .Define("V1_q1_phi", "vboson_info[1] >= 0 ? GenPart_phi[vboson_info[1]] : -999.0") \
-            .Define("V1_q2_eta", "vboson_info[2] >= 0 ? GenPart_eta[vboson_info[2]] : -999.0") \
-            .Define("V1_q2_phi", "vboson_info[2] >= 0 ? GenPart_phi[vboson_info[2]] : -999.0") \
+            .Define("V1_q1_idx", "vboson_info[1]") \
+            .Define("V1_q1_eta", "V1_q1_idx >= 0 ? GenPart_eta[V1_q1_idx] : -999.0") \
+            .Define("V1_q1_phi", "V1_q1_idx >= 0 ? GenPart_phi[V1_q1_idx] : -999.0") \
+            .Define("V1_q2_idx", "vboson_info[2]") \
+            .Define("V1_q2_eta", "V1_q2_idx >= 0 ? GenPart_eta[V1_q2_idx] : -999.0") \
+            .Define("V1_q2_phi", "V1_q2_idx >= 0 ? GenPart_phi[V1_q2_idx] : -999.0") \
             .Define("V2_idx", "vboson_info[3]") \
             .Define("V2_eta", "V2_idx >= 0 ? GenPart_eta[V2_idx] : -999.0") \
             .Define("V2_phi", "V2_idx >= 0 ? GenPart_phi[V2_idx] : -999.0") \
-            .Define("V2_q1_eta", "vboson_info[4] >= 0 ? GenPart_eta[vboson_info[4]] : -999.0") \
-            .Define("V2_q1_phi", "vboson_info[4] >= 0 ? GenPart_phi[vboson_info[4]] : -999.0") \
-            .Define("V2_q2_eta", "vboson_info[5] >= 0 ? GenPart_eta[vboson_info[5]] : -999.0") \
-            .Define("V2_q2_phi", "vboson_info[5] >= 0 ? GenPart_phi[vboson_info[5]] : -999.0")
-            
+            .Define("V2_q1_idx", "vboson_info[4]") \
+            .Define("V2_q1_eta", "V2_q1_idx >= 0 ? GenPart_eta[V2_q1_idx] : -999.0") \
+            .Define("V2_q1_phi", "V2_q1_idx >= 0 ? GenPart_phi[V2_q1_idx] : -999.0") \
+            .Define("V2_q2_idx", "vboson_info[5]") \
+            .Define("V2_q2_eta", "V2_q2_idx >= 0 ? GenPart_eta[V2_q2_idx] : -999.0") \
+            .Define("V2_q2_phi", "V2_q2_idx >= 0 ? GenPart_phi[V2_q2_idx] : -999.0")
+
         df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+            .Define("VBS_idx1", "vbs_info[0]") \
             .Define("VBSJet1_eta", "vbs_info[0] >= 0 ? GenPart_eta[vbs_info[0]] : -999.0") \
             .Define("VBSJet1_phi", "vbs_info[0] >= 0 ? GenPart_phi[vbs_info[0]] : -999.0") \
+            .Define("VBS_idx2", "vbs_info[1]") \
             .Define("VBSJet2_eta", "vbs_info[1] >= 0 ? GenPart_eta[vbs_info[1]] : -999.0") \
             .Define("VBSJet2_phi", "vbs_info[1] >= 0 ? GenPart_phi[vbs_info[1]] : -999.0")
 
         df = df.Filter("Jet_pt.size() > 0") \
-            .Define("Jet_vbs1_idx_temp", "find_matching_jet(VBSJet1_eta, VBSJet1_phi, ROOT::RVec<int>{}, ROOT::RVec<int>{}, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
-            .Define("Jet_vbs2_idx_temp", "find_matching_jet(VBSJet2_eta, VBSJet2_phi, ROOT::RVec<int>{Jet_vbs1_idx_temp}, ROOT::RVec<int>{}, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
-            .Define("Jet_vbs1_idx", "Jet_vbs1_idx_temp >= 0 && Jet_vbs1_idx_temp < 10 ? Jet_vbs1_idx_temp : -1") \
-            .Define("Jet_vbs2_idx", "Jet_vbs2_idx_temp >= 0 && Jet_vbs2_idx_temp < 10 ? Jet_vbs2_idx_temp : -1")
+            .Define("truth_vbs1_idx_temp", "find_matching_jet(VBS_idx1, VBSJet1_eta, VBSJet1_phi, ROOT::RVec<int>{}, ROOT::RVec<int>{}, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("truth_vbs2_idx_temp", "find_matching_jet(VBS_idx2, VBSJet2_eta, VBSJet2_phi, ROOT::RVec<int>{truth_vbs1_idx_temp}, ROOT::RVec<int>{}, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("truth_vbs1_idx", "truth_vbs1_idx_temp >= 0 && truth_vbs1_idx_temp < 10 ? truth_vbs1_idx_temp : -1") \
+            .Define("truth_vbs2_idx", "truth_vbs2_idx_temp >= 0 && truth_vbs2_idx_temp < 10 ? truth_vbs2_idx_temp : -1")
 
         df = df.Filter("FatJet_pt.size() > 0") \
-            .Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b1_phi, b2_eta, b2_phi)") \
-            .Define("hbb_fatjet_idx_temp", "Higgs_idx != -1 ? find_matching_fatjet(Higgs_eta, Higgs_phi, ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx}, ROOT::RVec<int>{}, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b1_eta, b1_phi) : 999.0") \
-            .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b2_eta, b2_phi) : 999.0") \
+            .Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b2_eta, b1_phi, b2_phi)") \
+            .Define("hbb_fatjet_idx_temp", "find_matching_fatjet(Higgs_idx, Higgs_eta, Higgs_phi, ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}, ROOT::RVec<int>{}, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], b1_eta, FatJet_phi[hbb_fatjet_idx_temp], b1_phi) : 999.0") \
+            .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], b2_eta, FatJet_phi[hbb_fatjet_idx_temp], b2_phi) : 999.0") \
             .Define("hbb_isBoosted", "hbb_fatjet_idx_temp != -1 && hbb_fatjet_idx_temp < 3 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8") \
-            .Define("FatJet_hbb_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1")
+            .Define("truth_hbb_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1")
         
-        df = df.Define("excluded_jets_for_hbb", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx}") \
-            .Define("excluded_fatjets_for_hbb", "ROOT::RVec<int>{}") \
-            .Define("Jet_hbb1_idx_temp", "Higgs_idx != -1 ? find_matching_jet(b1_eta, b1_phi, excluded_jets_for_hbb, excluded_fatjets_for_hbb, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx_temp}") \
-            .Define("Jet_hbb2_idx_temp", "Higgs_idx != -1 ? find_matching_jet(b2_eta, b2_phi, excluded_jets_for_hbb2, excluded_fatjets_for_hbb, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("Jet_hbb1_idx", "Jet_hbb1_idx_temp >= 0 && Jet_hbb1_idx_temp < 10 ? Jet_hbb1_idx_temp : -1") \
-            .Define("Jet_hbb2_idx", "Jet_hbb2_idx_temp >= 0 && Jet_hbb2_idx_temp < 10 ? Jet_hbb2_idx_temp : -1") \
-            .Define("hbb_isResolved", "!hbb_isBoosted && Jet_hbb1_idx != -1 && Jet_hbb2_idx != -1")
+        df = df.Define("excluded_jets_for_hbb", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}") \
+            .Define("matched_fatjets_for_hbb", "ROOT::RVec<int>{}") \
+            .Define("Jet_hbb1_idx_temp", "find_matching_jet(b1_idx, b1_eta, b1_phi, excluded_jets_for_hbb, matched_fatjets_for_hbb, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, Jet_hbb1_idx_temp}") \
+            .Define("truth_hbb2_idx_temp", "find_matching_jet(b2_idx, b2_eta, b2_phi, excluded_jets_for_hbb2, matched_fatjets_for_hbb, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("truth_hbb1_idx", "Jet_hbb1_idx_temp >= 0 && Jet_hbb1_idx_temp < 10 ? Jet_hbb1_idx_temp : -1") \
+            .Define("truth_hbb2_idx", "truth_hbb2_idx_temp >= 0 && truth_hbb2_idx_temp < 10 ? truth_hbb2_idx_temp : -1")
 
         df = df.Define("v1qq_dR", "V1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0") \
-            .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{FatJet_hbb_idx}") \
-            .Define("excluded_jets_for_v1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx}") \
-            .Define("v1qq_fatjet_idx_temp", "V1_idx != -1 ? find_matching_fatjet(V1_eta, V1_phi, excluded_jets_for_v1, excluded_fatjets_for_v1, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_eta, V1_q1_phi) : 999.0") \
-            .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_eta, V1_q2_phi) : 999.0") \
+            .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{truth_hbb_idx}") \
+            .Define("matched_jets_for_v1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_hbb1_idx, truth_hbb2_idx}") \
+            .Define("v1qq_fatjet_idx_temp", "find_matching_fatjet(V1_idx, V1_eta, V1_phi, matched_jets_for_v1, excluded_fatjets_for_v1, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], V1_q1_eta, FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_phi) : 999.0") \
+            .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], V1_q2_eta, FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_phi) : 999.0") \
             .Define("v1qq_isBoosted", "V1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8") \
-            .Define("FatJet_v1qq_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1")
+            .Define("truth_v1qq_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1")
 
         df = df.Define("v2qq_dR", "V2_idx != -1 ? ROOT::VecOps::DeltaR(V2_q1_eta, V2_q1_phi, V2_q2_eta, V2_q2_phi) : 999.0") \
-            .Define("excluded_fatjets_for_v2", "ROOT::RVec<int>{FatJet_hbb_idx, FatJet_v1qq_idx}") \
-            .Define("excluded_jets_for_v2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx}") \
-            .Define("v2qq_fatjet_idx_temp", "V2_idx != -1 ? find_matching_fatjet(V2_eta, V2_phi, excluded_jets_for_v2, excluded_fatjets_for_v2, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q1_eta, V2_q1_phi) : 999.0") \
-            .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q2_eta, V2_q2_phi) : 999.0") \
+            .Define("excluded_fatjets_for_v2", "ROOT::RVec<int>{truth_hbb_idx, truth_v1qq_idx}") \
+            .Define("matched_jets_for_v2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_hbb1_idx, truth_hbb2_idx}") \
+            .Define("v2qq_fatjet_idx_temp", "find_matching_fatjet(V2_idx, V2_eta, V2_phi, matched_jets_for_v2, excluded_fatjets_for_v2, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], V2_q1_eta, FatJet_phi[v2qq_fatjet_idx_temp], V2_q1_phi) : 999.0") \
+            .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], V2_q2_eta, FatJet_phi[v2qq_fatjet_idx_temp], V2_q2_phi) : 999.0") \
             .Define("v2qq_isBoosted", "V2_idx != -1 && v2qq_fatjet_idx_temp != -1 && v2qq_fatjet_idx_temp < 3 && v2qq_dR < 0.8 && v2qq_fatjet_candidate_q1_dR < 0.8 && v2qq_fatjet_candidate_q2_dR < 0.8") \
-            .Define("FatJet_v2qq_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1")
+            .Define("truth_v2qq_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1")
         
-        df = df.Define("excluded_jets_for_v1q1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx}") \
-            .Define("excluded_fatjets_for_v1q", "ROOT::RVec<int>{FatJet_hbb_idx, FatJet_v2qq_idx}") \
-            .Define("Jet_v1q1_idx_temp", "V1_idx != -1 ? find_matching_jet(V1_q1_eta, V1_q1_phi, excluded_jets_for_v1q1, excluded_fatjets_for_v1q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("excluded_jets_for_v1q2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx_temp}") \
-            .Define("Jet_v1q2_idx_temp", "V1_idx != -1 ? find_matching_jet(V1_q2_eta, V1_q2_phi, excluded_jets_for_v1q2, excluded_fatjets_for_v1q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("Jet_v1q1_idx", "Jet_v1q1_idx_temp >= 0 && Jet_v1q1_idx_temp < 10 ? Jet_v1q1_idx_temp : -1") \
-            .Define("Jet_v1q2_idx", "Jet_v1q2_idx_temp >= 0 && Jet_v1q2_idx_temp < 10 ? Jet_v1q2_idx_temp : -1") \
-            .Define("v1qq_isResolved", "V1_idx != -1 && !v1qq_isBoosted && Jet_v1q1_idx != -1 && Jet_v1q2_idx != -1")
+        df = df.Define("excluded_jets_for_v1q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_hbb1_idx, truth_hbb2_idx}") \
+            .Define("matched_fatjets_for_v1q", "ROOT::RVec<int>{truth_hbb_idx, truth_v1qq_idx, truth_v2qq_idx}") \
+            .Define("truth_v1q1_idx_temp", "find_matching_jet(V1_q1_idx, V1_q1_eta, V1_q1_phi, excluded_jets_for_v1q1, matched_fatjets_for_v1q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("excluded_jets_for_v1q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_hbb1_idx, truth_hbb2_idx, truth_v1q1_idx_temp}") \
+            .Define("truth_v1q2_idx_temp", "find_matching_jet(V1_q2_idx, V1_q2_eta, V1_q2_phi, excluded_jets_for_v1q2, matched_fatjets_for_v1q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("truth_v1q1_idx", "truth_v1q1_idx_temp >= 0 && truth_v1q1_idx_temp < 10 ? truth_v1q1_idx_temp : -1") \
+            .Define("truth_v1q2_idx", "truth_v1q2_idx_temp >= 0 && truth_v1q2_idx_temp < 10 ? truth_v1q2_idx_temp : -1")
 
-        df = df.Define("excluded_jets_for_v2q1", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx, Jet_v1q2_idx}") \
-            .Define("excluded_fatjets_for_v2q", "ROOT::RVec<int>{FatJet_hbb_idx, FatJet_v1qq_idx}") \
-            .Define("Jet_v2q1_idx_temp", "V2_idx != -1 ? find_matching_jet(V2_q1_eta, V2_q1_phi, excluded_jets_for_v2q1, excluded_fatjets_for_v2q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{Jet_vbs1_idx, Jet_vbs2_idx, Jet_hbb1_idx, Jet_hbb2_idx, Jet_v1q1_idx, Jet_v1q2_idx, Jet_v2q1_idx_temp}") \
-            .Define("Jet_v2q2_idx_temp", "V2_idx != -1 ? find_matching_jet(V2_q2_eta, V2_q2_phi, excluded_jets_for_v2q2, excluded_fatjets_for_v2q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi) : -1") \
-            .Define("Jet_v2q1_idx", "Jet_v2q1_idx_temp >= 0 && Jet_v2q1_idx_temp < 10 ? Jet_v2q1_idx_temp : -1") \
-            .Define("Jet_v2q2_idx", "Jet_v2q2_idx_temp >= 0 && Jet_v2q2_idx_temp < 10 ? Jet_v2q2_idx_temp : -1") \
-            .Define("v2qq_isResolved", "V2_idx != -1 && !v2qq_isBoosted && Jet_v2q1_idx != -1 && Jet_v2q2_idx != -1")
+        df = df.Define("excluded_jets_for_v2q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_hbb1_idx, truth_hbb2_idx, truth_v1q1_idx, truth_v1q2_idx}") \
+            .Define("matched_fatjets_for_v2q", "ROOT::RVec<int>{truth_hbb_idx, truth_v1qq_idx, truth_v2qq_idx}") \
+            .Define("truth_v2q1_idx_temp", "find_matching_jet(V2_q1_idx, V2_q1_eta, V2_q1_phi, excluded_jets_for_v2q1, matched_fatjets_for_v2q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_hbb1_idx, truth_hbb2_idx, truth_v1q1_idx, truth_v1q2_idx, truth_v2q1_idx_temp}") \
+            .Define("truth_v2q2_idx_temp", "find_matching_jet(V2_q2_idx, V2_q2_eta, V2_q2_phi, excluded_jets_for_v2q2, matched_fatjets_for_v2q, Jet_eta, Jet_phi, FatJet_eta, FatJet_phi)") \
+            .Define("truth_v2q1_idx", "truth_v2q1_idx_temp >= 0 && truth_v2q1_idx_temp < 10 ? truth_v2q1_idx_temp : -1") \
+            .Define("truth_v2q2_idx", "truth_v2q2_idx_temp >= 0 && truth_v2q2_idx_temp < 10 ? truth_v2q2_idx_temp : -1")
 
     else:
-        df = df.Define("FatJet_hbb_idx", "-1") \
-            .Define("Jet_hbb1_idx", "-1") \
-            .Define("Jet_hbb2_idx", "-1") \
-            .Define("FatJet_v1qq_idx", "-1") \
-            .Define("FatJet_v2qq_idx", "-1") \
-            .Define("Jet_v1q1_idx", "-1") \
-            .Define("Jet_v1q2_idx", "-1") \
-            .Define("Jet_v2q1_idx", "-1") \
-            .Define("Jet_v2q2_idx", "-1") \
-            .Define("Jet_vbs1_idx", "-1") \
-            .Define("Jet_vbs2_idx", "-1") \
+        df = df.Define("truth_hbb_idx", "-1") \
+            .Define("truth_hbb1_idx", "-1") \
+            .Define("truth_hbb2_idx", "-1") \
+            .Define("truth_v1qq_idx", "-1") \
+            .Define("truth_v2qq_idx", "-1") \
+            .Define("truth_v1q1_idx", "-1") \
+            .Define("truth_v1q2_idx", "-1") \
+            .Define("truth_v2q1_idx", "-1") \
+            .Define("truth_v2q2_idx", "-1") \
+            .Define("truth_vbs1_idx", "-1") \
+            .Define("truth_vbs2_idx", "-1") \
             .Define("hbb_isBoosted", "false") \
-            .Define("hbb_isResolved", "false") \
             .Define("v1qq_isBoosted", "false") \
-            .Define("v1qq_isResolved", "false") \
             .Define("v2qq_isBoosted", "false") \
-            .Define("v2qq_isResolved", "false") \
             .Filter("event % 5 == 0")
     return df
 
@@ -627,7 +639,7 @@ if __name__ == "__main__":
     df_sig = genMatching(f"/home/users/aaarora/phys/run3/run3-vbsvvh/preselection/etc/1Lep2FJ-sig.json", isSignal=True)
     # df_bkg = genMatching(f"/home/users/aaarora/phys/run3/SPANet/input_proc/1Lep2FJ1.5-bkg.json", isSignal=False)
 
-    # df_sig.Snapshot("Events", "out.root", get_array_names(isSignal=True))
+    df_sig.Snapshot("Events", "out.root")
     print("Number of evts in sig: ", df_sig.Count().GetValue())
     # print("Number of evts in bkg: ", df_bkg.Count().GetValue())
     
