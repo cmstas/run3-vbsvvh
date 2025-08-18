@@ -280,9 +280,9 @@ RNode GenLevelSelections(RNode df_) {
             .Define("excluded_jets_for_hbb", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx}")
             .Define("h1_idx_temp", find_matching_jet_conditional, {"Higgs_idx", "b1_jet_dR", "excluded_jets_for_hbb"})
             .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx, h1_idx_temp}")
-            .Define("tempJet_hbb2_idx", find_matching_jet_conditional, {"Higgs_idx", "b2_jet_dR", "excluded_jets_for_hbb2"})
+            .Define("Jet_hbb2_idx_temp", find_matching_jet_conditional, {"Higgs_idx", "b2_jet_dR", "excluded_jets_for_hbb2"})
             .Define("gen_h1_idx", "h1_idx_temp >= 0 && h1_idx_temp < 10 ? h1_idx_temp : -1")
-            .Define("gen_h2_idx", "tempJet_hbb2_idx >= 0 && tempJet_hbb2_idx < 10 ? tempJet_hbb2_idx : -1")
+            .Define("gen_h2_idx", "Jet_hbb2_idx_temp >= 0 && Jet_hbb2_idx_temp < 10 ? Jet_hbb2_idx_temp : -1")
             .Define("hbb_isResolved", "!hbb_isBoosted && gen_h1_idx != -1 && gen_h2_idx != -1");
 
     df = df.Define("v1qq_fatjet_dR", get_dR_conditional, {"V1_idx", "V1_eta", "V1_phi", "FatJet_eta", "FatJet_phi"})
@@ -316,11 +316,11 @@ RNode GenLevelSelections(RNode df_) {
     df = df.Define("v2q1_jet_dR", get_dR_conditional, {"V2_idx", "V2_q1_eta", "V2_q1_phi", "Jet_eta", "Jet_phi"})
             .Define("v2q2_jet_dR", get_dR_conditional, {"V2_idx", "V2_q2_eta", "V2_q2_phi", "Jet_eta", "Jet_phi"})
             .Define("excluded_jets_for_v2q1", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx, gen_h1_idx, gen_h2_idx, gen_v1_j1_idx, gen_v1_j2_idx}")
-            .Define("tempJet_v2q1_idx", find_matching_jet_conditional, {"V2_idx", "v2q1_jet_dR", "excluded_jets_for_v2q1"})
-            .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx, gen_h1_idx, gen_h2_idx, gen_v1_j1_idx, gen_v1_j2_idx, tempJet_v2q1_idx}")
-            .Define("tJet_v2q2_idx_temp", find_matching_jet_conditional, {"V2_idx", "v2q2_jet_dR", "excluded_jets_for_v2q2"})
-            .Define("gen_v2_j1_idx", "tempJet_v2q1_idx >= 0 && tempJet_v2q1_idx < 10 ? tempJet_v2q1_idx : -1")
-            .Define("gen_v2_j2_idx", "tJet_v2q2_idx_temp >= 0 && tJet_v2q2_idx_temp < 10 ? tJet_v2q2_idx_temp : -1")
+            .Define("Jet_v2q1_idx_temp", find_matching_jet_conditional, {"V2_idx", "v2q1_jet_dR", "excluded_jets_for_v2q1"})
+            .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{gen_vbs1_idx, gen_vbs2_idx, gen_h1_idx, gen_h2_idx, gen_v1_j1_idx, gen_v1_j2_idx, Jet_v2q1_idx_temp}")
+            .Define("Jet_v2q2_idx_temp", find_matching_jet_conditional, {"V2_idx", "v2q2_jet_dR", "excluded_jets_for_v2q2"})
+            .Define("gen_v2_j1_idx", "Jet_v2q1_idx_temp >= 0 && Jet_v2q1_idx_temp < 10 ? Jet_v2q1_idx_temp : -1")
+            .Define("gen_v2_j2_idx", "Jet_v2q2_idx_temp >= 0 && Jet_v2q2_idx_temp < 10 ? Jet_v2q2_idx_temp : -1")
             .Define("v2qq_isResolved", "V2_idx != -1 && !v2qq_isBoosted && gen_v2_j1_idx != -1 && gen_v2_j2_idx != -1");
 
     return df;
