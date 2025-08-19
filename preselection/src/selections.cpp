@@ -109,28 +109,6 @@ RNode AK8JetsSelection(RNode df_) {
     return df;
 }
 
-RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session) {
-    auto df = EventFilters(df_);
-    df = TriggerSelections(df, channel, TriggerMap);
-    df = LeptonSelections(df);
-    df = AK4JetsSelection(df);
-    df = AK8JetsSelection(df);
-
-    // channel-specific selections
-    if (channel == "1Lep2FJ") {
-        df = df.Define("_cut_lepton", "((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-            "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-            "(Lepton_pt[0] > 40)");
-    }
-
-    df = spanet_session.RunSPANetInference(df);
-    df = ParseSpanet(df);
-
-    df = GenLevelSelections(df);
-
-    return df;
-}
-
 RNode ParseSpanet(RNode df_){
     auto df = df_.Define("_all_assignments", assign_all_objects, {
         "spanet_vbs_assignment", "spanet_h_assignment", "spanet_bh_assignment", 
@@ -226,105 +204,22 @@ RNode ParseSpanet(RNode df_){
     return df;
 }
 
-RNode GenLevelSelections(RNode df_) {
-    auto df = df_.Define("higgs_info", get_higgs_boson_idx, {"GenPart_pdgId", "GenPart_status", "GenPart_genPartIdxMother"})
-            .Define("Higgs_idx", "higgs_info[0]")
-            .Define("Higgs_eta", "Higgs_idx >= 0 ? GenPart_eta[Higgs_idx] : -999.0f")
-            .Define("Higgs_phi", "Higgs_idx >= 0 ? GenPart_phi[Higgs_idx] : -999.0f")
-            .Define("b1_idx", "higgs_info[1]")
-            .Define("b1_eta", "b1_idx >= 0 ? GenPart_eta[b1_idx] : -999.0f")
-            .Define("b1_phi", "b1_idx >= 0 ? GenPart_phi[b1_idx] : -999.0f")
-            .Define("b2_idx", "higgs_info[2]")
-            .Define("b2_eta", "b2_idx >= 0 ? GenPart_eta[b2_idx] : -999.0f")
-            .Define("b2_phi", "b2_idx >= 0 ? GenPart_phi[b2_idx] : -999.0f");
+RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session) {
+    auto df = EventFilters(df_);
+    df = TriggerSelections(df, channel, TriggerMap);
+    df = LeptonSelections(df);
+    df = AK4JetsSelection(df);
+    df = AK8JetsSelection(df);
 
-    df = df.Define("vboson_info", get_v_boson_idx, {"GenPart_pdgId", "GenPart_status", "GenPart_genPartIdxMother"})
-            .Define("V1_idx", "vboson_info[0]")
-            .Define("V1_eta", "V1_idx >= 0 ? GenPart_eta[V1_idx] : -999.0f")
-            .Define("V1_phi", "V1_idx >= 0 ? GenPart_phi[V1_idx] : -999.0f")
-            .Define("V1_q1_idx", "vboson_info[1]")
-            .Define("V1_q2_idx", "vboson_info[2]")
-            .Define("V1_q1_eta", "V1_q1_idx >= 0 ? GenPart_eta[V1_q1_idx] : -999.0f")
-            .Define("V1_q1_phi", "V1_q1_idx >= 0 ? GenPart_phi[V1_q1_idx] : -999.0f")
-            .Define("V1_q2_eta", "V1_q2_idx >= 0 ? GenPart_eta[V1_q2_idx] : -999.0f")
-            .Define("V1_q2_phi", "V1_q2_idx >= 0 ? GenPart_phi[V1_q2_idx] : -999.0f")
-            .Define("V2_idx", "vboson_info[3]")
-            .Define("V2_eta", "V2_idx >= 0 ? GenPart_eta[V2_idx] : -999.0f")
-            .Define("V2_phi", "V2_idx >= 0 ? GenPart_phi[V2_idx] : -999.0f")
-            .Define("V2_q1_idx", "vboson_info[4]")
-            .Define("V2_q2_idx", "vboson_info[5]")
-            .Define("V2_q1_eta", "V2_q1_idx >= 0 ? GenPart_eta[V2_q1_idx] : -999.0f")
-            .Define("V2_q1_phi", "V2_q1_idx >= 0 ? GenPart_phi[V2_q1_idx] : -999.0f")
-            .Define("V2_q2_eta", "V2_q2_idx >= 0 ? GenPart_eta[V2_q2_idx] : -999.0f")
-            .Define("V2_q2_phi", "V2_q2_idx >= 0 ? GenPart_phi[V2_q2_idx] : -999.0f");
+    // channel-specific selections
+    if (channel == "1Lep2FJ") {
+        df = df.Define("_cut_lepton", "((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+            "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+            "(Lepton_pt[0] > 40)");
+    }
 
-    df = df.Define("vbs_info", get_vbs_quarks_idxs, {"GenPart_pdgId", "GenPart_status", "GenPart_genPartIdxMother"})
-            .Define("VBSJet1_idx", "vbs_info[0]")
-            .Define("VBSJet1_eta", "VBSJet1_idx >= 0 ? GenPart_eta[VBSJet1_idx] : -999.0f")
-            .Define("VBSJet1_phi", "VBSJet1_idx >= 0 ? GenPart_phi[VBSJet1_idx] : -999.0f")
-            .Define("VBSJet2_idx", "vbs_info[1]")
-            .Define("VBSJet2_eta", "VBSJet2_idx >= 0 ? GenPart_eta[VBSJet2_idx] : -999.0f")
-            .Define("VBSJet2_phi", "VBSJet2_idx >= 0 ? GenPart_phi[VBSJet2_idx] : -999.0f");
-
-    df = df.Define("empty_jet_exclusions", "ROOT::RVec<int>{}")
-            .Define("empty_fatjet_exclusions", "ROOT::RVec<int>{}")
-            .Define("vbs1_idx_temp", find_matching_jet, {"VBSJet1_idx", "VBSJet1_eta", "VBSJet1_phi", "empty_jet_exclusions", "empty_fatjet_exclusions", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("vbs1_exclusions", "ROOT::RVec<int>{vbs1_idx_temp}")
-            .Define("vbs2_idx_temp", find_matching_jet, {"VBSJet2_idx", "VBSJet2_eta", "VBSJet2_phi", "vbs1_exclusions", "empty_fatjet_exclusions", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("truth_vbs1_idx", "vbs1_idx_temp >= 0 && vbs1_idx_temp < 10 ? vbs1_idx_temp : -1")
-            .Define("truth_vbs2_idx", "vbs2_idx_temp >= 0 && vbs2_idx_temp < 10 ? vbs2_idx_temp : -1");
-
-    df = df.Define("excluded_jets_for_bh", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}")
-            .Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b1_phi, b2_eta, b2_phi)")
-            .Define("hbb_fatjet_idx_temp", find_matching_fatjet, {"Higgs_idx", "Higgs_eta", "Higgs_phi", "excluded_jets_for_bh", "empty_fatjet_exclusions", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b1_eta, b1_phi) : 999.0")
-            .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], FatJet_phi[hbb_fatjet_idx_temp], b2_eta, b2_phi) : 999.0")
-            .Define("hbb_isBoosted", "hbb_fatjet_idx_temp != -1 && hbb_fatjet_idx_temp < 3 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8")
-            .Define("truth_bh_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1");
-
-    df = df.Define("excluded_jets_for_hbb", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}")
-            .Define("h1_idx_temp", find_matching_jet, {"b1_idx", "b1_eta", "b1_phi", "excluded_jets_for_hbb", "empty_fatjet_exclusions", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("excluded_jets_for_hbb2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, h1_idx_temp}")
-            .Define("tempJet_hbb2_idx", find_matching_jet, {"b2_idx", "b2_eta", "b2_phi", "excluded_jets_for_hbb2", "empty_fatjet_exclusions", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("truth_h1_idx", "h1_idx_temp >= 0 && h1_idx_temp < 10 ? h1_idx_temp : -1")
-            .Define("truth_h2_idx", "tempJet_hbb2_idx >= 0 && tempJet_hbb2_idx < 10 ? tempJet_hbb2_idx : -1")
-            .Define("hbb_isResolved", "!hbb_isBoosted && truth_h1_idx != -1 && truth_h2_idx != -1");
-
-    df = df.Define("excluded_jets_for_v1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_h1_idx, truth_h2_idx}")
-            .Define("excluded_fatjets_for_v1", "ROOT::RVec<int>{truth_bh_idx}")
-            .Define("v1qq_dR", "V1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0")
-            .Define("v1qq_fatjet_idx_temp", find_matching_fatjet, {"V1_idx", "V1_eta", "V1_phi", "excluded_jets_for_v1", "excluded_fatjets_for_v1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q1_eta, V1_q1_phi) : 999.0")
-            .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], FatJet_phi[v1qq_fatjet_idx_temp], V1_q2_eta, V1_q2_phi) : 999.0")
-            .Define("v1qq_isBoosted", "V1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8")
-            .Define("truth_bv1_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1");
-
-    df = df.Define("excluded_jets_for_v2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_h1_idx, truth_h2_idx}")
-            .Define("excluded_fatjets_for_v2", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx}")
-            .Define("v2qq_dR", "V2_idx != -1 ? ROOT::VecOps::DeltaR(V2_q1_eta, V2_q1_phi, V2_q2_eta, V2_q2_phi) : 999.0")
-            .Define("v2qq_fatjet_idx_temp", find_matching_fatjet, {"V2_idx", "V2_eta", "V2_phi", "excluded_jets_for_v2", "excluded_fatjets_for_v2", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q1_eta, V2_q1_phi) : 999.0")
-            .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], FatJet_phi[v2qq_fatjet_idx_temp], V2_q2_eta, V2_q2_phi) : 999.0")
-            .Define("v2qq_isBoosted", "V2_idx != -1 && v2qq_fatjet_idx_temp != -1 && v2qq_fatjet_idx_temp < 3 && v2qq_dR < 0.8 && v2qq_fatjet_candidate_q1_dR < 0.8 && v2qq_fatjet_candidate_q2_dR < 0.8")
-            .Define("truth_bv2_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1");
-
-    df = df.Define("excluded_jets_for_v1q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_h1_idx, truth_h2_idx}")
-            .Define("excluded_fatjets_for_v1q1", "ROOT::RVec<int>{truth_bh_idx, truth_bv2_idx}")
-            .Define("tempJet_v1q1_idx", find_matching_jet, {"V1_q1_idx", "V1_q1_eta", "V1_q1_phi", "excluded_jets_for_v1q1", "excluded_fatjets_for_v1q1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("excluded_jets_for_v1q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_h1_idx, truth_h2_idx, tempJet_v1q1_idx}")
-            .Define("tempJet_v1q2_idx", find_matching_jet, {"V1_q2_idx", "V1_q2_eta", "V1_q2_phi", "excluded_jets_for_v1q2", "excluded_fatjets_for_v1q1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("truth_v1_j1_idx", "tempJet_v1q1_idx >= 0 && tempJet_v1q1_idx < 10 ? tempJet_v1q1_idx : -1")
-            .Define("truth_v1_j2_idx", "tempJet_v1q2_idx >= 0 && tempJet_v1q2_idx < 10 ? tempJet_v1q2_idx : -1")
-            .Define("v1qq_isResolved", "V1_idx != -1 && !v1qq_isBoosted && truth_v1_j1_idx != -1 && truth_v1_j2_idx != -1");
-
-    df = df.Define("excluded_jets_for_v2q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_h1_idx, truth_h2_idx, truth_v1_j1_idx, truth_v1_j2_idx}")
-            .Define("excluded_fatjets_for_v2q1", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx}")
-            .Define("tempJet_v2q1_idx", find_matching_jet, {"V2_q1_idx", "V2_q1_eta", "V2_q1_phi", "excluded_jets_for_v2q1", "excluded_fatjets_for_v2q1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("excluded_jets_for_v2q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_h1_idx, truth_h2_idx, truth_v1_j1_idx, truth_v1_j2_idx, tempJet_v2q1_idx}")
-            .Define("tempJet_v2q2_idx", find_matching_jet, {"V2_q2_idx", "V2_q2_eta", "V2_q2_phi", "excluded_jets_for_v2q2", "excluded_fatjets_for_v2q1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
-            .Define("truth_v2_j1_idx", "tempJet_v2q1_idx >= 0 && tempJet_v2q1_idx < 10 ? tempJet_v2q1_idx : -1")
-            .Define("truth_v2_j2_idx", "tempJet_v2q2_idx >= 0 && tempJet_v2q2_idx < 10 ? tempJet_v2q2_idx : -1")
-            .Define("v2qq_isResolved", "V2_idx != -1 && !v2qq_isBoosted && truth_v2_j1_idx != -1 && truth_v2_j2_idx != -1");
+    df = spanet_session.RunSPANetInference(df);
+    df = ParseSpanet(df);
 
     return df;
 }
