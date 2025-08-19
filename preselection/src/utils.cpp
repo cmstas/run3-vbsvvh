@@ -484,111 +484,127 @@ RVec<int> get_vbs_quarks_idxs(RVec<int>& pdgId, RVec<int>& status, RVec<short>& 
     return result;
 }
 
-int find_matching_jet(RVec<float> dR_values, RVec<int> excluded_indices) {
+int find_matching_jet(int target_idx, float target_eta, float target_phi, RVec<int> already_matched_jet_indices, RVec<int> already_matched_fatjet_indices, RVec<float> jet_eta, RVec<float> jet_phi, RVec<float> fatjet_eta, RVec<float> fatjet_phi) {
     int max_jets = 10;
-    const float dR_cut = 0.4f;
-    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
-    for (int idx : sorted_indices) {
-        if (dR_values[idx] >= dR_cut) break;
-        if (idx >= max_jets) continue;
-        bool is_excluded = false;
-        for (int excl_idx : excluded_indices) {
-            if (idx == excl_idx) {
-                is_excluded = true;
-                break;
-            }
-        }
-        if (!is_excluded) {
-            return idx;
-        }
-    }
-    return -1;
-}
-
-int find_matching_fatjet(RVec<float> dR_values, RVec<int> excluded_indices) {
     int max_fatjets = 3;
-    const float dR_cut = 0.8f;
-    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
-    for (int idx : sorted_indices) {
-        if (dR_values[idx] >= dR_cut) break;
-        if (idx >= max_fatjets) continue;
-        bool is_excluded = false;
-        for (int excl_idx : excluded_indices) {
-            if (idx == excl_idx) {
-                is_excluded = true;
-                break;
-            }
-        }
-        if (!is_excluded) {
-            return idx;
-        }
-    }
-    return -1;
-}
-
-int find_matching_jet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices) {
-    int max_jets = 10;
-    if (check_idx == -1 || dR_values.empty()) return -1;
-
     const float dR_cut = 0.4f;
-    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
-    for (int idx : sorted_indices) {
-        if (dR_values[idx] >= dR_cut) break;
-        if (idx >= max_jets) continue;
-        bool is_excluded = false;
-        for (int excl_idx : excluded_indices) {
-            if (idx == excl_idx) {
-                is_excluded = true;
-                break;
-            }
-        }
-        if (!is_excluded) {
-            return idx;
-        }
+    const float fatjet_overlap_cut = 0.8f;
+    const float jet_overlap_cut = 0.4f;
+                       
+    if (target_idx < 0) {
+        return -1;
     }
-    return -1;
-}
-
-int find_matching_fatjet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices) {
-    int max_fatjets = 3;
-    if (check_idx == -1 || dR_values.empty()) return -1;
     
-    const float dR_cut = 0.8f;
+    // Calculate dR values for all jets
+    RVec<float> dR_values;
+    for (size_t i = 0; i < jet_eta.size(); ++i) {
+        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, jet_eta[i], target_phi, jet_phi[i]));
+    }
+    
     auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
     for (int idx : sorted_indices) {
-        if (dR_values[idx] >= dR_cut) break;
-        if (idx >= max_fatjets) continue;
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_jets) continue; // Skip indices beyond padding limit
+        
+        // Check if this jet is in the excluded list
         bool is_excluded = false;
-        for (int excl_idx : excluded_indices) {
+        for (int excl_idx : already_matched_jet_indices) {
             if (idx == excl_idx) {
                 is_excluded = true;
                 break;
             }
         }
-        if (!is_excluded) {
+        if (is_excluded) continue;
+        
+        bool overlaps_jet = false;
+        for (int matched_j_idx : already_matched_jet_indices) {
+            if (matched_j_idx >= 0 && matched_j_idx < max_jets) {
+                float dR_jet = ROOT::VecOps::DeltaR(jet_eta[idx], jet_eta[matched_j_idx], jet_phi[idx], jet_phi[matched_j_idx]);
+                if (dR_jet < jet_overlap_cut) {
+                    overlaps_jet = true;
+                    break;
+                }
+            }
+        }
+
+        // Check overlap with matched fatjets only
+        bool overlaps_fatjet = false;
+        for (int matched_fj_idx : already_matched_fatjet_indices) {
+            if (matched_fj_idx >= 0 && matched_fj_idx < max_fatjets) {
+                float dR_fatjet = ROOT::VecOps::DeltaR(jet_eta[idx], fatjet_eta[matched_fj_idx], jet_phi[idx], fatjet_phi[matched_fj_idx]);
+                if (dR_fatjet < fatjet_overlap_cut) {
+                    overlaps_fatjet = true;
+                    break;
+                }
+            }
+        }
+        if (!overlaps_jet && !overlaps_fatjet) {
             return idx;
         }
     }
     return -1;
 }
 
-RVec<float> get_dR(float eta1, float phi1, RVec<float> eta2, RVec<float> phi2) {
-    RVec<float> dR;
-    for (size_t i = 0; i < eta2.size(); ++i) {
-        dR.push_back(ROOT::VecOps::DeltaR(eta1, eta2[i], phi1, phi2[i]));
+int find_matching_fatjet(int target_idx, float target_eta, float target_phi, RVec<int> already_matched_jet_indices, RVec<int> already_matched_fatjet_indices, RVec<float> jet_eta, RVec<float> jet_phi, RVec<float> fatjet_eta, RVec<float> fatjet_phi) {
+    int max_jets = 10;
+    int max_fatjets = 3;
+    const float dR_cut = 0.8f;
+    const float fatjet_overlap_cut = 0.8f;
+    const float jet_overlap_cut = 0.8f;
+    
+    if (target_idx < 0) {
+        return -1;
     }
-    return dR;
-}
+                       
+    // Calculate dR values for all fatjets
+    RVec<float> dR_values;
+    for (size_t i = 0; i < fatjet_eta.size(); ++i) {
+        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, fatjet_eta[i], target_phi, fatjet_phi[i]));
+    }
+    
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_fatjets) continue; // Skip indices beyond padding limit
+        
+        // Check if this fatjet is in the excluded list
+        bool is_excluded = false;
+        for (int excl_idx : already_matched_fatjet_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (is_excluded) continue;
 
-RVec<float> get_dR_conditional(int idx, float eta1, float phi1, RVec<float> eta2, RVec<float> phi2) {
-    if (idx == -1) {
-        return RVec<float>();
+        // Check overlap with matched jets only
+        bool overlaps_jet = false;
+        for (int matched_j_idx : already_matched_jet_indices) {
+            if (matched_j_idx >= 0 && matched_j_idx < max_jets) {
+                float dR_jet = ROOT::VecOps::DeltaR(fatjet_eta[idx], jet_eta[matched_j_idx], fatjet_phi[idx], jet_phi[matched_j_idx]);
+                if (dR_jet < jet_overlap_cut) {
+                    overlaps_jet = true;
+                    break;
+                }
+            }
+        }
+        
+        bool overlaps_fatjet = false;
+        for (int matched_fj_idx : already_matched_fatjet_indices) {
+            if (matched_fj_idx >= 0 && matched_fj_idx < max_fatjets) {
+                float dR_fatjet = ROOT::VecOps::DeltaR(fatjet_eta[idx], fatjet_eta[matched_fj_idx], fatjet_phi[idx], fatjet_phi[matched_fj_idx]);
+                if (dR_fatjet < fatjet_overlap_cut) {
+                    overlaps_fatjet = true;
+                    break;
+                }
+            }
+        }
+
+        if (!overlaps_jet && !overlaps_fatjet) {
+            return idx;
+        }
     }
-    RVec<float> dR;
-    for (size_t i = 0; i < eta2.size(); ++i) {
-        dR.push_back(ROOT::VecOps::DeltaR(eta1, eta2[i], phi1, phi2[i]));
-    }
-    return dR;
+    return -1;
 }
 
 std::vector<int> assign_all_objects(

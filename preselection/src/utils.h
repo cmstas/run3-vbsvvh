@@ -131,14 +131,8 @@ int findLastIndex(int current_idx, int current_pdgId, RVec<int>& pdgId, RVec<sho
 RVec<int> get_v_boson_idx(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx);
 RVec<int> get_vbs_quarks_idxs(RVec<int>& pdgId, RVec<int>& status, RVec<short>& motherIdx);
 
-
-RVec<float> get_dR(float eta1, float phi1, RVec<float> eta2, RVec<float> phi2);
-RVec<float> get_dR_conditional(int idx, float eta1, float phi1, RVec<float> eta2, RVec<float> phi2);
-
-int find_matching_jet(RVec<float> dR_values, RVec<int> excluded_indices);
-int find_matching_fatjet(RVec<float> dR_values, RVec<int> excluded_indices);
-int find_matching_jet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices);
-int find_matching_fatjet_conditional(int check_idx, RVec<float> dR_values, RVec<int> excluded_indices);
+int find_matching_jet(int target_idx, float target_eta, float target_phi, RVec<int> excluded_jet_indices, RVec<int> excluded_fatjet_indices, RVec<float> jet_eta, RVec<float> jet_phi, RVec<float> fatjet_eta, RVec<float> fatjet_phi);
+int find_matching_fatjet(int target_idx, float target_eta, float target_phi, RVec<int> excluded_jet_indices,  RVec<int> excluded_fatjet_indices, RVec<float> jet_eta, RVec<float> jet_phi, RVec<float> fatjet_eta, RVec<float> fatjet_phi);
 
 std::vector<int> assign_all_objects(std::vector<std::vector<float>> vbs_assignment, std::vector<std::vector<float>> h_assignment,  std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> v1_assignment, std::vector<std::vector<float>> v2_assignment, std::vector<std::vector<float>> bv1_assignment, std::vector<std::vector<float>> bv2_assignment, float vbs_detection, float h_detection, float bh_detection, float v1_detection, float v2_detection, float bv1_detection, float bv2_detection, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> FatJet_eta, RVec<float> FatJet_phi);
 
