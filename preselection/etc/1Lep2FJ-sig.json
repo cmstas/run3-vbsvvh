@@ -8,7 +8,7 @@
                 "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
-                "sample_name_withyear": "2024_VBSWWH_OSWW_C2V1p5_5f_LO",
+                "sample_name_withyear": "2024_VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO",
                 "sample_category": "sig",
                 "sample_year": "2024",
                 "sample_type": "VBS",
@@ -25,7 +25,7 @@
                 "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
-                "sample_name_withyear": "2024_VBSWWH_SSWW_C2V1p5_5f_LO",
+                "sample_name_withyear": "2024_VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO",
                 "sample_category": "sig",
                 "sample_year": "2024",
                 "sample_type": "VBS",
@@ -42,7 +42,7 @@
                 "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
-                "sample_name_withyear": "2024_VBSWZH_C2V1p5_5f_LO",
+                "sample_name_withyear": "2024_VBSWZH_C2V1p5_13p6TeV_5f_LO",
                 "sample_category": "sig",
                 "sample_year": "2024",
                 "sample_type": "VBS",
@@ -59,7 +59,7 @@
                 "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
-                "sample_name_withyear": "2024_VBSZZH_C2V1p5_5f_LO",
+                "sample_name_withyear": "2024_VBSZZH_C2V1p5_13p6TeV_5f_LO",
                 "sample_category": "sig",
                 "sample_year": "2024",
                 "sample_type": "VBS",
