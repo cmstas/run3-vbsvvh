@@ -1,11 +1,11 @@
 {
     "samples": {
-        "VBSWWH_OSWW_C2V1p5_5f_LO_2024": {
+        "VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_2024": {
             "trees": [
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSWWH_OSWW_C2V1p5_5f_LO_TuneCP5/*.root"
+                "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
                 "sample_category": "sig",
@@ -13,15 +13,15 @@
                 "sample_type": "VBS",
                 "xsec": 0.002585,
                 "lumi": 109.08,
-                "nevents": 147000.0
+                "nevents": 69000.0
             }
         },
-        "VBSWWH_SSWW_C2V1p5_5f_LO_2024": {
+        "VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_2024": {
             "trees": [
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSWWH_SSWW_C2V1p5_5f_LO_TuneCP5/*.root"
+                "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
                 "sample_category": "sig",
@@ -32,12 +32,12 @@
                 "nevents": 150000.0
             }
         },
-        "VBSWZH_C2V1p5_5f_LO_2024": {
+        "VBSWZH_C2V1p5_13p6TeV_5f_LO_2024": {
             "trees": [
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSWZH_C2V1p5_5f_LO_TuneCP5/*.root"
+                "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
                 "sample_category": "sig",
@@ -48,12 +48,12 @@
                 "nevents": 150000.0
             }
         },
-        "VBSZZH_C2V1p5_5f_LO_2024": {
+        "VBSZZH_C2V1p5_13p6TeV_5f_LO_2024": {
             "trees": [
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSZZH_C2V1p5_5f_LO_TuneCP5/*.root"
+                "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
             ],
             "metadata": {
                 "sample_category": "sig",
