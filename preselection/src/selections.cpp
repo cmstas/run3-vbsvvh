@@ -46,7 +46,8 @@ RNode ElectronSelections(RNode df_) {
             "Electron_tightCharge == 2 && "
             "Electron_lostHits == 0")
         .Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)")
-        .Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)");
+        .Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)")
+        .Define("vvhTightLepMaskElectron", "_tightElectrons");
     return applyObjectMask(df, "_tightElectrons", "Electron");
 }
 
@@ -66,7 +67,8 @@ RNode MuonSelections(RNode df_) {
             "Muon_highPurity && "
             "Muon_tightId")
         .Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)")
-        .Define("nMuon_Tight", "nMuon_Loose == 0 ? 0 : Sum(_tightMuons)");
+        .Define("nMuon_Tight", "nMuon_Loose == 0 ? 0 : Sum(_tightMuons)")
+        .Define("vvhTightLepMaskMuon", "_tightMuons");
     return applyObjectMask(df, "_tightMuons", "Muon");
 }
 

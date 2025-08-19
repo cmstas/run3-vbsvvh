@@ -130,7 +130,8 @@ class Config:
         for sample in self.samples:
 
             # Get the dataset name
-            dataset_name = os.path.basename(os.path.dirname(sample))
+            #dataset_name = os.path.basename(os.path.dirname(sample))
+            dataset_name = os.path.basename(sample)
             print(dataset_name)
             if dataset_name.startswith("TTbb"):
                 print("    -> Skipping ttbb for now, we don't have an xsec for it.")

@@ -10,11 +10,15 @@ RNode defineMetadata(RNode df) {
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
         .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
         .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
-        .DefinePerSample("sample_category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_category");})
-        .DefinePerSample("sample_type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_type");})
-        .DefinePerSample("sample_year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_year");})
+        .DefinePerSample("category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_category");})
+        .DefinePerSample("type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_type");})
+        .DefinePerSample("year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_year");})
+        .DefinePerSample("namewithyear", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_name_withyear");})
         .Define("xsec_weight", "1000 * xsec * lumi / nevents")
-        .Define("isData", "sample_category == \"data\"");
+        .Define("isData", "category == \"data\"")
+        .Define("is2016", "year == \"2016preVFP\" || year == \"2016postVFP\"")
+        .Define("is2017", "year == \"2017\"")
+        .Define("is2018", "year == \"2018\"");
 }
 
 RNode removeDuplicates(RNode df){
