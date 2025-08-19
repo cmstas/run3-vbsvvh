@@ -27,8 +27,7 @@ RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
 RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
+RNode ParseSpanet(RNode df_);
 
 RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session);
-RNode GenLevelSelections(RNode df_);
-RNode ParseSpanet(RNode df_);
 #endif // SELECTIONS_H

@@ -12,6 +12,309 @@ from argparse import ArgumentParser
 
 import ROOT as r
 
+r.gInterpreter.Declare("""
+int find_matching_jet(int target_idx, float target_eta, float target_phi, ROOT::RVec<int> already_matched_jet_indices, ROOT::RVec<int> already_matched_fatjet_indices, ROOT::RVec<float> jet_eta, ROOT::RVec<float> jet_phi, ROOT::RVec<float> fatjet_eta, ROOT::RVec<float> fatjet_phi) {
+    int max_jets = 10;
+    int max_fatjets = 3;
+    const float dR_cut = 0.4f;
+    const float fatjet_overlap_cut = 0.8f;
+    const float jet_overlap_cut = 0.4f;
+                       
+    if (target_idx < 0) {
+        return -1;
+    }
+    
+    // Calculate dR values for all jets
+    ROOT::RVec<float> dR_values;
+    for (size_t i = 0; i < jet_eta.size(); ++i) {
+        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, jet_eta[i], target_phi, jet_phi[i]));
+    }
+    
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_jets) continue; // Skip indices beyond padding limit
+        
+        // Check if this jet is in the excluded list
+        bool is_excluded = false;
+        for (int excl_idx : already_matched_jet_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (is_excluded) continue;
+        
+        bool overlaps_jet = false;
+        for (int matched_j_idx : already_matched_jet_indices) {
+            if (matched_j_idx >= 0 && matched_j_idx < max_jets) {
+                float dR_jet = ROOT::VecOps::DeltaR(jet_eta[idx], jet_eta[matched_j_idx], jet_phi[idx], jet_phi[matched_j_idx]);
+                if (dR_jet < jet_overlap_cut) {
+                    overlaps_jet = true;
+                    break;
+                }
+            }
+        }
+
+        // Check overlap with matched fatjets only
+        bool overlaps_fatjet = false;
+        for (int matched_fj_idx : already_matched_fatjet_indices) {
+            if (matched_fj_idx >= 0 && matched_fj_idx < max_fatjets) {
+                float dR_fatjet = ROOT::VecOps::DeltaR(jet_eta[idx], fatjet_eta[matched_fj_idx], jet_phi[idx], fatjet_phi[matched_fj_idx]);
+                if (dR_fatjet < fatjet_overlap_cut) {
+                    overlaps_fatjet = true;
+                    break;
+                }
+            }
+        }
+        if (!overlaps_jet && !overlaps_fatjet) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+int find_matching_fatjet(int target_idx, float target_eta, float target_phi, ROOT::RVec<int> already_matched_jet_indices, ROOT::RVec<int> already_matched_fatjet_indices, ROOT::RVec<float> jet_eta, ROOT::RVec<float> jet_phi, ROOT::RVec<float> fatjet_eta, ROOT::RVec<float> fatjet_phi) {
+    int max_jets = 10;
+    int max_fatjets = 3;
+    const float dR_cut = 0.8f;
+    const float fatjet_overlap_cut = 0.8f;
+    const float jet_overlap_cut = 0.8f;
+    
+    if (target_idx < 0) {
+        return -1;
+    }
+                       
+    // Calculate dR values for all fatjets
+    ROOT::RVec<float> dR_values;
+    for (size_t i = 0; i < fatjet_eta.size(); ++i) {
+        dR_values.push_back(ROOT::VecOps::DeltaR(target_eta, fatjet_eta[i], target_phi, fatjet_phi[i]));
+    }
+    
+    auto sorted_indices = ROOT::VecOps::Argsort(dR_values);
+    for (int idx : sorted_indices) {
+        if (dR_values[idx] >= dR_cut) break; // No more candidates within dR cut
+        if (idx >= max_fatjets) continue; // Skip indices beyond padding limit
+        
+        // Check if this fatjet is in the excluded list
+        bool is_excluded = false;
+        for (int excl_idx : already_matched_fatjet_indices) {
+            if (idx == excl_idx) {
+                is_excluded = true;
+                break;
+            }
+        }
+        if (is_excluded) continue;
+
+        // Check overlap with matched jets only
+        bool overlaps_jet = false;
+        for (int matched_j_idx : already_matched_jet_indices) {
+            if (matched_j_idx >= 0 && matched_j_idx < max_jets) {
+                float dR_jet = ROOT::VecOps::DeltaR(fatjet_eta[idx], jet_eta[matched_j_idx], fatjet_phi[idx], jet_phi[matched_j_idx]);
+                if (dR_jet < jet_overlap_cut) {
+                    overlaps_jet = true;
+                    break;
+                }
+            }
+        }
+        
+        bool overlaps_fatjet = false;
+        for (int matched_fj_idx : already_matched_fatjet_indices) {
+            if (matched_fj_idx >= 0 && matched_fj_idx < max_fatjets) {
+                float dR_fatjet = ROOT::VecOps::DeltaR(fatjet_eta[idx], fatjet_eta[matched_fj_idx], fatjet_phi[idx], fatjet_phi[matched_fj_idx]);
+                if (dR_fatjet < fatjet_overlap_cut) {
+                    overlaps_fatjet = true;
+                    break;
+                }
+            }
+        }
+
+        if (!overlaps_jet && !overlaps_fatjet) {
+            return idx;
+        }
+    }
+    return -1;
+}
+                       
+ROOT::RVec<int> findHiggsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+    ROOT::RVec<int> result = {-1, -1, -1};
+    
+    int higgs_idx = -1;
+    ROOT::RVec<int> hdecay_idx;
+    
+    // Find intermediate Higgs with status 22 and mother_idx 0
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_status = status[igen];
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == 0 && part_status == 22 && part_pdgId == 25) {
+            higgs_idx = igen;
+            break;
+        }
+    }
+    
+    if (higgs_idx == -1) return result;
+    
+    // Find first daughters of Higgs (non-Higgs particles with Higgs mother)
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int mother_idx = motherIdx[igen];
+        if (mother_idx > 0 && mother_idx < pdgId.size()) {
+            int mother_pdgId = pdgId[mother_idx];
+            int part_pdgId = pdgId[igen];
+            
+            if (mother_pdgId == 25 && part_pdgId != 25) {
+                hdecay_idx.push_back(igen);
+            }
+        }
+    }
+    
+    result[0] = higgs_idx;
+    if (hdecay_idx.size() >= 1) result[1] = hdecay_idx[0];
+    if (hdecay_idx.size() >= 2) result[2] = hdecay_idx[1];
+    
+    return result;
+}
+
+int findLastIndex(int current_idx, int current_pdgId, ROOT::RVec<int>& pdgId, ROOT::RVec<short>& motherIdx) {
+    int outIdx = current_idx;
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == current_idx) {
+            if (part_pdgId == current_pdgId) {
+                outIdx = findLastIndex(igen, part_pdgId, pdgId, motherIdx);
+            }
+        }
+    }
+    return outIdx;
+}
+
+ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+    // Returns: [v1_idx, v1_d1_idx, v1_d2_idx, v2_idx, v2_d1_idx, v2_d2_idx] or [-1, -1, -1, -1, -1, -1]
+    ROOT::RVec<int> result = {-1, -1, -1, -1, -1, -1};
+    
+    ROOT::RVec<int> firstVs_idx;
+    
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_status = status[igen];
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == 0 && part_status == 22 && (part_pdgId == 23 || abs(part_pdgId) == 24)) {
+            firstVs_idx.push_back(igen);
+        }
+    }
+    
+    if (firstVs_idx.size() < 2) return result;
+    
+    ROOT::RVec<int> hadronic_V_indices;
+    ROOT::RVec<int> leptonic_V_indices;
+    
+    for (size_t iV = 0; iV < firstVs_idx.size() && iV < 2; ++iV) {
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        int hadronic_daughters = 0;
+        int leptonic_daughters = 0;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) {
+                    hadronic_daughters++;
+                } else {
+                    leptonic_daughters++;
+                }
+            }
+        }
+        
+        if (hadronic_daughters > 0) {
+            hadronic_V_indices.push_back(iV);
+        } else if (leptonic_daughters > 0) {
+            leptonic_V_indices.push_back(iV);
+        }
+    }
+    
+    if (hadronic_V_indices.size() > 0) {
+        int iV = hadronic_V_indices[0];
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        ROOT::RVec<int> vdecays_idx;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) { // quarks only
+                   vdecays_idx.push_back(igen);
+                }
+            }
+        }
+        
+        if (vdecays_idx.size() != 0) {
+            result[0] = lastV_idx;
+        }
+        if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
+        if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
+    }
+    
+    if (hadronic_V_indices.size() >= 2) {
+        int iV = hadronic_V_indices[1];
+        int firstV_idx = firstVs_idx[iV];
+        int firstV_pdgId = pdgId[firstV_idx];
+        
+        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
+        
+        ROOT::RVec<int> vdecays_idx;
+        
+        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+            int mother_idx = motherIdx[igen];
+            if (mother_idx == lastV_idx) {
+                if (abs(pdgId[igen]) <= 6) {
+                   vdecays_idx.push_back(igen);
+                }
+            }
+        }
+        
+        if (vdecays_idx.size() != 0) {
+            result[3] = lastV_idx;
+        }
+        if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
+        if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
+    }
+    
+    return result;
+}
+
+ROOT::RVec<int> findVBSQuarks(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+    // Returns: [vbs1_idx, vbs2_idx] or [-1, -1]
+    ROOT::RVec<int> result = {-1, -1};
+    ROOT::RVec<int> vbsquarks_idx;
+    
+    // Find outgoing quarks with status 23 and mother_idx 0
+    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
+        int part_status = status[igen];
+        int part_pdgId = pdgId[igen];
+        int mother_idx = motherIdx[igen];
+        
+        if (mother_idx == 0 && part_status == 23 && abs(part_pdgId) <= 6 && abs(part_pdgId) >= 1) {
+            vbsquarks_idx.push_back(igen);
+        }
+    }
+    
+    if (vbsquarks_idx.size() >= 1) result[0] = vbsquarks_idx[0];
+    if (vbsquarks_idx.size() >= 2) result[1] = vbsquarks_idx[1];
+    
+    return result;
+}
+""")
+
 subprocess.run("python3 -m pip install --user --no-binary=correctionlib correctionlib", shell=True, check=True)
 import importlib
 correctionlib = importlib.import_module("correctionlib")
@@ -59,13 +362,130 @@ class Skimmer():
 
         self.df.Display(["Electron_pt"]).Print()
 
-    def analyze(self):
+    @staticmethod
+    def genSelection(df):
+        df = df.Define("ak4_jet_mask", "Jet_pt > 20 && abs(Jet_eta) <= 5 && Jet_jetId > 0") \
+            .Define("ak4jet_pt", "Jet_pt[ak4_jet_mask]") \
+            .Define("ak4jet_eta", "Jet_eta[ak4_jet_mask]") \
+            .Define("ak4jet_phi", "Jet_phi[ak4_jet_mask]") \
+            .Define("ak4jet_mass", "Jet_mass[ak4_jet_mask]") \
+            .Define("ak4jet_btagDeepFlavB", "Jet_btagDeepFlavB[ak4_jet_mask]")
+
+        # fatjet preselection
+        df = df.Define("ak8_jet_mask", "FatJet_pt > 200 && abs(FatJet_eta) <= 2.5 && FatJet_mass > 50 && FatJet_msoftdrop > 40 && FatJet_jetId > 0") \
+            .Define("ak8jet_pt", "FatJet_pt[ak8_jet_mask]") \
+            .Define("ak8jet_eta", "FatJet_eta[ak8_jet_mask]") \
+            .Define("ak8jet_phi", "FatJet_phi[ak8_jet_mask]") \
+            .Define("ak8jet_mass", "FatJet_mass[ak8_jet_mask]") \
+            .Define("ak8jet_nConstituents", "FatJet_nConstituents[ak8_jet_mask]") \
+            .Define("ak8jet_globalParT3_Xbb", "FatJet_globalParT3_Xbb[ak8_jet_mask]") \
+            .Define("ak8jet_globalParT3_Xcc", "FatJet_globalParT3_Xcc[ak8_jet_mask]") \
+            .Define("ak8jet_globalParT3_Xcs", "FatJet_globalParT3_Xcs[ak8_jet_mask]") \
+            .Define("ak8jet_globalParT3_Xqq", "FatJet_globalParT3_Xqq[ak8_jet_mask]") \
+            .Define("ak8jet_globalParT3_QCD", "FatJet_globalParT3_QCD[ak8_jet_mask]")
+        
+        # define bb, qq definition
+        df = df.Define("higgs_info", "findHiggsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+            .Define("gen_h_idx", "higgs_info[0]") \
+            .Define("Higgs_eta", "gen_h_idx >= 0 ? GenPart_eta[gen_h_idx] : -999.0") \
+            .Define("Higgs_phi", "gen_h_idx >= 0 ? GenPart_phi[gen_h_idx] : -999.0") \
+            .Define("gen_b1_idx", "higgs_info[1]") \
+            .Define("b1_eta", "gen_b1_idx >= 0 ? GenPart_eta[gen_b1_idx] : -999.0") \
+            .Define("b1_phi", "gen_b1_idx >= 0 ? GenPart_phi[gen_b1_idx] : -999.0") \
+            .Define("gen_b2_idx", "higgs_info[2]") \
+            .Define("b2_eta", "gen_b2_idx >= 0 ? GenPart_eta[gen_b2_idx] : -999.0") \
+            .Define("b2_phi", "gen_b2_idx >= 0 ? GenPart_phi[gen_b2_idx] : -999.0")
+
+        df = df.Define("vboson_info", "findVBosonsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+            .Define("gen_v1_idx", "vboson_info[0]") \
+            .Define("V1_eta", "gen_v1_idx >= 0 ? GenPart_eta[gen_v1_idx] : -999.0") \
+            .Define("V1_phi", "gen_v1_idx >= 0 ? GenPart_phi[gen_v1_idx] : -999.0") \
+            .Define("gen_v1q1_idx", "vboson_info[1]") \
+            .Define("V1_q1_eta", "gen_v1q1_idx >= 0 ? GenPart_eta[gen_v1q1_idx] : -999.0") \
+            .Define("V1_q1_phi", "gen_v1q1_idx >= 0 ? GenPart_phi[gen_v1q1_idx] : -999.0") \
+            .Define("gen_v1q2_idx", "vboson_info[2]") \
+            .Define("V1_q2_eta", "gen_v1q2_idx >= 0 ? GenPart_eta[gen_v1q2_idx] : -999.0") \
+            .Define("V1_q2_phi", "gen_v1q2_idx >= 0 ? GenPart_phi[gen_v1q2_idx] : -999.0") \
+            .Define("gen_v2_idx", "vboson_info[3]") \
+            .Define("V2_eta", "gen_v2_idx >= 0 ? GenPart_eta[gen_v2_idx] : -999.0") \
+            .Define("V2_phi", "gen_v2_idx >= 0 ? GenPart_phi[gen_v2_idx] : -999.0") \
+            .Define("gen_v2q1_idx", "vboson_info[4]") \
+            .Define("V2_q1_eta", "gen_v2q1_idx >= 0 ? GenPart_eta[gen_v2q1_idx] : -999.0") \
+            .Define("V2_q1_phi", "gen_v2q1_idx >= 0 ? GenPart_phi[gen_v2q1_idx] : -999.0") \
+            .Define("gen_v2q2_idx", "vboson_info[5]") \
+            .Define("V2_q2_eta", "gen_v2q2_idx >= 0 ? GenPart_eta[gen_v2q2_idx] : -999.0") \
+            .Define("V2_q2_phi", "gen_v2q2_idx >= 0 ? GenPart_phi[gen_v2q2_idx] : -999.0")
+
+        df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+            .Define("gen_vbs_idx1", "vbs_info[0]") \
+            .Define("VBSJet1_eta", "vbs_info[0] >= 0 ? GenPart_eta[vbs_info[0]] : -999.0") \
+            .Define("VBSJet1_phi", "vbs_info[0] >= 0 ? GenPart_phi[vbs_info[0]] : -999.0") \
+            .Define("gen_vbs_idx2", "vbs_info[1]") \
+            .Define("VBSJet2_eta", "vbs_info[1] >= 0 ? GenPart_eta[vbs_info[1]] : -999.0") \
+            .Define("VBSJet2_phi", "vbs_info[1] >= 0 ? GenPart_phi[vbs_info[1]] : -999.0")
+
+        df = df.Define("vbs1_idx_temp", "find_matching_jet(gen_vbs_idx1, VBSJet1_eta, VBSJet1_phi, ROOT::RVec<int>{}, ROOT::RVec<int>{}, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("vbs2_idx_temp", "find_matching_jet(gen_vbs_idx2, VBSJet2_eta, VBSJet2_phi, ROOT::RVec<int>{vbs1_idx_temp}, ROOT::RVec<int>{}, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("truth_vbs1_idx", "vbs1_idx_temp >= 0 && vbs1_idx_temp < 10 ? vbs1_idx_temp : -1") \
+            .Define("truth_vbs2_idx", "vbs2_idx_temp >= 0 && vbs2_idx_temp < 10 ? vbs2_idx_temp : -1")
+
+        df = df.Define("hbb_dR", "ROOT::VecOps::DeltaR(b1_eta, b2_eta, b1_phi, b2_phi)") \
+            .Define("hbb_fatjet_idx_temp", "find_matching_fatjet(gen_h_idx, Higgs_eta, Higgs_phi, ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}, ROOT::RVec<int>{}, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < ak8jet_eta.size() ? ROOT::VecOps::DeltaR(ak8jet_eta[hbb_fatjet_idx_temp], b1_eta, ak8jet_phi[hbb_fatjet_idx_temp], b1_phi) : 999.0") \
+            .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < ak8jet_eta.size() ? ROOT::VecOps::DeltaR(ak8jet_eta[hbb_fatjet_idx_temp], b2_eta, ak8jet_phi[hbb_fatjet_idx_temp], b2_phi) : 999.0") \
+            .Define("hbb_isBoosted", "hbb_fatjet_idx_temp != -1 && hbb_fatjet_idx_temp < 3 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8") \
+            .Define("truth_bh_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1")
+        
+        df = df.Define("excluded_jet_mask_for_hbb", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}") \
+            .Define("matched_fatjet_mask_for_hbb", "ROOT::RVec<int>{}") \
+            .Define("b1_idx_temp", "find_matching_jet(gen_b1_idx, b1_eta, b1_phi, excluded_jet_mask_for_hbb, matched_fatjet_mask_for_hbb, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("excluded_jet_mask_for_hbb2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, b1_idx_temp}") \
+            .Define("b2_idx_temp", "find_matching_jet(gen_b2_idx, b2_eta, b2_phi, excluded_jet_mask_for_hbb2, matched_fatjet_mask_for_hbb, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("truth_b1_idx", "b1_idx_temp >= 0 && b1_idx_temp < 10 ? b1_idx_temp : -1") \
+            .Define("truth_b2_idx", "b2_idx_temp >= 0 && b2_idx_temp < 10 ? b2_idx_temp : -1")
+
+        df = df.Define("v1qq_dR", "gen_v1_idx != -1 ? ROOT::VecOps::DeltaR(V1_q1_eta, V1_q1_phi, V1_q2_eta, V1_q2_phi) : 999.0") \
+            .Define("excluded_fatjet_mask_for_v1", "ROOT::RVec<int>{truth_bh_idx}") \
+            .Define("matched_jet_mask_for_v1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx}") \
+            .Define("v1qq_fatjet_idx_temp", "find_matching_fatjet(gen_v1_idx, V1_eta, V1_phi, matched_jet_mask_for_v1, excluded_fatjet_mask_for_v1, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < ak8jet_eta.size() ? ROOT::VecOps::DeltaR(ak8jet_eta[v1qq_fatjet_idx_temp], V1_q1_eta, ak8jet_phi[v1qq_fatjet_idx_temp], V1_q1_phi) : 999.0") \
+            .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < ak8jet_eta.size() ? ROOT::VecOps::DeltaR(ak8jet_eta[v1qq_fatjet_idx_temp], V1_q2_eta, ak8jet_phi[v1qq_fatjet_idx_temp], V1_q2_phi) : 999.0") \
+            .Define("v1qq_isBoosted", "gen_v1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8") \
+            .Define("truth_bv1_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1")
+
+        df = df.Define("v2qq_dR", "gen_v2_idx != -1 ? ROOT::VecOps::DeltaR(V2_q1_eta, V2_q1_phi, V2_q2_eta, V2_q2_phi) : 999.0") \
+            .Define("excluded_fatjet_mask_for_v2", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx}") \
+            .Define("matched_jet_mask_for_v2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx}") \
+            .Define("v2qq_fatjet_idx_temp", "find_matching_fatjet(gen_v2_idx, V2_eta, V2_phi, matched_jet_mask_for_v2, excluded_fatjet_mask_for_v2, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < ak8jet_eta.size() ? ROOT::VecOps::DeltaR(ak8jet_eta[v2qq_fatjet_idx_temp], V2_q1_eta, ak8jet_phi[v2qq_fatjet_idx_temp], V2_q1_phi) : 999.0") \
+            .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < ak8jet_eta.size() ? ROOT::VecOps::DeltaR(ak8jet_eta[v2qq_fatjet_idx_temp], V2_q2_eta, ak8jet_phi[v2qq_fatjet_idx_temp], V2_q2_phi) : 999.0") \
+            .Define("v2qq_isBoosted", "gen_v2_idx != -1 && v2qq_fatjet_idx_temp != -1 && v2qq_fatjet_idx_temp < 3 && v2qq_dR < 0.8 && v2qq_fatjet_candidate_q1_dR < 0.8 && v2qq_fatjet_candidate_q2_dR < 0.8") \
+            .Define("truth_bv2_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1")
+        
+        df = df.Define("excluded_jet_mask_for_v1q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx}") \
+            .Define("matched_fatjet_mask_for_v1q", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx, truth_bv2_idx}") \
+            .Define("v1q1_idx_temp", "find_matching_jet(gen_v1q1_idx, V1_q1_eta, V1_q1_phi, excluded_jet_mask_for_v1q1, matched_fatjet_mask_for_v1q, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("excluded_jet_mask_for_v1q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx, v1q1_idx_temp}") \
+            .Define("v1q2_idx_temp", "find_matching_jet(gen_v1q2_idx, V1_q2_eta, V1_q2_phi, excluded_jet_mask_for_v1q2, matched_fatjet_mask_for_v1q, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("truth_v1q1_idx", "v1q1_idx_temp >= 0 && v1q1_idx_temp < 10 ? v1q1_idx_temp : -1") \
+            .Define("truth_v1q2_idx", "v1q2_idx_temp >= 0 && v1q2_idx_temp < 10 ? v1q2_idx_temp : -1")
+
+        df = df.Define("excluded_jet_mask_for_v2q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx, truth_v1q1_idx, truth_v1q2_idx}") \
+            .Define("matched_fatjet_mask_for_v2q", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx, truth_bv2_idx}") \
+            .Define("v2q1_idx_temp", "find_matching_jet(gen_v2q1_idx, V2_q1_eta, V2_q1_phi, excluded_jet_mask_for_v2q1, matched_fatjet_mask_for_v2q, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("excluded_jet_mask_for_v2q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx, truth_v1q1_idx, truth_v1q2_idx, v2q1_idx_temp}") \
+            .Define("v2q2_idx_temp", "find_matching_jet(gen_v2q2_idx, V2_q2_eta, V2_q2_phi, excluded_jet_mask_for_v2q2, matched_fatjet_mask_for_v2q, ak4jet_eta, ak4jet_phi, ak8jet_eta, ak8jet_phi)") \
+            .Define("truth_v2q1_idx", "v2q1_idx_temp >= 0 && v2q1_idx_temp < 10 ? v2q1_idx_temp : -1") \
+            .Define("truth_v2q2_idx", "v2q2_idx_temp >= 0 && v2q2_idx_temp < 10 ? v2q2_idx_temp : -1")
+
+        return df
+        
+    def analyze(self, is_signal):
         self.df = self.df.Define("tight_mu_mask", "Muon_pt > 35. && abs(Muon_eta) < 2.4 && Muon_tightId") \
             .Define("tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
             .Filter("Sum(tight_mu_mask) + Sum(tight_ele_mask) < 2") \
             .Define("fatjet_mask", "FatJet_pt > 200 && FatJet_msoftdrop > 10 && FatJet_mass > 10") \
-            .Define("jet_mask", "Jet_pt > 20 && abs(Jet_eta) < 2.4") \
-            .Filter("((2 * Sum(fatjet_mask)) + Sum(jet_mask)) >= 6")
+            .Filter("Sum(fatjet_mask) >= 1")
 
         if self.sample_year in JET_ID_JSONS:
             jet_id_json = JET_ID_JSONS[self.sample_year]
@@ -107,6 +527,9 @@ class Skimmer():
 
         self.df = self.df.Define("Jet_jetId", "evalJetID(Jet_eta, Jet_chHEF, Jet_neHEF, Jet_chEmEF, Jet_neEmEF, Jet_muEF, Jet_chMultiplicity, Jet_neMultiplicity, Jet_multiplicity)") \
             .Define("FatJet_jetId", "evalFatJetID(FatJet_eta, FatJet_chHEF, FatJet_neHEF, FatJet_chEmEF, FatJet_neEmEF, FatJet_muEF, FatJet_chMultiplicity, FatJet_neMultiplicity, FatJet_multiplicity)")
+
+        if is_signal:
+            self.df = self.genSelection(self.df)
 
         return self.df.Count().GetValue()
 
@@ -155,7 +578,7 @@ class Skimmer():
         else:
             return None
 
-def run_skimmer(input_file, output_dir):
+def run_skimmer(input_file, output_dir, is_signal):
     print(f"Running skimmer on {input_file}")
     os.makedirs(output_dir, exist_ok=True)
     
@@ -163,7 +586,7 @@ def run_skimmer(input_file, output_dir):
     keepDropFile = "keep_and_drop_skim.txt"
     
     skimmer = Skimmer(inFiles, output_dir, keepDropFile)
-    passed = skimmer.analyze()
+    passed = skimmer.analyze(is_signal)
     if passed:
         skimmer.Snapshot("skim")
         return True
@@ -231,12 +654,12 @@ if __name__ == "__main__":
     os.environ['X509_USER_PROXY'] = args.proxy
 
     # Run the skimmer
-    success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR)
+    success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR, args.is_signal)
     
     # Retry once if failed
     if not success:
         print("Skimmer failed; retrying one more time...")
-        success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR)
+        success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR, args.is_signal)
     
     # Merge results
     merge_skims(CONDOR_OUTPUT_DIR)
