@@ -8,7 +8,6 @@
 #include "ROOT/RDataFrame.hxx"
 
 #include "utils.h"
-#include "spanet.hpp"
 #include "corrections.h"
 
 using RNode = ROOT::RDF::RNode;
@@ -27,7 +26,6 @@ RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
 RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
-RNode ParseSpanet(RNode df_);
 
-RNode runPreselection(RNode df_, std::string channel, SPANet::SPANetInference &spanet_session);
+RNode runPreselection(RNode df_, std::string channel);
 #endif // SELECTIONS_H
