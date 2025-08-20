@@ -134,6 +134,10 @@ RNode GenSelections(RNode df_) {
         .Define("gen_b1_phi", "gen_b1_idx >= 0 ? GenPart_phi[gen_b1_idx] : -999.0f")
         .Define("gen_b2_eta", "gen_b2_idx >= 0 ? GenPart_eta[gen_b2_idx] : -999.0f")
         .Define("gen_b2_phi", "gen_b2_idx >= 0 ? GenPart_phi[gen_b2_idx] : -999.0f")
+        .Define("gen_v1_eta", "gen_v1_idx >= 0 ? GenPart_eta[gen_v1_idx] : -999.0f")
+        .Define("gen_v1_phi", "gen_v1_idx >= 0 ? GenPart_phi[gen_v1_idx] : -999.0f")
+        .Define("gen_v2_eta", "gen_v2_idx >= 0 ? GenPart_eta[gen_v2_idx] : -999.0f")
+        .Define("gen_v2_phi", "gen_v2_idx >= 0 ? GenPart_phi[gen_v2_idx] : -999.0f")
         .Define("gen_v1q1_eta", "gen_v1q1_idx >= 0 ? GenPart_eta[gen_v1q1_idx] : -999.0f")
         .Define("gen_v1q1_phi", "gen_v1q1_idx >= 0 ? GenPart_phi[gen_v1q1_idx] : -999.0f")
         .Define("gen_v1q2_eta", "gen_v1q2_idx >= 0 ? GenPart_eta[gen_v1q2_idx] : -999.0f")
@@ -157,7 +161,7 @@ RNode GenSelections(RNode df_) {
         .Define("hbb_fatjet_candidate_b1_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], gen_b1_eta, FatJet_phi[hbb_fatjet_idx_temp], gen_b1_phi) : 999.0")
         .Define("hbb_fatjet_candidate_b2_dR", "hbb_fatjet_idx_temp >= 0 && hbb_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[hbb_fatjet_idx_temp], gen_b2_eta, FatJet_phi[hbb_fatjet_idx_temp], gen_b2_phi) : 999.0")
         .Define("hbb_isBoosted", "hbb_fatjet_idx_temp != -1 && hbb_fatjet_idx_temp < 3 && hbb_dR < 0.8 && hbb_fatjet_candidate_b1_dR < 0.8 && hbb_fatjet_candidate_b2_dR < 0.8")
-        .Define("truth_bh_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1");
+        .Define("truth_h_idx", "hbb_isBoosted ? hbb_fatjet_idx_temp : -1");
     
     df = df.Define("excluded_jet_mask_for_hbb", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx}")
         .Define("b1_idx_temp", find_matching_jet, {"gen_b1_idx", "gen_b1_eta", "gen_b1_phi", "excluded_jet_mask_for_hbb", "empty_jet_exclusions", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
@@ -168,24 +172,24 @@ RNode GenSelections(RNode df_) {
 
     df = df.Define("v1qq_dR", "gen_v1_idx != -1 ? ROOT::VecOps::DeltaR(gen_v1q1_eta, gen_v1q1_phi, gen_v1q2_eta, gen_v1q2_phi) : 999.0")
         .Define("matched_jet_mask_for_v1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx}")
-        .Define("excluded_fatjet_mask_for_v1", "ROOT::RVec<int>{truth_bh_idx}")
-        .Define("v1qq_fatjet_idx_temp", find_matching_fatjet, {"gen_v1_idx", "V1_eta", "V1_phi", "matched_jet_mask_for_v1", "excluded_fatjet_mask_for_v1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
+        .Define("excluded_fatjet_mask_for_v1", "ROOT::RVec<int>{truth_h_idx}")
+        .Define("v1qq_fatjet_idx_temp", find_matching_fatjet, {"gen_v1_idx", "gen_v1_eta", "gen_v1_phi", "matched_jet_mask_for_v1", "excluded_fatjet_mask_for_v1", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
         .Define("v1qq_fatjet_candidate_q1_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], gen_v1q1_eta, FatJet_phi[v1qq_fatjet_idx_temp], gen_v1q1_phi) : 999.0")
         .Define("v1qq_fatjet_candidate_q2_dR", "v1qq_fatjet_idx_temp >= 0 && v1qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v1qq_fatjet_idx_temp], gen_v1q2_eta, FatJet_phi[v1qq_fatjet_idx_temp], gen_v1q2_phi) : 999.0")
         .Define("v1qq_isBoosted", "gen_v1_idx != -1 && v1qq_fatjet_idx_temp != -1 && v1qq_fatjet_idx_temp < 3 && v1qq_dR < 0.8 && v1qq_fatjet_candidate_q1_dR < 0.8 && v1qq_fatjet_candidate_q2_dR < 0.8")
-        .Define("truth_bv1_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1");
+        .Define("truth_v1_idx", "v1qq_isBoosted ? v1qq_fatjet_idx_temp : -1");
 
     df = df.Define("v2qq_dR", "gen_v2_idx != -1 ? ROOT::VecOps::DeltaR(gen_v2q1_eta, gen_v2q1_phi, gen_v2q2_eta, gen_v2q2_phi) : 999.0")
-        .Define("excluded_fatjet_mask_for_v2", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx}")
+        .Define("excluded_fatjet_mask_for_v2", "ROOT::RVec<int>{truth_h_idx, truth_v1_idx}")
         .Define("matched_jet_mask_for_v2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx}")
-        .Define("v2qq_fatjet_idx_temp", find_matching_fatjet, {"gen_v2_idx", "V2_eta", "V2_phi", "matched_jet_mask_for_v2", "excluded_fatjet_mask_for_v2", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
+        .Define("v2qq_fatjet_idx_temp", find_matching_fatjet, {"gen_v2_idx", "gen_v2_eta", "gen_v2_phi", "matched_jet_mask_for_v2", "excluded_fatjet_mask_for_v2", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
         .Define("v2qq_fatjet_candidate_q1_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], gen_v2q1_eta, FatJet_phi[v2qq_fatjet_idx_temp], gen_v2q1_phi) : 999.0")
         .Define("v2qq_fatjet_candidate_q2_dR", "v2qq_fatjet_idx_temp >= 0 && v2qq_fatjet_idx_temp < FatJet_eta.size() ? ROOT::VecOps::DeltaR(FatJet_eta[v2qq_fatjet_idx_temp], gen_v2q2_eta, FatJet_phi[v2qq_fatjet_idx_temp], gen_v2q2_phi) : 999.0")
         .Define("v2qq_isBoosted", "gen_v2_idx != -1 && v2qq_fatjet_idx_temp != -1 && v2qq_fatjet_idx_temp < 3 && v2qq_dR < 0.8 && v2qq_fatjet_candidate_q1_dR < 0.8 && v2qq_fatjet_candidate_q2_dR < 0.8")
-        .Define("truth_bv2_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1");
+        .Define("truth_v2_idx", "v2qq_isBoosted ? v2qq_fatjet_idx_temp : -1");
     
     df = df.Define("excluded_jet_mask_for_v1q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx}")
-        .Define("matched_fatjet_mask_for_v1q", "ROOT::RVec<int>{truth_bh_idx, truth_bv2_idx}")
+        .Define("matched_fatjet_mask_for_v1q", "ROOT::RVec<int>{truth_h_idx, truth_v2_idx}")
         .Define("v1q1_idx_temp", find_matching_jet, {"gen_v1q1_idx", "gen_v1q1_eta", "gen_v1q1_phi", "excluded_jet_mask_for_v1q1", "matched_fatjet_mask_for_v1q", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
         .Define("excluded_jet_mask_for_v1q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx, v1q1_idx_temp}")
         .Define("v1q2_idx_temp", find_matching_jet, {"gen_v1q2_idx", "gen_v1q2_eta", "gen_v1q2_phi", "excluded_jet_mask_for_v1q2", "matched_fatjet_mask_for_v1q", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
@@ -193,7 +197,7 @@ RNode GenSelections(RNode df_) {
         .Define("truth_v1q2_idx", "v1q2_idx_temp >= 0 && v1q2_idx_temp < 10 ? v1q2_idx_temp : -1");
 
     df = df.Define("excluded_jet_mask_for_v2q1", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx, truth_v1q1_idx, truth_v1q2_idx}")
-        .Define("matched_fatjet_mask_for_v2q", "ROOT::RVec<int>{truth_bh_idx, truth_bv1_idx}")
+        .Define("matched_fatjet_mask_for_v2q", "ROOT::RVec<int>{truth_h_idx, truth_v1_idx}")
         .Define("v2q1_idx_temp", find_matching_jet, {"gen_v2q1_idx", "gen_v2q1_eta", "gen_v2q1_phi", "excluded_jet_mask_for_v2q1", "matched_fatjet_mask_for_v2q", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})
         .Define("excluded_jet_mask_for_v2q2", "ROOT::RVec<int>{truth_vbs1_idx, truth_vbs2_idx, truth_b1_idx, truth_b2_idx, truth_v1q1_idx, truth_v1q2_idx, v2q1_idx_temp}")
         .Define("v2q2_idx_temp", find_matching_jet, {"gen_v2q2_idx", "gen_v2q2_eta", "gen_v2q2_phi", "excluded_jet_mask_for_v2q2", "matched_fatjet_mask_for_v2q", "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"})

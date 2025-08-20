@@ -13,6 +13,7 @@
 
 struct MyArgs : public argparse::Args {
     int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
+    int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
     bool &cutflow = flag("cutflow", "print cutflow");
     bool &debug = flag("debug", "enable debug mode").set_default(false);
     std::string &spec = kwarg("i,input", "spec.json path");
@@ -94,6 +95,14 @@ int main(int argc, char** argv) {
     if (args.debug) {
         std::cout << " -> Debug mode enabled" << std::endl;
         auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
+    }
+
+    if (args.nthread > 1) {
+        if (args.batch_size > 0) {
+            std::cerr << "Can't use SPANet with multithreaded RDF, please remove the -n option." << std::endl;
+        }
+        std::cout << " -> Setting number of threads to " << args.nthread << std::endl;
+        ROOT::EnableImplicitMT(args.nthread);
     }
 
     // Load df
