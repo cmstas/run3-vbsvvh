@@ -304,219 +304,6 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
     }
     return good_jet_idx;
 }
-
-std::vector<int> assign_all_objects(
-    std::vector<std::vector<float>> vbs_assignment,
-    std::vector<std::vector<float>> h_assignment, 
-    std::vector<std::vector<float>> bh_assignment,
-    std::vector<std::vector<float>> v1_assignment,
-    std::vector<std::vector<float>> v2_assignment,
-    std::vector<std::vector<float>> bv1_assignment,
-    std::vector<std::vector<float>> bv2_assignment,
-    float vbs_detection,
-    float h_detection,
-    float bh_detection,
-    float v1_detection,
-    float v2_detection,
-    float bv1_detection,
-    float bv2_detection,
-    RVec<float> Jet_eta,
-    RVec<float> Jet_phi,
-    RVec<float> FatJet_eta,
-    RVec<float> FatJet_phi
-) {
-    std::vector<int> result(11, -1);
-    std::vector<int> assigned_jets;
-    std::vector<int> assigned_fatjets;
-    
-    std::vector<std::pair<float, int>> detection_order = {
-        {vbs_detection, 0},
-        {h_detection, 1},
-        {bh_detection, 2},
-        {v1_detection, 3},
-        {v2_detection, 4},
-        {bv1_detection, 5},
-        {bv2_detection, 6} 
-    };
-    
-    std::sort(detection_order.begin(), detection_order.end(), 
-        [](const auto& a, const auto& b) {
-            return a.first > b.first;
-        });
-    
-    auto checkJetOverlap = [&](int jet_idx, const std::vector<int>& assigned) -> bool {
-        if (jet_idx < 0 || jet_idx >= Jet_eta.size()) return true;
-        return std::find(assigned.begin(), assigned.end(), jet_idx) != assigned.end();
-    };
-    
-    auto checkFatJetOverlap = [&](int fatjet_idx, const std::vector<int>& assigned) -> bool {
-        if (fatjet_idx < 0 || fatjet_idx >= FatJet_eta.size()) return true;
-        return std::find(assigned.begin(), assigned.end(), fatjet_idx) != assigned.end();
-    };
-    
-    auto checkDeltaR = [&](int idx1, int idx2, bool is_fatjet1, bool is_fatjet2) -> bool {
-        if (idx1 < 0 || idx2 < 0) return true;
-        
-        float eta1 = is_fatjet1 ? FatJet_eta[idx1] : Jet_eta[idx1];
-        float phi1 = is_fatjet1 ? FatJet_phi[idx1] : Jet_phi[idx1];
-        float eta2 = is_fatjet2 ? FatJet_eta[idx2] : Jet_eta[idx2];
-        float phi2 = is_fatjet2 ? FatJet_phi[idx2] : Jet_phi[idx2];
-        
-        float dR = ROOT::VecOps::DeltaR(eta1, eta2, phi1, phi2);
-        if (is_fatjet1 || is_fatjet2) {
-            return dR >= 0.8;
-        }
-        return dR >= 0.4;
-    };
-    
-    auto checkAllOverlaps = [&](int candidate_idx, bool is_fatjet) -> bool {
-        for (int assigned_jet : assigned_jets) {
-            if (!checkDeltaR(candidate_idx, assigned_jet, is_fatjet, false)) {
-                return false;
-            }
-        }
-        for (int assigned_fatjet : assigned_fatjets) {
-            if (!checkDeltaR(candidate_idx, assigned_fatjet, is_fatjet, true)) {
-                return false;
-            }
-        }
-        return true;
-    };
-    
-    for (const auto& [prob, obj_type] : detection_order) {
-        switch (obj_type) {
-            case 0: {
-                for (size_t i = 0; i < vbs_assignment.size(); i++) {
-                    int j1_candidate = static_cast<int>(vbs_assignment[i][1]);
-                    int j2_candidate = static_cast<int>(vbs_assignment[i][2]);
-                    
-                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
-                        !checkJetOverlap(j2_candidate, assigned_jets) &&
-                        j1_candidate != j2_candidate &&
-                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
-                        checkAllOverlaps(j1_candidate, false) &&
-                        checkAllOverlaps(j2_candidate, false)) {
-                        
-                        result[0] = j1_candidate;
-                        result[1] = j2_candidate;
-                        assigned_jets.push_back(j1_candidate);
-                        assigned_jets.push_back(j2_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-            case 1: {
-                for (size_t i = 0; i < h_assignment.size(); i++) {
-                    int j1_candidate = static_cast<int>(h_assignment[i][1]);
-                    int j2_candidate = static_cast<int>(h_assignment[i][2]);
-                    
-                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
-                        !checkJetOverlap(j2_candidate, assigned_jets) &&
-                        j1_candidate != j2_candidate &&
-                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
-                        checkAllOverlaps(j1_candidate, false) &&
-                        checkAllOverlaps(j2_candidate, false)) {
-                        
-                        result[2] = j1_candidate;  // h1_idx
-                        result[3] = j2_candidate;  // h2_idx
-                        assigned_jets.push_back(j1_candidate);
-                        assigned_jets.push_back(j2_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-            case 2: {
-                for (size_t i = 0; i < bh_assignment.size(); i++) {
-                    int fatjet_candidate = static_cast<int>(bh_assignment[i][1]);
-                    
-                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
-                        checkAllOverlaps(fatjet_candidate, true)) {
-                        
-                        result[4] = fatjet_candidate;  // bh_idx
-                        assigned_fatjets.push_back(fatjet_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-            case 3: {
-                for (size_t i = 0; i < v1_assignment.size(); i++) {
-                    int j1_candidate = static_cast<int>(v1_assignment[i][1]);
-                    int j2_candidate = static_cast<int>(v1_assignment[i][2]);
-                    
-                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
-                        !checkJetOverlap(j2_candidate, assigned_jets) &&
-                        j1_candidate != j2_candidate &&
-                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
-                        checkAllOverlaps(j1_candidate, false) &&
-                        checkAllOverlaps(j2_candidate, false)) {
-                        
-                        result[5] = j1_candidate;  // v1_j1_idx
-                        result[6] = j2_candidate;  // v1_j2_idx
-                        assigned_jets.push_back(j1_candidate);
-                        assigned_jets.push_back(j2_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-            case 4: {
-                for (size_t i = 0; i < v2_assignment.size(); i++) {
-                    int j1_candidate = static_cast<int>(v2_assignment[i][1]);
-                    int j2_candidate = static_cast<int>(v2_assignment[i][2]);
-                    
-                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
-                        !checkJetOverlap(j2_candidate, assigned_jets) &&
-                        j1_candidate != j2_candidate &&
-                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
-                        checkAllOverlaps(j1_candidate, false) &&
-                        checkAllOverlaps(j2_candidate, false)) {
-                        
-                        result[7] = j1_candidate;  // v2_j1_idx
-                        result[8] = j2_candidate;  // v2_j2_idx
-                        assigned_jets.push_back(j1_candidate);
-                        assigned_jets.push_back(j2_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-            case 5: {
-                for (size_t i = 0; i < bv1_assignment.size(); i++) {
-                    int fatjet_candidate = static_cast<int>(bv1_assignment[i][1]);
-                    
-                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
-                        checkAllOverlaps(fatjet_candidate, true)) {
-                        
-                        result[9] = fatjet_candidate;  // bv1_idx
-                        assigned_fatjets.push_back(fatjet_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-            case 6: {
-                for (size_t i = 0; i < bv2_assignment.size(); i++) {
-                    int fatjet_candidate = static_cast<int>(bv2_assignment[i][1]);
-                    
-                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
-                        checkAllOverlaps(fatjet_candidate, true)) {
-                        
-                        result[10] = fatjet_candidate;  // bv2_idx
-                        assigned_fatjets.push_back(fatjet_candidate);
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    }
-    
-    return result;
-}
-
 /*
 ############################################
 SNAPSHOT
@@ -584,6 +371,28 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     }
 
     std::string outputFile = outputDir + "/" + outputFileName + ".root";
+    df.Snapshot("Events", outputFile, final_variables);
+    std::cout << " -> Stored output file: " << outputFile << std::endl;
+}
+
+
+void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName)
+{
+    auto ColNames = df.GetDefinedColumnNames();
+    std::vector<std::string> final_variables;
+    final_variables.push_back("event");
+
+    for (auto &&ColName : ColNames) {
+        if (ColName.starts_with("Jet_") || 
+            ColName.starts_with("FatJet_") ||
+            ColName.starts_with("PuppiMET_") || 
+            ColName.starts_with("gen_") || 
+            ColName.starts_with("truth_")) {
+                final_variables.push_back(ColName);
+            }
+    }
+
+    std::string outputFile = outputDir + "/" + outputFileName + "_spanet_training_data.root";
     df.Snapshot("Events", outputFile, final_variables);
     std::cout << " -> Stored output file: " << outputFile << std::endl;
 }

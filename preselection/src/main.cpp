@@ -6,12 +6,14 @@
 #include "corrections.h"
 #include "utils.h"
 #include "selections.h"
+#include "spanet.h"
+#include "genSelections.h"
 
-#include "spanet.hpp"
 #include "argparser.hpp"
 
 struct MyArgs : public argparse::Args {
     int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
+    int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
     bool &cutflow = flag("cutflow", "print cutflow");
     bool &debug = flag("debug", "enable debug mode").set_default(false);
     std::string &spec = kwarg("i,input", "spec.json path");
@@ -20,6 +22,7 @@ struct MyArgs : public argparse::Args {
     std::string &output = kwarg("o,output", "output root file").set_default("");
     std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
     bool &dumpInput = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
+    bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
 };
 
 RNode applyCut(RNode df, std::string cut) {
@@ -58,14 +61,22 @@ RNode applyCut(RNode df, std::string cut) {
     return df;
 }
 
-RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inference) {
+RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inference, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
     std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
     if (std::find(channels.begin(), channels.end(), ana) == channels.end()) {
         std::cerr << "Did not recognize analysis tag: " << ana << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    df = runPreselection(df, ana, spanet_inference);
+    df = runPreselection(df, ana);
+
+    if (makeSpanetTrainingdata) {
+        std::cout << " -> Making SPANet training data" << std::endl;
+        df = GenSelections(df);
+    } else {
+        df = spanet_inference.RunSPANetInference(df);
+        df = spanet_inference.ParseSpanetInference(df);
+    }
     return df;
 }
 
@@ -84,6 +95,14 @@ int main(int argc, char** argv) {
     if (args.debug) {
         std::cout << " -> Debug mode enabled" << std::endl;
         auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
+    }
+
+    if (args.nthread > 1) {
+        if (args.batch_size > 0) {
+            std::cerr << "Can't use SPANet with multithreaded RDF, please remove the -n option." << std::endl;
+        }
+        std::cout << " -> Setting number of threads to " << args.nthread << std::endl;
+        ROOT::EnableImplicitMT(args.nthread);
     }
 
     // Load df
@@ -118,6 +137,11 @@ int main(int argc, char** argv) {
         std::exit(EXIT_FAILURE);
     }
 
+    bool makeSpanetTrainingdata = args.makeSpanetTrainingdata;
+    if (!isSignal) {
+        makeSpanetTrainingdata = false; // do not make training data for non-signal samples
+    }
+
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
@@ -125,17 +149,20 @@ int main(int argc, char** argv) {
         df = applyDataWeights(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, spanet_inference);
-        // add genLevel info
+        df = runAnalysis(df, args.ana, spanet_inference, makeSpanetTrainingdata);
         df = applyMCWeights(df);
+    }
+
+    if (makeSpanetTrainingdata) {
+        std::cout << " -> Saving SPANet training data" << std::endl;
+        saveSpanetSnapshot(df, output_dir, output_file);
+        return 0; // Exit after saving training data
     }
 
     auto cutflow = Cutflow(df);
 
-    // Apply final cut if specified
     df = applyCut(df, args.cut);
 
-    // Save events to root file
     saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
 
     // Print cutflow
