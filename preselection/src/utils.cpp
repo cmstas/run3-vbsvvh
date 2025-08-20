@@ -564,10 +564,8 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     final_variables.push_back("event");
 
     for (auto &&ColName : ColNames) {
-        if (ColName.starts_with("_")) {
-            if (ColName.starts_with("_cut")) {
-            } else
-                continue;
+        if (ColName.starts_with("_") && !ColName.starts_with("_cut")) {
+            continue;
         }
         final_variables.push_back(ColName);
     }
