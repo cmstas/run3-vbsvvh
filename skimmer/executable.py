@@ -256,8 +256,8 @@ class Skimmer():
             .Define("gen_v2q2_idx", "vboson_info[5]")
 
         df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
-            .Define("gen_vbs_idx1", "vbs_info[0]") \
-            .Define("gen_vbs_idx2", "vbs_info[1]") 
+            .Define("gen_vbs1_idx", "vbs_info[0]") \
+            .Define("gen_vbs2_idx", "vbs_info[1]") 
         
         return df
         
