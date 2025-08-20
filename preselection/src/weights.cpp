@@ -27,7 +27,7 @@ RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::Correc
         pileup_weights.push_back(correctionset->evaluate({ntrueint, "down"}));
         return pileup_weights;
     };
-    return df.Define("weight_pileup", eval_correction, {"sample_year", "Pileup_nTrueInt"});
+    return df.Define("weight_pileup", eval_correction, {"year", "Pileup_nTrueInt"});
 }
 
 /*
@@ -50,7 +50,7 @@ RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::Correc
         }
         return muon_sf_weights;
     };
-    return df.Define("weight_muonid", eval_correction, {"sample_year", "Muon_eta", "Muon_pt"});
+    return df.Define("weight_muonid", eval_correction, {"year", "Muon_eta", "Muon_pt"});
 }
 
 RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df) {
@@ -67,7 +67,7 @@ RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::Corr
         }
         return muon_sf_weights;
     };
-    return df.Define("weight_muonreco", eval_correction, {"sample_year", "Muon_eta", "Muon_pt"});
+    return df.Define("weight_muonreco", eval_correction, {"year", "Muon_eta", "Muon_pt"});
 }
 
 RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df) {
@@ -84,7 +84,7 @@ RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::C
         }
         return muon_sf_weights;
     };
-    return df.Define("weight_muontrigger", eval_correction, {"sample_year", "Muon_eta", "Muon_pt"});
+    return df.Define("weight_muontrigger", eval_correction, {"year", "Muon_eta", "Muon_pt"});
 }
 
 /*
@@ -107,7 +107,7 @@ RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::Co
         }
         return electron_sf_weights;
     };
-    return df.Define("weight_electronid", eval_correction, {"sample_year", "Electron_SC_eta", "Electron_pt"});
+    return df.Define("weight_electronid", eval_correction, {"year", "Electron_SC_eta", "Electron_pt"});
 }
 
 RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df) {
@@ -131,7 +131,7 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
         }
         return electron_sf_weights;
     };
-    return df.Define("weight_electronreco", eval_correction, {"sample_year", "Electron_SC_eta", "Electron_pt"});
+    return df.Define("weight_electronreco", eval_correction, {"year", "Electron_SC_eta", "Electron_pt"});
 }
 
 RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df) {
@@ -148,7 +148,7 @@ RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correctio
         }
         return electron_sf_weights;
     };
-    return df.Define("weight_electrontrigger", eval_correction, {"sample_year", "Electron_SC_eta", "Electron_pt"});
+    return df.Define("weight_electrontrigger", eval_correction, {"year", "Electron_SC_eta", "Electron_pt"});
 }
 
 /*
