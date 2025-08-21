@@ -44,14 +44,12 @@ def get_array_names(isSignal=False):
         "FatJet_globalParT3_Xbb", "FatJet_globalParT3_Xcc", "FatJet_globalParT3_Xcs", "FatJet_globalParT3_Xqq", "FatJet_globalParT3_QCD",
         # Global
         "PuppiMET_pt", "PuppiMET_phi",
-        # Event-level features
-        "truth_hbb_idx", "truth_v1qq_idx", "truth_v2qq_idx",
-        "truth_hbb1_idx", "truth_hbb2_idx", "truth_v1q1_idx", "truth_v1q2_idx", "truth_v2q1_idx", "truth_v2q2_idx",
-        "truth_vbs1_idx", "truth_vbs2_idx"
     ]
 
     if isSignal:
-        arrays.extend(["GenPart_pdgId"])
+        arrays.extend(["truth_h_idx", "truth_v1_idx", "truth_v2_idx",
+        "truth_b1_idx", "truth_b2_idx", "truth_v1q1_idx", "truth_v1q2_idx", "truth_v2q1_idx", "truth_v2q2_idx",
+        "truth_vbs1_idx", "truth_vbs2_idx"])
     
     return arrays
 
@@ -167,17 +165,17 @@ def make_dataset(dataframes, output_path):
         "INPUTS/MET/cosphi": data["MET_cosphi"],
 
         # Targets - Higgs
-        "TARGETS/h/b1": data["truth_hbb1_idx"],
-        "TARGETS/h/b2": data["truth_hbb2_idx"],
-        "TARGETS/bh/bb": data["truth_hbb_idx"],
+        "TARGETS/h/b1": data["truth_b1_idx"],
+        "TARGETS/h/b2": data["truth_b2_idx"],
+        "TARGETS/bh/bb": data["truth_h_idx"],
         
         # Targets - Vector boson
         "TARGETS/v1/v1q1": data["truth_v1q1_idx"],
         "TARGETS/v1/v1q2": data["truth_v1q2_idx"],
         "TARGETS/v2/v2q1": data["truth_v2q1_idx"],
         "TARGETS/v2/v2q2": data["truth_v2q2_idx"],
-        "TARGETS/bv1/qq1": data["truth_v1qq_idx"],
-        "TARGETS/bv2/qq2": data["truth_v2qq_idx"],
+        "TARGETS/bv1/qq1": data["truth_v1_idx"],
+        "TARGETS/bv2/qq2": data["truth_v2_idx"],
         
         # Targets - VBS
         "TARGETS/vbs/vbsq1": data["truth_vbs1_idx"],
@@ -193,11 +191,6 @@ def make_dataset(dataframes, output_path):
 
 if __name__ == "__main__":
     df_bkg = None
-    df_sig = genMatching(f"/home/users/aaarora/phys/run3/run3-vbsvvh/preselection/etc/1Lep2FJ-sig.json", isSignal=True)
-    # df_bkg = genMatching(f"/home/users/aaarora/phys/run3/SPANet/input_proc/1Lep2FJ1.5-bkg.json", isSignal=False)
-
-    df_sig.Snapshot("Events", "out.root")
-    print("Number of evts in sig: ", df_sig.Count().GetValue())
-    # print("Number of evts in bkg: ", df_bkg.Count().GetValue())
+    df_sig = r.RDataFrame("Events", "../data/sig_spanet_training_data.root")
     
     make_dataset((df_sig, df_bkg), output_path=f"../data/output.h5")

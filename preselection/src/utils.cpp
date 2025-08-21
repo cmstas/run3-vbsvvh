@@ -378,14 +378,15 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
 void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName)
 {
-    auto ColNames = df.GetDefinedColumnNames();
+    auto ColNames = df.GetColumnNames();
     std::vector<std::string> final_variables;
     final_variables.push_back("event");
 
     for (auto &&ColName : ColNames) {
         if (ColName.starts_with("Jet_") || 
             ColName.starts_with("FatJet_") ||
-            ColName.starts_with("PuppiMET_") || 
+            ColName.starts_with("PuppiMET_") ||
+            ColName.starts_with("GenPart_") ||  
             ColName.starts_with("gen_") || 
             ColName.starts_with("truth_")) {
                 final_variables.push_back(ColName);
