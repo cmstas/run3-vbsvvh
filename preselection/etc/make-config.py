@@ -156,10 +156,10 @@ class Config:
                         "trees": ["Events"],
                         "files": [files_path],
                         "metadata": {
-                            "sample_name_withyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
-                            "sample_category": self.sample_category,
-                            "sample_year": sample_year,
-                            "sample_type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
+                            "namewithyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
+                            "category": self.sample_category,
+                            "year": sample_year,
+                            "type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
                             "xsec": xsec,
                             "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
                             "nevents": num_events
