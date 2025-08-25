@@ -58,7 +58,7 @@ RNode MuonSelections(RNode df_) {
             "abs(Muon_dxy) < 0.2 && "
             "abs(Muon_dz) < 0.5 && "
             "abs(Muon_sip3d) < 8 && "
-            "Muon_looseId == 1")
+            "Muon_looseId")
         .Define("_tightMuons", "_looseMuons && "
             "Muon_pt > 30 && "
             "Muon_pfIsoId > 4 && "
@@ -119,6 +119,8 @@ RNode runPreselection(RNode df_, std::string channel) {
             "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
             "(Lepton_pt[0] > 40)");
     }
-
+    else if (channel == "0Lep3FJ") {
+        df = df.Define("_cut_lepton", "nMuon_Loose == 0 && nElectron_Loose == 0");
+    }
     return df;
 }
