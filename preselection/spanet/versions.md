@@ -1,1 +1,1 @@
-- spanet_assign_1p0_detect_0p5: assignment loss 1.0 detection loss 0.5
+- v1: August 20th, 2025

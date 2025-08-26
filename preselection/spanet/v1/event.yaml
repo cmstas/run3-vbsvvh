@@ -1,0 +1,96 @@
+# ---------------------------------------------------
+# REQUIRED - INPUTS - List all inputs to SPANet here.
+# ---------------------------------------------------
+INPUTS:
+  # -----------------------------------------------------------------------------
+  # REQUIRED - SEQUENTIAL - inputs which can have an arbitrary number of vectors.
+  # -----------------------------------------------------------------------------
+  SEQUENTIAL:
+    AK4Jets:
+      mass: log_normalize #log used to reduce the long tail 
+      pt: log_normalize 
+      eta: normalize      
+      sinphi: normalize
+      cosphi: normalize
+      isTightBTag: none #binary value
+      isMediumBTag: none #binary value
+      isLooseBTag: none #binary value
+
+    AK8Jets:
+      mass: log_normalize #log used to reduce the long tail 
+      pt: log_normalize 
+      eta: normalize      
+      sinphi: normalize
+      cosphi: normalize 
+      nConstituents: normalize  
+      parT_Xbb: none  
+      parT_Xqq: none  
+      parT_Xcc: none
+      parT_Xcs: none
+      parT_QCD: none  
+
+  # ---------------------------------------------------------------------
+  # REQUIRED - GLOBAL - inputs which will have a single vector per event.
+  # ---------------------------------------------------------------------
+  GLOBAL:
+    MET:
+      pt: log_normalize
+      sinphi: normalize
+      cosphi: normalize
+
+# ----------------------------------------------------------------------
+# REQUIRED - EVENT - Complete list of resonance particles and daughters.
+# ----------------------------------------------------------------------
+EVENT:
+  h:
+    - b1: AK4Jets
+    - b2: AK4Jets
+
+  bh:
+    - bb: AK8Jets
+
+  v1:
+    - v1q1: AK4Jets
+    - v1q2: AK4Jets
+  v2:
+    - v2q1: AK4Jets
+    - v2q2: AK4Jets
+
+  bv1:
+    - qq1: AK8Jets
+  bv2:
+    - qq2: AK8Jets
+
+  vbs:
+    - vbsq1: AK4Jets
+    - vbsq2: AK4Jets
+
+
+# ---------------------------------------------------------
+# REQUIRED KEY - PERMUTATIONS - List of valid permutations.
+# ---------------------------------------------------------
+PERMUTATIONS:
+    EVENT:
+      - [ v1, v2 ]
+      - [ bv1, bv2 ]
+    h:
+      - [ b1, b2 ]
+    v1:
+      - [ v1q1, v1q2 ]
+    v2:
+      - [ v2q1, v2q2 ]
+    vbs:
+      - [ vbsq1, vbsq2 ]
+
+# ------------------------------------------------------------------------------
+# REQUIRED - REGRESSIONS - List of desired features to regress from observables.
+# ------------------------------------------------------------------------------
+REGRESSIONS:
+
+
+# -----------------------------------------------------------------------------
+# REQUIRED - REGRESSIONS - List of desired classes to predict from observables.
+# -----------------------------------------------------------------------------
+CLASSIFICATIONS:
+  EVENT:
+    - isSignal
