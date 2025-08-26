@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana, args.output_subdir);
 
-    SPANet::SPANetInference spanet_inference("spanet/spanet_assign_1p0_detect_1p0_v1.onnx", args.batch_size);
+    SPANet::SPANetInference spanet_inference("spanet/v1/model.onnx", args.batch_size);
 
     // add debugging
     if (args.debug) {
