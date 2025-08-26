@@ -127,8 +127,6 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
 
-std::vector<int> assign_all_objects(std::vector<std::vector<float>> vbs_assignment, std::vector<std::vector<float>> h_assignment,  std::vector<std::vector<float>> bh_assignment, std::vector<std::vector<float>> v1_assignment, std::vector<std::vector<float>> v2_assignment, std::vector<std::vector<float>> bv1_assignment, std::vector<std::vector<float>> bv2_assignment, float vbs_detection, float h_detection, float bh_detection, float v1_detection, float v2_detection, float bv1_detection, float bv2_detection, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> FatJet_eta, RVec<float> FatJet_phi);
-
 /*
 ############################################
 SNAPSHOT
@@ -136,5 +134,6 @@ SNAPSHOT
 */
 std::string setOutputDirectory(const std::string &ana, const std::string &output_subdir);
 void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData, bool dumpInput);
+void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName);
 
 #endif
