@@ -1,6 +1,8 @@
 [submodule "production/genproductions"]
 	path = production/genproductions
 	url = https://github.com/aashayarora/genproductions
+	branch = master
 [submodule "production/mcproduction"]
 	path = production/mcproduction
 	url = https://github.com/aashayarora/mcproduction
+	branch = main
