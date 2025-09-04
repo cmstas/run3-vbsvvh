@@ -145,7 +145,7 @@ class Config:
                 continue
             sample_year = self.extract_sample_year(sample)
             num_events = 0
-            files_path = f"{sample}/output_1.root"
+            files_path = f"{sample}/*.root"
             if self.sample_category != "data":
                 files = glob(files_path)
                 with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
