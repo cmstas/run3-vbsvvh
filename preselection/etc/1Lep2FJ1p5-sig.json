@@ -1,0 +1,68 @@
+{
+    "samples": {
+        "VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.002585,
+                "lumi": 109.08,
+                "nevents": 126000.0
+            }
+        },
+        "VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.000736,
+                "lumi": 109.08,
+                "nevents": 150000.0
+            }
+        },
+        "VBSWZH_C2V1p5_13p6TeV_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.001138,
+                "lumi": 109.08,
+                "nevents": 150000.0
+            }
+        },
+        "VBSZZH_C2V1p5_13p6TeV_5f_LO_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/Run3Summer24/private/VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "sample_category": "sig",
+                "sample_year": "2024",
+                "sample_type": "VBS",
+                "xsec": 0.0004478,
+                "lumi": 109.08,
+                "nevents": 150000.0
+            }
+        }
+    }
+}

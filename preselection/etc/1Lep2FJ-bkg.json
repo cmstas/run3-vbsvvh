@@ -1,0 +1,582 @@
+{
+    "samples": {
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 45.42,
+                "lumi": 109.08,
+                "nevents": 231287544.34259993
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 3.382,
+                "lumi": 109.08,
+                "nevents": 0
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 0.1162,
+                "lumi": 109.08,
+                "nevents": 0
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 0.01392,
+                "lumi": 109.08,
+                "nevents": 0
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 51.68,
+                "lumi": 109.08,
+                "nevents": 140338150.71839005
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 7.159,
+                "lumi": 109.08,
+                "nevents": 2534516.9964790004
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 0.4157,
+                "lumi": 109.08,
+                "nevents": 257969.04040980004
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 0.07019,
+                "lumi": 109.08,
+                "nevents": 6627.511303560001
+            }
+        },
+        "TTtoLNu2Q_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_TTtoLNu2Q",
+                "category": "bkg",
+                "year": "2024",
+                "type": "TTbar",
+                "xsec": 403.25,
+                "lumi": 109.08,
+                "nevents": 0
+            }
+        },
+        "WWto2L2Nu_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WWto2L2Nu",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 11.79,
+                "lumi": 109.08,
+                "nevents": 6904229.828999998
+            }
+        },
+        "WWtoLNu2Q_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WWtoLNu2Q",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 48.94,
+                "lumi": 109.08,
+                "nevents": 31307238.04050001
+            }
+        },
+        "WZto2L2Q_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WZto2L2Q",
+                "category": "bkg",
+                "year": "2024",
+                "type": "Boson",
+                "xsec": 7.568,
+                "lumi": 109.08,
+                "nevents": 6359426.464519999
+            }
+        },
+        "WZto3LNu_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WZto3LNu",
+                "category": "bkg",
+                "year": "2024",
+                "type": "Boson",
+                "xsec": 4.924,
+                "lumi": 109.08,
+                "nevents": 1938521.63224
+            }
+        },
+        "WZtoLNu2Q_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WZtoLNu2Q",
+                "category": "bkg",
+                "year": "2024",
+                "type": "Boson",
+                "xsec": 15.87,
+                "lumi": 109.08,
+                "nevents": 14965755.461999996
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-200to400",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 25.6,
+                "lumi": 109.08,
+                "nevents": 72906978.7842
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-400to600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 0.8785,
+                "lumi": 109.08,
+                "nevents": 3071091.4580074
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 0.1053,
+                "lumi": 109.08,
+                "nevents": 39930.733014000005
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-200to400",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 54.77,
+                "lumi": 109.08,
+                "nevents": 76839684.70032
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-400to600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 3.119,
+                "lumi": 109.08,
+                "nevents": 0
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-600_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-600",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 0.5261,
+                "lumi": 109.08,
+                "nevents": 195311.19676140006
+            }
+        },
+        "WtoLNu-4Jets_Bin-1J_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-4Jets_Bin-1J",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 9084,
+                "lumi": 109.08,
+                "nevents": 5222268767.889999
+            }
+        },
+        "WtoLNu-4Jets_Bin-2J_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-4Jets_Bin-2J",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 2925,
+                "lumi": 109.08,
+                "nevents": 3048919339.6170044
+            }
+        },
+        "WtoLNu-4Jets_Bin-3J_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-4Jets_Bin-3J",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 861.7,
+                "lumi": 109.08,
+                "nevents": 1708720979.895
+            }
+        },
+        "WtoLNu-4Jets_Bin-4J_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-4Jets_Bin-4J",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 416.5,
+                "lumi": 109.08,
+                "nevents": 279832250.0584
+            }
+        },
+        "ZZto2L2Nu_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_ZZto2L2Nu",
+                "category": "bkg",
+                "year": "2024",
+                "type": "Other",
+                "xsec": 1.031,
+                "lumi": 109.08,
+                "nevents": 844172.9640600007
+            }
+        },
+        "ZZto2L2Q_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_ZZto2L2Q",
+                "category": "bkg",
+                "year": "2024",
+                "type": "Other",
+                "xsec": 6.788,
+                "lumi": 109.08,
+                "nevents": 7084989.639000002
+            }
+        },
+        "ZZto2Nu2Q_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_ZZto2Nu2Q",
+                "category": "bkg",
+                "year": "2024",
+                "type": "Other",
+                "xsec": 4.826,
+                "lumi": 109.08,
+                "nevents": 3082007.02464
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 475.3,
+                "lumi": 109.08,
+                "nevents": 862909870.3419998
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100",
+                "category": "bkg",
+                "year": "2024",
+                "type": "DY",
+                "xsec": 179.3,
+                "lumi": 109.08,
+                "nevents": 310402577.53319985
+            }
+        },
+        "TTto2L2Nu_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_TTto2L2Nu",
+                "category": "bkg",
+                "year": "2024",
+                "type": "TTbar",
+                "xsec": 97.45,
+                "lumi": 109.08,
+                "nevents": 57368275.93770001
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-100to200",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 368.2,
+                "lumi": 109.08,
+                "nevents": 640730423.5472
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-40to100",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 4427,
+                "lumi": 109.08,
+                "nevents": 6855893251.907002
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-100to200",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 421.9,
+                "lumi": 109.08,
+                "nevents": 368268555.34
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_2024": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+            ],
+            "metadata": {
+                "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-40to100",
+                "category": "bkg",
+                "year": "2024",
+                "type": "WJets",
+                "xsec": 1598,
+                "lumi": 109.08,
+                "nevents": 3290334170.8679986
+            }
+        }
+    }
+}
