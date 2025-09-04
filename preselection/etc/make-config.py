@@ -52,7 +52,6 @@ class Config:
     # From a dataset name, get the short version (as defined in the xsec dict)
     @staticmethod
     def get_sample_name_and_xsec(dataset_name,xsec_dict,is_data):
-
         # Data is data
         if is_data:
             return("data",1)
@@ -139,10 +138,14 @@ class Config:
 
             # Get the info about the sample
             sample_name = self.get_sample_name(sample)
-            process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
+            try:
+                process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
+            except Exception as e:
+                print(f"    -> Skipping {dataset_name} as {e}.")
+                continue
             sample_year = self.extract_sample_year(sample)
             num_events = 0
-            files_path = f"{sample}/*.root"
+            files_path = f"{sample}/output_1.root"
             if self.sample_category != "data":
                 files = glob(files_path)
                 with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
@@ -170,9 +173,14 @@ class Config:
     
     @staticmethod
     def _process_file(file):
-        with uproot.open(file) as upf:
-            return sum(upf["Runs"]["genEventSumw"].array())
-
+        try:
+            with uproot.open(file) as upf:
+                return sum(upf["Runs"]["genEventSumw"].array())
+        except Exception as e:
+            with open("corrupt_files", "a") as f:
+                f.write(file + "\n")
+                return 0
+            
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--channel", type=str, help="channel", required=True)
