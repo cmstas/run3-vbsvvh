@@ -5,7 +5,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200",
@@ -14,7 +14,7 @@
                 "type": "DY",
                 "xsec": 45.42,
                 "lumi": 109.08,
-                "nevents": 231287544.34259993
+                "nevents": 160058686.35779998
             }
         },
         "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_2024": {
@@ -22,7 +22,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_23.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
@@ -31,7 +31,7 @@
                 "type": "DY",
                 "xsec": 3.382,
                 "lumi": 109.08,
-                "nevents": 0
+                "nevents": 1279421.3839679998
             }
         },
         "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_2024": {
@@ -39,7 +39,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_8.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600",
@@ -48,7 +48,7 @@
                 "type": "DY",
                 "xsec": 0.1162,
                 "lumi": 109.08,
-                "nevents": 0
+                "nevents": 14303.758428000003
             }
         },
         "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_2024": {
@@ -56,7 +56,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_8.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
@@ -65,7 +65,7 @@
                 "type": "DY",
                 "xsec": 0.01392,
                 "lumi": 109.08,
-                "nevents": 0
+                "nevents": 44442.65058354
             }
         },
         "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_2024": {
@@ -73,7 +73,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200",
@@ -82,7 +82,7 @@
                 "type": "DY",
                 "xsec": 51.68,
                 "lumi": 109.08,
-                "nevents": 140338150.71839005
+                "nevents": 119589126.20083003
             }
         },
         "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_2024": {
@@ -90,7 +90,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_90.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400",
@@ -99,7 +99,7 @@
                 "type": "DY",
                 "xsec": 7.159,
                 "lumi": 109.08,
-                "nevents": 2534516.9964790004
+                "nevents": 34880.230694000005
             }
         },
         "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_2024": {
@@ -107,7 +107,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_6.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600",
@@ -116,7 +116,7 @@
                 "type": "DY",
                 "xsec": 0.4157,
                 "lumi": 109.08,
-                "nevents": 257969.04040980004
+                "nevents": 374242.9115724001
             }
         },
         "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_2024": {
@@ -124,7 +124,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_8.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600",
@@ -133,7 +133,7 @@
                 "type": "DY",
                 "xsec": 0.07019,
                 "lumi": 109.08,
-                "nevents": 6627.511303560001
+                "nevents": 5827.874875240001
             }
         },
         "TTtoLNu2Q_2024": {
@@ -141,7 +141,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_196.root"
             ],
             "metadata": {
                 "namewithyear": "2024_TTtoLNu2Q",
@@ -150,7 +150,7 @@
                 "type": "TTbar",
                 "xsec": 403.25,
                 "lumi": 109.08,
-                "nevents": 0
+                "nevents": 73916429.382
             }
         },
         "WWto2L2Nu_2024": {
@@ -158,7 +158,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WWto2L2Nu",
@@ -167,7 +167,7 @@
                 "type": "WJets",
                 "xsec": 11.79,
                 "lumi": 109.08,
-                "nevents": 6904229.828999998
+                "nevents": 11747588.453999994
             }
         },
         "WWtoLNu2Q_2024": {
@@ -175,7 +175,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WWtoLNu2Q",
@@ -184,7 +184,7 @@
                 "type": "WJets",
                 "xsec": 48.94,
                 "lumi": 109.08,
-                "nevents": 31307238.04050001
+                "nevents": 33743885.2452
             }
         },
         "WZto2L2Q_2024": {
@@ -192,7 +192,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WZto2L2Q",
@@ -201,7 +201,7 @@
                 "type": "Boson",
                 "xsec": 7.568,
                 "lumi": 109.08,
-                "nevents": 6359426.464519999
+                "nevents": 7664020.552519999
             }
         },
         "WZto3LNu_2024": {
@@ -209,7 +209,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WZto3LNu",
@@ -218,7 +218,7 @@
                 "type": "Boson",
                 "xsec": 4.924,
                 "lumi": 109.08,
-                "nevents": 1938521.63224
+                "nevents": 5169506.140839998
             }
         },
         "WZtoLNu2Q_2024": {
@@ -226,7 +226,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_90.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WZtoLNu2Q",
@@ -235,7 +235,7 @@
                 "type": "Boson",
                 "xsec": 15.87,
                 "lumi": 109.08,
-                "nevents": 14965755.461999996
+                "nevents": 16357660.297999995
             }
         },
         "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_2024": {
@@ -243,7 +243,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_90.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-200to400",
@@ -252,7 +252,7 @@
                 "type": "WJets",
                 "xsec": 25.6,
                 "lumi": 109.08,
-                "nevents": 72906978.7842
+                "nevents": 105042349.02348003
             }
         },
         "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_2024": {
@@ -260,7 +260,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_60.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-400to600",
@@ -269,7 +269,7 @@
                 "type": "WJets",
                 "xsec": 0.8785,
                 "lumi": 109.08,
-                "nevents": 3071091.4580074
+                "nevents": 1804830.9800810004
             }
         },
         "WtoLNu-2Jets_Bin-1J-PTLNu-600_2024": {
@@ -277,7 +277,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_6.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-600",
@@ -286,7 +286,7 @@
                 "type": "WJets",
                 "xsec": 0.1053,
                 "lumi": 109.08,
-                "nevents": 39930.733014000005
+                "nevents": 542328.3204500001
             }
         },
         "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_2024": {
@@ -294,7 +294,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_90.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-200to400",
@@ -303,7 +303,7 @@
                 "type": "WJets",
                 "xsec": 54.77,
                 "lumi": 109.08,
-                "nevents": 76839684.70032
+                "nevents": 30788164.173600003
             }
         },
         "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_2024": {
@@ -311,7 +311,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_8.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-400to600",
@@ -320,7 +320,7 @@
                 "type": "WJets",
                 "xsec": 3.119,
                 "lumi": 109.08,
-                "nevents": 0
+                "nevents": 2357237.6342999996
             }
         },
         "WtoLNu-2Jets_Bin-2J-PTLNu-600_2024": {
@@ -328,7 +328,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_23.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-600",
@@ -337,7 +337,7 @@
                 "type": "WJets",
                 "xsec": 0.5261,
                 "lumi": 109.08,
-                "nevents": 195311.19676140006
+                "nevents": 38932.21260810001
             }
         },
         "WtoLNu-4Jets_Bin-1J_2024": {
@@ -345,16 +345,16 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1401.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-4Jets_Bin-1J",
                 "category": "bkg",
                 "year": "2024",
                 "type": "WJets",
-                "xsec": 9084,
+                "xsec": 9084.0,
                 "lumi": 109.08,
-                "nevents": 5222268767.889999
+                "nevents": 4796493054.099999
             }
         },
         "WtoLNu-4Jets_Bin-2J_2024": {
@@ -362,16 +362,16 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1401.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-4Jets_Bin-2J",
                 "category": "bkg",
                 "year": "2024",
                 "type": "WJets",
-                "xsec": 2925,
+                "xsec": 2925.0,
                 "lumi": 109.08,
-                "nevents": 3048919339.6170044
+                "nevents": 27925920.042000003
             }
         },
         "WtoLNu-4Jets_Bin-3J_2024": {
@@ -379,7 +379,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-4Jets_Bin-3J",
@@ -388,7 +388,7 @@
                 "type": "WJets",
                 "xsec": 861.7,
                 "lumi": 109.08,
-                "nevents": 1708720979.895
+                "nevents": 1694724515.4329998
             }
         },
         "WtoLNu-4Jets_Bin-4J_2024": {
@@ -396,7 +396,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-4Jets_Bin-4J",
@@ -405,7 +405,7 @@
                 "type": "WJets",
                 "xsec": 416.5,
                 "lumi": 109.08,
-                "nevents": 279832250.0584
+                "nevents": 280067010.2045999
             }
         },
         "ZZto2L2Nu_2024": {
@@ -413,7 +413,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_ZZto2L2Nu",
@@ -422,7 +422,7 @@
                 "type": "Other",
                 "xsec": 1.031,
                 "lumi": 109.08,
-                "nevents": 844172.9640600007
+                "nevents": 1110501.4998800005
             }
         },
         "ZZto2L2Q_2024": {
@@ -430,7 +430,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_ZZto2L2Q",
@@ -439,7 +439,7 @@
                 "type": "Other",
                 "xsec": 6.788,
                 "lumi": 109.08,
-                "nevents": 7084989.639000002
+                "nevents": 149568.86100000003
             }
         },
         "ZZto2Nu2Q_2024": {
@@ -447,7 +447,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/output_60.root"
             ],
             "metadata": {
                 "namewithyear": "2024_ZZto2Nu2Q",
@@ -456,7 +456,7 @@
                 "type": "Other",
                 "xsec": 4.826,
                 "lumi": 109.08,
-                "nevents": 3082007.02464
+                "nevents": 5526289.08752
             }
         },
         "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_2024": {
@@ -464,7 +464,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1482.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100",
@@ -473,7 +473,7 @@
                 "type": "DY",
                 "xsec": 475.3,
                 "lumi": 109.08,
-                "nevents": 862909870.3419998
+                "nevents": 1121114911.6999989
             }
         },
         "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_2024": {
@@ -481,7 +481,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100",
@@ -490,7 +490,7 @@
                 "type": "DY",
                 "xsec": 179.3,
                 "lumi": 109.08,
-                "nevents": 310402577.53319985
+                "nevents": 540667574.0340003
             }
         },
         "TTto2L2Nu_2024": {
@@ -498,7 +498,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/output_206.root"
             ],
             "metadata": {
                 "namewithyear": "2024_TTto2L2Nu",
@@ -507,7 +507,7 @@
                 "type": "TTbar",
                 "xsec": 97.45,
                 "lumi": 109.08,
-                "nevents": 57368275.93770001
+                "nevents": 33856579.743300006
             }
         },
         "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_2024": {
@@ -515,7 +515,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1401.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-100to200",
@@ -524,7 +524,7 @@
                 "type": "WJets",
                 "xsec": 368.2,
                 "lumi": 109.08,
-                "nevents": 640730423.5472
+                "nevents": 363974967.0424
             }
         },
         "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_2024": {
@@ -532,16 +532,16 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1401.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-1J-PTLNu-40to100",
                 "category": "bkg",
                 "year": "2024",
                 "type": "WJets",
-                "xsec": 4427,
+                "xsec": 4427.0,
                 "lumi": 109.08,
-                "nevents": 6855893251.907002
+                "nevents": 6875479598.111001
             }
         },
         "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_2024": {
@@ -549,7 +549,7 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1401.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-100to200",
@@ -558,7 +558,7 @@
                 "type": "WJets",
                 "xsec": 421.9,
                 "lumi": 109.08,
-                "nevents": 368268555.34
+                "nevents": 94530679.63500002
             }
         },
         "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_2024": {
@@ -566,16 +566,16 @@
                 "Events"
             ],
             "files": [
-                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1.root"
+                "/ceph/cms/store/user/aaarora/skims/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/output_1401.root"
             ],
             "metadata": {
                 "namewithyear": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-40to100",
                 "category": "bkg",
                 "year": "2024",
                 "type": "WJets",
-                "xsec": 1598,
+                "xsec": 1598.0,
                 "lumi": 109.08,
-                "nevents": 3290334170.8679986
+                "nevents": 3155414506.919998
             }
         }
     }

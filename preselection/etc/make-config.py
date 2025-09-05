@@ -163,7 +163,7 @@ class Config:
                             "category": self.sample_category,
                             "year": sample_year,
                             "type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
-                            "xsec": xsec,
+                            "xsec": float(xsec),
                             "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
                             "nevents": num_events
                         }
