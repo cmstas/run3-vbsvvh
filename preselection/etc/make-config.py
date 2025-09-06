@@ -32,7 +32,7 @@ class Config:
         elif "22" in sample:
             return "2022Re-recoBCD"
         elif "24" in sample:
-            return "2024"
+            return "2024Prompt"
         elif "UL16" in sample and "APV" in sample:
             return "2016preVFP"
         elif "UL16" in sample and not "APV" in sample:
@@ -94,7 +94,7 @@ class Config:
             "2018": 59.83,
             "2022Re-recoBCD": 7.9804,
             "2022Re-recoE+PromptFG": 26.6717,
-            "2024": 109.08
+            "2024Prompt": 109.08
         }
         if year in lumi:
             return lumi[year]
