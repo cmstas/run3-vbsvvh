@@ -20,7 +20,6 @@ const std::unordered_map<std::string, std::string> TriggerMap = {
     // {"0Lep2FJMET", "HLT_BLAH"},
 };
 
-RNode EventFilters(RNode df);
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string>& trigger_map);
 RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);

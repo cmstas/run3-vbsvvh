@@ -343,6 +343,16 @@ class Skimmer():
         if is_signal:
             self.df = self.genSelection(self.df)
 
+        # Run3 event filters
+        self.df = self.df.Filter("Flag_goodVertices && "
+            "Flag_globalSuperTightHalo2016Filter && "
+            "Flag_EcalDeadCellTriggerPrimitiveFilter && "
+            "Flag_BadPFMuonFilter && "
+            "Flag_BadPFMuonDzFilter && "
+            "Flag_hfNoisyHitsFilter &&"
+            "Flag_eeBadScFilter && "
+            "Flag_ecalBadCalibFilter")
+
         return self.df.Count().GetValue()
 
     def Snapshot(self, tag):

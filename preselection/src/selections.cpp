@@ -1,16 +1,5 @@
 #include "selections.h"
 
-RNode EventFilters(RNode df_) {
-    return df_.Define("_cut_filters", "Flag_goodVertices && "
-            "Flag_globalSuperTightHalo2016Filter && "
-            "Flag_EcalDeadCellTriggerPrimitiveFilter && "
-            "Flag_BadPFMuonFilter && "
-            "Flag_BadPFMuonDzFilter && "
-            "Flag_hfNoisyHitsFilter &&"
-            "Flag_eeBadScFilter && "
-            "Flag_ecalBadCalibFilter");
-}
-
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string>& trigger_map) {
     if (trigger_map.empty()) {
         std::cerr << "Warning: No trigger map provided. Skipping trigger selection." << std::endl;
