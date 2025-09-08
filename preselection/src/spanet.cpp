@@ -260,90 +260,102 @@ void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventData>& eve
 }
 
 RNode SPANet::SPANetInference::addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>>& all_outputs) {
-    std::vector<std::vector<std::vector<float>>> h_assignment_prob, bh_assignment_prob, v1_assignment_prob, v2_assignment_prob, bv1_assignment_prob, bv2_assignment_prob, vbs_assignment_prob;
-    std::vector<float> h_detection_prob, bh_detection_prob, v1_detection_prob, v2_detection_prob, bv1_detection_prob, bv2_detection_prob, vbs_detection_prob, event_signal_prob;
+    // Use shared_ptr to avoid excessive copying in lambda captures
+    auto h_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto bh_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto v1_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto v2_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto bv1_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto bv2_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto vbs_assignment_prob = std::make_shared<std::vector<std::vector<std::vector<float>>>>();
+    auto h_detection_prob = std::make_shared<std::vector<float>>();
+    auto bh_detection_prob = std::make_shared<std::vector<float>>();
+    auto v1_detection_prob = std::make_shared<std::vector<float>>();
+    auto v2_detection_prob = std::make_shared<std::vector<float>>();
+    auto bv1_detection_prob = std::make_shared<std::vector<float>>();
+    auto bv2_detection_prob = std::make_shared<std::vector<float>>();
+    auto vbs_detection_prob = std::make_shared<std::vector<float>>();
+    auto event_signal_prob = std::make_shared<std::vector<float>>();
 
     size_t n_events = all_outputs.size();
-    h_assignment_prob.reserve(n_events);
-    bh_assignment_prob.reserve(n_events);
-    v1_assignment_prob.reserve(n_events);
-    v2_assignment_prob.reserve(n_events);
-    bv1_assignment_prob.reserve(n_events);
-    bv2_assignment_prob.reserve(n_events);
-    vbs_assignment_prob.reserve(n_events);
-    h_detection_prob.reserve(n_events);
-    bh_detection_prob.reserve(n_events);
-    v1_detection_prob.reserve(n_events);
-    v2_detection_prob.reserve(n_events);
-    bv1_detection_prob.reserve(n_events);
-    bv2_detection_prob.reserve(n_events);
-    vbs_detection_prob.reserve(n_events);
-    event_signal_prob.reserve(n_events);
+    h_assignment_prob->reserve(n_events);
+    bh_assignment_prob->reserve(n_events);
+    v1_assignment_prob->reserve(n_events);
+    v2_assignment_prob->reserve(n_events);
+    bv1_assignment_prob->reserve(n_events);
+    bv2_assignment_prob->reserve(n_events);
+    vbs_assignment_prob->reserve(n_events);
+    h_detection_prob->reserve(n_events);
+    bh_detection_prob->reserve(n_events);
+    v1_detection_prob->reserve(n_events);
+    v2_detection_prob->reserve(n_events);
+    bv1_detection_prob->reserve(n_events);
+    bv2_detection_prob->reserve(n_events);
+    vbs_detection_prob->reserve(n_events);
+    event_signal_prob->reserve(n_events);
     
     for (const auto& event_outputs : all_outputs) {
-        h_assignment_prob.push_back(event_outputs[0]);
-        bh_assignment_prob.push_back(event_outputs[1]);
-        v1_assignment_prob.push_back(event_outputs[2]);
-        v2_assignment_prob.push_back(event_outputs[3]);
-        bv1_assignment_prob.push_back(event_outputs[4]);
-        bv2_assignment_prob.push_back(event_outputs[5]);
-        vbs_assignment_prob.push_back(event_outputs[6]);
-
-        h_detection_prob.push_back(event_outputs[7][0][0]);
-        bh_detection_prob.push_back(event_outputs[8][0][0]);
-        v1_detection_prob.push_back(event_outputs[9][0][0]);
-        v2_detection_prob.push_back(event_outputs[10][0][0]);
-        bv1_detection_prob.push_back(event_outputs[11][0][0]);
-        bv2_detection_prob.push_back(event_outputs[12][0][0]);
-        vbs_detection_prob.push_back(event_outputs[13][0][0]);
-
-        event_signal_prob.push_back(event_outputs[14][0][0]);
+        h_assignment_prob->push_back(event_outputs[0]);
+        bh_assignment_prob->push_back(event_outputs[1]);
+        v1_assignment_prob->push_back(event_outputs[2]);
+        v2_assignment_prob->push_back(event_outputs[3]);
+        bv1_assignment_prob->push_back(event_outputs[4]);
+        bv2_assignment_prob->push_back(event_outputs[5]);
+        vbs_assignment_prob->push_back(event_outputs[6]);
+        h_detection_prob->push_back(event_outputs[7][0][0]);
+        bh_detection_prob->push_back(event_outputs[8][0][0]);
+        v1_detection_prob->push_back(event_outputs[9][0][0]);
+        v2_detection_prob->push_back(event_outputs[10][0][0]);
+        bv1_detection_prob->push_back(event_outputs[11][0][0]);
+        bv2_detection_prob->push_back(event_outputs[12][0][0]);
+        vbs_detection_prob->push_back(event_outputs[13][0][0]);
+        event_signal_prob->push_back(event_outputs[14][0][0]);
     }
     
     auto getHAssignment = [h_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return h_assignment_prob[entry];
+        return entry < h_assignment_prob->size() ? (*h_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getBHAssignment = [bh_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return bh_assignment_prob[entry];
+        return entry < bh_assignment_prob->size() ? (*bh_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getV1Assignment = [v1_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return v1_assignment_prob[entry];
+        return entry < v1_assignment_prob->size() ? (*v1_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getV2Assignment = [v2_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return v2_assignment_prob[entry];
+        return entry < v2_assignment_prob->size() ? (*v2_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getBV1Assignment = [bv1_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return bv1_assignment_prob[entry];
+        return entry < bv1_assignment_prob->size() ? (*bv1_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getBV2Assignment = [bv2_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return bv2_assignment_prob[entry];
+        return entry < bv2_assignment_prob->size() ? (*bv2_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getVBSAssignment = [vbs_assignment_prob](unsigned int slot, ULong64_t entry) {
-        return vbs_assignment_prob[entry];
+        return entry < vbs_assignment_prob->size() ? (*vbs_assignment_prob)[entry] : std::vector<std::vector<float>>{};
     };
     auto getHDetection = [h_detection_prob](unsigned int slot, ULong64_t entry) {
-        return h_detection_prob[entry];
+        return entry < h_detection_prob->size() ? (*h_detection_prob)[entry] : -999.0f;
     };
     auto getBHDetection = [bh_detection_prob](unsigned int slot, ULong64_t entry) {
-        return bh_detection_prob[entry];
+        return entry < bh_detection_prob->size() ? (*bh_detection_prob)[entry] : -999.0f;
     };
     auto getV1Detection = [v1_detection_prob](unsigned int slot, ULong64_t entry) {
-        return v1_detection_prob[entry];
+        return entry < v1_detection_prob->size() ? (*v1_detection_prob)[entry] : -999.0f;
     };
     auto getV2Detection = [v2_detection_prob](unsigned int slot, ULong64_t entry) {
-        return v2_detection_prob[entry];
+        return entry < v2_detection_prob->size() ? (*v2_detection_prob)[entry] : -999.0f;
     };
     auto getBV1Detection = [bv1_detection_prob](unsigned int slot, ULong64_t entry) {
-        return bv1_detection_prob[entry];
+        return entry < bv1_detection_prob->size() ? (*bv1_detection_prob)[entry] : -999.0f;
     };
     auto getBV2Detection = [bv2_detection_prob](unsigned int slot, ULong64_t entry) {
-        return bv2_detection_prob[entry];
+        return entry < bv2_detection_prob->size() ? (*bv2_detection_prob)[entry] : -999.0f;
     };
     auto getVBSDetection = [vbs_detection_prob](unsigned int slot, ULong64_t entry) {
-        return vbs_detection_prob[entry];
+        return entry < vbs_detection_prob->size() ? (*vbs_detection_prob)[entry] : -999.0f;
     };
     auto getEventSignal = [event_signal_prob](unsigned int slot, ULong64_t entry) {
-        return event_signal_prob[entry];
+        return entry < event_signal_prob->size() ? (*event_signal_prob)[entry] : -999.0f;
     };
     
     return df.DefineSlotEntry("spanet_h_assignment", getHAssignment, {})
@@ -371,9 +383,6 @@ RNode SPANet::SPANetInference::RunSPANetInference(RNode df) {
     std::cout << "Running batch inference on " << events.size() << " events..." << std::endl;
     auto all_outputs = runBatchInference(events);
     auto inference_time = std::chrono::high_resolution_clock::now();
-    
-    events.clear();
-    events.shrink_to_fit();
     
     auto result = addSPANetOutputsToDataFrame(df, all_outputs);
     auto end_time = std::chrono::high_resolution_clock::now();
