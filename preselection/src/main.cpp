@@ -33,7 +33,6 @@ RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inf
         std::exit(EXIT_FAILURE);
     }
     df = runPreselection(df, ana);
-    std::cout << " -> Finished preselection. # Passing Events: " << df.Count().GetValue() << std::endl;
 
     if (makeSpanetTrainingdata) {
         df = GenSelections(df);

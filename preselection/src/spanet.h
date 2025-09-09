@@ -100,6 +100,8 @@ namespace SPANet {
             std::vector<float> ak8_XbbScore, ak8_XqqScore, ak8_XccScore, ak8_XcsScore, ak8_XqcdScore;
             std::vector<unsigned char> ak8_nConstituents;
             float met_pt, met_phi;
+            ULong64_t rdf_entry;
+            unsigned int rdf_slot;
         };
         
         std::vector<std::vector<std::vector<std::vector<float>>>> runBatchInference(const std::vector<EventData>& events);
@@ -107,11 +109,11 @@ namespace SPANet {
         
         std::vector<EventData> extractEventsFromDataFrame(RNode df);
         
-        RNode addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>>& all_outputs);
+        RNode addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>>& all_outputs, const std::vector<EventData>& events);
 
         static std::vector<int> assign_all_objects(
             std::vector<std::vector<float>> vbs_assignment,
-            std::vector<std::vector<float>> h_assignment, 
+            std::vector<std::vector<float>> h_assignment,
             std::vector<std::vector<float>> bh_assignment,
             std::vector<std::vector<float>> v1_assignment,
             std::vector<std::vector<float>> v2_assignment,
