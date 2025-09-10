@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 import ROOT as r
 
 r.gInterpreter.Declare("""
-ROOT::RVec<int> findHiggsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+ROOT::RVec<int> findHiggsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx, ROOT::RVec<float>& pt) {
     ROOT::RVec<int> result = {-1, -1, -1};
     
     int higgs_idx = -1;
@@ -46,6 +46,13 @@ ROOT::RVec<int> findHiggsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& s
         }
     }
     
+    // Sort daughters by pt in descending order
+    if (hdecay_idx.size() > 1) {
+        std::sort(hdecay_idx.begin(), hdecay_idx.end(), [&pt](int a, int b) {
+            return pt[a] > pt[b];
+        });
+    }
+    
     result[0] = higgs_idx;
     if (hdecay_idx.size() >= 1) result[1] = hdecay_idx[0];
     if (hdecay_idx.size() >= 2) result[2] = hdecay_idx[1];
@@ -68,7 +75,7 @@ int findLastIndex(int current_idx, int current_pdgId, ROOT::RVec<int>& pdgId, RO
     return outIdx;
 }
 
-ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx, ROOT::RVec<float>& pt) {
     // Returns: [v1_idx, v1_d1_idx, v1_d2_idx, v2_idx, v2_d1_idx, v2_d2_idx] or [-1, -1, -1, -1, -1, -1]
     ROOT::RVec<int> result = {-1, -1, -1, -1, -1, -1};
     
@@ -85,6 +92,11 @@ ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>&
     }
     
     if (firstVs_idx.size() < 2) return result;
+    
+    // Sort V bosons by pt in descending order
+    std::sort(firstVs_idx.begin(), firstVs_idx.end(), [&pt](int a, int b) {
+        return pt[a] > pt[b];
+    });
     
     ROOT::RVec<int> hadronic_V_indices;
     ROOT::RVec<int> leptonic_V_indices;
@@ -134,6 +146,13 @@ ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>&
             }
         }
         
+        // Sort daughters by pt in descending order
+        if (vdecays_idx.size() > 1) {
+            std::sort(vdecays_idx.begin(), vdecays_idx.end(), [&pt](int a, int b) {
+                return pt[a] > pt[b];
+            });
+        }
+        
         if (vdecays_idx.size() != 0) {
             result[0] = lastV_idx;
         }
@@ -159,6 +178,13 @@ ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>&
             }
         }
         
+        // Sort daughters by pt in descending order
+        if (vdecays_idx.size() > 1) {
+            std::sort(vdecays_idx.begin(), vdecays_idx.end(), [&pt](int a, int b) {
+                return pt[a] > pt[b];
+            });
+        }
+        
         if (vdecays_idx.size() != 0) {
             result[3] = lastV_idx;
         }
@@ -169,7 +195,7 @@ ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>&
     return result;
 }
 
-ROOT::RVec<int> findVBSQuarks(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx) {
+ROOT::RVec<int> findVBSQuarks(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx, ROOT::RVec<float>& pt) {
     // Returns: [vbs1_idx, vbs2_idx] or [-1, -1]
     ROOT::RVec<int> result = {-1, -1};
     ROOT::RVec<int> vbsquarks_idx;
@@ -184,7 +210,11 @@ ROOT::RVec<int> findVBSQuarks(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, R
             vbsquarks_idx.push_back(igen);
         }
     }
-    
+
+    std::sort(vbsquarks_idx.begin(), vbsquarks_idx.end(), [&pt](int a, int b) {
+        return pt[a] > pt[b];
+    });
+
     if (vbsquarks_idx.size() >= 1) result[0] = vbsquarks_idx[0];
     if (vbsquarks_idx.size() >= 2) result[1] = vbsquarks_idx[1];
     
@@ -200,7 +230,7 @@ correctionlib.register_pyroot_binding()
 # Constants
 CONDOR_OUTPUT_DIR = "output"
 XROOTD_REDIRECTOR = "root://xrootd-cms.infn.it/"
-OUTPUT_XRD = "davs://redirector.t2.ucsd.edu:1095//store/user/aaarora/skims"
+OUTPUT_XRD = "davs://redirector.t2.ucsd.edu:1095//store/user/aaarora/"
 MAX_RETRIES = 10
 SLEEP_DURATION = 60  # 1 minute in seconds
 
@@ -242,12 +272,12 @@ class Skimmer():
     @staticmethod
     def genSelection(df):
         # define bb, qq definition
-        df = df.Define("higgs_info", "findHiggsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+        df = df.Define("higgs_info", "findHiggsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt)") \
             .Define("gen_h_idx", "higgs_info[0]") \
             .Define("gen_b1_idx", "higgs_info[1]") \
             .Define("gen_b2_idx", "higgs_info[2]")
 
-        df = df.Define("vboson_info", "findVBosonsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+        df = df.Define("vboson_info", "findVBosonsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt)") \
             .Define("gen_v1_idx", "vboson_info[0]") \
             .Define("gen_v1q1_idx", "vboson_info[1]") \
             .Define("gen_v1q2_idx", "vboson_info[2]") \
@@ -255,18 +285,19 @@ class Skimmer():
             .Define("gen_v2q1_idx", "vboson_info[4]") \
             .Define("gen_v2q2_idx", "vboson_info[5]")
 
-        df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother)") \
+        df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt)") \
             .Define("gen_vbs1_idx", "vbs_info[0]") \
             .Define("gen_vbs2_idx", "vbs_info[1]") 
         
         return df
         
     def analyze(self, is_signal):
-        self.df = self.df.Define("tight_mu_mask", "Muon_pt > 35. && abs(Muon_eta) < 2.4 && Muon_tightId") \
-            .Define("tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
-            .Filter("Sum(tight_mu_mask) + Sum(tight_ele_mask) < 2") \
-            .Define("fatjet_mask", "FatJet_pt > 200 && FatJet_msoftdrop > 10 && FatJet_mass > 10") \
-            .Filter("Sum(fatjet_mask) >= 1")
+        self.df = self.df.Define("__tight_mu_mask", "Muon_pt > 35. && abs(Muon_eta) < 2.4 && Muon_tightId") \
+            .Define("__tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
+            .Define("__n_tight_leptons", "Sum(__tight_mu_mask) + Sum(__tight_ele_mask)") \
+            .Define("__fatjet_mask", "FatJet_pt > 200 && FatJet_msoftdrop > 10") \
+            .Define("__n_fatjets", "Sum(__fatjet_mask)") \
+            .Filter("(__n_fatjets + __n_tight_leptons) >= 1")
 
         if self.sample_year in JET_ID_JSONS:
             jet_id_json = JET_ID_JSONS[self.sample_year]
@@ -311,6 +342,16 @@ class Skimmer():
 
         if is_signal:
             self.df = self.genSelection(self.df)
+
+        # Run3 event filters
+        self.df = self.df.Filter("Flag_goodVertices && "
+            "Flag_globalSuperTightHalo2016Filter && "
+            "Flag_EcalDeadCellTriggerPrimitiveFilter && "
+            "Flag_BadPFMuonFilter && "
+            "Flag_BadPFMuonDzFilter && "
+            "Flag_hfNoisyHitsFilter &&"
+            "Flag_eeBadScFilter && "
+            "Flag_ecalBadCalibFilter")
 
         return self.df.Count().GetValue()
 
@@ -393,6 +434,20 @@ def merge_skims(output_dir):
 
 
 def determine_output_paths(input_file, is_signal):
+    result = subprocess.run(["gfal-ls", OUTPUT_XRD], capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Failed to list {OUTPUT_XRD}: {result.stderr}")
+        sys.exit(1)
+    existing_dirs = result.stdout.splitlines()
+
+    versions = []
+    for d in existing_dirs:
+        if d.startswith("skims_v") and d[7:].isdigit():
+            versions.append(int(d[7:]))
+    
+    next_version = max(versions) + 1 if versions else 0
+    print(f"Next version is skims_v{next_version}")
+
     if not is_signal:
         era = input_file.split('/')[3]
         sample_name = input_file.split('/')[4]
@@ -401,17 +456,15 @@ def determine_output_paths(input_file, is_signal):
         era = input_file.split('/')[6]
         sample_name = input_file.split('/')[7]
         campaign = "private"
-        
-    output_dir = f"{OUTPUT_XRD}/{era}/{campaign}/{sample_name}"
+
+    output_dir = f"{OUTPUT_XRD}/skims_v{next_version}/{campaign}/{sample_name}"
     return output_dir
 
 def copy_output_file(source, destination):
     print(f"Copying {source} to {destination}")
     
-    # Create destination directory
     subprocess.run(["gfal-mkdir", "-p", os.path.dirname(destination)])
     
-    # Copy with retries
     for i in range(1, MAX_RETRIES + 1):
         print(f"Attempt {i}")
         result = subprocess.run(["gfal-copy", "-f", source, destination])
@@ -429,26 +482,21 @@ if __name__ == "__main__":
     parser.add_argument('input_file', help="Input file path")
     parser.add_argument('job_id', help="Job ID")
     parser.add_argument('is_signal', help='Flag indicating if this is a signal sample', type=int)
+    parser.add_argument('')
     args = parser.parse_args()
     
-    # Set up X509 proxy
     os.environ['X509_USER_PROXY'] = args.proxy
 
-    # Run the skimmer
     success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR, args.is_signal)
     
-    # Retry once if failed
     if not success:
         print("Skimmer failed; retrying one more time...")
         success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR, args.is_signal)
     
-    # Merge results
     merge_skims(CONDOR_OUTPUT_DIR)
     
-    # Determine output paths
     output_dir = determine_output_paths(args.input_file, args.is_signal)
     
-    # Copy the output file
     copy_src = os.path.join(os.getcwd(), f"{CONDOR_OUTPUT_DIR}/output.root")
     copy_dest = f"{output_dir}/output_{args.job_id}.root"
     

@@ -1,0 +1,43 @@
+{
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100": 475.3,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200": 45.42,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400": 3.382,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600": 0.1162,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600": 0.01392,
+
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100": 179.3,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200": 51.68,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
+
+    "TTto2L2Nu": 97.45,
+    "TTtoLNu2Q": 403.25,
+
+    "WtoLNu-2Jets_Bin-1J-PTLNu-40to100": 4427,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-100to200": 368.2,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-200to400": 25.6,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-400to600": 0.8785,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-600": 0.1053,
+
+    "WtoLNu-2Jets_Bin-2J-PTLNu-40to100": 1598,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-100to200": 421.9,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-200to400": 54.77,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-400to600": 3.119,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-600": 0.5261,
+
+    "WtoLNu-4Jets_Bin-1J": 9084,
+    "WtoLNu-4Jets_Bin-2J": 2925,
+    "WtoLNu-4Jets_Bin-3J": 861.7,
+    "WtoLNu-4Jets_Bin-4J": 416.5,
+
+    "WWto2L2Nu": 11.79,
+    "WWtoLNu2Q": 48.94,
+    "WZto2L2Q": 7.568, 
+    "WZto3LNu": 4.924,
+    "WZtoLNu2Q": 15.87,
+
+    "ZZto2L2Nu": 1.031,
+    "ZZto2L2Q": 6.788,
+    "ZZto2Nu2Q": 4.826
+}

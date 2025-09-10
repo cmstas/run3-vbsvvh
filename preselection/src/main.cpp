@@ -12,54 +12,18 @@
 #include "argparser.hpp"
 
 struct MyArgs : public argparse::Args {
-    int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
-    int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
-    bool &cutflow = flag("cutflow", "print cutflow");
-    bool &debug = flag("debug", "enable debug mode").set_default(false);
     std::string &spec = kwarg("i,input", "spec.json path");
     std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection");
-    std::string &cut = kwarg("cut", "cut on final snapshot").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
     std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
+    
+    int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
+    int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
+
+    bool &debug = flag("debug", "enable debug mode").set_default(false);
     bool &dumpInput = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
 };
-
-RNode applyCut(RNode df, std::string cut) {
-    if (!cut.empty()){
-        std::cout << " -> Filter events with cut :" << cut << std::endl; 
-        std::vector<std::string> _cuts;
-        auto colNames = df.GetDefinedColumnNames();
-        if (std::find(colNames.begin(), colNames.end(), cut) == colNames.end()) {
-            std::cerr << "Cut " << cut << " not found in DataFrame columns!" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        for (auto colName : colNames) {
-            if (colName.starts_with("_cut")) {
-                if (colName == cut) {
-                    _cuts.push_back(colName);
-                    break;
-                }
-                _cuts.push_back(colName);
-            }
-        }
-        std::string cut_string = "";
-        if (_cuts.size() != 0) { 
-            for (size_t i = 0; i < _cuts.size(); i++) {
-                if (i == 0) {
-                    cut_string = _cuts[i];
-                } else {
-                    cut_string += " && " + _cuts[i];
-                }
-            }
-        }
-        df = df.Filter(cut_string);
-    }
-    else {
-        std::cout << " -> No cut specified!" << std::endl;
-    }
-    return df;
-}
 
 RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inference, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
@@ -69,10 +33,11 @@ RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inf
         std::exit(EXIT_FAILURE);
     }
     df = runPreselection(df, ana);
-    df = GenSelections(df);
 
-    if (!makeSpanetTrainingdata) {
-        df = spanet_inference.RunSPANetInference(df);
+    if (makeSpanetTrainingdata) {
+        df = GenSelections(df);
+    } else {
+	    df = spanet_inference.RunSPANetInference(df);
         df = spanet_inference.ParseSpanetInference(df);
     }
     return df;
@@ -96,11 +61,8 @@ int main(int argc, char** argv) {
     }
 
     if (args.nthread > 1) {
-        if (args.batch_size > 0) {
-            std::cerr << "Can't use SPANet with multithreaded RDF, please remove the -n option." << std::endl;
-        }
-        std::cout << " -> Setting number of threads to " << args.nthread << std::endl;
         ROOT::EnableImplicitMT(args.nthread);
+        ROOT::EnableThreadSafety();
     }
 
     // Load df
@@ -157,17 +119,7 @@ int main(int argc, char** argv) {
         return 0; // Exit after saving training data
     }
 
-    auto cutflow = Cutflow(df);
-
-    df = applyCut(df, args.cut);
-
     saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
-
-    // Print cutflow
-    if (args.cutflow) {
-        std::cout << " -> Print cutflow" << std::endl;
-        cutflow.Print();
-    }    
 
     return 0;
 }

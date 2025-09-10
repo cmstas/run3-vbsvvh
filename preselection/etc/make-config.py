@@ -32,7 +32,7 @@ class Config:
         elif "22" in sample:
             return "2022Re-recoBCD"
         elif "24" in sample:
-            return "2024"
+            return "2024Prompt"
         elif "UL16" in sample and "APV" in sample:
             return "2016preVFP"
         elif "UL16" in sample and not "APV" in sample:
@@ -52,7 +52,6 @@ class Config:
     # From a dataset name, get the short version (as defined in the xsec dict)
     @staticmethod
     def get_sample_name_and_xsec(dataset_name,xsec_dict,is_data):
-
         # Data is data
         if is_data:
             return("data",1)
@@ -95,7 +94,7 @@ class Config:
             "2018": 59.83,
             "2022Re-recoBCD": 7.9804,
             "2022Re-recoE+PromptFG": 26.6717,
-            "2024": 109.08
+            "2024Prompt": 109.08
         }
         if year in lumi:
             return lumi[year]
@@ -139,7 +138,11 @@ class Config:
 
             # Get the info about the sample
             sample_name = self.get_sample_name(sample)
-            process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
+            try:
+                process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
+            except Exception as e:
+                print(f"    -> Skipping {dataset_name} as {e}.")
+                continue
             sample_year = self.extract_sample_year(sample)
             num_events = 0
             files_path = f"{sample}/*.root"
@@ -160,7 +163,7 @@ class Config:
                             "category": self.sample_category,
                             "year": sample_year,
                             "type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
-                            "xsec": xsec,
+                            "xsec": float(xsec),
                             "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
                             "nevents": num_events
                         }
@@ -170,9 +173,14 @@ class Config:
     
     @staticmethod
     def _process_file(file):
-        with uproot.open(file) as upf:
-            return sum(upf["Runs"]["genEventSumw"].array())
-
+        try:
+            with uproot.open(file) as upf:
+                return sum(upf["Runs"]["genEventSumw"].array())
+        except Exception as e:
+            with open("corrupt_files", "a") as f:
+                f.write(file + "\n")
+                return 0
+            
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--channel", type=str, help="channel", required=True)

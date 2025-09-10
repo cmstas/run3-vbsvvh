@@ -124,7 +124,7 @@ class Plotter:
             else:
                 for sample in self.bkg_samples_labels.keys():
                     histogram.hist_bkg.append(
-                        self.df_bkg.Filter(f'sample_type == "{sample}"').Histo1D(
+                        self.df_bkg.Filter(f'type == "{sample}"').Histo1D(
                             (histogram.var, histogram.var, *histogram.binning), 
                             histogram.var, "weight"
                         )

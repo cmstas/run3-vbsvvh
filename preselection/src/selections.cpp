@@ -1,16 +1,5 @@
 #include "selections.h"
 
-RNode EventFilters(RNode df_) {
-    return df_.Define("_cut_filters", "Flag_goodVertices && "
-            "Flag_globalSuperTightHalo2016Filter && "
-            "Flag_EcalDeadCellTriggerPrimitiveFilter && "
-            "Flag_BadPFMuonFilter && "
-            "Flag_BadPFMuonDzFilter && "
-            "Flag_hfNoisyHitsFilter &&"
-            "Flag_eeBadScFilter && "
-            "Flag_ecalBadCalibFilter");
-}
-
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string>& trigger_map) {
     if (trigger_map.empty()) {
         std::cerr << "Warning: No trigger map provided. Skipping trigger selection." << std::endl;
@@ -22,7 +11,7 @@ RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map
     }
 
     std::string trigger_condition = trigger_map.at(channel);
-    return df_.Define("_cut_trigger", trigger_condition);
+    return df_.Filter(trigger_condition, "C1: Trigger Selection");
 }
 
 RNode ElectronSelections(RNode df_) {
@@ -90,9 +79,6 @@ RNode AK4JetsSelection(RNode df_) {
         .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.6708")
         .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.2480")
         .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0485");
-        // .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.7183")
-        // .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.3086")
-        // .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0583");
     df = applyObjectMask(df, "_good_ak4jets", "Jet");
     return df;
 }
@@ -109,20 +95,19 @@ RNode AK8JetsSelection(RNode df_) {
 }
 
 RNode runPreselection(RNode df_, std::string channel) {
-    auto df = EventFilters(df_);
-    df = TriggerSelections(df, channel, TriggerMap);
+    auto df = TriggerSelections(df_, channel, TriggerMap);
     df = LeptonSelections(df);
     df = AK4JetsSelection(df);
     df = AK8JetsSelection(df);
 
     // channel-specific selections
     if (channel == "1Lep2FJ") {
-        df = df.Define("_cut_lepton", "((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
             "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-            "(Lepton_pt[0] > 40)");
+            "(Lepton_pt[0] > 40)", "C2: 1-lepton selection");
     }
     else if (channel == "0Lep3FJ") {
-        df = df.Define("_cut_lepton", "nMuon_Loose == 0 && nElectron_Loose == 0");
+        df = df.Filter("nMuon_Loose == 0 && nElectron_Loose == 0", "C2: 0-lepton selection");
     }
     return df;
 }

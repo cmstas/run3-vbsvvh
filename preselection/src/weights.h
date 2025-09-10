@@ -52,24 +52,28 @@ MUON SFs
 */
 const std::unordered_map<std::string, correction::CorrectionSet> muonScaleFactors = {
     {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/MUO/2022_Summer22/muon_Z.json.gz")},
-    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/MUO/2022_Summer22EE/muon_Z.json.gz")}
+    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/MUO/2022_Summer22EE/muon_Z.json.gz")},
+    // {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/MUO/2024_Summer24/muon_Z.json.gz")}
 };
 
 const std::unordered_map<std::string, std::string> muonIDScaleFactors_yearmap = {
     {"2022Re-recoBCD", "NUM_TightID_DEN_TrackerMuons"},
-    {"2022Re-recoE+PromptFG", "NUM_TightID_DEN_TrackerMuons"}
+    {"2022Re-recoE+PromptFG", "NUM_TightID_DEN_TrackerMuons"},
+    // {"2024Prompt", "NUM_TightID_DEN_TrackerMuons"}
 };
 RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
 const std::unordered_map<std::string, std::string> muonRecoScaleFactors_yearmap = {
     {"2022Re-recoBCD", "NUM_TightPFIso_DEN_TightID"},
-    {"2022Re-recoE+PromptFG", "NUM_TightPFIso_DEN_TightID"}
+    {"2022Re-recoE+PromptFG", "NUM_TightPFIso_DEN_TightID"},
+    // {"2024Prompt", "NUM_TightPFIso_DEN_TightID"}
 };
 RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
 const std::unordered_map<std::string, std::string> muonTriggerScaleFactors_yearmap = {
     {"2022Re-recoBCD", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2022Re-recoE+PromptFG", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"}
+    {"2022Re-recoE+PromptFG", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
+    // {"2024Prompt", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"}
 };
 RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
@@ -80,11 +84,13 @@ ELECTRON SFs
 */
 const std::unordered_map<std::string, correction::CorrectionSet> electronScaleFactors = {
     {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2022_Summer22/electron.json.gz")},
-    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2022_Summer22EE/electron.json.gz")}
+    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2022_Summer22EE/electron.json.gz")},
+    // {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/EGM/2024_Summer24/electron_v1.json.gz")}
 };
 const std::unordered_map<std::string, std::string> electronScaleFactors_yearmap = {
     {"2022Re-recoBCD", "Electron-ID-SF"},
-    {"2022Re-recoE+PromptFG", "Electron-ID-SF"}
+    {"2022Re-recoE+PromptFG", "Electron-ID-SF"},
+    // {"2024Prompt", "Electron-ID-SF"}
 };
 RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df);
 RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df);
@@ -124,6 +130,12 @@ B-TAGGING SFs
 //     {"eff", *CorrectionSet::from_file("corrections/scalefactors/btagging/btag_eff.json")}
 // };
 // RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_btag, RNode df);
+
+// const std::unordered_map<std::string, correction::CorrectionSet> bTaggingWP = {
+//     {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2022_Summer22/btagging.json.gz")},
+//     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2022_Summer22EE/btagging.json.gz")},
+//     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2024_Summer24/btagging.json.gz")},
+// };
 
 /*
 ############################################

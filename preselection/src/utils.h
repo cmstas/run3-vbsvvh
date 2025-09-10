@@ -92,21 +92,6 @@ private:
 
 bool operator< ( const lumiMask::LumiBlockRange& lh, const lumiMask::LumiBlockRange& rh );
 
-/*
-############################################
-CUTFLOW
-############################################
-*/
-
-class Cutflow {
-public:
-    Cutflow(RNode df);
-    void Print(std::string output_file = "");
-private:
-    RNode _df;
-    std::vector<std::string> _cuts;
-    std::vector<std::pair<ROOT::RDF::RResultPtr<double>, ROOT::RDF::RResultPtr<double>>> _cutflow;
-};
 
 /*
 ############################################
