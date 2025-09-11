@@ -433,21 +433,7 @@ def merge_skims(output_dir):
         return result.returncode == 0
 
 
-def determine_output_paths(input_file, is_signal):
-    result = subprocess.run(["gfal-ls", OUTPUT_XRD], capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Failed to list {OUTPUT_XRD}: {result.stderr}")
-        sys.exit(1)
-    existing_dirs = result.stdout.splitlines()
-
-    versions = []
-    for d in existing_dirs:
-        if d.startswith("skims_v") and d[7:].isdigit():
-            versions.append(int(d[7:]))
-    
-    next_version = max(versions) + 1 if versions else 0
-    print(f"Next version is skims_v{next_version}")
-
+def determine_output_paths(input_file, is_signal, version):
     if not is_signal:
         era = input_file.split('/')[3]
         sample_name = input_file.split('/')[4]
@@ -457,7 +443,7 @@ def determine_output_paths(input_file, is_signal):
         sample_name = input_file.split('/')[7]
         campaign = "private"
 
-    output_dir = f"{OUTPUT_XRD}/skims_v{next_version}/{campaign}/{sample_name}"
+    output_dir = f"{OUTPUT_XRD}/skims_{version}/{campaign}/{sample_name}"
     return output_dir
 
 def copy_output_file(source, destination):
@@ -482,7 +468,7 @@ if __name__ == "__main__":
     parser.add_argument('input_file', help="Input file path")
     parser.add_argument('job_id', help="Job ID")
     parser.add_argument('is_signal', help='Flag indicating if this is a signal sample', type=int)
-    parser.add_argument('')
+    parser.add_argument('skim_version', help='version of skims eg. v2', type=str)
     args = parser.parse_args()
     
     os.environ['X509_USER_PROXY'] = args.proxy
@@ -495,7 +481,7 @@ if __name__ == "__main__":
     
     merge_skims(CONDOR_OUTPUT_DIR)
     
-    output_dir = determine_output_paths(args.input_file, args.is_signal)
+    output_dir = determine_output_paths(args.input_file, args.is_signal, args.skim_version)
     
     copy_src = os.path.join(os.getcwd(), f"{CONDOR_OUTPUT_DIR}/output.root")
     copy_dest = f"{output_dir}/output_{args.job_id}.root"
