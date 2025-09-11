@@ -4,7 +4,8 @@ set -euo pipefail
 # Configuration
 CPUS=1
 MEMORY=2G
-LOGDIR=logs
+outtag=NoCuts_11Sep2025_v2
+LOGDIR=logs/${outtag}
 
 X509_USER_PROXY="${X509_USER_PROXY:-/tmp/x509up_u$(id -u)}"
 
@@ -68,6 +69,7 @@ submit_job() {
     
     local job_name=$(basename "$file_list")
     local jdl=(condor_${job_name}.jdl) || { echo "Error: Failed to create temp file"; return 1; }
+    
 
     echo "Creating job description file: $jdl"
     cat >"$jdl" <<EOF
@@ -77,7 +79,7 @@ request_memory          = ${MEMORY}
 executable              = executable.py
 transfer_executable     = True
 transfer_input_files    = keep_and_drop_skim.txt
-arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag}
+arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag} ${outtag}
 log                     = ${LOGDIR}/\$(Cluster).log
 output                  = ${LOGDIR}/\$(Cluster).out
 error                   = ${LOGDIR}/\$(Cluster).err
