@@ -13,7 +13,7 @@
 
 struct MyArgs : public argparse::Args {
     std::string &spec = kwarg("i,input", "spec.json path");
-    std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection");
+    std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
     std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
     
@@ -27,12 +27,7 @@ struct MyArgs : public argparse::Args {
 
 RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inference, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
-    std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
-    if (std::find(channels.begin(), channels.end(), ana) == channels.end()) {
-        std::cerr << "Did not recognize analysis tag: " << ana << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    df = runPreselection(df, ana);
+    df = runPreselection(df, ana, makeSpanetTrainingdata);
 
     if (makeSpanetTrainingdata) {
         df = GenSelections(df);
@@ -49,8 +44,16 @@ int main(int argc, char** argv) {
     std::string input_spec = args.spec;
     std::string output_file = args.output;
 
+    std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
+    if (std::find(channels.begin(), channels.end(), args.ana) == channels.end()) {
+        if (!args.makeSpanetTrainingdata) {
+            std::cerr << "Did not recognize analysis tag: " << args.ana << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
     // Create output directory
-    std::string output_dir = setOutputDirectory(args.ana, args.output_subdir);
+    std::string output_dir = setOutputDirectory(args.ana, args.output_subdir, args.makeSpanetTrainingdata);
 
     SPANet::SPANetInference spanet_inference("spanet/v1/model.onnx", args.batch_size);
 

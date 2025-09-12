@@ -117,7 +117,7 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
 SNAPSHOT
 ############################################
 */
-std::string setOutputDirectory(const std::string &ana, const std::string &output_subdir);
+std::string setOutputDirectory(const std::string &ana, const std::string &output_subdir, bool spanet_training);
 void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData, bool dumpInput);
 void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName);
 

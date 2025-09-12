@@ -11,19 +11,6 @@ import numpy as np
 N_MAX_JETS = 10
 N_MAX_FATJETS = 3
 
-BTAGGING_SCORES = {
-    "2022": {
-        "Loose": 0.0583,
-        "Medium": 0.3086,
-        "Tight": 0.7183
-    },
-    "2024": {
-        "Loose": 0.0485,
-        "Medium": 0.2480,
-        "Tight": 0.6708 
-    }
-}
-
 def pad_or_truncate_bool(array, max_len):
     return ak.fill_none(
         ak.pad_none(array, max_len, clip=True), False
@@ -38,18 +25,23 @@ def get_array_names(isSignal=False):
     """Return a list of array names needed for the dataset."""
     arrays = [
         # AK4 jets
-        "Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "Jet_btagDeepFlavB",
+        "Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "Jet_isLooseBTag", "Jet_isMediumBTag", "Jet_isTightBTag",
         # AK8 jets
         "FatJet_pt", "FatJet_eta", "FatJet_phi", "FatJet_mass", "FatJet_nConstituents", 
         "FatJet_globalParT3_Xbb", "FatJet_globalParT3_Xcc", "FatJet_globalParT3_Xcs", "FatJet_globalParT3_Xqq", "FatJet_globalParT3_QCD",
         # Global
         "PuppiMET_pt", "PuppiMET_phi",
+        # Lepton
+        "Lepton_pt", "Lepton_eta", "Lepton_phi", "Lepton_mass", "Lepton_charge",
     ]
 
     if isSignal:
-        arrays.extend(["truth_h_idx", "truth_v1_idx", "truth_v2_idx",
-        "truth_b1_idx", "truth_b2_idx", "truth_v1q1_idx", "truth_v1q2_idx", "truth_v2q1_idx", "truth_v2q2_idx",
-        "truth_vbs1_idx", "truth_vbs2_idx"])
+        arrays.extend([
+            "truth_h_idx", "truth_b1_idx", "truth_b2_idx",
+            "truth_v1_idx", "truth_v1q1_idx", "truth_v1q2_idx", 
+            "truth_v2_idx", "truth_v2q1_idx", "truth_v2q2_idx",
+            "truth_vbs1_idx", "truth_vbs2_idx"
+        ])
     
     return arrays
 
@@ -63,9 +55,9 @@ def calculate_jet_features(data):
     """Add AK4 jet features."""
     data["Jet_cosphi"] = np.cos(data["Jet_phi"])
     data["Jet_sinphi"] = np.sin(data["Jet_phi"])
-    data["Jet_isLooseBTag"] = data["Jet_btagDeepFlavB"] > BTAGGING_SCORES["2024"]["Loose"]
-    data["Jet_isMediumBTag"] = data["Jet_btagDeepFlavB"] > BTAGGING_SCORES["2024"]["Medium"]
-    data["Jet_isTightBTag"] = data["Jet_btagDeepFlavB"] > BTAGGING_SCORES["2024"]["Tight"]
+    data["Jet_isLooseBTag"] = data["Jet_isLooseBTag"]
+    data["Jet_isMediumBTag"] = data["Jet_isMediumBTag"]
+    data["Jet_isTightBTag"] = data["Jet_isTightBTag"]
     data["Jet_MASK"] = ak.ones_like(data["Jet_pt"], dtype=bool)
     return data
 
@@ -74,6 +66,25 @@ def calculate_fatjet_features(data):
     data["FatJet_cosphi"] = np.cos(data["FatJet_phi"])
     data["FatJet_sinphi"] = np.sin(data["FatJet_phi"])
     data["FatJet_MASK"] = ak.ones_like(data["FatJet_pt"], dtype=bool)
+    return data
+
+def calculate_lepton_features(data):
+    """Add lepton features."""
+    data["Lepton1_pt"] = data["Lepton_pt"][:, 0]
+    data["Lepton1_eta"] = data["Lepton_eta"][:, 0]
+    data["Lepton1_phi"] = data["Lepton_phi"][:, 0]
+    data["Lepton1_mass"] = data["Lepton_mass"][:, 0]
+    data["Lepton1_charge"] = data["Lepton_charge"][:, 0]
+    data["Lepton1_cosphi"] = np.cos(data["Lepton1_phi"])
+    data["Lepton1_sinphi"] = np.sin(data["Lepton1_phi"])
+
+    data["Lepton2_pt"] = data["Lepton_pt"][:, 1]
+    data["Lepton2_eta"] = data["Lepton_eta"][:, 1]
+    data["Lepton2_phi"] = data["Lepton_phi"][:, 1]
+    data["Lepton2_mass"] = data["Lepton_mass"][:, 1]
+    data["Lepton2_charge"] = data["Lepton_charge"][:, 1]
+    data["Lepton2_cosphi"] = np.cos(data["Lepton2_phi"])
+    data["Lepton2_sinphi"] = np.sin(data["Lepton2_phi"])
     return data
 
 def pad_jet_arrays(data, n_max_jets):
@@ -105,6 +116,17 @@ def pad_fatjet_arrays(data, n_max_fatjets):
     
     return data
 
+def pad_lepton_arrays(data):
+    """Pad or truncate lepton arrays if needed."""
+    lepton_arrays = [
+        "pt", "eta", "mass", "phi", "charge"
+    ]
+
+    for arr in lepton_arrays:
+        data[f"Lepton_{arr}"] = pad_or_truncate(data[f"Lepton_{arr}"], 2)
+
+    return data
+
 def prepare_dataset(input_dataframe, isSignal=False):
     arrays = get_array_names(isSignal)
     
@@ -113,7 +135,10 @@ def prepare_dataset(input_dataframe, isSignal=False):
     data = calculate_met_features(data)
     data = calculate_jet_features(data)
     data = calculate_fatjet_features(data)
-    
+
+    data = pad_lepton_arrays(data)
+    data = calculate_lepton_features(data)
+
     data = pad_jet_arrays(data, N_MAX_JETS)
     data = pad_fatjet_arrays(data, N_MAX_FATJETS)
 
@@ -163,6 +188,21 @@ def make_dataset(dataframes, output_path):
         "INPUTS/MET/pt": data["PuppiMET_pt"],
         "INPUTS/MET/sinphi": data["MET_sinphi"],
         "INPUTS/MET/cosphi": data["MET_cosphi"],
+
+        # Lepton
+        "INPUTS/Lepton1/pt": data["Lepton1_pt"],
+        "INPUTS/Lepton1/eta": data["Lepton1_eta"],
+        "INPUTS/Lepton1/sinphi": data["Lepton1_sinphi"],
+        "INPUTS/Lepton1/cosphi": data["Lepton1_cosphi"],
+        "INPUTS/Lepton1/mass": data["Lepton1_mass"],
+        "INPUTS/Lepton1/charge": data["Lepton1_charge"],
+
+        "INPUTS/Lepton2/pt": data["Lepton2_pt"],
+        "INPUTS/Lepton2/eta": data["Lepton2_eta"],
+        "INPUTS/Lepton2/sinphi": data["Lepton2_sinphi"],
+        "INPUTS/Lepton2/cosphi": data["Lepton2_cosphi"],
+        "INPUTS/Lepton2/mass": data["Lepton2_mass"],
+        "INPUTS/Lepton2/charge": data["Lepton2_charge"],
 
         # Targets - Higgs
         "TARGETS/h/b1": data["truth_b1_idx"],

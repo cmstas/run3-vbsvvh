@@ -67,7 +67,8 @@ RNode LeptonSelections(RNode df_) {
     return df.Define("Lepton_pt", "Concatenate(Electron_pt, Muon_pt)")
         .Define("Lepton_eta", "Concatenate(Electron_eta, Muon_eta)")
         .Define("Lepton_phi", "Concatenate(Electron_phi, Muon_phi)")
-        .Define("Lepton_mass", "Concatenate(Electron_mass, Muon_mass)");
+        .Define("Lepton_mass", "Concatenate(Electron_mass, Muon_mass)")
+        .Define("Lepton_charge", "Concatenate(Electron_charge, Muon_charge)");
 }
 
 RNode AK4JetsSelection(RNode df_) {
@@ -76,9 +77,9 @@ RNode AK4JetsSelection(RNode df_) {
             "Jet_pt > 20 && "
             "abs(Jet_eta) < 4.7 && "
             "Jet_jetId >= 2")
-        .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > 0.6708")
-        .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > 0.2480")
-        .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > 0.0485");
+        .Define("Jet_isTightBTag", "Jet_btagUParTAK4B > 0.4648")
+        .Define("Jet_isMediumBTag", "Jet_btagUParTAK4B > 0.1272")
+        .Define("Jet_isLooseBTag", "Jet_btagUParTAK4B > 0.0246");
     df = applyObjectMask(df, "_good_ak4jets", "Jet");
     return df;
 }
@@ -94,12 +95,14 @@ RNode AK8JetsSelection(RNode df_) {
     return df;
 }
 
-RNode runPreselection(RNode df_, std::string channel) {
-    auto df = TriggerSelections(df_, channel, TriggerMap);
-    df = LeptonSelections(df);
+RNode runPreselection(RNode df_, std::string channel, bool noCut) {
+    auto df = LeptonSelections(df_);
     df = AK4JetsSelection(df);
     df = AK8JetsSelection(df);
 
+    if (noCut) return df; // for spanet training data
+
+    df = TriggerSelections(df, channel, TriggerMap);
     // channel-specific selections
     if (channel == "1Lep2FJ") {
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
