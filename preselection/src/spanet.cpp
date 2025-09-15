@@ -23,7 +23,13 @@ std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::extract
 
     auto met_pt_vec = df.Take<float>("PuppiMET_pt").GetValue();
     auto met_phi_vec = df.Take<float>("PuppiMET_phi").GetValue();
-    
+
+    auto lepton_pt_vec = df.Take<RVec<float>>("Lepton_pt").GetValue();
+    auto lepton_eta_vec = df.Take<RVec<float>>("Lepton_eta").GetValue();
+    auto lepton_phi_vec = df.Take<RVec<float>>("Lepton_phi").GetValue();
+    auto lepton_mass_vec = df.Take<RVec<float>>("Lepton_mass").GetValue();
+    auto lepton_charge_vec = df.Take<RVec<int>>("Lepton_charge").GetValue();
+
     // Extract RDF entry and slot information for proper matching
     auto rdf_entry_vec = df.Take<ULong64_t>("rdfentry_").GetValue();
     auto rdf_slot_vec = df.Take<unsigned int>("rdfslot_").GetValue();
@@ -58,7 +64,19 @@ std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::extract
         event.met_phi = met_phi_vec[i];
         event.rdf_entry = rdf_entry_vec[i];
         event.rdf_slot = rdf_slot_vec[i];
-        
+
+        event.lepton1_pt = lepton_pt_vec[i].empty() ? 0.0f : lepton_pt_vec[i][0];
+        event.lepton1_eta = lepton_eta_vec[i].empty() ? 0.0f : lepton_eta_vec[i][0];
+        event.lepton1_phi = lepton_phi_vec[i].empty() ? 0.0f : lepton_phi_vec[i][0];
+        event.lepton1_mass = lepton_mass_vec[i].empty() ? 0.0f : lepton_mass_vec[i][0];
+        event.lepton1_charge = lepton_charge_vec[i].empty() ? 0 : lepton_charge_vec[i][0];
+
+        event.lepton2_pt = lepton_pt_vec[i].size() < 2 ? 0.0f : lepton_pt_vec[i][1];
+        event.lepton2_eta = lepton_eta_vec[i].size() < 2 ? 0.0f : lepton_eta_vec[i][1];
+        event.lepton2_phi = lepton_phi_vec[i].size() < 2 ? 0.0f : lepton_phi_vec[i][1];
+        event.lepton2_mass = lepton_mass_vec[i].size() < 2 ? 0.0f : lepton_mass_vec[i][1];
+        event.lepton2_charge = lepton_charge_vec[i].size() < 2 ? 0 : lepton_charge_vec[i][1];
+
         events.push_back(std::move(event));
     }
     
@@ -119,8 +137,8 @@ std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetInferenc
                 value_idx_pairs.clear();
                 value_idx_pairs.reserve(jets_dim);
                 
-                for (size_t j = 10; j < jets_dim; ++j) { // start at 10 since the first 10 are AK4 jets
-                    value_idx_pairs.emplace_back(output_data[offset + j], j - 10); // store value and index relative to AK8 jets
+                for (size_t j = MAX_AK4_JETS; j < jets_dim; ++j) { // start after AK4 jets
+                    value_idx_pairs.emplace_back(output_data[offset + j], j - MAX_AK4_JETS); // store value and index relative to AK8 jets
                 }
                 
                 const size_t _top_k = std::min(static_cast<size_t>(this->top_k), value_idx_pairs.size());
@@ -153,41 +171,61 @@ std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetInferenc
         
         std::vector<EventData> batch_events(events.begin() + start_idx, events.begin() + end_idx);
         
-        std::vector<int64_t> current_ak4_shape = {static_cast<int64_t>(current_batch_size), 10, 8};
-        std::vector<int64_t> current_ak8_shape = {static_cast<int64_t>(current_batch_size), 3, 11};
-        std::vector<int64_t> current_met_shape = {static_cast<int64_t>(current_batch_size), 1, 3};
-        std::vector<int64_t> current_ak4_mask_shape = {static_cast<int64_t>(current_batch_size), 10};
-        std::vector<int64_t> current_ak8_mask_shape = {static_cast<int64_t>(current_batch_size), 3};
+        std::vector<int64_t> current_ak4_shape = {static_cast<int64_t>(current_batch_size), MAX_AK4_JETS, AK4_FEATURES};
+        std::vector<int64_t> current_ak8_shape = {static_cast<int64_t>(current_batch_size), MAX_AK8_JETS, AK8_FEATURES};
+        std::vector<int64_t> current_met_shape = {static_cast<int64_t>(current_batch_size), 1, MET_FEATURES};
+        std::vector<int64_t> current_ak4_mask_shape = {static_cast<int64_t>(current_batch_size), MAX_AK4_JETS};
+        std::vector<int64_t> current_ak8_mask_shape = {static_cast<int64_t>(current_batch_size), MAX_AK8_JETS};
         std::vector<int64_t> current_met_mask_shape = {static_cast<int64_t>(current_batch_size), 1};
+        std::vector<int64_t> current_lepton1_shape = {static_cast<int64_t>(current_batch_size), 1, LEPTON_FEATURES};
+        std::vector<int64_t> current_lepton2_shape = {static_cast<int64_t>(current_batch_size), 1, LEPTON_FEATURES};
+        std::vector<int64_t> current_lepton1_mask_shape = {static_cast<int64_t>(current_batch_size), 1};
+        std::vector<int64_t> current_lepton2_mask_shape = {static_cast<int64_t>(current_batch_size), 1};
 
         fillBatchTensors(batch_events, current_batch_size);
         
         std::vector<Ort::Value> input_tensors;
-        input_tensors.reserve(8);
+        input_tensors.reserve(10);
         
         input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info, ak4_flat_jets.data(), current_batch_size * 10 * 8,
+            memory_info, ak4_flat_jets.data(), current_batch_size * MAX_AK4_JETS * AK4_FEATURES,
             current_ak4_shape.data(), current_ak4_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<bool>(
-            memory_info, reinterpret_cast<bool*>(ak4_mask_char.data()), current_batch_size * 10,
+            memory_info, reinterpret_cast<bool*>(ak4_mask_char.data()), current_batch_size * MAX_AK4_JETS,
             current_ak4_mask_shape.data(), current_ak4_mask_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info, ak8_flat_jets.data(), current_batch_size * 3 * 11,
+            memory_info, ak8_flat_jets.data(), current_batch_size * MAX_AK8_JETS * AK8_FEATURES,
             current_ak8_shape.data(), current_ak8_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<bool>(
-            memory_info, reinterpret_cast<bool*>(ak8_mask_char.data()), current_batch_size * 3,
+            memory_info, reinterpret_cast<bool*>(ak8_mask_char.data()), current_batch_size * MAX_AK8_JETS,
             current_ak8_mask_shape.data(), current_ak8_mask_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info, met_inputs.data(), current_batch_size * 3,
+            memory_info, met_inputs.data(), current_batch_size * MET_FEATURES,
             current_met_shape.data(), current_met_shape.size()));
             
         input_tensors.push_back(Ort::Value::CreateTensor<bool>(
             memory_info, reinterpret_cast<bool*>(met_mask_char.data()), current_batch_size * 1,
             current_met_mask_shape.data(), current_met_mask_shape.size()));
+
+        input_tensors.push_back(Ort::Value::CreateTensor<float>(
+            memory_info, lepton1_inputs.data(), current_batch_size * LEPTON_FEATURES,
+            current_lepton1_shape.data(), current_lepton1_shape.size()));
+
+        input_tensors.push_back(Ort::Value::CreateTensor<bool>(
+            memory_info, reinterpret_cast<bool*>(lepton1_mask_char.data()), current_batch_size * 1,
+            current_lepton1_mask_shape.data(), current_lepton1_mask_shape.size()));
+
+        input_tensors.push_back(Ort::Value::CreateTensor<float>(
+            memory_info, lepton2_inputs.data(), current_batch_size * LEPTON_FEATURES,
+            current_lepton2_shape.data(), current_lepton2_shape.size()));
+
+        input_tensors.push_back(Ort::Value::CreateTensor<bool>(
+            memory_info, reinterpret_cast<bool*>(lepton2_mask_char.data()), current_batch_size * 1,
+            current_lepton2_mask_shape.data(), current_lepton2_mask_shape.size()));
 
         auto output_tensors = session->Run(
             Ort::RunOptions{nullptr},
@@ -215,19 +253,19 @@ std::vector<std::vector<std::vector<std::vector<float>>>> SPANet::SPANetInferenc
 }
 
 void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventData>& events, size_t actual_batch_size) {
-    std::fill(ak4_flat_jets.begin(), ak4_flat_jets.begin() + actual_batch_size * 10 * 8, 0.0f);
-    std::fill(ak8_flat_jets.begin(), ak8_flat_jets.begin() + actual_batch_size * 3 * 11, 0.0f);
-    std::fill(ak4_mask_char.begin(), ak4_mask_char.begin() + actual_batch_size * 10, 0);
-    std::fill(ak8_mask_char.begin(), ak8_mask_char.begin() + actual_batch_size * 3, 0);
+    std::fill(ak4_flat_jets.begin(), ak4_flat_jets.begin() + actual_batch_size * MAX_AK4_JETS * AK4_FEATURES, 0.0f);
+    std::fill(ak8_flat_jets.begin(), ak8_flat_jets.begin() + actual_batch_size * MAX_AK8_JETS * AK8_FEATURES, 0.0f);
+    std::fill(ak4_mask_char.begin(), ak4_mask_char.begin() + actual_batch_size * MAX_AK4_JETS, 0);
+    std::fill(ak8_mask_char.begin(), ak8_mask_char.begin() + actual_batch_size * MAX_AK8_JETS, 0);
     
     for (size_t batch_idx = 0; batch_idx < actual_batch_size; ++batch_idx) {
         const EventData& event = events[batch_idx];
         
-        const size_t max_ak4 = std::min<size_t>(10, event.ak4_pt.size());
+        const size_t max_ak4 = std::min<size_t>(MAX_AK4_JETS, event.ak4_pt.size());
         for (size_t i = 0; i < max_ak4; ++i) {
-            ak4_mask_char[batch_idx * 10 + i] = 1;
+            ak4_mask_char[batch_idx * MAX_AK4_JETS + i] = 1;
             
-            const size_t base_idx = batch_idx * 10 * 8 + i * 8;
+            const size_t base_idx = batch_idx * MAX_AK4_JETS * AK4_FEATURES + i * AK4_FEATURES;
             ak4_flat_jets[base_idx]     = std::log(event.ak4_mass[i] + 1.0f);
             ak4_flat_jets[base_idx + 1] = std::log(event.ak4_pt[i] + 1.0f);
             ak4_flat_jets[base_idx + 2] = event.ak4_eta[i];
@@ -238,11 +276,11 @@ void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventData>& eve
             ak4_flat_jets[base_idx + 7] = static_cast<float>(event.ak4_isLooseBTag[i]);
         }
     
-        const size_t max_ak8 = std::min<size_t>(3, event.ak8_pt.size());
+        const size_t max_ak8 = std::min<size_t>(MAX_AK8_JETS, event.ak8_pt.size());
         for (size_t i = 0; i < max_ak8; ++i) {
-            ak8_mask_char[batch_idx * 3 + i] = 1;
+            ak8_mask_char[batch_idx * MAX_AK8_JETS + i] = 1;
             
-            const size_t base_idx = batch_idx * 3 * 11 + i * 11;
+            const size_t base_idx = batch_idx * MAX_AK8_JETS * AK8_FEATURES + i * AK8_FEATURES;
             ak8_flat_jets[base_idx]     = std::log(event.ak8_mass[i] + 1.0f);
             ak8_flat_jets[base_idx + 1] = std::log(event.ak8_pt[i] + 1.0f);
             ak8_flat_jets[base_idx + 2] = event.ak8_eta[i];
@@ -256,12 +294,32 @@ void SPANet::SPANetInference::fillBatchTensors(const std::vector<EventData>& eve
             ak8_flat_jets[base_idx + 10] = event.ak8_XqcdScore[i];
         }
         
-        const size_t event_base_idx = batch_idx * 3;
+        const size_t event_base_idx = batch_idx * MET_FEATURES;
         met_inputs[event_base_idx]     = std::log(event.met_pt + 1.0f);
         met_inputs[event_base_idx + 1] = std::sin(event.met_phi);
         met_inputs[event_base_idx + 2] = std::cos(event.met_phi);
         
         met_mask_char[batch_idx] = 1;
+
+        const size_t lepton1_base_idx = batch_idx * LEPTON_FEATURES;
+        lepton1_inputs[lepton1_base_idx]     = std::log(event.lepton1_pt + 1.0f);
+        lepton1_inputs[lepton1_base_idx + 1] = event.lepton1_eta;
+        lepton1_inputs[lepton1_base_idx + 2] = std::sin(event.lepton1_phi);
+        lepton1_inputs[lepton1_base_idx + 3] = std::cos(event.lepton1_phi);
+        lepton1_inputs[lepton1_base_idx + 4] = std::log(event.lepton1_mass + 1.0f);
+        lepton1_inputs[lepton1_base_idx + 5] = static_cast<float>(event.lepton1_charge);
+
+        lepton1_mask_char[batch_idx] = 1;
+
+        const size_t lepton2_base_idx = batch_idx * LEPTON_FEATURES;
+        lepton2_inputs[lepton2_base_idx]     = std::log(event.lepton2_pt + 1.0f);
+        lepton2_inputs[lepton2_base_idx + 1] = event.lepton2_eta;
+        lepton2_inputs[lepton2_base_idx + 2] = std::sin(event.lepton2_phi);
+        lepton2_inputs[lepton2_base_idx + 3] = std::cos(event.lepton2_phi);
+        lepton2_inputs[lepton2_base_idx + 4] = std::log(event.lepton2_mass + 1.0f);
+        lepton2_inputs[lepton2_base_idx + 5] = static_cast<float>(event.lepton2_charge);
+
+        lepton2_mask_char[batch_idx] = 1;
     }
 }
 

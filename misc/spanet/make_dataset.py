@@ -49,6 +49,7 @@ def calculate_met_features(data):
     """Add MET phi-related features."""
     data["MET_cosphi"] = np.cos(data["PuppiMET_phi"])
     data["MET_sinphi"] = np.sin(data["PuppiMET_phi"])
+    data["MET_MASK"] = ak.ones_like(data["PuppiMET_pt"], dtype=bool)
     return data
 
 def calculate_jet_features(data):
@@ -77,6 +78,7 @@ def calculate_lepton_features(data):
     data["Lepton1_charge"] = data["Lepton_charge"][:, 0]
     data["Lepton1_cosphi"] = np.cos(data["Lepton1_phi"])
     data["Lepton1_sinphi"] = np.sin(data["Lepton1_phi"])
+    data["Lepton1_MASK"] = (data["nLeptons"] >= 1)
 
     data["Lepton2_pt"] = data["Lepton_pt"][:, 1]
     data["Lepton2_eta"] = data["Lepton_eta"][:, 1]
@@ -85,6 +87,7 @@ def calculate_lepton_features(data):
     data["Lepton2_charge"] = data["Lepton_charge"][:, 1]
     data["Lepton2_cosphi"] = np.cos(data["Lepton2_phi"])
     data["Lepton2_sinphi"] = np.sin(data["Lepton2_phi"])
+    data["Lepton2_MASK"] = (data["nLeptons"] >= 2)
     return data
 
 def pad_jet_arrays(data, n_max_jets):
@@ -121,6 +124,8 @@ def pad_lepton_arrays(data):
     lepton_arrays = [
         "pt", "eta", "mass", "phi", "charge"
     ]
+
+    data["nLeptons"] = ak.num(data["Lepton_pt"])
 
     for arr in lepton_arrays:
         data[f"Lepton_{arr}"] = pad_or_truncate(data[f"Lepton_{arr}"], 2)
@@ -185,11 +190,14 @@ def make_dataset(dataframes, output_path):
         "INPUTS/AK8Jets/parT_QCD": data["FatJet_globalParT3_QCD"],
         
         # MET
+        "INPUTS/MET/MASK": data["MET_MASK"],
         "INPUTS/MET/pt": data["PuppiMET_pt"],
         "INPUTS/MET/sinphi": data["MET_sinphi"],
         "INPUTS/MET/cosphi": data["MET_cosphi"],
 
         # Lepton
+
+        "INPUTS/Lepton1/MASK": data["Lepton1_MASK"],
         "INPUTS/Lepton1/pt": data["Lepton1_pt"],
         "INPUTS/Lepton1/eta": data["Lepton1_eta"],
         "INPUTS/Lepton1/sinphi": data["Lepton1_sinphi"],
@@ -197,6 +205,7 @@ def make_dataset(dataframes, output_path):
         "INPUTS/Lepton1/mass": data["Lepton1_mass"],
         "INPUTS/Lepton1/charge": data["Lepton1_charge"],
 
+        "INPUTS/Lepton2/MASK": data["Lepton2_MASK"],
         "INPUTS/Lepton2/pt": data["Lepton2_pt"],
         "INPUTS/Lepton2/eta": data["Lepton2_eta"],
         "INPUTS/Lepton2/sinphi": data["Lepton2_sinphi"],

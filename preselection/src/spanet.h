@@ -17,10 +17,18 @@ using ROOT::VecOps::RVec;
 namespace SPANet {
     class SPANetInference {
     public:
+        static constexpr size_t MAX_AK4_JETS = 10;
+        static constexpr size_t MAX_AK8_JETS = 3;
+        static constexpr size_t AK4_FEATURES = 8;
+        static constexpr size_t AK8_FEATURES = 11;
+        static constexpr size_t MET_FEATURES = 3;   
+        static constexpr size_t MAX_LEPTONS = 2;
+        static constexpr size_t LEPTON_FEATURES = 6;
+        
         SPANetInference(const std::string &model_path, size_t batch_size = 64) 
             : batch_size(batch_size),
               memory_info(Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault)),
-              input_names{"AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask", "MET_data", "MET_mask"},
+              input_names{"AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask", "MET_data", "MET_mask", "Lepton1_data", "Lepton1_mask", "Lepton2_data", "Lepton2_mask"},
               output_names{"h_assignment_probability",
                           "bh_assignment_probability", 
                           "v1_assignment_probability", 
@@ -36,12 +44,16 @@ namespace SPANet {
                           "bv2_detection_probability",
                           "vbs_detection_probability",
                           "EVENT/isSignal"},
-              ak4_input_shape{static_cast<int64_t>(batch_size), 10, 8},
-              ak8_input_shape{static_cast<int64_t>(batch_size), 3, 11},
-              met_input_shape{static_cast<int64_t>(batch_size), 1, 3},
-              ak4_mask_shape{static_cast<int64_t>(batch_size), 10},
-              ak8_mask_shape{static_cast<int64_t>(batch_size), 3},
+              ak4_input_shape{static_cast<int64_t>(batch_size), MAX_AK4_JETS, AK4_FEATURES},
+              ak8_input_shape{static_cast<int64_t>(batch_size), MAX_AK8_JETS, AK8_FEATURES},
+              met_input_shape{static_cast<int64_t>(batch_size), 1, MET_FEATURES},
+              lepton1_input_shape{static_cast<int64_t>(batch_size), 1, LEPTON_FEATURES},
+              lepton2_input_shape{static_cast<int64_t>(batch_size), 1, LEPTON_FEATURES},
+              ak4_mask_shape{static_cast<int64_t>(batch_size), MAX_AK4_JETS},
+              ak8_mask_shape{static_cast<int64_t>(batch_size), MAX_AK8_JETS},
               met_mask_shape{static_cast<int64_t>(batch_size), 1},
+              lepton1_mask_shape{static_cast<int64_t>(batch_size), 1},
+              lepton2_mask_shape{static_cast<int64_t>(batch_size), 1},
               top_k(3) {
             
             Ort::SessionOptions sessionOptions;
@@ -58,13 +70,17 @@ namespace SPANet {
                 throw;
             }
             
-            ak4_flat_jets.resize(batch_size * 10 * 8, 0.0f);
-            ak8_flat_jets.resize(batch_size * 3 * 11, 0.0f);
-            met_inputs.resize(batch_size * 3, 0.0f);
+            ak4_flat_jets.resize(batch_size * MAX_AK4_JETS * AK4_FEATURES, 0.0f);
+            ak8_flat_jets.resize(batch_size * MAX_AK8_JETS * AK8_FEATURES, 0.0f);
+            met_inputs.resize(batch_size * MET_FEATURES, 0.0f);
+            lepton1_inputs.resize(batch_size * LEPTON_FEATURES, 0.0f);
+            lepton2_inputs.resize(batch_size * LEPTON_FEATURES, 0.0f);
             
-            ak4_mask_char.resize(batch_size * 10, 0);
-            ak8_mask_char.resize(batch_size * 3, 0);
+            ak4_mask_char.resize(batch_size * MAX_AK4_JETS, 0);
+            ak8_mask_char.resize(batch_size * MAX_AK8_JETS, 0);
             met_mask_char.resize(batch_size * 1, 1);
+            lepton1_mask_char.resize(batch_size * 1, 1);
+            lepton2_mask_char.resize(batch_size * 1, 1);
         }
         
         RNode RunSPANetInference(RNode df);
@@ -82,17 +98,25 @@ namespace SPANet {
         std::vector<int64_t> ak4_input_shape;
         std::vector<int64_t> ak8_input_shape;
         std::vector<int64_t> met_input_shape;
+        std::vector<int64_t> lepton1_input_shape;
+        std::vector<int64_t> lepton2_input_shape;
         std::vector<int64_t> ak4_mask_shape;
         std::vector<int64_t> ak8_mask_shape;
         std::vector<int64_t> met_mask_shape;
-        
+        std::vector<int64_t> lepton1_mask_shape;
+        std::vector<int64_t> lepton2_mask_shape;
+
         std::vector<float> ak4_flat_jets;
         std::vector<float> ak8_flat_jets;
         std::vector<float> met_inputs;
+        std::vector<float> lepton1_inputs;
+        std::vector<float> lepton2_inputs;
         std::vector<char> ak4_mask_char;
         std::vector<char> ak8_mask_char;
         std::vector<char> met_mask_char;
-        
+        std::vector<char> lepton1_mask_char;
+        std::vector<char> lepton2_mask_char;
+
         struct EventData {
             std::vector<float> ak4_pt, ak4_eta, ak4_phi, ak4_mass;
             std::vector<int> ak4_isTightBTag, ak4_isMediumBTag, ak4_isLooseBTag;
@@ -100,6 +124,8 @@ namespace SPANet {
             std::vector<float> ak8_XbbScore, ak8_XqqScore, ak8_XccScore, ak8_XcsScore, ak8_XqcdScore;
             std::vector<unsigned char> ak8_nConstituents;
             float met_pt, met_phi;
+            float lepton1_pt, lepton1_eta, lepton1_phi, lepton1_mass, lepton1_charge;
+            float lepton2_pt, lepton2_eta, lepton2_phi, lepton2_mass, lepton2_charge;
             ULong64_t rdf_entry;
             unsigned int rdf_slot;
         };

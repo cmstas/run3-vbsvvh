@@ -65,10 +65,12 @@ RNode LeptonSelections(RNode df_) {
     auto df = ElectronSelections(df_);
     df = MuonSelections(df);
     return df.Define("Lepton_pt", "Concatenate(Electron_pt, Muon_pt)")
-        .Define("Lepton_eta", "Concatenate(Electron_eta, Muon_eta)")
-        .Define("Lepton_phi", "Concatenate(Electron_phi, Muon_phi)")
-        .Define("Lepton_mass", "Concatenate(Electron_mass, Muon_mass)")
-        .Define("Lepton_charge", "Concatenate(Electron_charge, Muon_charge)");
+        .Define("_LeptonSorted", "Argsort(-Lepton_pt)")
+        .Redefine("Lepton_pt", "Take(Lepton_pt, _LeptonSorted)")
+        .Define("Lepton_eta", "Take(Concatenate(Electron_eta, Muon_eta), _LeptonSorted)")
+        .Define("Lepton_phi", "Take(Concatenate(Electron_phi, Muon_phi), _LeptonSorted)")
+        .Define("Lepton_mass", "Take(Concatenate(Electron_mass, Muon_mass), _LeptonSorted)")
+        .Define("Lepton_charge", "Take(Concatenate(Electron_charge, Muon_charge), _LeptonSorted)");
 }
 
 RNode AK4JetsSelection(RNode df_) {
