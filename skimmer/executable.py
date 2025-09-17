@@ -12,215 +12,7 @@ from argparse import ArgumentParser
 
 import ROOT as r
 
-r.gInterpreter.Declare("""
-ROOT::RVec<int> findHiggsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx, ROOT::RVec<float>& pt) {
-    ROOT::RVec<int> result = {-1, -1, -1};
-    
-    int higgs_idx = -1;
-    ROOT::RVec<int> hdecay_idx;
-    
-    // Find intermediate Higgs with status 22 and mother_idx 0
-    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-        int part_status = status[igen];
-        int part_pdgId = pdgId[igen];
-        int mother_idx = motherIdx[igen];
-        
-        if (mother_idx == 0 && part_status == 22 && part_pdgId == 25) {
-            higgs_idx = igen;
-            break;
-        }
-    }
-    
-    if (higgs_idx == -1) return result;
-    
-    // Find first daughters of Higgs (non-Higgs particles with Higgs mother)
-    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-        int mother_idx = motherIdx[igen];
-        if (mother_idx > 0 && mother_idx < pdgId.size()) {
-            int mother_pdgId = pdgId[mother_idx];
-            int part_pdgId = pdgId[igen];
-            
-            if (mother_pdgId == 25 && part_pdgId != 25) {
-                hdecay_idx.push_back(igen);
-            }
-        }
-    }
-    
-    // Sort daughters by pt in descending order
-    if (hdecay_idx.size() > 1) {
-        std::sort(hdecay_idx.begin(), hdecay_idx.end(), [&pt](int a, int b) {
-            return pt[a] > pt[b];
-        });
-    }
-    
-    result[0] = higgs_idx;
-    if (hdecay_idx.size() >= 1) result[1] = hdecay_idx[0];
-    if (hdecay_idx.size() >= 2) result[2] = hdecay_idx[1];
-    
-    return result;
-}
-
-int findLastIndex(int current_idx, int current_pdgId, ROOT::RVec<int>& pdgId, ROOT::RVec<short>& motherIdx) {
-    int outIdx = current_idx;
-    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-        int part_pdgId = pdgId[igen];
-        int mother_idx = motherIdx[igen];
-        
-        if (mother_idx == current_idx) {
-            if (part_pdgId == current_pdgId) {
-                outIdx = findLastIndex(igen, part_pdgId, pdgId, motherIdx);
-            }
-        }
-    }
-    return outIdx;
-}
-
-ROOT::RVec<int> findVBosonsAndDaughters(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx, ROOT::RVec<float>& pt) {
-    // Returns: [v1_idx, v1_d1_idx, v1_d2_idx, v2_idx, v2_d1_idx, v2_d2_idx] or [-1, -1, -1, -1, -1, -1]
-    ROOT::RVec<int> result = {-1, -1, -1, -1, -1, -1};
-    
-    ROOT::RVec<int> firstVs_idx;
-    
-    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-        int part_status = status[igen];
-        int part_pdgId = pdgId[igen];
-        int mother_idx = motherIdx[igen];
-        
-        if (mother_idx == 0 && part_status == 22 && (part_pdgId == 23 || abs(part_pdgId) == 24)) {
-            firstVs_idx.push_back(igen);
-        }
-    }
-    
-    if (firstVs_idx.size() < 2) return result;
-    
-    // Sort V bosons by pt in descending order
-    std::sort(firstVs_idx.begin(), firstVs_idx.end(), [&pt](int a, int b) {
-        return pt[a] > pt[b];
-    });
-    
-    ROOT::RVec<int> hadronic_V_indices;
-    ROOT::RVec<int> leptonic_V_indices;
-    
-    for (size_t iV = 0; iV < firstVs_idx.size() && iV < 2; ++iV) {
-        int firstV_idx = firstVs_idx[iV];
-        int firstV_pdgId = pdgId[firstV_idx];
-        
-        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
-        
-        int hadronic_daughters = 0;
-        int leptonic_daughters = 0;
-        
-        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-            int mother_idx = motherIdx[igen];
-            if (mother_idx == lastV_idx) {
-                if (abs(pdgId[igen]) <= 6) {
-                    hadronic_daughters++;
-                } else {
-                    leptonic_daughters++;
-                }
-            }
-        }
-        
-        if (hadronic_daughters > 0) {
-            hadronic_V_indices.push_back(iV);
-        } else if (leptonic_daughters > 0) {
-            leptonic_V_indices.push_back(iV);
-        }
-    }
-    
-    if (hadronic_V_indices.size() > 0) {
-        int iV = hadronic_V_indices[0];
-        int firstV_idx = firstVs_idx[iV];
-        int firstV_pdgId = pdgId[firstV_idx];
-        
-        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
-        
-        ROOT::RVec<int> vdecays_idx;
-        
-        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-            int mother_idx = motherIdx[igen];
-            if (mother_idx == lastV_idx) {
-                if (abs(pdgId[igen]) <= 6) { // quarks only
-                   vdecays_idx.push_back(igen);
-                }
-            }
-        }
-        
-        // Sort daughters by pt in descending order
-        if (vdecays_idx.size() > 1) {
-            std::sort(vdecays_idx.begin(), vdecays_idx.end(), [&pt](int a, int b) {
-                return pt[a] > pt[b];
-            });
-        }
-        
-        if (vdecays_idx.size() != 0) {
-            result[0] = lastV_idx;
-        }
-        if (vdecays_idx.size() >= 1) result[1] = vdecays_idx[0];
-        if (vdecays_idx.size() >= 2) result[2] = vdecays_idx[1];
-    }
-    
-    if (hadronic_V_indices.size() >= 2) {
-        int iV = hadronic_V_indices[1];
-        int firstV_idx = firstVs_idx[iV];
-        int firstV_pdgId = pdgId[firstV_idx];
-        
-        int lastV_idx = findLastIndex(firstV_idx, firstV_pdgId, pdgId, motherIdx);
-        
-        ROOT::RVec<int> vdecays_idx;
-        
-        for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-            int mother_idx = motherIdx[igen];
-            if (mother_idx == lastV_idx) {
-                if (abs(pdgId[igen]) <= 6) {
-                   vdecays_idx.push_back(igen);
-                }
-            }
-        }
-        
-        // Sort daughters by pt in descending order
-        if (vdecays_idx.size() > 1) {
-            std::sort(vdecays_idx.begin(), vdecays_idx.end(), [&pt](int a, int b) {
-                return pt[a] > pt[b];
-            });
-        }
-        
-        if (vdecays_idx.size() != 0) {
-            result[3] = lastV_idx;
-        }
-        if (vdecays_idx.size() >= 1) result[4] = vdecays_idx[0];
-        if (vdecays_idx.size() >= 2) result[5] = vdecays_idx[1];
-    }
-    
-    return result;
-}
-
-ROOT::RVec<int> findVBSQuarks(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& status, ROOT::RVec<short>& motherIdx, ROOT::RVec<float>& pt) {
-    // Returns: [vbs1_idx, vbs2_idx] or [-1, -1]
-    ROOT::RVec<int> result = {-1, -1};
-    ROOT::RVec<int> vbsquarks_idx;
-    
-    // Find outgoing quarks with status 23 and mother_idx 0
-    for (size_t igen = 0; igen < pdgId.size(); ++igen) {
-        int part_status = status[igen];
-        int part_pdgId = pdgId[igen];
-        int mother_idx = motherIdx[igen];
-        
-        if (mother_idx == 0 && part_status == 23 && abs(part_pdgId) <= 6 && abs(part_pdgId) >= 1) {
-            vbsquarks_idx.push_back(igen);
-        }
-    }
-
-    std::sort(vbsquarks_idx.begin(), vbsquarks_idx.end(), [&pt](int a, int b) {
-        return pt[a] > pt[b];
-    });
-
-    if (vbsquarks_idx.size() >= 1) result[0] = vbsquarks_idx[0];
-    if (vbsquarks_idx.size() >= 2) result[1] = vbsquarks_idx[1];
-    
-    return result;
-}
-""")
+r.gInterpreter.Declare(open("truthSelections.cpp").read())
 
 subprocess.run("python3 -m pip install --user --no-binary=correctionlib correctionlib", shell=True, check=True)
 import importlib
@@ -230,7 +22,7 @@ correctionlib.register_pyroot_binding()
 # Constants
 CONDOR_OUTPUT_DIR = "output"
 XROOTD_REDIRECTOR = "root://xrootd-cms.infn.it/"
-OUTPUT_XRD = "davs://redirector.t2.ucsd.edu:1095//store/user/aaarora/"
+OUTPUT_XRD = "davs://redirector.t2.ucsd.edu:1095//store/user/USER_UAF_DIR/skim/" # Change to user's skim directory on UAF
 MAX_RETRIES = 10
 SLEEP_DURATION = 60  # 1 minute in seconds
 
@@ -271,23 +63,19 @@ class Skimmer():
 
     @staticmethod
     def genSelection(df):
-        # define bb, qq definition
-        df = df.Define("higgs_info", "findHiggsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt)") \
-            .Define("gen_h_idx", "higgs_info[0]") \
-            .Define("gen_b1_idx", "higgs_info[1]") \
-            .Define("gen_b2_idx", "higgs_info[2]")
-
-        df = df.Define("vboson_info", "findVBosonsAndDaughters(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt)") \
-            .Define("gen_v1_idx", "vboson_info[0]") \
-            .Define("gen_v1q1_idx", "vboson_info[1]") \
-            .Define("gen_v1q2_idx", "vboson_info[2]") \
-            .Define("gen_v2_idx", "vboson_info[3]") \
-            .Define("gen_v2q1_idx", "vboson_info[4]") \
-            .Define("gen_v2q2_idx", "vboson_info[5]")
-
-        df = df.Define("vbs_info", "findVBSQuarks(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt)") \
-            .Define("gen_vbs1_idx", "vbs_info[0]") \
-            .Define("gen_vbs2_idx", "vbs_info[1]") 
+        # define truth event from gen particles
+        df = df.Define("truth_indices", "getTruthEventInfo(GenPart_pdgId, GenPart_status, GenPart_genPartIdxMother, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, false)") \
+            .Define("gen_h_idx", "truth_indices[0]") \
+            .Define("gen_b1_idx", "truth_indices[1]") \
+            .Define("gen_b2_idx", "truth_indices[2]") \
+            .Define("gen_v1_idx", "truth_indices[3]") \
+            .Define("gen_v1q1_idx", "truth_indices[4]") \
+            .Define("gen_v1q2_idx", "truth_indices[5]") \
+            .Define("gen_v2_idx", "truth_indices[6]") \
+            .Define("gen_v2q1_idx", "truth_indices[7]") \
+            .Define("gen_v2q2_idx", "truth_indices[8]") \
+            .Define("gen_vbs1_idx", "truth_indices[9]") \
+            .Define("gen_vbs2_idx", "truth_indices[10]") 
         
         return df
         
@@ -296,7 +84,7 @@ class Skimmer():
             .Define("__tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
             .Define("__n_tight_leptons", "Sum(__tight_mu_mask) + Sum(__tight_ele_mask)") \
             .Define("__fatjet_mask", "FatJet_pt > 200 && FatJet_msoftdrop > 10") \
-            .Define("__n_fatjets", "Sum(__fatjet_mask)") \
+            .Define("__n_fatjets", "Sum(__fatjet_mask)")
             .Filter("(__n_fatjets + __n_tight_leptons) >= 1")
 
         if self.sample_year in JET_ID_JSONS:
@@ -433,7 +221,7 @@ def merge_skims(output_dir):
         return result.returncode == 0
 
 
-def determine_output_paths(input_file, is_signal, version):
+def determine_output_paths(input_file, is_signal, output_tag):
     if not is_signal:
         era = input_file.split('/')[3]
         sample_name = input_file.split('/')[4]
@@ -443,7 +231,7 @@ def determine_output_paths(input_file, is_signal, version):
         sample_name = input_file.split('/')[7]
         campaign = "private"
 
-    output_dir = f"{OUTPUT_XRD}/skims_{version}/{campaign}/{sample_name}"
+    output_dir = f"{OUTPUT_XRD}/skims_{output_tag}/{campaign}/{sample_name}"
     return output_dir
 
 def copy_output_file(source, destination):
@@ -468,11 +256,11 @@ if __name__ == "__main__":
     parser.add_argument('input_file', help="Input file path")
     parser.add_argument('job_id', help="Job ID")
     parser.add_argument('is_signal', help='Flag indicating if this is a signal sample', type=int)
-    parser.add_argument('skim_version', help='version of skims eg. v2', type=str)
+    parser.add_argument('output_tag', help='Output tag, including version of skims eg. v2', type=str)
     args = parser.parse_args()
     
     os.environ['X509_USER_PROXY'] = args.proxy
-
+    
     success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR, args.is_signal)
     
     if not success:
@@ -481,7 +269,7 @@ if __name__ == "__main__":
     
     merge_skims(CONDOR_OUTPUT_DIR)
     
-    output_dir = determine_output_paths(args.input_file, args.is_signal, args.skim_version)
+    output_dir = determine_output_paths(args.input_file, args.is_signal, args.output_tag)
     
     copy_src = os.path.join(os.getcwd(), f"{CONDOR_OUTPUT_DIR}/output.root")
     copy_dest = f"{output_dir}/output_{args.job_id}.root"
