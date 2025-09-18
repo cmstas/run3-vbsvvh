@@ -7,7 +7,7 @@ import uproot
 import concurrent.futures
 
 class Config:
-    def __init__(self, sample_category : str, channel : str, samples: str, nthreads: int = 8):
+    def __init__(self, sample_category : str, channel : str, samples: str, xsecs: dict, nthreads: int = 8):
         self.sample_category = sample_category
         self.samples = sorted(glob(samples))
         self.config = {"samples": {}}
@@ -127,7 +127,6 @@ class Config:
 
     def process_samples(self, xsecs, nthreads):
         for sample in self.samples:
-
             # Get the dataset name
             #dataset_name = os.path.basename(os.path.dirname(sample))
             dataset_name = os.path.basename(sample)
@@ -147,7 +146,7 @@ class Config:
             num_events = 0
             files_path = f"{sample}/*.root"
             if self.sample_category != "data":
-                files = glob(files_path)
+                files = glob(files_path)[:50]
                 with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
                     results = list(executor.map(self._process_file, files))
                 num_events = sum(results)
@@ -157,7 +156,7 @@ class Config:
                 {
                     f"{sample_name}_{sample_year}": {
                         "trees": ["Events"],
-                        "files": [files_path],
+                        "files": files,
                         "metadata": {
                             "namewithyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
                             "category": self.sample_category,
@@ -175,6 +174,8 @@ class Config:
     def _process_file(file):
         try:
             with uproot.open(file) as upf:
+                # check if file is corrupted
+                assert upf["Events"]
                 return sum(upf["Runs"]["genEventSumw"].array())
         except Exception as e:
             with open("corrupt_files", "a") as f:
@@ -187,7 +188,7 @@ if __name__ == "__main__":
     argparser.add_argument("--category", help="categories: bkg, sig or data", required=True)
     argparser.add_argument("--config", help="paths file", default="paths.json")
     argparser.add_argument("--xsecs", help="xsec file", default="xsecs.json")
-    argparser.add_argument("-n, --nthreads", type=int, default=8, help="number of threads to use for processing files")
+    argparser.add_argument("-n", "--nthreads", type=int, default=8, help="number of threads to use for processing files")
     args = argparser.parse_args()
 
     if not args.category or not any(cat in args.category for cat in ["bkg", "sig", "data"]):
@@ -204,4 +205,4 @@ if __name__ == "__main__":
     if args.category not in skim_paths[args.channel]:
         raise ValueError(f"No skim paths found for category {args.category}")
     
-    config = Config(args.category, args.channel, skim_paths[args.channel][args.category])
+    config = Config(args.category, args.channel, skim_paths[args.channel][args.category], xsecs, args.nthreads)
