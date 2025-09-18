@@ -76,7 +76,7 @@ class Plotter:
         if self.bkg_samples_labels is None and self.df_bkg is not None:
             print("No background labels provided, will use single histogram for background")
 
-    def make_plots(self, hists, density=False, save=True):
+    def make_plots(self, hists, density=False, save=True, savePath="plots"):
         for histogram in hists:
             self._fill_histogram(histogram)
         
@@ -134,13 +134,13 @@ class Plotter:
         # TODO: Implement 2D histogram filling
         pass
 
-    def plot1D(self, histogram, density=False, save=True):
+    def plot1D(self, histogram, density=False, save=True, savePath="plots"):
         try:
             hist_ratio = self._create_ratio_histogram(histogram)
             fig, ax_main, ax_ratio = self._setup_figure_axes(hist_ratio is not None)
-            self._plot_signal_histograms(histogram, ax_main, density)
             self._plot_background_histograms(histogram, ax_main, density)
             self._plot_data_histograms(histogram, ax_main, density)
+            self._plot_signal_histograms(histogram, ax_main, density)
             
             if hist_ratio:
                 hep.histplot(hist_ratio, color="black", ax=ax_ratio, histtype="errorbar", density=density)
@@ -150,7 +150,7 @@ class Plotter:
             
             self._configure_axes(ax_main, ax_ratio, histogram, hist_ratio is not None)
             if save:
-                self._save_plot(fig, histogram.var)
+                self._save_plot(fig, histogram.var, savePath)
                 
             plt.close(fig)
             
@@ -190,7 +190,7 @@ class Plotter:
                 hep.histplot(
                     hist, ax=ax, histtype="step", 
                     label=f"Signal {self.sig_samples_labels[i]} x 1000", 
-                    linewidth=3, yerr=False, density=density, color="red"
+                    linewidth=3, yerr=False, density=density
                 )
         else:
             # Single signal case
@@ -243,13 +243,13 @@ class Plotter:
         else:
             ax_main.set_xlabel(histogram.xlabel)
 
-    def _save_plot(self, fig, plot_name):
-        Path("plots").mkdir(parents=True, exist_ok=True)
+    def _save_plot(self, fig, plot_name, savePath):
+        Path(savePath).mkdir(parents=True, exist_ok=True)
         fig.tight_layout()
-        plot_path = f"plots/{plot_name}.png"
+        plot_path = f"{savePath}/{plot_name}.png"
         plt.savefig(plot_path)
         print(f"Saved plot to {plot_path}")
 
-    def plot2D(self, histogram, save=True):
+    def plot2D(self, histogram, save=True, savePath="plots"):
         # TODO: Implement the 2D plotting functionality
         raise NotImplementedError("2D plotting not yet implemented")

@@ -12,9 +12,10 @@ X509_USER_PROXY="${X509_USER_PROXY:-/tmp/x509up_u$(id -u)}"
 usage() {
     cat <<EOF
 Usage: $0 -i <input_list> [-s]
-    -i  file with one dataset path per line
+    -i  file with one dataset path per line (required)
     -s  submit signal
     -h  show this help message
+    -v  version tag for the skimmer (required)
 EOF
     exit 1
 }
@@ -24,11 +25,12 @@ parse_options() {
     INPUT_LIST=""
     IS_SIG=0
 
-    while getopts ":i:sh" opt; do
+    while getopts ":i:shv:" opt; do
         case "$opt" in
             i) INPUT_LIST=$OPTARG ;;
             s) IS_SIG=1 ;;
             h) usage ;;
+            v) VERSION=$OPTARG ;;
             *) usage ;;
         esac
     done
@@ -36,6 +38,11 @@ parse_options() {
     # Validate args
     if [[ -z "${INPUT_LIST}" ]]; then
         echo "Error: -i is required."
+        usage
+    fi
+
+    if [[ -z "${VERSION}" ]]; then
+        echo "Error: -v is required."
         usage
     fi
 }
@@ -48,8 +55,23 @@ get_file_list() {
 
     echo "Getting file list for dataset: $ds"
     if (( is_sig )); then
-        ls -1 "${ds}"/*.root >"$out" || 
-            { echo "Error: Failed to list ROOT files in $ds"; return 1; }
+        # Handle multiple directories separated by commas
+        IFS=',' read -ra DIRS <<< "$ds"
+        > "$out"  # Clear output file
+        for dir in "${DIRS[@]}"; do
+            dir=$(echo "$dir" | xargs)  # Trim whitespace
+            if [[ -d "$dir" ]]; then
+                ls -1 "${dir}"/*.root >> "$out" 2>/dev/null || 
+                    { echo "Warning: No ROOT files found in $dir"; }
+            else
+                echo "Warning: Directory $dir does not exist"
+            fi
+        done
+        
+        if [[ ! -s "$out" ]]; then
+            echo "Error: No ROOT files found in any of the specified directories"
+            return 1
+        fi
     else
         dasgoclient --query="file dataset=${ds}" >"$out" || 
             dasgoclient --query="file dataset=${ds}" >"$out" || 
@@ -77,7 +99,7 @@ request_memory          = ${MEMORY}
 executable              = executable.py
 transfer_executable     = True
 transfer_input_files    = keep_and_drop_skim.txt
-arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag}
+arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag} ${VERSION}
 log                     = ${LOGDIR}/\$(Cluster).log
 output                  = ${LOGDIR}/\$(Cluster).out
 error                   = ${LOGDIR}/\$(Cluster).err
