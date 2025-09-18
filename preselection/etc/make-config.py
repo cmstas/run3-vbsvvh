@@ -146,7 +146,7 @@ class Config:
             num_events = 0
             files_path = f"{sample}/*.root"
             if self.sample_category != "data":
-                files = glob(files_path)[:50]
+                files = glob(files_path)
                 with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
                     results = list(executor.map(self._process_file, files))
                 num_events = sum(results)
@@ -156,7 +156,7 @@ class Config:
                 {
                     f"{sample_name}_{sample_year}": {
                         "trees": ["Events"],
-                        "files": files,
+                        "files": [files_path],
                         "metadata": {
                             "namewithyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
                             "category": self.sample_category,
