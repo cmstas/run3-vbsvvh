@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 
 import ROOT as r
 
-r.gInterpreter.Declare(open("truthSelections.cpp").read())
+r.gInterpreter.Declare('#include "truthSelections.h"')
 
 subprocess.run("python3 -m pip install --user --no-binary=correctionlib correctionlib", shell=True, check=True)
 import importlib

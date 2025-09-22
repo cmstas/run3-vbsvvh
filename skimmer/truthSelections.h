@@ -1,3 +1,7 @@
+
+#ifndef TRUTHSELECTIONS_H
+#define TRUTHSELECTIONS_H
+
 #include <ROOT/RVec.hxx>
 #include <iostream>
 #include <iomanip>
@@ -138,7 +142,7 @@ ROOT::RVec<int> getTruthEventInfo(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& statu
     // Find last H boson in its decay chain
     int lastH_idx = findLastIndex(firstHiggs_idx, pdgId[firstHiggs_idx], pdgId, motherIdx);
 
-    // Find daughters of last V boson
+    // Find daughters of last H boson
     std::vector<int> hdecay_idx;
     for (size_t igen = 0; igen < pdgId.size(); ++igen)
     {
@@ -261,3 +265,4 @@ ROOT::RVec<int> getTruthEventInfo(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& statu
     return result;
 }
 
+#endif
