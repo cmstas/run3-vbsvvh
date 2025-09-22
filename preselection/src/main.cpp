@@ -6,16 +6,19 @@
 #include "corrections.h"
 #include "utils.h"
 #include "selections.h"
-#include "spanet.h"
 #include "genSelections.h"
 
 #include "argparser.hpp"
+
+#include "spanet_inference_base.h"
+#include "spanet_inference_run3.h"
 
 struct MyArgs : public argparse::Args {
     std::string &spec = kwarg("i,input", "spec.json path");
     std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
     std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
+    std::string &run_version = kwarg("run_version", "Run version: 2 or 3").set_default("3");    
     
     int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
     int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
@@ -25,7 +28,7 @@ struct MyArgs : public argparse::Args {
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
 };
 
-RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inference, bool makeSpanetTrainingdata = false) {
+RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInferenceBase &spanet_inference, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
     df = runPreselection(df, ana, makeSpanetTrainingdata);
 
@@ -55,7 +58,19 @@ int main(int argc, char** argv) {
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana, args.output_subdir, args.makeSpanetTrainingdata);
 
-    SPANet::SPANetInference spanet_inference("spanet/v2/model.onnx", args.batch_size);
+    // Instantiate SPANet inference based on run_version
+    std::unique_ptr<SPANet::SPANetInferenceBase> spanet_inference;
+    if (args.run_version == "3") {
+        const std::string  model_path = "spanet/v2/model.onnx";
+        std::cout << "Loading ONNX model from: " << model_path << std::endl;
+        spanet_inference = std::make_unique<SPANet::SPANetInferenceRun3>(model_path, args.batch_size);
+        std::cout << "ONNX session loaded successfully." << std::endl;
+    } else if (args.run_version == "2") {
+        // Leave blank for now
+        throw std::runtime_error("Run 2 not supported yet");
+    } else {
+        throw std::runtime_error("Invalid run_version: must be 2 or 3");
+    }
 
     // add debugging
     if (args.debug) {
@@ -108,11 +123,11 @@ int main(int argc, char** argv) {
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
-        df = runAnalysis(df, args.ana, spanet_inference);
+        df = runAnalysis(df, args.ana, *spanet_inference);
         df = applyDataWeights(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, spanet_inference, makeSpanetTrainingdata);
+        df = runAnalysis(df, args.ana, *spanet_inference, makeSpanetTrainingdata);
         df = applyMCWeights(df);
     }
 
