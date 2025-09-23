@@ -5,17 +5,18 @@ namespace SPANet {
 SPANetInferenceBase::SPANetInferenceBase(
     const std::string &model_path,
     size_t batch_size,
+    std::vector<const char*> input_names,
     size_t max_ak4_jets,
     size_t ak4_features,
     size_t max_ak8_jets,
     size_t ak8_features,
     size_t met_features,
     size_t max_leptons,
-    size_t lepton_features
+    size_t lepton_features // Setting lepton features to 0 will disable these inputs
 ) : batch_size_(batch_size),
     top_k_(3),
     memory_info_(Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault)),
-    input_names_{"AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask", "MET_data", "MET_mask", "Lepton1_data", "Lepton1_mask", "Lepton2_data", "Lepton2_mask"},
+    input_names_{input_names},
     output_names_{"h_assignment_probability",
                   "bh_assignment_probability", 
                   "v1_assignment_probability", 
@@ -31,7 +32,9 @@ SPANetInferenceBase::SPANetInferenceBase(
                   "bv2_detection_probability",
                   "vbs_detection_probability",
                   "EVENT/isSignal"} {
-    
+
+    std::cout << "--> SPANetInferenceBase::SPANetInferenceBase() " << std::endl;
+
     ak4_input_shape_ = {static_cast<int64_t>(batch_size_), static_cast<int64_t>(max_ak4_jets), static_cast<int64_t>(ak4_features)};
     ak8_input_shape_ = {static_cast<int64_t>(batch_size_), static_cast<int64_t>(max_ak8_jets), static_cast<int64_t>(ak8_features)};
     met_input_shape_ = {static_cast<int64_t>(batch_size_), 1, static_cast<int64_t>(met_features)};
@@ -71,6 +74,8 @@ SPANetInferenceBase::SPANetInferenceBase(
 }
 
 RNode SPANetInferenceBase::RunSPANetInference(RNode df) {
+    std::cout << "--> SPANetInferenceBase::RunSPANetInference()" << std::endl;
+
     auto start_time = std::chrono::high_resolution_clock::now();
     auto events = extractEventsFromDataFrame(df);
     auto extract_time = std::chrono::high_resolution_clock::now();
@@ -97,6 +102,8 @@ RNode SPANetInferenceBase::RunSPANetInference(RNode df) {
 }
 
 std::vector<std::vector<std::vector<std::vector<float>>>> SPANetInferenceBase::runBatchInference(const std::vector<std::shared_ptr<EventDataBase>>& events) {
+    std::cout << "--> SPANetInferenceBase::runBatchInference()" << std::endl;
+
     std::vector<std::vector<std::vector<std::vector<float>>>> all_results;
     all_results.reserve(events.size());
     
@@ -205,14 +212,19 @@ std::vector<std::vector<std::vector<std::vector<float>>>> SPANetInferenceBase::r
             memory_info_, met_inputs_.data(), current_batch_size * met_input_shape_[2], current_met_shape.data(), current_met_shape.size()));
         input_tensors.push_back(Ort::Value::CreateTensor<bool>(
             memory_info_, reinterpret_cast<bool*>(met_mask_char_.data()), current_batch_size * 1, current_met_mask_shape.data(), current_met_mask_shape.size()));
-        input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info_, lepton1_inputs_.data(), current_batch_size * lepton1_input_shape_[2], current_lepton1_shape.data(), current_lepton1_shape.size()));
-        input_tensors.push_back(Ort::Value::CreateTensor<bool>(
-            memory_info_, reinterpret_cast<bool*>(lepton1_mask_char_.data()), current_batch_size * 1, current_lepton1_mask_shape.data(), current_lepton1_mask_shape.size()));
-        input_tensors.push_back(Ort::Value::CreateTensor<float>(
-            memory_info_, lepton2_inputs_.data(), current_batch_size * lepton2_input_shape_[2], current_lepton2_shape.data(), current_lepton2_shape.size()));
-        input_tensors.push_back(Ort::Value::CreateTensor<bool>(
-            memory_info_, reinterpret_cast<bool*>(lepton2_mask_char_.data()), current_batch_size * 1, current_lepton2_mask_shape.data(), current_lepton2_mask_shape.size()));
+
+        if (lepton1_inputs_.size()>0) {
+            input_tensors.push_back(Ort::Value::CreateTensor<float>(
+                memory_info_, lepton1_inputs_.data(), current_batch_size * lepton1_input_shape_[2], current_lepton1_shape.data(), current_lepton1_shape.size()));
+            input_tensors.push_back(Ort::Value::CreateTensor<bool>(
+                memory_info_, reinterpret_cast<bool*>(lepton1_mask_char_.data()), current_batch_size * 1, current_lepton1_mask_shape.data(), current_lepton1_mask_shape.size()));
+        }
+        if (lepton2_inputs_.size()>0) {
+            input_tensors.push_back(Ort::Value::CreateTensor<float>(
+                memory_info_, lepton2_inputs_.data(), current_batch_size * lepton2_input_shape_[2], current_lepton2_shape.data(), current_lepton2_shape.size()));
+            input_tensors.push_back(Ort::Value::CreateTensor<bool>(
+                memory_info_, reinterpret_cast<bool*>(lepton2_mask_char_.data()), current_batch_size * 1, current_lepton2_mask_shape.data(), current_lepton2_mask_shape.size()));
+        }
 
         auto output_tensors = session_->Run(Ort::RunOptions{nullptr}, input_names_.data(), input_tensors.data(), input_names_.size(), output_names_.data(), output_names_.size());
 
@@ -231,6 +243,8 @@ std::vector<std::vector<std::vector<std::vector<float>>>> SPANetInferenceBase::r
 }
 RNode SPANetInferenceBase::addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>> &all_outputs, const std::vector<std::shared_ptr<EventDataBase>> &events)
 {
+    std::cout << "--> SPANetInferenceBase::addSPANetOutputsToDataFrame()" << std::endl;
+
     // Create maps for fast lookup using entry+slot as key
     std::map<std::pair<ULong64_t, unsigned int>, size_t> entry_slot_to_output_idx;
 
@@ -444,115 +458,197 @@ std::vector<int> SPANetInferenceBase::assign_all_objects(
     RVec<float> FatJet_eta,
     RVec<float> FatJet_phi
 ) {
-    // Implementation from original - since truncated in query, use the provided logic
     std::vector<int> result(11, -1);
-
-    // Full assignment logic with overlap checks, deltaR, etc.
-    // From the provided snippet:
-    // Define check functions like checkJetOverlap, checkDeltaR, checkAllOverlaps
-    // Then sort detections or priorities
-    // For example, std::vector<float> detections = {vbs_detection, h_detection, bh_detection, v1_detection, v2_detection, bv1_detection, bv2_detection};
-    // Sort indices by detection prob descending
-    // Then for each priority, assign from corresponding assignment list, checking overlaps
-    // Since truncated, implement as per original description
-
-    // Placeholder - replace with full code from query snippets
+    std::vector<int> assigned_jets;
+    std::vector<int> assigned_fatjets;
+    
+    std::vector<std::pair<float, int>> detection_order = {
+        {vbs_detection, 0},
+        {h_detection, 1},
+        {bh_detection, 2},
+        {v1_detection, 3},
+        {v2_detection, 4},
+        {bv1_detection, 5},
+        {bv2_detection, 6} 
+    };
+    
+    std::sort(detection_order.begin(), detection_order.end(), 
+        [](const auto& a, const auto& b) {
+            return a.first > b.first;
+        });
+    
+    auto checkJetOverlap = [&](int jet_idx, const std::vector<int>& assigned) -> bool {
+        if (jet_idx < 0 || jet_idx >= Jet_eta.size()) return true;
+        return std::find(assigned.begin(), assigned.end(), jet_idx) != assigned.end();
+    };
+    
+    auto checkFatJetOverlap = [&](int fatjet_idx, const std::vector<int>& assigned) -> bool {
+        if (fatjet_idx < 0 || fatjet_idx >= FatJet_eta.size()) return true;
+        return std::find(assigned.begin(), assigned.end(), fatjet_idx) != assigned.end();
+    };
+    
+    auto checkDeltaR = [&](int idx1, int idx2, bool is_fatjet1, bool is_fatjet2) -> bool {
+        if (idx1 < 0 || idx2 < 0) return true;
+        
+        float eta1 = is_fatjet1 ? FatJet_eta[idx1] : Jet_eta[idx1];
+        float phi1 = is_fatjet1 ? FatJet_phi[idx1] : Jet_phi[idx1];
+        float eta2 = is_fatjet2 ? FatJet_eta[idx2] : Jet_eta[idx2];
+        float phi2 = is_fatjet2 ? FatJet_phi[idx2] : Jet_phi[idx2];
+        
+        float dR = ROOT::VecOps::DeltaR(eta1, eta2, phi1, phi2);
+        if (is_fatjet1 || is_fatjet2) {
+            return dR >= 0.8;
+        }
+        return dR >= 0.4;
+    };
+    
+    auto checkAllOverlaps = [&](int candidate_idx, bool is_fatjet) -> bool {
+        for (int assigned_jet : assigned_jets) {
+            if (!checkDeltaR(candidate_idx, assigned_jet, is_fatjet, false)) {
+                return false;
+            }
+        }
+        for (int assigned_fatjet : assigned_fatjets) {
+            if (!checkDeltaR(candidate_idx, assigned_fatjet, is_fatjet, true)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    
+    for (const auto& [prob, obj_type] : detection_order) {
+        switch (obj_type) {
+            case 0: {
+                for (size_t i = 0; i < vbs_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(vbs_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(vbs_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[0] = j1_candidate;
+                        result[1] = j2_candidate;
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 1: {
+                for (size_t i = 0; i < h_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(h_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(h_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[2] = j1_candidate;  // h1_idx
+                        result[3] = j2_candidate;  // h2_idx
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 2: {
+                for (size_t i = 0; i < bh_assignment.size(); i++) {
+                    int fatjet_candidate = static_cast<int>(bh_assignment[i][1]);
+                    
+                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
+                        checkAllOverlaps(fatjet_candidate, true)) {
+                        
+                        result[4] = fatjet_candidate;  // bh_idx
+                        assigned_fatjets.push_back(fatjet_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 3: {
+                for (size_t i = 0; i < v1_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(v1_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(v1_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[5] = j1_candidate;  // v1_j1_idx
+                        result[6] = j2_candidate;  // v1_j2_idx
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 4: {
+                for (size_t i = 0; i < v2_assignment.size(); i++) {
+                    int j1_candidate = static_cast<int>(v2_assignment[i][1]);
+                    int j2_candidate = static_cast<int>(v2_assignment[i][2]);
+                    
+                    if (!checkJetOverlap(j1_candidate, assigned_jets) && 
+                        !checkJetOverlap(j2_candidate, assigned_jets) &&
+                        j1_candidate != j2_candidate &&
+                        checkDeltaR(j1_candidate, j2_candidate, false, false) &&
+                        checkAllOverlaps(j1_candidate, false) &&
+                        checkAllOverlaps(j2_candidate, false)) {
+                        
+                        result[7] = j1_candidate;  // v2_j1_idx
+                        result[8] = j2_candidate;  // v2_j2_idx
+                        assigned_jets.push_back(j1_candidate);
+                        assigned_jets.push_back(j2_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 5: {
+                for (size_t i = 0; i < bv1_assignment.size(); i++) {
+                    int fatjet_candidate = static_cast<int>(bv1_assignment[i][1]);
+                    
+                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
+                        checkAllOverlaps(fatjet_candidate, true)) {
+                        
+                        result[9] = fatjet_candidate;  // bv1_idx
+                        assigned_fatjets.push_back(fatjet_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+            case 6: {
+                for (size_t i = 0; i < bv2_assignment.size(); i++) {
+                    int fatjet_candidate = static_cast<int>(bv2_assignment[i][1]);
+                    
+                    if (!checkFatJetOverlap(fatjet_candidate, assigned_fatjets) &&
+                        checkAllOverlaps(fatjet_candidate, true)) {
+                        
+                        result[10] = fatjet_candidate;  // bv2_idx
+                        assigned_fatjets.push_back(fatjet_candidate);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    
     return result;
 }
 
-RNode SPANetInferenceBase::ParseSpanetInference(RNode df_) {
-    auto df = df_.Define("_all_assignments", assign_all_objects, {
-        "spanet_vbs_assignment", "spanet_h_assignment", "spanet_bh_assignment", 
-        "spanet_v1_assignment", "spanet_v2_assignment", "spanet_bv1_assignment", "spanet_bv2_assignment",
-        "spanet_vbs_detection", "spanet_h_detection", "spanet_bh_detection", 
-        "spanet_v1_detection", "spanet_v2_detection", "spanet_bv1_detection", "spanet_bv2_detection",
-        "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"
-    })
-        .Define("vbs1_idx", "_all_assignments[0]")
-        .Define("vbs2_idx", "_all_assignments[1]")
-        .Define("h1_idx", "_all_assignments[2]")
-        .Define("h2_idx", "_all_assignments[3]")
-        .Define("bh_idx", "_all_assignments[4]")
-        .Define("v1_j1_idx", "_all_assignments[5]")
-        .Define("v1_j2_idx", "_all_assignments[6]")
-        .Define("v2_j1_idx", "_all_assignments[7]")
-        .Define("v2_j2_idx", "_all_assignments[8]")
-        .Define("bv1_idx", "_all_assignments[9]")
-        .Define("bv2_idx", "_all_assignments[10]");
-
-    // VBS jet variables
-    df = df.Define("spanet_vbs1_pt", "vbs1_idx >= 0 ? Jet_pt[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs1_eta", "vbs1_idx >= 0 ? Jet_eta[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs1_phi", "vbs1_idx >= 0 ? Jet_phi[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs1_mass", "vbs1_idx >= 0 ? Jet_mass[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs2_pt", "vbs2_idx >= 0 ? Jet_pt[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs2_eta", "vbs2_idx >= 0 ? Jet_eta[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs2_phi", "vbs2_idx >= 0 ? Jet_phi[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs2_mass", "vbs2_idx >= 0 ? Jet_mass[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs_detajj", "vbs1_idx >= 0 && vbs2_idx >= 0 ? abs(spanet_vbs1_eta - spanet_vbs2_eta) : -999.0f")
-            .Define("spanet_vbs_mjj", "vbs1_idx >= 0 && vbs2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_vbs1_pt, spanet_vbs1_eta, spanet_vbs1_phi, spanet_vbs1_mass) + "
-                "ROOT::Math::PtEtaPhiMVector(spanet_vbs2_pt, spanet_vbs2_eta, spanet_vbs2_phi, spanet_vbs2_mass)).M() : -999.0f");
-
-    // Resolved Higgs variables
-    df = df.Define("spanet_h1_pt", "h1_idx >= 0 ? Jet_pt[h1_idx] : -999.0f")
-            .Define("spanet_h1_eta", "h1_idx >= 0 ? Jet_eta[h1_idx] : -999.0f")
-            .Define("spanet_h1_phi", "h1_idx >= 0 ? Jet_phi[h1_idx] : -999.0f")
-            .Define("spanet_h1_mass", "h1_idx >= 0 ? Jet_mass[h1_idx] : -999.0f")
-            .Define("spanet_h2_pt", "h2_idx >= 0 ? Jet_pt[h2_idx] : -999.0f")
-            .Define("spanet_h2_eta", "h2_idx >= 0 ? Jet_eta[h2_idx] : -999.0f")
-            .Define("spanet_h2_phi", "h2_idx >= 0 ? Jet_phi[h2_idx] : -999.0f")
-            .Define("spanet_h2_mass", "h2_idx >= 0 ? Jet_mass[h2_idx] : -999.0f")
-            .Define("spanet_h_mjj", "h1_idx >= 0 && h2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_h1_pt, spanet_h1_eta, spanet_h1_phi, spanet_h1_mass) + "
-                "ROOT::Math::PtEtaPhiMVector(spanet_h2_pt, spanet_h2_eta, spanet_h2_phi, spanet_h2_mass)).M() : -999.0f");
-
-    // Boosted Higgs variables
-    df = df.Define("spanet_bh_eta", "bh_idx >= 0 ? FatJet_eta[bh_idx] : -999.0f")
-            .Define("spanet_bh_phi", "bh_idx >= 0 ? FatJet_phi[bh_idx] : -999.0f")
-            .Define("spanet_bh_msoftdrop", "bh_idx >= 0 ? FatJet_msoftdrop[bh_idx] : -999.0f")
-            .Define("spanet_bh_pt", "bh_idx >= 0 ? FatJet_pt[bh_idx] : -999.0f")
-            .Define("spanet_bh_score", "bh_idx >= 0 ? FatJet_globalParT3_Xbb[bh_idx] / (FatJet_globalParT3_Xbb[bh_idx] + FatJet_globalParT3_QCD[bh_idx]) : -999.0f");
-
-    // Resolved V1 variables
-    df = df.Define("spanet_v1_j1_pt", "v1_j1_idx >= 0 ? Jet_pt[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j1_eta", "v1_j1_idx >= 0 ? Jet_eta[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j1_phi", "v1_j1_idx >= 0 ? Jet_phi[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j1_mass", "v1_j1_idx >= 0 ? Jet_mass[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j2_pt", "v1_j2_idx >= 0 ? Jet_pt[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_j2_eta", "v1_j2_idx >= 0 ? Jet_eta[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_j2_phi", "v1_j2_idx >= 0 ? Jet_phi[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_j2_mass", "v1_j2_idx >= 0 ? Jet_mass[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_mjj", "v1_j1_idx >= 0 && v1_j2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_v1_j1_pt, spanet_v1_j1_eta, spanet_v1_j1_phi, spanet_v1_j1_mass) + "
-                "ROOT::Math::PtEtaPhiMVector(spanet_v1_j2_pt, spanet_v1_j2_eta, spanet_v1_j2_phi, spanet_v1_j2_mass)).M() : -999.0f");
-
-    // Resolved V2 variables
-    df = df.Define("spanet_v2_j1_pt", "v2_j1_idx >= 0 ? Jet_pt[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j1_eta", "v2_j1_idx >= 0 ? Jet_eta[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j1_phi", "v2_j1_idx >= 0 ? Jet_phi[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j1_mass", "v2_j1_idx >= 0 ? Jet_mass[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j2_pt", "v2_j2_idx >= 0 ? Jet_pt[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_j2_eta", "v2_j2_idx >= 0 ? Jet_eta[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_j2_phi", "v2_j2_idx >= 0 ? Jet_phi[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_j2_mass", "v2_j2_idx >= 0 ? Jet_mass[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_mjj", "v2_j1_idx >= 0 && v2_j2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_v2_j1_pt, spanet_v2_j1_eta, spanet_v2_j1_phi, spanet_v2_j1_mass) + "
-                "ROOT::Math::PtEtaPhiMVector(spanet_v2_j2_pt, spanet_v2_j2_eta, spanet_v2_j2_phi, spanet_v2_j2_mass)).M() : -999.0f");
-
-    // Boosted V1 variables
-    df = df.Define("spanet_bv1_eta", "bv1_idx >= 0 ? FatJet_eta[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_phi", "bv1_idx >= 0 ? FatJet_phi[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_msoftdrop", "bv1_idx >= 0 ? FatJet_msoftdrop[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_pt", "bv1_idx >= 0 ? FatJet_pt[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_score", "bv1_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_w_score", "bv1_idx >= 0 ? FatJet_globalParT3_Xqq[bv1_idx] / (FatJet_globalParT3_Xqq[bv1_idx] + FatJet_globalParT3_Xcs[bv1_idx] + FatJet_globalParT3_QCD[bv1_idx]) : -999.0f");
-
-    // Boosted V2 variables
-    df = df.Define("spanet_bv2_eta", "bv2_idx >= 0 ? FatJet_eta[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_phi", "bv2_idx >= 0 ? FatJet_phi[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_msoftdrop", "bv2_idx >= 0 ? FatJet_msoftdrop[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_pt", "bv2_idx >= 0 ? FatJet_pt[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_score", "bv2_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_w_score", "bv2_idx >= 0 ? FatJet_globalParT3_Xqq[bv2_idx] / (FatJet_globalParT3_Xqq[bv2_idx] + FatJet_globalParT3_Xcs[bv2_idx] + FatJet_globalParT3_QCD[bv2_idx]) : -999.0f");
-
-    return df;
-}
 
 } // namespace SPANet

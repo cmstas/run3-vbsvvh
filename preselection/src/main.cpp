@@ -5,13 +5,16 @@
 #include "weights.h"
 #include "corrections.h"
 #include "utils.h"
-#include "selections.h"
+#include "selections_run3.h"
+#include "selections_run2.h"
 #include "genSelections.h"
 
 #include "argparser.hpp"
 
 #include "spanet_inference_base.h"
 #include "spanet_inference_run3.h"
+#include "spanet_inference_run2.h"
+#include "truth_selections.h"
 
 struct MyArgs : public argparse::Args {
     std::string &spec = kwarg("i,input", "spec.json path");
@@ -28,13 +31,42 @@ struct MyArgs : public argparse::Args {
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
 };
 
-RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInferenceBase &spanet_inference, bool makeSpanetTrainingdata = false) {
+RNode runAnalysis(RNode df, std::string ana, std::string run_version, bool isSignal, SPANet::SPANetInferenceBase &spanet_inference, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
-    df = runPreselection(df, ana, makeSpanetTrainingdata);
 
-    if (makeSpanetTrainingdata) {
+    if (run_version == "2") {
+        df = Run2::runPreselection(df, ana, makeSpanetTrainingdata);
+        if (isSignal){
+            df = reconstructTruthEvent(df);
+            df = reconstructRecoEventWithTruthInfo_Boosted(df, "goodAK8Jets");
+            df = reconstructRecoEventWithTruthInfo_Resolved(df, "goodAK4Jets"); // requires reconstructRecoEventWithTruthInfo_Boosted() to be run first
+        }
+        else {
+            df.Define("hq1_idx_goodAK4Jets", "-1")
+                .Define("hq2_idx_goodAK4Jets", "-1")
+                .Define("v1q1_idx_goodAK4Jets", "-1")
+                .Define("v1q2_idx_goodAK4Jets", "-1")
+                .Define("v2q1_idx_goodAK4Jets", "-1")
+                .Define("v2q2_idx_goodAK4Jets", "-1")
+                .Define("nTruthMatchedBosonDaught_goodAK4Jets", "-1")
+                .Define("h_idx_goodAK8Jets", "-1")
+                .Define("v1_idx_goodAK8Jets", "-1")
+                .Define("v2_idx_goodAK8Jets", "-1")
+                .Define("nTruthMatchedBosons_goodAK8Jets", "-1")
+                .Define("vbs1_idx_goodAK4Jets", "-1")
+                .Define("vbs2_idx_goodAK4Jets", "-1");
+        }
+    }
+    else if (run_version == "3") {
+        df = Run3::runPreselection(df, ana, makeSpanetTrainingdata);
         df = GenSelections(df);
-    } else {
+    }
+    else {
+        throw std::runtime_error("Invalid run_version: must be 2 or 3");
+    }
+
+    if (!makeSpanetTrainingdata) {
+        std::cout << "Running spanet" << std::endl;
 	    df = spanet_inference.RunSPANetInference(df);
         df = spanet_inference.ParseSpanetInference(df);
     }
@@ -57,20 +89,22 @@ int main(int argc, char** argv) {
 
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana, args.output_subdir, args.makeSpanetTrainingdata);
-
+    std::cout << "args.run_version = " << args.run_version << std::endl;
     // Instantiate SPANet inference based on run_version
     std::unique_ptr<SPANet::SPANetInferenceBase> spanet_inference;
     if (args.run_version == "3") {
         const std::string  model_path = "spanet/v2/model.onnx";
         std::cout << "Loading ONNX model from: " << model_path << std::endl;
         spanet_inference = std::make_unique<SPANet::SPANetInferenceRun3>(model_path, args.batch_size);
-        std::cout << "ONNX session loaded successfully." << std::endl;
     } else if (args.run_version == "2") {
         // Leave blank for now
-        throw std::runtime_error("Run 2 not supported yet");
+        const std::string  model_path = "spanet/run2/v31/model.onnx";
+        std::cout << "Loading ONNX model from: " << model_path << std::endl;
+        spanet_inference = std::make_unique<SPANet::SPANetInferenceRun2>(model_path, args.batch_size);
     } else {
         throw std::runtime_error("Invalid run_version: must be 2 or 3");
     }
+    std::cout << "ONNX session loaded successfully." << std::endl;
 
     // add debugging
     if (args.debug) {
@@ -123,12 +157,22 @@ int main(int argc, char** argv) {
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
-        df = runAnalysis(df, args.ana, *spanet_inference);
-        df = applyDataWeights(df);
+        df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference);
+        if (args.run_version == "3") {
+            df = applyDataWeights(df);
+        }
+        else {
+            std::cout << "WARNING: Weights not implemented for Run 2" << std::endl;
+        }
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, *spanet_inference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
+        df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference, makeSpanetTrainingdata);
+        if (args.run_version == "3") {
+            df = applyMCWeights(df);
+        }
+        else {
+            std::cout << "WARNING: Weights not implemented for Run 2" << std::endl;
+        }
     }
 
     if (makeSpanetTrainingdata) {

@@ -30,6 +30,7 @@ namespace SPANet {
         SPANetInferenceBase(
             const std::string &model_path,
             size_t batch_size,
+             std::vector<const char*> input_names,
             size_t max_ak4_jets,
             size_t ak4_features,
             size_t max_ak8_jets,
@@ -44,7 +45,7 @@ namespace SPANet {
         // Functions that depend on input features are defined as pure virtual and have to be defined in derived class
         RNode RunSPANetInference(RNode df);
 
-         // Functions that depend on input features are defined as pure virtual and have to be defined in derived class
+        // Functions that depend on input features are defined as pure virtual and have to be defined in derived class
         virtual RNode ParseSpanetInference(RNode df_) = 0;
         
 

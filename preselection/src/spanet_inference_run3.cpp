@@ -1,10 +1,23 @@
 #include "spanet_inference_run3.h"
 namespace SPANet {
 
+const std::vector<const char*> SPANetInferenceRun3::INPUT_NAMES = {
+    "AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask",
+    "MET_data", "MET_mask", "Lepton1_data", "Lepton1_mask",
+    "Lepton2_data", "Lepton2_mask"
+};
+
 SPANetInferenceRun3::SPANetInferenceRun3(const std::string &model_path, size_t batch_size)
-    : SPANetInferenceBase(model_path, batch_size, MAX_AK4_JETS, AK4_FEATURES, MAX_AK8_JETS, AK8_FEATURES, MET_FEATURES, MAX_LEPTONS, LEPTON_FEATURES) {}
+    : SPANetInferenceBase(model_path, batch_size, INPUT_NAMES, MAX_AK4_JETS, AK4_FEATURES, MAX_AK8_JETS, AK8_FEATURES, MET_FEATURES, MAX_LEPTONS, LEPTON_FEATURES) {
+    std::cout << "--> SPANetInferenceRun3::SPANetInferenceRun3() " << std::endl;
+    std::cout << "   Input names: ";
+    for (const auto &name : input_names_){ std::cout << name << ", "; }
+    std::cout << std::endl;
+
+}
 
 std::vector<std::shared_ptr<EventDataBase>> SPANetInferenceRun3::extractEventsFromDataFrame(RNode df) {
+    std::cout << "--> SPANetInferenceRun3::extractEventsFromDataFrame() " << std::endl;
     auto ak4_pt_vec = df.Take<RVec<float>>("Jet_pt").GetValue();
     auto ak4_eta_vec = df.Take<RVec<float>>("Jet_eta").GetValue();
     auto ak4_phi_vec = df.Take<RVec<float>>("Jet_phi").GetValue();
@@ -160,7 +173,9 @@ void SPANetInferenceRun3::fillBatchTensors(const std::vector<std::shared_ptr<Eve
 }
 
 RNode SPANetInferenceRun3::ParseSpanetInference(RNode df_) {
-    auto df = df_.Define("_all_assignments", SPANetInferenceBase::assign_all_objects, {
+    std::cout << "--> SPANetInferenceRun3::ParseSpanetInference()" << std::endl;
+
+    auto df = df_.Define("_all_assignments", assign_all_objects, {
         "spanet_vbs_assignment", "spanet_h_assignment", "spanet_bh_assignment",
         "spanet_v1_assignment", "spanet_v2_assignment", "spanet_bv1_assignment", "spanet_bv2_assignment",
         "spanet_vbs_detection", "spanet_h_detection", "spanet_bh_detection",

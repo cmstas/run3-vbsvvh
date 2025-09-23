@@ -9,6 +9,8 @@ namespace SPANet {
 
     class SPANetInferenceRun3 : public SPANetInferenceBase {
     public:
+        static const std::vector<const char*> INPUT_NAMES;
+        //std::vector<const char*> INPUT_NAMES = {"AK4Jets_data", "AK4Jets_mask", "AK8Jets_data", "AK8Jets_mask", "MET_data", "MET_mask", "Lepton1_data", "Lepton1_mask", "Lepton2_data", "Lepton2_mask"};
         static constexpr size_t MAX_AK4_JETS = 10;
         static constexpr size_t MAX_AK8_JETS = 3;
         static constexpr size_t AK4_FEATURES = 8;
@@ -36,6 +38,7 @@ namespace SPANet {
     private:
         std::vector<std::shared_ptr<EventDataBase>> extractEventsFromDataFrame(RNode df) override;
         void fillBatchTensors(const std::vector<std::shared_ptr<EventDataBase>>& events_base, size_t actual_batch_size) override;
+        
     };
 
 }
