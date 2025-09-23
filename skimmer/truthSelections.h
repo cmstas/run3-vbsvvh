@@ -127,9 +127,9 @@ ROOT::RVec<int> getTruthEventInfo(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& statu
         return result;
     }
 
-    if (vbsquarks_idx.size() > 2)
+    if (vbsquarks_idx.size() != 2)
     {
-        std::cerr << "Warning: More than 2 VBS quarks found. Truth variables will not be set for this event." << std::endl;
+        std::cerr << "Warning: could not find exactly 2 VBS quarks. Truth variables will not be set for this event." << std::endl;
         return result;
     }
 
@@ -236,12 +236,9 @@ ROOT::RVec<int> getTruthEventInfo(ROOT::RVec<int>& pdgId, ROOT::RVec<int>& statu
     // ----------------------------------
 
     // Sort VBS quarks by pt
-    if (vbsquarks_idx.size() == 2)
-    {
-        std::sort(vbsquarks_idx.begin(), vbsquarks_idx.end(), [&genPart_pt](int a, int b) {
-            return genPart_pt[a] > genPart_pt[b];
-        });
-    }
+    std::sort(vbsquarks_idx.begin(), vbsquarks_idx.end(), [&genPart_pt](int a, int b) {
+        return genPart_pt[a] > genPart_pt[b];
+    });
 
     // Set VBS quarks
     for (size_t ivbsj = 0; ivbsj < vbsquarks_idx.size(); ++ivbsj)
