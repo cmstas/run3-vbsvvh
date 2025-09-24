@@ -28,10 +28,8 @@ struct MyArgs : public argparse::Args {
 RNode runAnalysis(RNode df, std::string ana, SPANet::SPANetInference &spanet_inference, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
     df = runPreselection(df, ana, makeSpanetTrainingdata);
-
-    if (makeSpanetTrainingdata) {
-        df = GenSelections(df);
-    } else {
+    
+    if (!makeSpanetTrainingdata) {
 	    df = spanet_inference.RunSPANetInference(df);
         df = spanet_inference.ParseSpanetInference(df);
     }
@@ -116,10 +114,13 @@ int main(int argc, char** argv) {
         df = applyMCWeights(df);
     }
 
-    if (makeSpanetTrainingdata) {
-        std::cout << " -> Saving SPANet training data" << std::endl;
-        saveSpanetSnapshot(df, output_dir, output_file);
-        return 0; // Exit after saving training data
+    if (isSignal) {
+        df = GenSelections(df);
+        if (makeSpanetTrainingdata) {
+            std::cout << " -> Saving SPANet training data" << std::endl;
+            saveSpanetSnapshot(df, output_dir, output_file);
+            return 0; // Exit after saving training data
+        }
     }
 
     saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
