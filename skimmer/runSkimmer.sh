@@ -4,7 +4,8 @@ set -euo pipefail
 # Configuration
 CPUS=1
 MEMORY=2G
-LOGDIR=logs
+OUTPUT_TAG=v1
+LOGDIR=logs/${OUTPUT_TAG}
 
 X509_USER_PROXY="${X509_USER_PROXY:-/tmp/x509up_u$(id -u)}"
 
@@ -89,7 +90,7 @@ submit_job() {
     local proxy_path=$3
     
     local job_name=$(basename "$file_list")
-    local jdl=(condor_${job_name}.jdl) || { echo "Error: Failed to create temp file"; return 1; }
+    local jdl=(condor_${job_name}.jdl) || { echo "Error: Failed to create temp file"; return 1; }    
 
     echo "Creating job description file: $jdl"
     cat >"$jdl" <<EOF
@@ -98,11 +99,11 @@ request_cpus            = ${CPUS}
 request_memory          = ${MEMORY}
 executable              = executable.py
 transfer_executable     = True
-transfer_input_files    = keep_and_drop_skim.txt
-arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag} ${VERSION}
-log                     = ${LOGDIR}/\$(Cluster).log
-output                  = ${LOGDIR}/\$(Cluster).out
-error                   = ${LOGDIR}/\$(Cluster).err
+transfer_input_files    = keep_and_drop_skim.txt, truthSelections.h
+arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag} ${OUTPUT_TAG}
+log                     = ${LOGDIR}/\$(Cluster).\$(Process).log 
+output                  = ${LOGDIR}/\$(Cluster).\$(Process).out
+error                   = ${LOGDIR}/\$(Cluster).\$(Process).err
 
 queue FILE from ${file_list}
 EOF
