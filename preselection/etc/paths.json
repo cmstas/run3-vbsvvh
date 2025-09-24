@@ -1,8 +1,13 @@
 {
     "0Lep3FJ": {
-        "bkg": "/ceph/cms/store/user/aaarora/skims/bkg/*/*/*",
-        "data": "/ceph/cms/store/user/aaarora/skims/data/*/*/*",
-        "sig": "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/*/*"
+        "bkg": "/ceph/cms/store/user/aaarora/skims_v1/bkg/*/*/*",
+        "data": "/ceph/cms/store/user/aaarora/skims_v1/data/*/*/*",
+        "sig": "/ceph/cms/store/user/aaarora/skims_v1/sig/Run3Summer24/*/*"
+    },
+    "0Lep2FJ": {
+        "bkg": "/ceph/cms/store/user/aaarora/skims_v1/bkg/*/*/*",
+        "data": "/ceph/cms/store/user/aaarora/skims_v1/data/*/*/*",
+        "sig": "/ceph/cms/store/user/mmazza/skim/skims_Run3Summer2024_NoCuts_11Sep2025/*/*"
     },
     "1Lep2FJ": {
         "bkg": "/ceph/cms/store/user/aaarora/skims/bkg/*/*/*",
