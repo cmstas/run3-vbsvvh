@@ -84,7 +84,7 @@ class Skimmer():
             .Define("__tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
             .Define("__n_tight_leptons", "Sum(__tight_mu_mask) + Sum(__tight_ele_mask)") \
             .Define("__fatjet_mask", "FatJet_pt > 200 && FatJet_msoftdrop > 10") \
-            .Define("__n_fatjets", "Sum(__fatjet_mask)")
+            .Define("__n_fatjets", "Sum(__fatjet_mask)") \
             .Filter("(__n_fatjets + __n_tight_leptons) >= 1")
 
         if self.sample_year in JET_ID_JSONS:
@@ -234,10 +234,24 @@ def determine_output_paths(input_file, is_signal, output_tag):
     output_dir = f"{OUTPUT_XRD}/skims_{output_tag}/{campaign}/{sample_name}"
     return output_dir
 
+def check_output_liveness(file):
+    with r.TFile.Open(file) as f:
+        t = f.Get("Events")
+        nevts = t.GetEntries()
+        for i in range(0,t.GetEntries(),1):
+            if t.GetEntry(i) < 0:
+                return False
+        return True
+
 def copy_output_file(source, destination):
     print(f"Copying {source} to {destination}")
     
     subprocess.run(["gfal-mkdir", "-p", os.path.dirname(destination)])
+
+    # check if output is good
+    if not check_output_liveness(source):
+        print(f"Output file {source} is corrupted; not copying")
+        return False
     
     for i in range(1, MAX_RETRIES + 1):
         print(f"Attempt {i}")
@@ -247,6 +261,13 @@ def copy_output_file(source, destination):
         
         print(f"Failed to copy {source} to {destination}; sleeping for 60s")
         time.sleep(SLEEP_DURATION)
+
+    # check copied file liveness
+    if not check_output_liveness(destination):
+        print(f"Copied file {destination} is corrupted")
+        subprocess.run(["gfal-rm", destination])
+        print(f"Removed corrupted file {destination}")
+        return False
     
     return False
 

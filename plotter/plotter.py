@@ -83,7 +83,7 @@ class Plotter:
         # Then create all plots
         for hist in hists:
             if isinstance(hist, Hist1D):
-                self.plot1D(hist, density=density, save=save)
+                self.plot1D(hist, density=density, logy=logy, save=save, savePath=savePath)
             elif isinstance(hist, Hist2D):
                 self.plot2D(hist, save=save)
     
@@ -150,7 +150,7 @@ class Plotter:
             
             self._configure_axes(ax_main, ax_ratio, histogram, hist_ratio is not None)
             if save:
-                self._save_plot(fig, histogram.var, savePath)
+                self._save_plot(fig, histogram.var, savePath=savePath)
                 
             plt.close(fig)
             
@@ -186,11 +186,12 @@ class Plotter:
             for hist in hist_values:
                 hist.Scale(1000)  # Scale by 1000 for visibility
                 
+            colors = ["red", "pink", "orange", "purple", "cyan", "magenta"]
             for i, hist in enumerate(hist_values):
                 hep.histplot(
                     hist, ax=ax, histtype="step", 
                     label=f"Signal {self.sig_samples_labels[i]} x 1000", 
-                    linewidth=3, yerr=False, density=density
+                    linewidth=3, yerr=False, density=density, color=colors[i]
                 )
         else:
             # Single signal case
