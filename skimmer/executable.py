@@ -253,14 +253,11 @@ def copy_output_file(source, destination):
         print(f"Output file {source} is corrupted; not copying")
         return False
     
-    for i in range(1, MAX_RETRIES + 1):
-        print(f"Attempt {i}")
-        result = subprocess.run(["gfal-copy", "-f", source, destination])
-        if result.returncode == 0:
-            return True
-        
+    result = subprocess.run(["gfal-copy", "-f", source, destination])
+
+    if result.returncode != 0:    
         print(f"Failed to copy {source} to {destination}; sleeping for 60s")
-        time.sleep(SLEEP_DURATION)
+        return False
 
     # check copied file liveness
     if not check_output_liveness(destination):
@@ -268,8 +265,8 @@ def copy_output_file(source, destination):
         subprocess.run(["gfal-rm", destination])
         print(f"Removed corrupted file {destination}")
         return False
-    
-    return False
+
+    return True
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the NanoAOD skimmer with file transfer.')
@@ -295,9 +292,17 @@ if __name__ == "__main__":
     copy_src = os.path.join(os.getcwd(), f"{CONDOR_OUTPUT_DIR}/output.root")
     copy_dest = f"{output_dir}/output_{args.job_id}.root"
     
-    success = copy_output_file(copy_src, copy_dest)
+    for attempt in range(MAX_RETRIES + 1):
+        success = copy_output_file(copy_src, copy_dest)
+        if success:
+            break
+        
+        if attempt < MAX_RETRIES:
+            print(f"Retrying copy attempt {attempt + 1} of {MAX_RETRIES}...")
+            time.sleep(SLEEP_DURATION)
+
     if not success:
         print(f"Failed to copy output file after {MAX_RETRIES} attempts")
         sys.exit(1)
-    
+        
     sys.exit(0)
