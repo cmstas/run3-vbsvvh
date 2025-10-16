@@ -109,7 +109,7 @@ class Skimmer():
         return self.df.Count().GetValue()
 
     def Snapshot(self, tag):
-        all_cols = [str(col) for col in self.df.GetColumnNames() if not col.startswith("__")]
+        all_cols = [str(col) for col in self.df.GetColumnNames()]
         keep_cols = {col: 0 for col in all_cols}
         comment = re.compile(r"#.*")
         ops = []
