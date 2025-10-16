@@ -4,8 +4,6 @@ set -euo pipefail
 # Configuration
 CPUS=1
 MEMORY=2G
-OUTPUT_TAG=v1
-LOGDIR=logs/${OUTPUT_TAG}
 
 X509_USER_PROXY="${X509_USER_PROXY:-/tmp/x509up_u$(id -u)}"
 
@@ -30,8 +28,8 @@ parse_options() {
         case "$opt" in
             i) INPUT_LIST=$OPTARG ;;
             s) IS_SIG=1 ;;
-            h) usage ;;
             v) VERSION=$OPTARG ;;
+            h) usage ;;
             *) usage ;;
         esac
     done
@@ -46,6 +44,10 @@ parse_options() {
         echo "Error: -v is required."
         usage
     fi
+
+    # Set OUTPUT_TAG and LOGDIR after VERSION is validated
+    OUTPUT_TAG="${VERSION}"
+    LOGDIR="logs/${OUTPUT_TAG}"
 }
 
 # Get list of files for a dataset
@@ -99,11 +101,12 @@ request_cpus            = ${CPUS}
 request_memory          = ${MEMORY}
 executable              = executable.py
 transfer_executable     = True
-transfer_input_files    = keep_and_drop_skim.txt, truthSelections.h
-arguments               = ${proxy_path} \$(FILE) \$(Process) ${sigflag} ${OUTPUT_TAG}
+transfer_input_files    = keep_and_drop_skim.txt, truthSelections.h, jetId.h
+arguments               = ${proxy_path} \$(FILE) ${sigflag} ${OUTPUT_TAG}
 log                     = ${LOGDIR}/\$(Cluster).\$(Process).log 
 output                  = ${LOGDIR}/\$(Cluster).\$(Process).out
 error                   = ${LOGDIR}/\$(Cluster).\$(Process).err
++JobFlavour             = "tomorrow"
 
 queue FILE from ${file_list}
 EOF

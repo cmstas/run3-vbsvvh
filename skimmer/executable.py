@@ -12,12 +12,13 @@ from argparse import ArgumentParser
 
 import ROOT as r
 
-r.gInterpreter.Declare('#include "truthSelections.h"')
-
 subprocess.run("python3 -m pip install --user --no-binary=correctionlib correctionlib", shell=True, check=True)
 import importlib
 correctionlib = importlib.import_module("correctionlib")
 correctionlib.register_pyroot_binding()
+
+r.gInterpreter.Declare('#include "truthSelections.h"')
+r.gInterpreter.Declare('#include "jetId.h"')
 
 # Constants
 CONDOR_OUTPUT_DIR = "output"
@@ -26,16 +27,15 @@ OUTPUT_XRD = "davs://redirector.t2.ucsd.edu:1095//store/user/USER_UAF_DIR/skim/"
 MAX_RETRIES = 10
 SLEEP_DURATION = 60  # 1 minute in seconds
 
-JET_ID_JSONS = {"2024": "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/2024_Summer24/jetid.json.gz"}
 
 class Skimmer():
-    def __init__(self, inFiles, outDir, keepDropFile):
+    def __init__(self, inFiles, outDir, keepDropFile, is_signal):
         self.inFiles = inFiles
         self.outDir = outDir
         self.keepDropFile = keepDropFile
+        self.is_signal = is_signal
 
         self.df = r.RDataFrame("Events", self.inFiles)
-        r.RDF.Experimental.AddProgressBar(self.df)
         columns = self.df.GetColumnNames()
         for col in columns:
             if col.startswith("Muon_") or col.startswith("Electron_") or col.startswith("Jet_") or col.startswith("FatJet_"):
@@ -79,7 +79,7 @@ class Skimmer():
         
         return df
         
-    def analyze(self, is_signal):
+    def analyze(self):
         self.df = self.df.Define("__tight_mu_mask", "Muon_pt > 35. && abs(Muon_eta) < 2.4 && Muon_tightId") \
             .Define("__tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
             .Define("__n_tight_leptons", "Sum(__tight_mu_mask) + Sum(__tight_ele_mask)") \
@@ -87,48 +87,13 @@ class Skimmer():
             .Define("__n_fatjets", "Sum(__fatjet_mask)") \
             .Filter("(__n_fatjets + __n_tight_leptons) >= 1")
 
-        if self.sample_year in JET_ID_JSONS:
-            jet_id_json = JET_ID_JSONS[self.sample_year]
-
         self.df = self.df.Define("Jet_multiplicity", "Jet_chMultiplicity + Jet_neMultiplicity") \
             .Define("FatJet_multiplicity", "FatJet_chMultiplicity + FatJet_neMultiplicity")
 
-        r.gInterpreter.Declare("""
-            #include <ROOT/RVec.hxx>
-            using namespace ROOT::VecOps;
-            
-            RVec<float> evalJetID(const RVec<float>& eta, const RVec<float>& chHEF, const RVec<float>& neHEF,
-                                  const RVec<float>& chEmEF, const RVec<float>& neEmEF,
-                                  const RVec<float>& muEF, const RVec<int>& chMultiplicity,
-                                  const RVec<int>& neMultiplicity, const RVec<int>& multiplicity) {
-                auto cset_jetId = correction::CorrectionSet::from_file(\"""" + jet_id_json + """\");
-                RVec<float> jetId(eta.size(), 0.0);
-                for (size_t i = 0; i < eta.size(); ++i) {
-                    jetId[i] += 2 * cset_jetId->at(\"AK4PUPPI_Tight\")->evaluate({eta[i], chHEF[i], neHEF[i], chEmEF[i], neEmEF[i], muEF[i], chMultiplicity[i], neMultiplicity[i], multiplicity[i]});
-                    jetId[i] += 4 * cset_jetId->at(\"AK4PUPPI_TightLeptonVeto\")->evaluate({eta[i], chHEF[i], neHEF[i], chEmEF[i], neEmEF[i], muEF[i], chMultiplicity[i], neMultiplicity[i], multiplicity[i]});
-                }
-                return jetId;
-            }
+        self.df = self.df.Define("Jet_jetId", f"evalJetID{self.sample_year}(Jet_eta, Jet_chHEF, Jet_neHEF, Jet_chEmEF, Jet_neEmEF, Jet_muEF, Jet_chMultiplicity, Jet_neMultiplicity, Jet_multiplicity)") \
+            .Define("FatJet_jetId", f"evalFatJetID{self.sample_year}(FatJet_eta, FatJet_chHEF, FatJet_neHEF, FatJet_chEmEF, FatJet_neEmEF, FatJet_muEF, FatJet_chMultiplicity, FatJet_neMultiplicity, FatJet_multiplicity)")
 
-            RVec<float> evalFatJetID(const RVec<float>& eta, const RVec<float>& chHEF, const RVec<float>& neHEF,
-                                     const RVec<float>& chEmEF, const RVec<float>& neEmEF,
-                                     const RVec<float>& muEF, const RVec<int>& chMultiplicity,
-                                     const RVec<int>& neMultiplicity, const RVec<int>& multiplicity) {
-                auto cset_fatJetId = correction::CorrectionSet::from_file(\"""" + jet_id_json + """\");
-                RVec<float> fatJetId(eta.size(), 0.0);
-                for (size_t i = 0; i < eta.size(); ++i) {
-                    fatJetId[i] += 2 * cset_fatJetId->at(\"AK8PUPPI_Tight\")->evaluate({eta[i], chHEF[i], neHEF[i], chEmEF[i], neEmEF[i], muEF[i], chMultiplicity[i], neMultiplicity[i], multiplicity[i]});
-                    fatJetId[i] += 4 * cset_fatJetId->at(\"AK8PUPPI_TightLeptonVeto\")->evaluate({eta[i], chHEF[i], neHEF[i], chEmEF[i], neEmEF[i], muEF[i], chMultiplicity[i], neMultiplicity[i], multiplicity[i]});
-                }
-                return fatJetId;
-            }
-
-        """)
-
-        self.df = self.df.Define("Jet_jetId", "evalJetID(Jet_eta, Jet_chHEF, Jet_neHEF, Jet_chEmEF, Jet_neEmEF, Jet_muEF, Jet_chMultiplicity, Jet_neMultiplicity, Jet_multiplicity)") \
-            .Define("FatJet_jetId", "evalFatJetID(FatJet_eta, FatJet_chHEF, FatJet_neHEF, FatJet_chEmEF, FatJet_neEmEF, FatJet_muEF, FatJet_chMultiplicity, FatJet_neMultiplicity, FatJet_multiplicity)")
-
-        if is_signal:
+        if self.is_signal:
             self.df = self.genSelection(self.df)
 
         # Run3 event filters
@@ -144,7 +109,7 @@ class Skimmer():
         return self.df.Count().GetValue()
 
     def Snapshot(self, tag):
-        all_cols = [str(col) for col in self.df.GetColumnNames()]
+        all_cols = [str(col) for col in self.df.GetColumnNames() if not col.startswith("__")]
         keep_cols = {col: 0 for col in all_cols}
         comment = re.compile(r"#.*")
         ops = []
@@ -182,11 +147,12 @@ class Skimmer():
 
     @property
     def sample_year(self):
-        match = re.search(r'Run3Summer24|RunIII2024Summer24NanoAODv15', self.inFiles[0])
-        if match:
-            return "2024"
+        match = re.search(r'Run3Summer24|RunIII2024Summer24NanoAODv15|Run2024', self.inFiles[0])
+        if not match:
+            raise ValueError("Could not determine sample year from filename")
         else:
-            return None
+            return "2024"
+
 
 def run_skimmer(input_file, output_dir, is_signal):
     print(f"Running skimmer on {input_file}")
@@ -195,43 +161,22 @@ def run_skimmer(input_file, output_dir, is_signal):
     inFiles = [XROOTD_REDIRECTOR + input_file if input_file.startswith('/store') else 'file://' + input_file]
     keepDropFile = "keep_and_drop_skim.txt"
     
-    skimmer = Skimmer(inFiles, output_dir, keepDropFile)
-    passed = skimmer.analyze(is_signal)
+    skimmer = Skimmer(inFiles, output_dir, keepDropFile, is_signal)
+    passed = skimmer.analyze()
     if passed:
-        skimmer.Snapshot("skim")
+        skimmer.Snapshot("output")
         return True
     else:
         print("No entries in output")
         return False
 
-
-def merge_skims(output_dir):
-    skim_files = glob.glob(f"{output_dir}/*")
-    
-    if len(skim_files) == 0:
-        print("No output files to merge; exiting...")
-        return True
-    elif len(skim_files) == 1:
-        shutil.move(skim_files[0], f"{output_dir}/output.root")
-        return True
-    else:
-        merge_cmd = ["hadd", f"{output_dir}/output.root"] + skim_files
-        print(" ".join(merge_cmd))
-        result = subprocess.run(merge_cmd)
-        return result.returncode == 0
-
-
 def determine_output_paths(input_file, is_signal, output_tag):
     if not is_signal:
-        era = input_file.split('/')[3]
-        sample_name = input_file.split('/')[4]
-        campaign = input_file.split('/')[6]
+        sub_output_dir = "/".join(input_file.split('/')[3:5] + input_file.split('/')[8:])
     else:
-        era = input_file.split('/')[6]
-        sample_name = input_file.split('/')[7]
-        campaign = "private"
+        sub_output_dir = "/".join(input_file.split('/')[7:])
 
-    output_dir = f"{OUTPUT_XRD}/skims_{output_tag}/{campaign}/{sample_name}"
+    output_dir = f"{OUTPUT_XRD}/skims_{output_tag}/{sub_output_dir}"
     return output_dir
 
 def check_output_liveness(file):
@@ -272,7 +217,6 @@ if __name__ == "__main__":
     parser = ArgumentParser(description='Run the NanoAOD skimmer with file transfer.')
     parser.add_argument('proxy', help="Path to the X509 proxy")
     parser.add_argument('input_file', help="Input file path")
-    parser.add_argument('job_id', help="Job ID")
     parser.add_argument('is_signal', help='Flag indicating if this is a signal sample', type=int)
     parser.add_argument('output_tag', help='Output tag, including version of skims eg. v2', type=str)
     args = parser.parse_args()
@@ -284,13 +228,13 @@ if __name__ == "__main__":
     if not success:
         print("Skimmer failed; retrying one more time...")
         success = run_skimmer(args.input_file, CONDOR_OUTPUT_DIR, args.is_signal)
-    
-    merge_skims(CONDOR_OUTPUT_DIR)
-    
-    output_dir = determine_output_paths(args.input_file, args.is_signal, args.output_tag)
+
+    if not success:
+        raise ValueError("Skimmer failed twice; exiting...")
+
     
     copy_src = os.path.join(os.getcwd(), f"{CONDOR_OUTPUT_DIR}/output.root")
-    copy_dest = f"{output_dir}/output_{args.job_id}.root"
+    copy_dest = determine_output_paths(args.input_file, args.is_signal, args.output_tag)
     
     for attempt in range(MAX_RETRIES + 1):
         success = copy_output_file(copy_src, copy_dest)
@@ -302,7 +246,6 @@ if __name__ == "__main__":
             time.sleep(SLEEP_DURATION)
 
     if not success:
-        print(f"Failed to copy output file after {MAX_RETRIES} attempts")
-        sys.exit(1)
+        raise ValueError(f"Failed to copy output file after {MAX_RETRIES} attempts; exiting...")
         
     sys.exit(0)
