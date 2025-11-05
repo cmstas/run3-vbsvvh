@@ -30,15 +30,16 @@ struct MyArgs : public argparse::Args {
     bool &debug = flag("debug", "enable debug mode").set_default(false);
     bool &dumpInput = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
+    bool &runSPANetInference = flag("spanet_infer", "Run SPANet inference").set_default(false);
 };
 
-RNode runAnalysis(RNode df, std::string ana, std::string run_version, bool isSignal, SPANet::SPANetInferenceBase &spanet_inference, bool makeSpanetTrainingdata = false) {
+RNode runAnalysis(RNode df, std::string ana, std::string run_version, bool isSignal, SPANet::SPANetInferenceBase &spanet_inference, bool runSPANetInference = false, bool makeSpanetTrainingdata = false) {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
     if (run_version == "2") {
         df = Run2::runPreselection(df, ana, makeSpanetTrainingdata);
         if (isSignal){
-            df = reconstructTruthEvent(df);
+            df = reconstructTruthEvent(df); // FIXME: in truth_selections.cpp, currently required to run over run 2 skims that have different names for the truth event branches 
             df = reconstructRecoEventWithTruthInfo_Boosted(df, "goodAK8Jets");
             df = reconstructRecoEventWithTruthInfo_Resolved(df, "goodAK4Jets"); // requires reconstructRecoEventWithTruthInfo_Boosted() to be run first
         }
@@ -66,7 +67,7 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_version, bool isSig
         throw std::runtime_error("Invalid run_version: must be 2 or 3");
     }
 
-    if (!makeSpanetTrainingdata) {
+    if (!makeSpanetTrainingdata && runSPANetInference) {
         std::cout << "Running spanet" << std::endl;
 	    df = spanet_inference.RunSPANetInference(df);
         df = spanet_inference.ParseSpanetInference(df);
@@ -91,22 +92,25 @@ int main(int argc, char** argv) {
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana, args.output_subdir, args.makeSpanetTrainingdata);
     
-    // Instantiate SPANet inference based on run_version
     std::cout << " -> Running analysis for Run " << args.run_version << std::endl;
+    
+    // Instantiate SPANet inference based on run_version
     std::unique_ptr<SPANet::SPANetInferenceBase> spanet_inference;
-    if (args.run_version == "3") {
-        const std::string  model_path = "spanet/v2/model.onnx";
-        std::cout << "Loading ONNX model from: " << model_path << std::endl;
-        spanet_inference = std::make_unique<SPANet::SPANetInferenceRun3>(model_path, args.batch_size);
-    } else if (args.run_version == "2") {
-        // Leave blank for now
-        const std::string  model_path = "spanet/run2/v31/model.onnx";
-        std::cout << " -> Loading ONNX model from: " << model_path << std::endl;
-        spanet_inference = std::make_unique<SPANet::SPANetInferenceRun2>(model_path, args.batch_size);
-    } else {
-        throw std::runtime_error("Invalid run_version: must be 2 or 3");
-    }
-    std::cout << "    ONNX session loaded successfully." << std::endl;
+    if (args.runSPANetInference) {
+        if (args.run_version == "3") {
+            const std::string  model_path = "spanet/v2/model.onnx";
+            std::cout << "Loading ONNX model from: " << model_path << std::endl;
+            spanet_inference = std::make_unique<SPANet::SPANetInferenceRun3>(model_path, args.batch_size);
+        } else if (args.run_version == "2") {
+            // Leave blank for now
+            const std::string  model_path = "spanet/run2/v31/model.onnx";
+            std::cout << " -> Loading ONNX model from: " << model_path << std::endl;
+            spanet_inference = std::make_unique<SPANet::SPANetInferenceRun2>(model_path, args.batch_size);
+        } else {
+            throw std::runtime_error("Invalid run_version: must be 2 or 3");
+        }
+        std::cout << "    ONNX session loaded successfully." << std::endl;
+    } 
 
     // add debugging
     if (args.debug) {
@@ -159,7 +163,7 @@ int main(int argc, char** argv) {
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference);
+        df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference, args.runSPANetInference);
         if (args.run_version == "3") {
             df = Run3::applyDataWeights(df);
         }
@@ -168,7 +172,7 @@ int main(int argc, char** argv) {
         }
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference, makeSpanetTrainingdata);
+        df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference, args.runSPANetInference, makeSpanetTrainingdata);
         if (args.run_version == "3") {
             df = Run3::applyMCWeights(df);
         }
