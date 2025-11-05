@@ -149,7 +149,7 @@ RNode muonScaleFactors_ID(correction::CorrectionSet cset_muon_2016preVFP, correc
         }
         return muon_sf_weights;
     };
-    return df.Define("muon_scale_factors_ID", eval_correction, {"year", "GMuon_eta", "GMuon_pt"});
+    return df.Define("muon_scale_factors_ID", eval_correction, {"year", "goodMuon_eta", "goodMuon_pt"});
 }
 
 RNode muonScaleFactors_trigger(correction::CorrectionSet cset_muon_2016preVFP, correction::CorrectionSet cset_muon_2016postVFP, correction::CorrectionSet cset_muon_2017, correction::CorrectionSet cset_muon_2018, RNode df){
@@ -182,7 +182,7 @@ RNode muonScaleFactors_trigger(correction::CorrectionSet cset_muon_2016preVFP, c
         }
         return muon_sf_weights;
     };
-    return df.Define("muon_scale_factors_trigger", eval_correction, {"year", "GMuon_eta", "GMuon_pt"});
+    return df.Define("muon_scale_factors_trigger", eval_correction, {"year", "goodMuon_eta", "goodMuon_pt"});
 }
 
 RNode muonScaleFactors_ttHID(correction::CorrectionSet cset_muon_tth, RNode df){
@@ -198,7 +198,7 @@ RNode muonScaleFactors_ttHID(correction::CorrectionSet cset_muon_tth, RNode df){
         }
         return muon_sf_weights;
     };
-    return df.Define("muon_scale_factors_ttHID", eval_correction, {"year", "GMuon_eta", "GMuon_pt"});
+    return df.Define("muon_scale_factors_ttHID", eval_correction, {"year", "goodMuon_eta", "goodMuon_pt"});
 }
 
 
@@ -215,7 +215,7 @@ RNode muonScaleFactors_ttHISO(correction::CorrectionSet cset_muon_tth, RNode df)
         }
         return muon_sf_weights;
     };
-    return df.Define("muon_scale_factors_ttHISO", eval_correction, {"year", "GMuon_eta", "GMuon_pt"});
+    return df.Define("muon_scale_factors_ttHISO", eval_correction, {"year", "goodMuon_eta", "goodMuon_pt"});
 }
 
 
@@ -250,7 +250,7 @@ RNode electronScaleFactors_Reco(correction::CorrectionSet cset_electron_2016preV
         }
         return electron_sf_weights;
     };
-    return df.Define("electron_scale_factors_Reco", eval_correction, {"year", "GElectron_eta", "GElectron_pt"});
+    return df.Define("electron_scale_factors_Reco", eval_correction, {"year", "goodElectron_eta", "goodElectron_pt"});
 }
 
 RNode electronScaleFactors_ID(correction::CorrectionSet cset_electron_2016preVFP, correction::CorrectionSet cset_electron_2016postVFP, correction::CorrectionSet cset_electron_2017, correction::CorrectionSet cset_electron_2018, RNode df){
@@ -283,7 +283,7 @@ RNode electronScaleFactors_ID(correction::CorrectionSet cset_electron_2016preVFP
         }
         return electron_sf_weight;
     };
-    return df.Define("electron_scale_factors_ID", eval_correction, {"year", "GElectron_eta", "GElectron_pt"});
+    return df.Define("electron_scale_factors_ID", eval_correction, {"year", "goodElectron_eta", "goodElectron_pt"});
 }
 
 RNode electronScaleFactors_ttHID(correction::CorrectionSet cset_electron_tth, RNode df){
@@ -299,7 +299,7 @@ RNode electronScaleFactors_ttHID(correction::CorrectionSet cset_electron_tth, RN
         }
         return electron_sf_weights;
     };
-    return df.Define("electron_scale_factors_ttHID", eval_correction, {"year", "GElectron_eta", "GElectron_pt"});
+    return df.Define("electron_scale_factors_ttHID", eval_correction, {"year", "goodElectron_eta", "goodElectron_pt"});
 }
 
 RNode electronScaleFactors_ttHISO(correction::CorrectionSet cset_electron_tth, RNode df){
@@ -315,7 +315,7 @@ RNode electronScaleFactors_ttHISO(correction::CorrectionSet cset_electron_tth, R
         }
         return electron_sf_weights;
     };
-    return df.Define("electron_scale_factors_ttHISO", eval_correction, {"year", "GElectron_eta", "GElectron_pt"});
+    return df.Define("electron_scale_factors_ttHISO", eval_correction, {"year", "goodElectron_eta", "goodElectron_pt"});
 }
 
 RNode electronScaleFactors_Trigger(correction::CorrectionSet cset_electron_trigger, RNode df) {
@@ -331,7 +331,7 @@ RNode electronScaleFactors_Trigger(correction::CorrectionSet cset_electron_trigg
         }
         return electron_sf_weights;
     };
-    return df.Define("electron_scale_factors_trigger", eval_correction, {"year", "GElectron_eta", "GElectron_pt"});
+    return df.Define("electron_scale_factors_trigger", eval_correction, {"year", "goodElectron_eta", "goodElectron_pt"});
 }
 
 
@@ -781,104 +781,88 @@ RNode LHEScaleWeight_muR(RNode df) {
     return df.Define("LHEScaleWeight_muR", eval_correction, {"LHEScaleWeight"});
 }
 
-RNode LHEWeights_pdf(RNode df) {
-    auto eval_correction = [] (const RVec<float> LHEWeights, float genWeight) {
-        RVec<float> PDFWeights = {1., 1., 1.};
-        float PDFUncValue = 0.0;
-        for (const auto& weight : LHEWeights) {
-            PDFUncValue += (weight - 1) * (weight - 1);
-        }
-        PDFUncValue = sqrt(PDFUncValue);
-
-        PDFWeights[0] = genWeight;
-        PDFWeights[1] = genWeight * (1 + PDFUncValue);
-        PDFWeights[2] = genWeight * (1 - PDFUncValue);
-        return PDFWeights;
-    };  
-    return df.Define("LHEWeights_pdf", eval_correction, {"LHEPdfWeight", "genWeight"});
-}
-
 RNode applyDataWeights(RNode df) {
+    std::cout << " -> Run applyMCWeights()" << std::endl;
     auto df_hem = HEMCorrection(df);
     auto df_golden = goodRun(LumiMask, df_hem);
     return df_golden.Define("weight", "goldenJSON * HEMweight");
 }
 
-RNode applyMCWeights(RNode df) {
-    auto df_hem = HEMCorrection(df);
-    auto df_l1prefire = L1PreFiringWeight(df_hem);
-    auto df_ewk = EWKCorrections(cset_ewk, df_l1prefire);
-    auto df_pileup = pileupScaleFactors(cset_pileup_2016preVFP, cset_pileup_2016postVFP, cset_pileup_2017, cset_pileup_2018, df_ewk);
-    auto df_pileupID = pileupIDScaleFactors(cset_pileupID_2016preVFP, cset_pileupID_2016postVFP, cset_pileupID_2017, cset_pileupID_2018, df_pileup);
-    //// muon sf
-    // auto df_muon_ID = muonScaleFactors_ID(cset_muon_ID_2016preVFP, cset_muon_ID_2016postVFP, cset_muon_ID_2017, cset_muon_ID_2018, df_pileupID);
-    // auto df_muon_trigger = muonScaleFactors_trigger(cset_muon_ID_2016preVFP, cset_muon_ID_2016postVFP, cset_muon_ID_2017, cset_muon_ID_2018, df_muon_ID);
-    // auto df_muon_ttHID = muonScaleFactors_ttHID(cset_muon_ttH, df_muon_trigger);
-    // auto df_muon_ttHISO = muonScaleFactors_ttHISO(cset_muon_ttH, df_muon_ttHID);
-    // // elec sf
-    // auto df_elec_Reco = electronScaleFactors_Reco(cset_electron_ID_2016preVFP, cset_electron_ID_2016postVFP, cset_electron_ID_2017, cset_electron_ID_2018, df_muon_ttHISO);
-    // auto df_elec_ID = electronScaleFactors_ID(cset_electron_ID_2016preVFP, cset_electron_ID_2016postVFP, cset_electron_ID_2017, cset_electron_ID_2018, df_elec_Reco);
-    // auto df_elec_ttHID = electronScaleFactors_ttHID(cset_electron_ttH, df_elec_ID);
-    // auto df_elec_ttHISO = electronScaleFactors_ttHISO(cset_electron_ttH, df_elec_ttHID);
-    // auto df_elec_trigger = electronScaleFactors_Trigger(cset_electron_trigger, df_elec_ttHISO);
+RNode applyMCWeights(RNode df_) {
+    std::cout << " -> Run applyMCWeights()" << std::endl;
+
+    auto df = HEMCorrection(df_);
+    df = L1PreFiringWeight(df);
+    df = EWKCorrections(cset_ewk, df);
+    df = pileupScaleFactors(cset_pileup_2016preVFP, cset_pileup_2016postVFP, cset_pileup_2017, cset_pileup_2018, df);
+    df = pileupIDScaleFactors(cset_pileupID_2016preVFP, cset_pileupID_2016postVFP, cset_pileupID_2017, cset_pileupID_2018, df);
+
+    // muon sf
+    // df = muonScaleFactors_ID(cset_muon_ID_2016preVFP, cset_muon_ID_2016postVFP, cset_muon_ID_2017, cset_muon_ID_2018, df);
+    // df = muonScaleFactors_trigger(cset_muon_ID_2016preVFP, cset_muon_ID_2016postVFP, cset_muon_ID_2017, cset_muon_ID_2018, df);
+    // df = muonScaleFactors_ttHID(cset_muon_ttH, df);
+    // df = muonScaleFactors_ttHISO(cset_muon_ttH, df);
+
+    // elec sf
+    // df = electronScaleFactors_Reco(cset_electron_ID_2016preVFP, cset_electron_ID_2016postVFP, cset_electron_ID_2017, cset_electron_ID_2018, df);
+    // df = electronScaleFactors_ID(cset_electron_ID_2016preVFP, cset_electron_ID_2016postVFP, cset_electron_ID_2017, cset_electron_ID_2018, df);
+    // df = electronScaleFactors_ttHID(cset_electron_ttH, df);
+    // df = electronScaleFactors_ttHISO(cset_electron_ttH, df);
+    // df = electronScaleFactors_Trigger(cset_electron_trigger, df);
 
     // particle net
-    // auto df_pnet_w_2016preVFP = PNET_W_ScaleFactors_2016preVFP(cset_pnet_w, df_pileupID);
-    // auto df_pnet_w_2016postVFP = PNET_W_ScaleFactors_2016postVFP(cset_pnet_w, df_pnet_w_2016preVFP);
-    // auto df_pnet_w_2017 = PNET_W_ScaleFactors_2017(cset_pnet_w, df_pnet_w_2016postVFP);
-    // auto df_pnet_w = PNET_W_ScaleFactors_2018(cset_pnet_w, df_pnet_w_2017);
-    // auto df_pnet_h_2016preVFP = PNET_H_ScaleFactors_2016preVFP(cset_pnet_h, df_pnet_w);
-    // auto df_pnet_h_2016postVFP = PNET_H_ScaleFactors_2016postVFP(cset_pnet_h, df_pnet_h_2016preVFP);
-    // auto df_pnet_h_2017 = PNET_H_ScaleFactors_2017(cset_pnet_h, df_pnet_h_2016postVFP);
-    // auto df_pnet_h = PNET_H_ScaleFactors_2018(cset_pnet_h, df_pnet_h_2017);
-    auto df_pnet_h = df_pileupID;
+    // df = PNET_W_ScaleFactors_2016preVFP(cset_pnet_w, df);
+    // df = PNET_W_ScaleFactors_2016postVFP(cset_pnet_w, df);
+    // df = PNET_W_ScaleFactors_2017(cset_pnet_w, df);
+    // df = PNET_W_ScaleFactors_2018(cset_pnet_w, df);
+    // df = PNET_H_ScaleFactors_2016preVFP(cset_pnet_h, df);
+    // df = PNET_H_ScaleFactors_2016postVFP(cset_pnet_h, df);
+    // df = PNET_H_ScaleFactors_2017(cset_pnet_h, df);
+    // df = PNET_H_ScaleFactors_2018(cset_pnet_h, df);
 
     // btagging sf
-    // auto df_btag = df_pnet_h.Define("GnTBJet", "goodAK4Jets && (!ak4FromTightBJet)") // Good AK4 jet that does not pass tight B jet requirement
+    // df = df.Define("GnTBJet", "goodAK4Jets && (!ak4FromTightBJet)") // Good AK4 jet that does not pass tight B jet requirement
     //                    .Define("GnTBJet_hadronFlavour", "Jet_hadronFlavour[GnTBJet]")
     //                    .Define("GnTBJet_pt", "Jet_pt[GnTBJet]")
     //                    .Define("GnTBJet_eta", "Jet_eta[GnTBJet]");
-    // auto df_btag_hf = bTaggingScaleFactors_HF(cset_btag_2016preVFP, cset_btag_2016postVFP, cset_btag_2017, cset_btag_2018, cset_btag_eff, df_btag);
-    // auto df_btag_lf = bTaggingScaleFactors_LF(cset_btag_2016preVFP, cset_btag_2016postVFP, cset_btag_2017, cset_btag_2018, cset_btag_eff, df_btag_hf);
+    // df = bTaggingScaleFactors_HF(cset_btag_2016preVFP, cset_btag_2016postVFP, cset_btag_2017, cset_btag_2018, cset_btag_eff, df);
+    // df = bTaggingScaleFactors_LF(cset_btag_2016preVFP, cset_btag_2016postVFP, cset_btag_2017, cset_btag_2018, cset_btag_eff, df);
 
-    auto df_psweight_fsr = PSWeight_FSR(df_pnet_h);
-    auto df_psweight_isr = PSWeight_ISR(df_psweight_fsr);
-    auto df_lhescaleweight_muf = LHEScaleWeight_muF(df_psweight_isr);
-    auto df_lhescaleweight_mur = LHEScaleWeight_muR(df_lhescaleweight_muf);
+    df = PSWeight_FSR(df);
+    df = PSWeight_ISR(df);
+    df = LHEScaleWeight_muF(df);
+    df = LHEScaleWeight_muR(df);
 
-    auto df_pdf_lheweight = LHEWeights_pdf(df_lhescaleweight_mur);
-
-    return df_pdf_lheweight.Define("weight", 
-        "pileup_weight[0] * "
-        "pileupid_weight[0] * "
-        "L1PreFiringWeight[0] * "
-        // "muon_scale_factors_ID[0] * "
-        // "muon_scale_factors_trigger[0] * "
-        // "muon_scale_factors_ttHID[0] * "
-        // "muon_scale_factors_ttHISO[0] * "
-        // "electron_scale_factors_Reco[0] * "
-        // "electron_scale_factors_ID[0] * "
-        // "electron_scale_factors_ttHID[0] * "
-        // "electron_scale_factors_ttHISO[0] * "
-        // "electron_scale_factors_trigger[0] * "
-        // "particlenet_w_weight_2016preVFP[0] * "
-        // "particlenet_w_weight_2016postVFP[0] * "
-        // "particlenet_w_weight_2017[0] * "
-        // "particlenet_w_weight_2018[0] * "
-        // "particlenet_h_weight_2016preVFP[0] * "
-        // "particlenet_h_weight_2016postVFP[0] * "
-        // "particlenet_h_weight_2017[0] * "
-        // "particlenet_h_weight_2018[0] * "
-        // "btagging_scale_factors_HF[0] * "
-        // "btagging_scale_factors_LF[0] * "
-        "PSWeight_ISR[0] * "
-        "PSWeight_FSR[0] * "
-        "LHEScaleWeight_muR[0] * "
-        "LHEScaleWeight_muF[0] * "
-        "LHEWeights_pdf[0] * " // contains genWeights
-        "HEMweight * "
-        "EWKCorrection *"
-        "xsec_weight");
+    return df.Define("weight",
+                     "pileup_weight[0] * "
+                     "pileupid_weight[0] * "
+                     "L1PreFiringWeight[0] * "
+                    //  "muon_scale_factors_ID[0] * "
+                    //  "muon_scale_factors_trigger[0] * "
+                    //  "muon_scale_factors_ttHID[0] * "
+                    //  "muon_scale_factors_ttHISO[0] * "
+                    //  "electron_scale_factors_Reco[0] * "
+                    //  "electron_scale_factors_ID[0] * "
+                    //  "electron_scale_factors_ttHID[0] * "
+                    //  "electron_scale_factors_ttHISO[0] * "
+                    //  "electron_scale_factors_trigger[0] * "
+                     // "particlenet_w_weight_2016preVFP[0] * "
+                     // "particlenet_w_weight_2016postVFP[0] * "
+                     // "particlenet_w_weight_2017[0] * "
+                     // "particlenet_w_weight_2018[0] * "
+                     // "particlenet_h_weight_2016preVFP[0] * "
+                     // "particlenet_h_weight_2016postVFP[0] * "
+                     // "particlenet_h_weight_2017[0] * "
+                     // "particlenet_h_weight_2018[0] * "
+                     // "btagging_scale_factors_HF[0] * "
+                     // "btagging_scale_factors_LF[0] * "
+                     "PSWeight_ISR[0] * "
+                     "PSWeight_FSR[0] * "
+                     "LHEScaleWeight_muR[0] * "
+                     "LHEScaleWeight_muF[0] * "
+                     "HEMweight * "
+                     "EWKCorrection *"
+                     "xsec_weight");
 }
 
 } // end namespace Run2

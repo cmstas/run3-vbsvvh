@@ -1,5 +1,5 @@
-#ifndef WEIGHTS_H
-#define WEIGHTS_H
+#ifndef WEIGHTS_RUN2_H
+#define WEIGHTS_RUN2_H
 
 #pragma once
 
@@ -20,7 +20,7 @@ namespace Run2
 
 // golden json
 RNode goodRun(lumiMask golden, RNode df);
-const auto LumiMask = lumiMask::fromJSON("corrections/goldenJson/Cert_271036-325175_13TeV_allRun2_JSON.json");
+const auto LumiMask = lumiMask::fromJSON({"corrections/goldenJson/Cert_271036-325175_13TeV_allRun2_JSON.json"});
 
 // l1 prefiring weights
 RNode L1PreFiringWeight(RNode df);
@@ -96,4 +96,4 @@ RNode applyMCWeights(RNode df);
 
 } // end namespace Run2
 
-#endif
+#endif // WEIGHTS_RUN2_H

@@ -1,5 +1,5 @@
-#ifndef WEIGHTS_H
-#define WEIGHTS_H
+#ifndef WEIGHTS_RUN3_H
+#define WEIGHTS_RUN3_H
 
 #pragma once
 
@@ -157,4 +157,4 @@ RNode applyMCWeights(RNode df);
 
 } // end namespace Run3
 
-#endif
+#endif //WEIGHTS_RUN3_H
