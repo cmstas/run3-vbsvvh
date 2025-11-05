@@ -1,6 +1,13 @@
 #include "truth_selections.h"
 #include <cassert>
 
+//
+// FIXME
+// This script performs the truth matching between truth particles -> genJets, and genJets -> reco jets. 
+// It is somewhat redundant with genSelections.cpp. Kept temporarily because the current Run 2 skims have 
+// different truth variables names and store the four vectors instead of the indices.
+//
+
 RNode addTruthVariables(RNode df){
   auto df_out = df.Define("dR_Hd1d2", delta_R, {"truthH_daught1_pt", "truthH_daught1_eta", "truthH_daught1_phi", "truthH_daught1_mass", "truthH_daught2_pt", "truthH_daught2_eta", "truthH_daught2_phi", "truthH_daught2_mass"})
                     .Define("dR_V1d1d2", delta_R, {"truthV1_daught1_pt", "truthV1_daught1_eta", "truthV1_daught1_phi", "truthV1_daught1_mass", "truthV1_daught2_pt", "truthV1_daught2_eta", "truthV1_daught2_phi", "truthV1_daught2_mass"})
