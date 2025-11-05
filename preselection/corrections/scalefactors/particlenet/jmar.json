@@ -1,0 +1,228 @@
+{
+    "schema_version": 2,
+    "description": "PNET corrections MD",
+    "corrections": [
+        {
+            "name": "JMS",
+            "version": 1,
+            "inputs": [
+                {
+                    "name": "year",
+                    "type": "string",
+                    "description": "year"
+                },
+                {
+                    "name": "sf",
+                    "type": "string",
+                    "description": "systematic variation"
+                }
+            ],
+            "output": {
+                "name": "weight",
+                "type": "real",
+                "description": "Multiplicative event weight"
+            },
+            "data": {
+                "nodetype": "category",
+                "input": "year",
+                "content": [
+                    {
+                        "key": "2016preVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": -0.3
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.0
+                                },
+                                {
+                                    "key": "down",
+                                    "value": -0.6
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2016postVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": -0.24
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.0
+                                },
+                                {
+                                    "key": "down",
+                                    "value": -0.48
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2017",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": -0.11
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.0
+                                },
+                                {
+                                    "key": "down",
+                                    "value": -0.22
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2018",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": -0.04
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.06
+                                },
+                                {
+                                    "key": "down",
+                                    "value": -0.14
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "JMR",
+            "version": 1,
+            "inputs": [
+                {
+                    "name": "year",
+                    "type": "string",
+                    "description": "year"
+                },
+                {
+                    "name": "sf",
+                    "type": "string",
+                    "description": "systematic variation"
+                }
+            ],
+            "output": {
+                "name": "weight",
+                "type": "real",
+                "description": "Multiplicative event weight"
+            },
+            "data": {
+                "nodetype": "category",
+                "input": "year",
+                "content": [
+                    {
+                        "key": "2016preVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": 0.13
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.43
+                                },
+                                {
+                                    "key": "down",
+                                    "value": 0.0
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2016postVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": 0.15
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.45
+                                },
+                                {
+                                    "key": "down",
+                                    "value": 0.0
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2017",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": 0.09
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.39
+                                },
+                                {
+                                    "key": "down",
+                                    "value": 0.0
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2018",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": 0.1
+                                },
+                                {
+                                    "key": "up",
+                                    "value": 0.4
+                                },
+                                {
+                                    "key": "down",
+                                    "value": 0.0
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
