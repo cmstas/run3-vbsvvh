@@ -103,9 +103,9 @@ executable              = executable.py
 transfer_executable     = True
 transfer_input_files    = keep_and_drop_skim.txt, truthSelections.h, jetId.h
 arguments               = ${proxy_path} \$(FILE) ${sigflag} ${OUTPUT_TAG}
-log                     = ${LOGDIR}/\$(Cluster).\$(Process).log 
-output                  = ${LOGDIR}/\$(Cluster).\$(Process).out
-error                   = ${LOGDIR}/\$(Cluster).\$(Process).err
+log                     = ${LOGDIR}/\$(Cluster).log 
+output                  = ${LOGDIR}/\$(Cluster).out
+error                   = ${LOGDIR}/\$(Cluster).err
 +JobFlavour             = "tomorrow"
 
 queue FILE from ${file_list}
