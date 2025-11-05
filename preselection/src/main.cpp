@@ -2,11 +2,12 @@
 #include "ROOT/RDFHelpers.hxx"
 #include "ROOT/RLogger.hxx"
 
-#include "weights.h"
-#include "corrections.h"
-#include "utils.h"
+#include "weights_run2.h"
+#include "weights_run3.h"
+#include "corrections_run3.h"
 #include "selections_run3.h"
 #include "selections_run2.h"
+#include "utils.h"
 #include "genSelections.h"
 
 #include "argparser.hpp"
@@ -89,8 +90,9 @@ int main(int argc, char** argv) {
 
     // Create output directory
     std::string output_dir = setOutputDirectory(args.ana, args.output_subdir, args.makeSpanetTrainingdata);
-    std::cout << "args.run_version = " << args.run_version << std::endl;
+    
     // Instantiate SPANet inference based on run_version
+    std::cout << " -> Running analysis for Run " << args.run_version << std::endl;
     std::unique_ptr<SPANet::SPANetInferenceBase> spanet_inference;
     if (args.run_version == "3") {
         const std::string  model_path = "spanet/v2/model.onnx";
@@ -99,12 +101,12 @@ int main(int argc, char** argv) {
     } else if (args.run_version == "2") {
         // Leave blank for now
         const std::string  model_path = "spanet/run2/v31/model.onnx";
-        std::cout << "Loading ONNX model from: " << model_path << std::endl;
+        std::cout << " -> Loading ONNX model from: " << model_path << std::endl;
         spanet_inference = std::make_unique<SPANet::SPANetInferenceRun2>(model_path, args.batch_size);
     } else {
         throw std::runtime_error("Invalid run_version: must be 2 or 3");
     }
-    std::cout << "ONNX session loaded successfully." << std::endl;
+    std::cout << "    ONNX session loaded successfully." << std::endl;
 
     // add debugging
     if (args.debug) {
@@ -159,19 +161,19 @@ int main(int argc, char** argv) {
         std::cout << " -> Running data analysis" << std::endl;
         df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference);
         if (args.run_version == "3") {
-            df = applyDataWeights(df);
+            df = Run3::applyDataWeights(df);
         }
         else {
-            std::cout << "WARNING: Weights not implemented for Run 2" << std::endl;
+            df = Run2::applyDataWeights(df);
         }
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = runAnalysis(df, args.ana, args.run_version, isSignal, *spanet_inference, makeSpanetTrainingdata);
         if (args.run_version == "3") {
-            df = applyMCWeights(df);
+            df = Run3::applyMCWeights(df);
         }
         else {
-            std::cout << "WARNING: Weights not implemented for Run 2" << std::endl;
+            df = Run2::applyMCWeights(df);
         }
     }
 

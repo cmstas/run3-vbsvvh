@@ -7,13 +7,16 @@
 #include "ROOT/RDFHelpers.hxx"
 #include "ROOT/RVec.hxx"
 
-#include "correction.h"
+#include "correction_run3.h"
 
 #include "TRandom3.h"
 
 using correction::CorrectionSet;
 using RNode = ROOT::RDF::RNode;
 using ROOT::VecOps::RVec;
+
+namespace Run3
+{
 
 float looseDFBtagWP(std::string year);
 float mediumDFBtagWP(std::string year);
@@ -42,5 +45,7 @@ float tightDFBtagWP(std::string year);
 // RNode JetVetoMaps(correction::CorrectionSet cset_jetveto_2022, correction::CorrectionSet cset_jetveto_2022EE, RNode df);
 // const auto cset_jetveto_2022 = *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/2022_Summer22/jetvetomaps.json.gz");
 // const auto cset_jetveto_2022EE = *CorrectionSet::from_file("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/2022_Summer22EE/jetvetomaps.json.gz");
+
+} // end namespace Run3
 
 #endif

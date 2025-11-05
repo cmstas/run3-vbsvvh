@@ -1,5 +1,7 @@
-#include "weights.h"
+#include "weights_run3.h"
 
+namespace Run3
+{
 
 /*
 ############################################
@@ -218,3 +220,5 @@ RNode applyMCWeights(RNode df_) {
         "genWeight * "
         "xsec_weight");
 }
+
+} // end namespace Run3

@@ -18,6 +18,8 @@ using correction::CorrectionSet;
 using RNode = ROOT::RDF::RNode;
 using ROOT::VecOps::RVec;
 
+namespace Run3
+{
 
 /*
 ############################################
@@ -152,5 +154,7 @@ RNode applyLHEWeights_pdf(RNode df);
 
 RNode applyDataWeights(RNode df);
 RNode applyMCWeights(RNode df);
+
+} // end namespace Run3
 
 #endif
