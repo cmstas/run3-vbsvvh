@@ -355,10 +355,10 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
                     result[boosted_result_pos[last_idx]] = last_fj;
                     used_fatjets.insert(last_fj);
                 }
-            } else if (DEBUG) {
-                std::cout << "No boosted boson left to match. Returning." << std::endl;
             }
-        }        
+        } else if (DEBUG) {
+            std::cout << "No boosted boson left to match. Returning." << std::endl;
+        }           
     }
 
     // Resolved
