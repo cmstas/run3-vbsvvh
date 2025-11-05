@@ -133,9 +133,15 @@ void SPANetInferenceRun2::fillBatchTensors(const std::vector<std::shared_ptr<Eve
     
 }
 
+#include <vector>
+#include <algorithm>
+#include <utility>
+#include <set>
+#include <limits>
+#include <iostream>
+#include <string>
 
-
-std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
+std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     std::vector<std::vector<float>> vbs_assignment,
     std::vector<std::vector<float>> h_assignment,
     std::vector<std::vector<float>> bh_assignment,
@@ -156,22 +162,23 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
     RVec<float> FatJet_phi
 ) {
     bool DEBUG = true;
+
     if (DEBUG) {
         std::cout << "Event processing" << std::endl;
         std::cout << " Boosted assignments:" << std::endl;
         std::cout << " bh = {";
         for (const auto& v : bh_assignment) {
-            if (!v.empty()) std::cout << "[" << v[0] << ", " << static_cast<int>(v[0]) << "], ";
+            if (!v.empty() && v.size() > 1) std::cout << "[" << v[0] << ", " << static_cast<int>(v[1]) << "], ";
         }
         std::cout << "}" << std::endl;
         std::cout << " bv1 = {";
         for (const auto& v : bv1_assignment) {
-            if (!v.empty()) std::cout << "[" << v[0] << ", " << static_cast<int>(v[0]) << "], ";
+            if (!v.empty() && v.size() > 1) std::cout << "[" << v[0] << ", " << static_cast<int>(v[1]) << "], ";
         }
         std::cout << "}" << std::endl;
         std::cout << " bv2 = {";
         for (const auto& v : bv2_assignment) {
-            if (!v.empty()) std::cout << "[" << v[0] << ", " << static_cast<int>(v[0]) << "], ";
+            if (!v.empty() && v.size() > 1) std::cout << "[" << v[0] << ", " << static_cast<int>(v[1]) << "], ";
         }
         std::cout << "}" << std::endl;
     }
@@ -180,53 +187,20 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
     std::set<int> used_jets;
     std::set<int> used_fatjets;
 
-   
-    // Helper to get sorted candidates for resolved (descending prob)
-    auto get_sorted_candidates = [](const std::vector<std::vector<float>>& matrix) -> std::vector<std::vector<float>> {
-        std::vector<std::vector<float>> cands;
-        size_t n = matrix.size();
-        for (size_t i = 0; i < n; ++i) {
-            for (size_t j = i + 1; j < n; ++j) {
-                float prob = matrix[i][j];
-                cands.push_back({prob, static_cast<float>(i), static_cast<float>(j)});
-            }
-        }
-        std::sort(cands.begin(), cands.end(), [](const std::vector<float>& a, const std::vector<float>& b) {
-            return a[0] > b[0];
-        });
-        return cands;
-    };
-
-    // Helper to get sorted candidates for boosted (descending prob)
-    auto get_sorted_boosted = [](const std::vector<std::vector<float>>& vec) -> std::vector<std::vector<float>> {
-        std::vector<std::vector<float>> cands;
-        size_t n = vec.size();
-        for (size_t k = 0; k < n; ++k) {
-            if (!vec[k].empty()) {
-                float prob = vec[k][0];
-                cands.push_back({prob, static_cast<float>(k)});
-            }
-        }
-        std::sort(cands.begin(), cands.end(), [](const std::vector<float>& a, const std::vector<float>& b) {
-            return a[0] > b[0];
-        });
-        return cands;
-    };
-
-    // Extract sorted candidates
-    auto cand_vbs = get_sorted_candidates(vbs_assignment);
-    auto cand_h = get_sorted_candidates(h_assignment);
-    auto cand_v1 = get_sorted_candidates(v1_assignment);
-    auto cand_v2 = get_sorted_candidates(v2_assignment);
-    auto cand_bh = get_sorted_boosted(bh_assignment);
-    auto cand_bv1 = get_sorted_boosted(bv1_assignment);
-    auto cand_bv2 = get_sorted_boosted(bv2_assignment);
+    // Use inputs directly as candidates (already flattened and sorted descending by prob)
+    auto cand_vbs = vbs_assignment;
+    auto cand_h = h_assignment;
+    auto cand_v1 = v1_assignment;
+    auto cand_v2 = v2_assignment;
+    auto cand_bh = bh_assignment;
+    auto cand_bv1 = bv1_assignment;
+    auto cand_bv2 = bv2_assignment;
 
     // Filter for boosted
     auto filter_candidates = [](const std::vector<std::vector<float>>& cand, float th) {
         std::vector<std::vector<float>> filtered;
         for (const auto& c : cand) {
-            if (c[0] > th) {
+            if (!c.empty() && c.size() > 1 && c[0] > th) {
                 filtered.push_back(c);
             }
         }
@@ -240,31 +214,75 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
         filter_candidates(cand_bv2, threshold)
     };
 
+    // Helper to check jet overlap
+    auto checkJetOverlap = [&](int jet_idx) -> bool {
+        if (jet_idx < 0 || jet_idx >= Jet_eta.size()) return true;
+        return used_jets.count(jet_idx) > 0;
+    };
+
+    // Helper to check fatjet overlap
+    auto checkFatJetOverlap = [&](int fatjet_idx) -> bool {
+        if (fatjet_idx < 0 || fatjet_idx >= FatJet_eta.size()) return true;
+        return used_fatjets.count(fatjet_idx) > 0;
+    };
+
+    // Helper to check DeltaR
+    auto checkDeltaR = [&](int idx1, int idx2, bool is_fatjet1, bool is_fatjet2) -> bool {
+        if (idx1 < 0 || idx2 < 0) return true;
+        float eta1 = is_fatjet1 ? FatJet_eta[idx1] : Jet_eta[idx1];
+        float phi1 = is_fatjet1 ? FatJet_phi[idx1] : Jet_phi[idx1];
+        float eta2 = is_fatjet2 ? FatJet_eta[idx2] : Jet_eta[idx2];
+        float phi2 = is_fatjet2 ? FatJet_phi[idx2] : Jet_phi[idx2];
+        float dR = ROOT::VecOps::DeltaR(eta1, eta2, phi1, phi2);
+        if (is_fatjet1 || is_fatjet2) {
+            return dR >= 0.8;
+        }
+        return dR >= 0.4;
+    };
+
+    // Helper to check all overlaps
+    auto checkAllOverlaps = [&](int candidate_idx, bool is_fatjet) -> bool {
+        for (int assigned_jet : used_jets) {
+            if (!checkDeltaR(candidate_idx, assigned_jet, is_fatjet, false)) {
+                return false;
+            }
+        }
+        for (int assigned_fatjet : used_fatjets) {
+            if (!checkDeltaR(candidate_idx, assigned_fatjet, is_fatjet, true)) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     // Helper to find best fatjet
-    auto get_best_fatjet = [](const std::vector<std::vector<float>>& candidates, const std::set<int>& used) -> std::pair<int, float> {
+    auto get_best_fatjet = [&](const std::vector<std::vector<float>>& candidates, const std::set<int>& used) -> std::pair<int, float> {
         for (const auto& cand : candidates) {
             int fj = static_cast<int>(cand[1]);
-            if (used.find(fj) == used.end()) {
-                return {fj, cand[0]}; // assumes candidates are probability ordered
+            if (fj >= 0 && fj < FatJet_eta.size() && !checkFatJetOverlap(fj) && checkAllOverlaps(fj, true)) {
+                return {fj, cand[0]};
             }
         }
         return {-1, -std::numeric_limits<float>::infinity()};
     };
 
     // Helper to find best pair
-    auto get_best_pair = [](const std::vector<std::vector<float>>& candidates, const std::set<int>& used) -> std::tuple<int, int, float> {
+    auto get_best_pair = [&](const std::vector<std::vector<float>>& candidates, const std::set<int>& used) -> std::tuple<int, int, float> {
         for (const auto& cand : candidates) {
             int j1 = static_cast<int>(cand[1]);
             int j2 = static_cast<int>(cand[2]);
-            if (j1 != j2 && used.find(j1) == used.end() && used.find(j2) == used.end()) {
-                return {j1, j2, cand[0]}; // assumes candidates are probability ordered
+            if (j1 != j2 && j1 >= 0 && j1 < Jet_eta.size() && j2 >= 0 && j2 < Jet_eta.size() && 
+                !checkJetOverlap(j1) && !checkJetOverlap(j2) && 
+                checkDeltaR(j1, j2, false, false) && 
+                checkAllOverlaps(j1, false) && checkAllOverlaps(j2, false)) {
+                return {j1, j2, cand[0]};
             }
         }
         return {-1, -1, -std::numeric_limits<float>::infinity()};
     };
 
     // Boosted assignment logic
-    std::vector<int> boosted_result_pos = {4, 9, 10}; // bh, bv1, bv2 positions
+    std::vector<int> boosted_result_pos = {4, 9, 10}; // bh, bv1, bv2
 
     std::vector<float> top_probs(3, -std::numeric_limits<float>::infinity());
     for (int i = 0; i < 3; ++i) {
@@ -280,6 +298,10 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
             max_prob = top_probs[i];
             first_idx = i;
         }
+    }
+
+    if (DEBUG && boosted_cands[0].empty() && boosted_cands[1].empty() && boosted_cands[2].empty()) {
+        std::cout << "No boosted boson found with any p > 0.5" << std::endl;
     }
 
     if (first_idx != -1) {
@@ -309,9 +331,11 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
                     }
                     result[boosted_result_pos[idx]] = fj;
                     used_fatjets.insert(fj);
+                } else if (DEBUG) {
+                    std::cout << "No boson left after overlap removal." << std::endl;
                 }
             } else {
-               std::vector<std::tuple<int, float, int>> best_probs;
+                std::vector<std::tuple<int, float, int>> best_probs;
                 for (int idx : remaining) {
                     auto [fj, prob] = get_best_fatjet(boosted_cands[idx], used_fatjets);
                     best_probs.push_back({idx, prob, fj});
@@ -327,9 +351,9 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
 
                 // Sort descending by prob
                 std::sort(best_probs.begin(), best_probs.end(),
-                        [](const std::tuple<int, float, int>& a, const std::tuple<int, float, int>& b) {
-                            return std::get<1>(a) > std::get<1>(b);
-                        });
+                          [](const std::tuple<int, float, int>& a, const std::tuple<int, float, int>& b) {
+                              return std::get<1>(a) > std::get<1>(b);
+                          });
 
                 // Assign the best one
                 int best_idx = std::get<0>(best_probs[0]);
@@ -358,7 +382,7 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
             }
         } else if (DEBUG) {
             std::cout << "No boosted boson left to match. Returning." << std::endl;
-        }           
+        }
     }
 
     // Resolved
@@ -385,17 +409,20 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
 
     if (DEBUG) {
         std::cout << " Resolved assignments:" << std::endl;
-        for (const auto& label : {"h", "v1", "v2"}) {
-            const auto& cand = (label == std::string("h") ? cand_h : (label == std::string("v1") ? cand_v1 : cand_v2));
-            std::cout << " " << label << " = {";
+        std::vector<std::string> res_labels = {"h", "v1", "v2"};
+        for (size_t ri = 0; ri < 3; ++ri) {
+            const auto& cand = (ri == 0 ? cand_h : (ri == 1 ? cand_v1 : cand_v2));
+            std::cout << " " << res_labels[ri] << " = {";
             for (const auto& c : cand) {
-                std::cout << "[" << c[0] << ", " << static_cast<int>(c[1]) << ", " << static_cast<int>(c[2]) << "], ";
+                if (c[0] > 0 && c[0] <= 1) { // Skip garbage probs
+                    std::cout << "[" << c[0] << ", " << static_cast<int>(c[1]) << ", " << static_cast<int>(c[2]) << "], ";
+                }
             }
             std::cout << "}" << std::endl;
         }
         std::cout << "Resolved bosons to match: {";
-        for (const auto& [j1, j2] : resolved_pos) {
-            std::string label = (j1 == 2 ? "h" : (j1 == 5 ? "v1" : "v2"));
+        for (size_t i = 0; i < resolved_pos.size(); ++i) {
+            std::string label = (resolved_pos[i].first == 2 ? "h" : (resolved_pos[i].first == 5 ? "v1" : "v2"));
             std::cout << label << ", ";
         }
         std::cout << "}" << std::endl;
@@ -405,7 +432,7 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
         std::vector<float> res_top_probs(resolved_cands.size(), -std::numeric_limits<float>::infinity());
         for (size_t i = 0; i < resolved_cands.size(); ++i) {
             if (!resolved_cands[i].empty()) {
-                res_top_probs[i] = resolved_cands[i][0][0]; // candidate i, highest probability jet pair, probability value
+                res_top_probs[i] = resolved_cands[i][0][0];
             }
         }
 
@@ -454,68 +481,72 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
                         used_jets.insert(j1);
                         used_jets.insert(j2);
                     }
-                }
-            } else {
-                std::vector<std::tuple<int, float, int, int>> res_best_probs;
-                for (int idx : res_remaining) {
-                    auto [j1, j2, prob] = get_best_pair(resolved_cands[idx], used_jets);
-                    res_best_probs.push_back({idx, prob, j1, j2});
-                }
-                if (DEBUG) {
-                    std::cout << "\nAfter first selection:" << std::endl;
-                    std::cout << "Best probs for remaining: {";
-                    for (const auto& [idx, prob, j1, j2] : res_best_probs) {
-                        std::cout << prob << ", ";
-                    }
-                    std::cout << "}" << std::endl;
-                }
-
-                // Sort descending by prob
-                std::sort(res_best_probs.begin(), res_best_probs.end(),
-                          [](const std::tuple<int, float, int, int> &a, const std::tuple<int, float, int, int> &b) {
-                              return std::get<1>(a) > std::get<1>(b);
-                          });
-
-                int best_idx = std::get<0>(res_best_probs[0]);
-                int best_j1 = std::get<2>(res_best_probs[0]);
-                int best_j2 = std::get<3>(res_best_probs[0]);
-                float best_p = std::get<1>(res_best_probs[0]);
-                if (best_j1 != -1) {
-                    result[resolved_pos[best_idx].first] = best_j1;
-                    result[resolved_pos[best_idx].second] = best_j2;
-                    used_jets.insert(best_j1);
-                    used_jets.insert(best_j2);
-                } else if (DEBUG) {
-                        std::cout << "No valid pairs for remaining bosons." << std::endl;
-                }
-
-                int last_idx = res_remaining[best_idx == res_remaining[0] ? 1 : 0];
-                auto [last_j1, last_j2, last_prob] = get_best_pair(resolved_cands[last_idx], used_jets);
-                if (last_j1 != -1) {
+                } else {
                     if (DEBUG) {
-                        std::cout << "\nAfter second selection:" << std::endl;
-                        std::cout << "Last pair: (" << last_j1 << ", " << last_j2 << ")" << std::endl;
+                        std::cout << "\nAfter first selection:" << std::endl;
                     }
-                    result[resolved_pos[last_idx].first] = last_j1;
-                    result[resolved_pos[last_idx].second] = last_j2;
-                    used_jets.insert(last_j1);
-                    used_jets.insert(last_j2);
-                }    
+                    std::vector<std::tuple<int, float, int, int>> res_best_probs;
+                    for (int idx : res_remaining) {
+                        auto [j1, j2, prob] = get_best_pair(resolved_cands[idx], used_jets);
+                        res_best_probs.push_back({idx, prob, j1, j2});
+                    }
+
+                    if (DEBUG) {
+                        std::cout << "Best probs for remaining: {";
+                        for (const auto& [idx, prob, j1, j2] : res_best_probs) {
+                            std::cout << prob << ", ";
+                        }
+                        std::cout << "}" << std::endl;
+                    }
+
+                    // Sort descending by prob
+                    std::sort(res_best_probs.begin(), res_best_probs.end(),
+                              [](const std::tuple<int, float, int, int>& a, const std::tuple<int, float, int, int>& b) {
+                                  return std::get<1>(a) > std::get<1>(b);
+                              });
+
+                    int best_idx = std::get<0>(res_best_probs[0]);
+                    int best_j1 = std::get<2>(res_best_probs[0]);
+                    int best_j2 = std::get<3>(res_best_probs[0]);
+                    float best_p = std::get<1>(res_best_probs[0]);
+                    if (best_j1 != -1) {
+                        result[resolved_pos[best_idx].first] = best_j1;
+                        result[resolved_pos[best_idx].second] = best_j2;
+                        used_jets.insert(best_j1);
+                        used_jets.insert(best_j2);
+                    } else if (DEBUG) {
+                        std::cout << "No valid pairs for remaining bosons." << std::endl;
+                    }
+
+                    int last_idx = res_remaining[best_idx == res_remaining[0] ? 1 : 0];
+                    auto [last_j1, last_j2, last_prob] = get_best_pair(resolved_cands[last_idx], used_jets);
+                    if (last_j1 != -1) {
+                        if (DEBUG) {
+                            std::cout << "\nAfter second selection:" << std::endl;
+                            std::cout << "Last pair: (" << last_j1 << ", " << last_j2 << ")" << std::endl;
+                        }
+                        result[resolved_pos[last_idx].first] = last_j1;
+                        result[resolved_pos[last_idx].second] = last_j2;
+                        used_jets.insert(last_j1);
+                        used_jets.insert(last_j2);
+                    }
+                }
+            } else if (DEBUG) {
+                std::cout << "No remaining bosons, returning." << std::endl;
             }
-        } 
-    } else if (DEBUG) {
-        std::cout << "No remaining bosons, returning." << std::endl;
+        }
     }
 
-    // VBS
     if (DEBUG) {
         std::cout << "\nStarting VBS Jets Selection" << std::endl;
+        std::cout << "====================" << std::endl;
         std::cout << "vbs = {";
         for (const auto& c : cand_vbs) {
             std::cout << "[" << c[0] << ", " << static_cast<int>(c[1]) << ", " << static_cast<int>(c[2]) << "], ";
         }
         std::cout << "}" << std::endl;
     }
+
     auto [vbs_j1, vbs_j2, vbs_prob] = get_best_pair(cand_vbs, used_jets);
     if (vbs_j1 != -1 && vbs_prob >= 0.0f) {
         if (DEBUG) {
@@ -552,6 +583,7 @@ std::vector<int> SPANetInferenceRun2::assign_all_objects_maxprob(
 
     return result;
 }
+
 
 RNode SPANetInferenceRun2::ParseSpanetInference(RNode df_) {
     std::cout << "--> SPANetInferenceRun2::ParseSpanetInference()" << std::endl;
