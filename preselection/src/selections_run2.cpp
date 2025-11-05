@@ -34,71 +34,6 @@ namespace Run2
     }
 
     /*
-     *  Hack
-    */
-    // RNode redefineGenColumns(RNode df)
-    // {
-    //     return df
-    //         .Alias("gen_vbs1_idx", "truthVBSq1_idx")
-    //         .Alias("gen_vbs2_idx", "truthVBSq2_idx")
-    //         .Alias("gen_h_idx", "truthH_idx")
-    //         .Alias("gen_b1_idx", "truthH_daught1_idx")
-    //         .Alias("gen_b2_idx", "truthH_daught2_idx")
-    //         .Alias("gen_v1_idx", "truthV1_idx")
-    //         .Alias("gen_v2_idx", "truthV2_idx")
-    //         .Alias("gen_v1q1_idx", "truthV1_daught1_idx")
-    //         .Alias("gen_v1q2_idx", "truthV1_daught2_idx")
-    //         .Alias("gen_v2q1_idx", "truthV2_daught1_idx")
-    //         .Alias("gen_v2q2_idx", "truthV2_daught2_idx");
-    // }
-    /*
-     * Corrections 
-     */
-    RNode defineCorrectedCols(RNode df)
-    {
-        return df.Define("CorrJet_pt", "Jet_pt")
-            .Define("CorrJet_mass", "Jet_mass")
-            .Define("CorrFatJet_pt", "FatJet_pt")
-            .Define("CorrFatJet_mass", "FatJet_mass")
-            .Define("CorrMET_pt", "MET_pt");
-    }
-    float looseDFBtagWP(std::string year){
-        if(year == "2016preVFP")
-            return 0.0508;
-        if(year == "2016postVFP")
-            return 0.0480;
-        if(year == "2017")
-            return 0.0532;
-        if(year == "2018")
-            return 0.0490;
-        return -1;
-    }
-
-    float mediumDFBtagWP(std::string year){
-        if(year == "2016preVFP")
-            return 0.2598;
-        if(year == "2016postVFP")
-            return 0.2489;
-        if(year == "2017")
-            return 0.3040;
-        if(year == "2018")
-            return 0.2783;
-        return -1;
-    }
-
-    float tightDFBtagWP(std::string year){
-        if(year == "2016preVFP")
-            return 0.6502;
-        if(year == "2016postVFP")
-            return 0.6377;
-        if(year == "2017")
-            return 0.7476;
-        if(year == "2018")
-            return 0.7100;
-        return -1;
-    }
-
-    /*
      * Triggers
      */
     RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
@@ -220,6 +155,8 @@ namespace Run2
                           .Define("goodAK4Jets_isTightBTag", "Jet_isTightBTag[goodAK4Jets]")
                           .Define("goodAK4Jets_isMediumBTag", "Jet_isMediumBTag[goodAK4Jets]")
                           .Define("goodAK4Jets_isLooseBTag", "Jet_isLooseBTag[goodAK4Jets]")
+                          .Define("puIDJets_pt", "goodAK4Jets_pt")
+                          .Define("puIDJets_eta", "goodAK4Jets_eta")
                           .Define("ht_goodAK4Jets", "Sum(CorrJet_pt[goodAK4Jets])")
                           .Define("n_goodAK4Jets", "Sum(goodAK4Jets)")
                           .Define("ptSortedGoodAK4Jets", "Argsort(-CorrJet_pt)") // checkme
