@@ -862,6 +862,7 @@ RNode applyMCWeights(RNode df_) {
                      "LHEScaleWeight_muF[0] * "
                      "HEMweight * "
                      "EWKCorrection *"
+                     "genWeight * "
                      "xsec_weight");
 }
 
