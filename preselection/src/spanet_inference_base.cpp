@@ -14,7 +14,8 @@ SPANetInferenceBase::SPANetInferenceBase(
     size_t max_leptons,
     size_t lepton_features // Setting lepton features to 0 will disable these inputs
 ) : batch_size_(batch_size),
-    top_k_(3),
+    //top_k_(3),
+    top_k_(std::numeric_limits<int64_t>::max()),
     memory_info_(Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault)),
     input_names_{input_names},
     output_names_{"h_assignment_probability",

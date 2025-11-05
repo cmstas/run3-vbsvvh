@@ -44,8 +44,6 @@ namespace SPANet {
 
         // Functions that depend on input features are defined as pure virtual and have to be defined in derived class
         RNode RunSPANetInference(RNode df);
-
-        // Functions that depend on input features are defined as pure virtual and have to be defined in derived class
         virtual RNode ParseSpanetInference(RNode df_) = 0;
         
 
