@@ -34,7 +34,7 @@ SPANetInferenceBase::SPANetInferenceBase(
                   "vbs_detection_probability",
                   "EVENT/isSignal"} {
 
-    std::cout << "--> SPANetInferenceBase::SPANetInferenceBase() " << std::endl;
+    std::cout << " -> SPANetInferenceBase::SPANetInferenceBase() " << std::endl;
 
     ak4_input_shape_ = {static_cast<int64_t>(batch_size_), static_cast<int64_t>(max_ak4_jets), static_cast<int64_t>(ak4_features)};
     ak8_input_shape_ = {static_cast<int64_t>(batch_size_), static_cast<int64_t>(max_ak8_jets), static_cast<int64_t>(ak8_features)};
@@ -75,7 +75,7 @@ SPANetInferenceBase::SPANetInferenceBase(
 }
 
 RNode SPANetInferenceBase::RunSPANetInference(RNode df) {
-    std::cout << "--> SPANetInferenceBase::RunSPANetInference()" << std::endl;
+    std::cout << " -> SPANetInferenceBase::RunSPANetInference()" << std::endl;
 
     auto start_time = std::chrono::high_resolution_clock::now();
     auto events = extractEventsFromDataFrame(df);
@@ -103,7 +103,7 @@ RNode SPANetInferenceBase::RunSPANetInference(RNode df) {
 }
 
 std::vector<std::vector<std::vector<std::vector<float>>>> SPANetInferenceBase::runBatchInference(const std::vector<std::shared_ptr<EventDataBase>>& events) {
-    std::cout << "--> SPANetInferenceBase::runBatchInference()" << std::endl;
+    std::cout << " -> SPANetInferenceBase::runBatchInference()" << std::endl;
 
     std::vector<std::vector<std::vector<std::vector<float>>>> all_results;
     all_results.reserve(events.size());
@@ -244,7 +244,7 @@ std::vector<std::vector<std::vector<std::vector<float>>>> SPANetInferenceBase::r
 }
 RNode SPANetInferenceBase::addSPANetOutputsToDataFrame(RNode df, const std::vector<std::vector<std::vector<std::vector<float>>>> &all_outputs, const std::vector<std::shared_ptr<EventDataBase>> &events)
 {
-    std::cout << "--> SPANetInferenceBase::addSPANetOutputsToDataFrame()" << std::endl;
+    std::cout << " -> SPANetInferenceBase::addSPANetOutputsToDataFrame()" << std::endl;
 
     // Create maps for fast lookup using entry+slot as key
     std::map<std::pair<ULong64_t, unsigned int>, size_t> entry_slot_to_output_idx;

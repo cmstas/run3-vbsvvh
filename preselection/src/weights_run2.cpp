@@ -781,17 +781,18 @@ RNode LHEScaleWeight_muR(RNode df) {
     return df.Define("LHEScaleWeight_muR", eval_correction, {"LHEScaleWeight"});
 }
 
-RNode applyDataWeights(RNode df) {
-    std::cout << " -> Run applyMCWeights()" << std::endl;
-    auto df_hem = HEMCorrection(df);
-    auto df_golden = goodRun(LumiMask, df_hem);
-    return df_golden.Define("weight", "goldenJSON * HEMweight");
+RNode applyDataWeights(RNode df_) {
+    std::cout << " -> Run applyDataWeights()" << std::endl;
+    auto df = defineCorrectedCols(df_);
+    df = HEMCorrection(df);
+    df = goodRun(LumiMask, df);
+    return df.Define("weight", "goldenJSON * HEMweight");
 }
 
 RNode applyMCWeights(RNode df_) {
     std::cout << " -> Run applyMCWeights()" << std::endl;
-
-    auto df = HEMCorrection(df_);
+    auto df = defineCorrectedCols(df_);
+    df = HEMCorrection(df);
     df = L1PreFiringWeight(df);
     df = EWKCorrections(cset_ewk, df);
     df = pileupScaleFactors(cset_pileup_2016preVFP, cset_pileup_2016postVFP, cset_pileup_2017, cset_pileup_2018, df);

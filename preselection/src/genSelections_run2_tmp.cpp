@@ -1,4 +1,4 @@
-#include "truth_selections.h"
+#include "genSelections_run2_tmp.h"
 #include <cassert>
 
 //
@@ -7,6 +7,28 @@
 // It is somewhat redundant with genSelections.cpp. Kept temporarily because the current Run 2 skims have 
 // different truth variables names and store the four vectors instead of the indices.
 //
+
+RNode GenSelections_run2(RNode df, bool isSignal) {
+    if (isSignal){
+       df = reconstructTruthEvent(df); 
+    }
+    else {
+      df = df.Define("hq1_idx_jet", "-1")
+            .Define("hq2_idx_jet", "-1")
+            .Define("v1q1_idx_jet", "-1")
+            .Define("v1q2_idx_jet", "-1")
+            .Define("v2q1_idx_jet", "-1")
+            .Define("v2q2_idx_jet", "-1")
+            .Define("nTruthMatchedBosonDaught_jet", "-1")
+            .Define("h_idx_fatjet", "-1")
+            .Define("v1_idx_fatjet", "-1")
+            .Define("v2_idx_fatjet", "-1")
+            .Define("nTruthMatchedBosons_fatjet", "-1")
+            .Define("vbs1_idx_jet", "-1")
+            .Define("vbs2_idx_jet", "-1");
+    }
+    return df;
+}
 
 RNode addTruthVariables(RNode df){
   auto df_out = df.Define("dR_Hd1d2", delta_R, {"truthH_daught1_pt", "truthH_daught1_eta", "truthH_daught1_phi", "truthH_daught1_mass", "truthH_daught2_pt", "truthH_daught2_eta", "truthH_daught2_phi", "truthH_daught2_mass"})
@@ -290,6 +312,8 @@ RNode reconstructTruthEvent(RNode df)
                .Define("dR_V1_truth_matchedGenJet", delta_R, {"truthV1_pt", "truthV1_eta", "truthV1_phi", "truthV1_mass", "GenJetAK8_V1_pt", "GenJetAK8_V1_eta", "GenJetAK8_V1_phi", "GenJetAK8_V1_mass"})
                .Define("dR_V2_truth_matchedGenJet", delta_R, {"truthV2_pt", "truthV2_eta", "truthV2_phi", "truthV2_mass", "GenJetAK8_V2_pt", "GenJetAK8_V2_eta", "GenJetAK8_V2_phi", "GenJetAK8_V2_mass"});
 
+  df_out = reconstructRecoEventWithTruthInfo_Boosted(df_out);
+  df_out = reconstructRecoEventWithTruthInfo_Resolved(df_out); // requires reconstructRecoEventWithTruthInfo_Boosted() to be run first
   return df_out;
 }
 

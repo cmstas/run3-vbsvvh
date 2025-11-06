@@ -36,6 +36,22 @@ RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& 
     return df;
 }
 
+RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::string &objectName, const std::string &newAffix)
+{
+    auto columnNames = df.GetColumnNames();
+    for (const auto &colName : columnNames)
+    {
+        if (colName.starts_with(objectName + "_"))
+        {
+            std::string suffix = colName.substr(objectName.size() + 1);
+            std::string newCol = newAffix + "_" + suffix;
+            df = df.Define(newCol, colName + "[" + maskName + "]");
+        }
+    }
+    df = df.Define("n" + newAffix, "Sum(" + maskName + ")");
+    return df;
+}
+
 /*
 ############################################
 LUMIMASK - GOLDEN JSON
@@ -281,8 +297,10 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     std::vector<std::string> final_variables;
     final_variables.push_back("event");
 
+    // do not store branches that start with "_" nor raw NanoAOD collections
     for (auto &&ColName : ColNames) {
-        if (ColName.starts_with("_") && !ColName.starts_with("_cut")) {
+        if ((ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") && ColName.starts_with("Muon_")) && !ColName.starts_with("_cut"))
+        {
             continue;
         }
         final_variables.push_back(ColName);

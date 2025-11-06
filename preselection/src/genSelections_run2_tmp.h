@@ -5,8 +5,8 @@
 #include "Math/VectorUtil.h"
 #include "utils.h"
 
-RNode reconstructRecoEventWithTruthInfo_Resolved(RNode df_, std::string recoJetsCollection = "goodAK4Jets", std::string recoJetsCollectionAK8= "goodAK8Jets");
-RNode reconstructRecoEventWithTruthInfo_Boosted(RNode df, std::string recoJetsCollection = "goodAK8Jets");
+RNode reconstructRecoEventWithTruthInfo_Resolved(RNode df_, std::string recoJetsCollection = "jet", std::string recoJetsCollectionAK8= "fatjet");
+RNode reconstructRecoEventWithTruthInfo_Boosted(RNode df, std::string recoJetsCollection = "fatjet");
 RNode findTruthMatchedVBSJets(RNode df, std::string recoAK4JetsCollection, std::string recoAK8JetsCollection);
 RNode addTruthVariables(RNode df);
 int truthMatchedAk4Idx(float ppt, float peta, float pphi, float pm,
@@ -57,6 +57,7 @@ std::vector<int> truthMatch_GenJets(
     const ROOT::RVecF GenJet_pt, const ROOT::RVecF GenJet_eta, const ROOT::RVecF GenJet_phi, const ROOT::RVecF GenJet_mass);
 
 RNode reconstructTruthEvent(RNode df);
+RNode GenSelections_run2(RNode df, bool isSignal);
 
 std::vector<int> truthMatch_GenJetsAK8_HV1V2(
     float truthH_pt, float truthH_eta, float truthH_phi, float truthH_mass,
