@@ -5,7 +5,7 @@ namespace Run2
     RNode runPreselection(RNode df_, std::string channel, bool noCut)
     {
         auto df = flagSelections(df_);
-        df = defineCorrectedCols(df); // this is not doing anything right now, but kept it to avoid having to change branch names everywhere
+        df = defineCorrectedCols(df); 
         //df = redefineGenColumns(df);
         df = AK8JetsPreselection(df);
         df = ElectronPreselection(df);
@@ -15,6 +15,9 @@ namespace Run2
 
         df = MuonSelections(df);
         df = ElectronSelections(df);
+
+        // delete me!!!!!
+        df = runAnalysis(df);
 
         if (noCut)
             return df; // for spanet training data
@@ -29,6 +32,7 @@ namespace Run2
         //  else if (channel == "0Lep3FJ") {
         //      df = df.Filter("nMuon_Loose == 0 && nElectron_Loose == 0", "C2: 0-lepton selection");
         //  }
+
 
         return df;
     }
@@ -86,9 +90,11 @@ namespace Run2
                              "abs(FatJet_eta) <= 2.5 && "
                              "FatJet_msoftdrop > 40 && "
                              "FatJet_jetId > 0")
+                      .Define("goodAK8Jets_pt", "CorrFatJet_pt[goodAK8Jets]")
+                      .Define("ptSortedGoodAK8Jets", "Argsort(-goodAK8Jets_pt)")
+                      .Define("Pass_LeadAK8JetPtAbove550", "goodAK8Jets_pt[ptSortedGoodAK8Jets[0]] > 550")
                       .Define("FatJet_HbbScore", "FatJet_particleNetMD_Xbb / (FatJet_particleNetMD_Xbb + FatJet_particleNetMD_QCD)")
                       .Define("FatJet_WqqScore", "(FatJet_particleNetMD_Xcc + FatJet_particleNetMD_Xqq) / (FatJet_particleNetMD_Xcc + FatJet_particleNetMD_Xqq + FatJet_particleNetMD_QCD)")
-                      .Define("goodAK8Jets_pt", "CorrFatJet_pt[goodAK8Jets]")
                       .Define("goodAK8Jets_eta", "FatJet_eta[goodAK8Jets]")
                       .Define("goodAK8Jets_phi", "FatJet_phi[goodAK8Jets]")
                       .Define("goodAK8Jets_mass", "CorrFatJet_mass[goodAK8Jets]")
@@ -98,8 +104,7 @@ namespace Run2
                       .Define("goodAK8Jets_WqqScore", "FatJet_WqqScore[goodAK8Jets]")
                       .Define("goodAK8Jets_nConstituents", "FatJet_nConstituents[goodAK8Jets]")
                       .Define("ht_goodAK8Jets", "Sum(goodAK8Jets_pt)")
-                      .Define("n_goodAK8Jets", "Sum(goodAK8Jets)")
-                      .Define("ptSortedGoodAK8Jets", "Argsort(-goodAK8Jets_pt)");
+                      .Define("n_goodAK8Jets", "Sum(goodAK8Jets)");
 
         return df;
     }
@@ -155,17 +160,18 @@ namespace Run2
                           .Define("goodAK4Jets_isTightBTag", "Jet_isTightBTag[goodAK4Jets]")
                           .Define("goodAK4Jets_isMediumBTag", "Jet_isMediumBTag[goodAK4Jets]")
                           .Define("goodAK4Jets_isLooseBTag", "Jet_isLooseBTag[goodAK4Jets]")
-                          .Define("puIDJets_pt", "goodAK4Jets_pt")
-                          .Define("puIDJets_eta", "goodAK4Jets_eta")
+                          //.Define("puIDJets_pt", "goodAK4Jets_pt")
+                          //.Define("puIDJets_eta", "goodAK4Jets_eta")
                           .Define("ht_goodAK4Jets", "Sum(CorrJet_pt[goodAK4Jets])")
                           .Define("n_goodAK4Jets", "Sum(goodAK4Jets)")
-                          .Define("ptSortedGoodAK4Jets", "Argsort(-CorrJet_pt)") // checkme
+                          .Define("ptSortedGoodAK4Jets", "Argsort(-CorrJet_pt)") 
                           .Define("goodAK4Jets_minDrFromAnyGoodAK8Jet", dRfromClosestJet, {"goodAK4Jets_eta", "goodAK4Jets_phi", "goodAK8Jets_eta", "goodAK8Jets_phi"})
                           .Define("goodAK4Jets_passAK8OverlapRemoval", "goodAK4Jets_minDrFromAnyGoodAK8Jet>0.8")
                           .Define("n_goodAK4JetsWithAK8OverlapRemoval", "Sum(goodAK4Jets_passAK8OverlapRemoval)");
 
         return df;
     }
+
 
     RNode VBSJetsPreselection(RNode df_)
     {
@@ -177,7 +183,8 @@ namespace Run2
                           .Define("goodVBSJets_pt", "CorrJet_pt[goodVBSJets]")
                           .Define("goodVBSJets_eta", "Jet_eta[goodVBSJets]")
                           .Define("goodVBSJets_phi", "Jet_phi[goodVBSJets]")
-                          .Define("goodVBSJets_mass", "CorrJet_mass[goodVBSJets]");
+                          .Define("goodVBSJets_mass", "CorrJet_mass[goodVBSJets]");                         
+                          
         return df;
     }
 
