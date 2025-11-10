@@ -34,6 +34,24 @@ RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::Correc
 
 /*
 ############################################
+PILEUP ID SFs
+############################################
+*/
+
+RNode applyPileupIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df) {
+    auto eval_correction = [cset_pileup, year_map] (std::string year, float ntrueint) {
+        RVec<double> pileupID_weights;
+        auto correctionset = cset_pileup.at(year).at(year_map.at(year));
+        pileupID_weights.push_back(correctionset->evaluate({ntrueint, "nominal"}));
+        pileupID_weights.push_back(correctionset->evaluate({ntrueint, "up"}));
+        pileupID_weights.push_back(correctionset->evaluate({ntrueint, "down"}));
+        return pileupID_weights;
+    };
+    return df.Define("weight_pileupid", eval_correction, {"year", "Pileup_nTrueInt"});
+}
+
+/*
+############################################
 MUON SFs
 ############################################
 */
@@ -153,11 +171,167 @@ RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correctio
     return df.Define("weight_electrontrigger", eval_correction, {"year", "Electron_SC_eta", "Electron_pt"});
 }
 
+
+
+/*
+############################################
+BTAG SFs
+############################################
+*/
+
+RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_btag, 
+                                 std::unordered_map<std::string, std::string> corrname_map_HF,
+                                 std::unordered_map<std::string, std::string> corrname_map_LF,
+                                 RNode df) {
+    
+    auto calc_btag_sf = [cset_btag] (const std::string& year, const RVec<float>& eta, const RVec<float>& pt, 
+                                     const RVec<int>& jetflavor, const std::string& correction_name, bool is_heavy_flavor) {
+        RVec<double> btag_sf_weights = {1., 1., 1.};
+        if (eta.empty()) {
+            return btag_sf_weights;
+        }
+
+        auto cset_it = cset_btag.find(year);
+        if (cset_it == cset_btag.end()) {
+            return btag_sf_weights;
+        }
+        const auto& cset_btag_year = cset_it->second;
+        
+        auto cset_eff_it = cset_btag.find("eff");
+        if (cset_eff_it == cset_btag.end()) {
+            return btag_sf_weights;
+        }
+        const auto& cset_btag_eff = cset_eff_it->second;
+        
+        const std::string btag_year_key = "btag_" + year;
+
+        float num = 1.;
+        float num_up = 1.;
+        float num_down = 1.;
+        float den = 1.;
+
+        for (size_t i = 0; i < eta.size(); i++) {
+            bool process_jet = false;
+            const char* flavor_label = nullptr;
+            
+            if (is_heavy_flavor) {
+                if (jetflavor[i] == 5) {
+                    process_jet = true;
+                    flavor_label = "B";
+                } else if (jetflavor[i] == 4) {
+                    process_jet = true;
+                    flavor_label = "C";
+                }
+            } else {
+                if (jetflavor[i] == 0) {
+                    process_jet = true;
+                    flavor_label = "L";
+                }
+            }
+            
+            if (!process_jet) {
+                continue;
+            }
+
+            const float abs_eta = std::abs(eta[i]);
+
+            const float btag_sf_tight = cset_btag_year.at(correction_name)->evaluate({"central", "T", jetflavor[i], abs_eta, pt[i]});
+            const float btag_sf_loose = cset_btag_year.at(correction_name)->evaluate({"central", "L", jetflavor[i], abs_eta, pt[i]});
+            const float btag_sf_tight_up = cset_btag_year.at(correction_name)->evaluate({"up_uncorrelated", "T", jetflavor[i], abs_eta, pt[i]});
+            const float btag_sf_loose_up = cset_btag_year.at(correction_name)->evaluate({"up_uncorrelated", "L", jetflavor[i], abs_eta, pt[i]});
+            const float btag_sf_tight_down = cset_btag_year.at(correction_name)->evaluate({"down_uncorrelated", "T", jetflavor[i], abs_eta, pt[i]});
+            const float btag_sf_loose_down = cset_btag_year.at(correction_name)->evaluate({"down_uncorrelated", "L", jetflavor[i], abs_eta, pt[i]});
+            
+            const float btag_eff_tight = cset_btag_eff.at(btag_year_key)->evaluate({flavor_label, "T", pt[i], eta[i]});
+            const float btag_eff_loose = cset_btag_eff.at(btag_year_key)->evaluate({flavor_label, "L", pt[i], eta[i]});
+
+            // Accumulate weights
+            num *= (btag_sf_tight * btag_eff_tight) * (btag_sf_loose * btag_eff_loose - btag_sf_tight * btag_eff_tight) * (1. - btag_sf_loose * btag_eff_loose);
+            num_up *= (btag_sf_tight_up * btag_eff_tight) * (btag_sf_loose_up * btag_eff_loose - btag_sf_tight_up * btag_eff_tight) * (1. - btag_sf_loose_up * btag_eff_loose);
+            num_down *= (btag_sf_tight_down * btag_eff_tight) * (btag_sf_loose_down * btag_eff_loose - btag_sf_tight_down * btag_eff_tight) * (1. - btag_sf_loose_down * btag_eff_loose);
+            den *= (btag_eff_tight) * (btag_eff_loose - btag_eff_tight) * (1. - btag_eff_loose);
+        }
+
+        if (den != 0.) {
+            btag_sf_weights[0] = num / den;
+            btag_sf_weights[1] = num_up / den;
+            btag_sf_weights[2] = num_down / den;
+        }
+
+        return btag_sf_weights;
+    };
+
+    auto eval_HF = [cset_btag, corrname_map_HF, calc_btag_sf] (const std::string& year, const RVec<float>& eta, 
+                                                                 const RVec<float>& pt, const RVec<int>& jetflavor) {
+        auto corrname_it = corrname_map_HF.find(year);
+        if (corrname_it == corrname_map_HF.end()) {
+            return RVec<double>{1., 1., 1.};
+        }
+        return calc_btag_sf(year, eta, pt, jetflavor, corrname_it->second, true);
+    };
+
+    auto eval_LF = [cset_btag, corrname_map_LF, calc_btag_sf] (const std::string& year, const RVec<float>& eta, 
+                                                                 const RVec<float>& pt, const RVec<int>& jetflavor) {
+        auto corrname_it = corrname_map_LF.find(year);
+        if (corrname_it == corrname_map_LF.end()) {
+            return RVec<double>{1., 1., 1.};
+        }
+        return calc_btag_sf(year, eta, pt, jetflavor, corrname_it->second, false);
+    };
+
+    return df.Define("btagging_scale_factors_HF", eval_HF, {"year", "GnTBJet_eta", "GnTBJet_pt", "GnTBJet_hadronFlavour"})
+             .Define("btagging_scale_factors_LF", eval_LF, {"year", "GnTBJet_eta", "GnTBJet_pt", "GnTBJet_hadronFlavour"});
+}
+
+
 /*
 ############################################
 OTHER SFs
 ############################################
 */
+
+RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
+    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, std::string sample_type) {
+        if(sample_type != "EWK") return 1.;
+        else{
+            TLorentzVector TEWKq1, TEWKq2, TEWKlep, TEWKnu;
+            TEWKq1.SetPtEtaPhiM(LHEPart_pt[4],LHEPart_eta[4],LHEPart_phi[4],LHEPart_mass[4]);
+            TEWKq2.SetPtEtaPhiM(LHEPart_pt[5],LHEPart_eta[5],LHEPart_phi[5],LHEPart_mass[5]);
+            TEWKlep.SetPtEtaPhiM(LHEPart_pt[2],LHEPart_eta[2],LHEPart_phi[2],LHEPart_mass[2]);
+            TEWKnu.SetPtEtaPhiM(LHEPart_pt[3],LHEPart_eta[3],LHEPart_phi[3],LHEPart_mass[3]);
+            int chargequark[7] = {0,-1,2,-1,2,-1,2};
+            int EWKpdgq1 = LHEPart_pdgId[4];
+            int EWKpdgq2 = LHEPart_pdgId[5];
+            int EWKsignq1 = (EWKpdgq1 > 0) - (EWKpdgq1 < 0);
+            int EWKsignq2 = (EWKpdgq2 > 0) - (EWKpdgq2 < 0);
+            double EWKMass_q12 = (TEWKq1 + TEWKq2).M();
+            double EWKMass_lnu = (TEWKlep + TEWKnu).M();
+            double fabscharge=(fabs((double)(EWKsignq1 * chargequark[abs(EWKpdgq1)] + (EWKsignq2 * chargequark[abs(EWKpdgq2)]))))/3;
+            double EWKbjet_pt = -999;
+            if(fabscharge ==1){
+                if( EWKMass_q12 >= 70 && EWKMass_q12 < 90  && 
+                    EWKMass_lnu >= 70 && EWKMass_lnu < 90){
+                    return 0.;
+                }
+            }
+            if(EWKMass_q12 >= 95){
+                if( abs(EWKpdgq1) == 5 && abs(EWKpdgq2) == 5){
+                    if(TEWKq1.Pt() > TEWKq2.Pt())  EWKbjet_pt = TEWKq1.Pt();
+                    else                           EWKbjet_pt = TEWKq2.Pt();
+                }else if(abs(EWKpdgq1) == 5){
+                    EWKbjet_pt = TEWKq1.Pt();
+                }else if(abs(EWKpdgq2) == 5){
+                    EWKbjet_pt = TEWKq2.Pt();
+                }
+            }
+            if(EWKbjet_pt > -998){
+                return cset_ewk.at("EWK")->evaluate({EWKbjet_pt});
+            }
+            else return 1.;
+        }
+    };
+    return df.Define("EWKCorrection", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "sample_type"});
+}
 
 RNode applyL1PreFiringReweighting(RNode df){
     auto eval_correction = [] (float L1prefire, float L1prefireup, float L1prefiredown) {
