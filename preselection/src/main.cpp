@@ -36,11 +36,14 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
     df = runPreselection(df, ana, run_number, makeSpanetTrainingdata);
-    if (run_number == "2") {
-        df = GenSelections_run2(df, isSignal); // temporarily required due to Run 2 skims having different names for truth branches
-    }
-    else {
-        df = GenSelections(df);
+    if (isSignal) {
+        if (run_number == "2") {
+            df = GenSelections_run2(df, isSignal); // temporarily required due to Run 2 skims having different names for truth branches
+            df = GenSelections(df);
+        }
+        else {
+            df = GenSelections(df);
+        }
     }
 
     if (!makeSpanetTrainingdata && runSPANetInference) {
@@ -158,13 +161,10 @@ int main(int argc, char** argv) {
         }
     }
 
-    if (isSignal) {
-        df = GenSelections(df);
-        if (makeSpanetTrainingdata) {
-            std::cout << " -> Saving SPANet training data" << std::endl;
-            saveSpanetSnapshot(df, output_dir, output_file);
-            return 0; // Exit after saving training data
-        }
+    if (isSignal && makeSpanetTrainingdata) {
+        std::cout << " -> Saving SPANet training data" << std::endl;
+        saveSpanetSnapshot(df, output_dir, output_file);
+        return 0; // Exit after saving training data
     }
 
     saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
