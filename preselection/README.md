@@ -55,13 +55,13 @@ This will create a JSON file in the etc/ directory with the necessary configurat
 To run the preselection, use the compiled binary and provide the input specification and output file:
 
 ```bash
-bin/runAnalysis -i <input_spec.json> -a <channel> -n <n_threads>
+bin/runAnalysis -i <input_spec.json> -a <channel> -n <n_threads> --run_number <run_number>
 ```
 
 For example,
 
 ```bash
-bin/runAnalysis -i etc/1Lep2FJ-bkg.json -a 1Lep2FJ -n 64
+bin/runAnalysis -i etc/1Lep2FJ-bkg.json -a 1Lep2FJ -n 64 --run_number 3
 ```
 
 More command line options can be found by running 
