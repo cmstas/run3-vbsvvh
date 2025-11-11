@@ -71,18 +71,18 @@ RNode LeptonSelections(RNode df_)
 {
     auto df = ElectronSelections(df_);
     df = MuonSelections(df);
-    return df.Define("Lepton_pt", "Concatenate(Electron_pt, Muon_pt)")
-        .Define("_LeptonSorted", "Argsort(-Lepton_pt)")
-        .Redefine("Lepton_pt", "Take(Lepton_pt, _LeptonSorted)")
-        .Define("Lepton_eta", "Take(Concatenate(Electron_eta, Muon_eta), _LeptonSorted)")
-        .Define("Lepton_phi", "Take(Concatenate(Electron_phi, Muon_phi), _LeptonSorted)")
-        .Define("Lepton_mass", "Take(Concatenate(Electron_mass, Muon_mass), _LeptonSorted)")
-        .Define("Lepton_charge", "Take(Concatenate(Electron_charge, Muon_charge), _LeptonSorted)");
+    return df.Define("lepton_pt", "Concatenate(electron_pt, muon_pt)")
+        .Define("_leptonSorted", "Argsort(-lepton_pt)")
+        .Redefine("lepton_pt", "Take(lepton_pt, _leptonSorted)")
+        .Define("lepton_eta", "Take(Concatenate(electron_eta, muon_eta), _leptonSorted)")
+        .Define("lepton_phi", "Take(Concatenate(electron_phi, muon_phi), _leptonSorted)")
+        .Define("lepton_mass", "Take(Concatenate(electron_mass, muon_mass), _leptonSorted)")
+        .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)");
 }
 
 RNode AK4JetsSelection(RNode df_, std::string run_number)
 {
-    auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "Lepton_eta", "Lepton_phi"})
+    auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak4jets", " _dR_ak4_lep > 0.4 && "
                                            "Jet_pt > 20 && "
                                            "abs(Jet_eta) < 4.7 && "
@@ -114,7 +114,7 @@ RNode AK4JetsSelection(RNode df_, std::string run_number)
 
 RNode AK8JetsSelection(RNode df_, std::string run_number)
 {
-    auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "Lepton_eta", "Lepton_phi"})
+    auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
                                            "FatJet_pt > 250 && "
                                            "abs(FatJet_eta) <= 2.5 && "
@@ -156,7 +156,7 @@ RNode runPreselection(RNode df_, std::string channel, std::string run_number, bo
     {
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-                       "(Lepton_pt[0] > 40)",
+                       "(lepton_pt[0] > 40)",
                        "C2: 1-lepton selection");
     }
     else if (channel == "0Lep3FJ")
