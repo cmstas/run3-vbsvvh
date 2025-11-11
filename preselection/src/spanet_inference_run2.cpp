@@ -161,10 +161,14 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     RVec<float> FatJet_eta,
     RVec<float> FatJet_phi
 ) {
-    bool DEBUG = false;
+    bool DEBUG = true;
 
     if (DEBUG) {
-        std::cout << "\n\n\nStarting Boosted Decays Selection" << std::endl;
+        std::cout << "\n\n EVENT STARTS HERE" << std::endl;
+        std::cout << "========================================" << std::endl;
+        std::cout << "\n N fat jets = " << FatJet_phi.size() << ", N jets = " << Jet_phi.size() << std::endl;
+
+        std::cout << "\nStarting Boosted Decays Selection" << std::endl;
         std::cout << "====================" << std::endl;
         std::cout << " Boosted assignments:" << std::endl;
         std::cout << " bh = {";
@@ -215,20 +219,22 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
         filter_candidates(cand_bv2, threshold)
     };
 
-    // Helper to check jet overlap
-    auto checkJetOverlap = [&](int jet_idx) -> bool {
-        if (jet_idx < 0 || jet_idx >= Jet_eta.size()) return true;
-        return used_jets.count(jet_idx) > 0;
+    // Helper to check jet idx
+    auto passJetIdxCheck = [&](int jet_idx) -> bool {
+        if (jet_idx < 0 || jet_idx >= Jet_eta.size()) return false;
+        else if (used_jets.count(jet_idx) > 0) return false;
+        return true;
     };
 
-    // Helper to check fatjet overlap
-    auto checkFatJetOverlap = [&](int fatjet_idx) -> bool {
-        if (fatjet_idx < 0 || fatjet_idx >= FatJet_eta.size()) return true;
-        return used_fatjets.count(fatjet_idx) > 0;
+    // Helper to check fatjet idx
+    auto passFatJetIdxCheck = [&](int fatjet_idx) -> bool {
+        if (fatjet_idx < 0 || fatjet_idx >= FatJet_eta.size()) return false;
+        else if (used_fatjets.count(fatjet_idx) > 0) return false;
+        return true;
     };
 
     // Helper to check DeltaR
-    auto checkDeltaR = [&](int idx1, int idx2, bool is_fatjet1, bool is_fatjet2) -> bool {
+    auto passDeltaRCheck = [&](int idx1, int idx2, bool is_fatjet1, bool is_fatjet2) -> bool {
         if (idx1 < 0 || idx2 < 0) return true;
         float eta1 = is_fatjet1 ? FatJet_eta[idx1] : Jet_eta[idx1];
         float phi1 = is_fatjet1 ? FatJet_phi[idx1] : Jet_phi[idx1];
@@ -244,12 +250,14 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     // Helper to check all overlaps
     auto checkAllOverlaps = [&](int candidate_idx, bool is_fatjet) -> bool {
         for (int assigned_jet : used_jets) {
-            if (!checkDeltaR(candidate_idx, assigned_jet, is_fatjet, false)) {
+            if (!passDeltaRCheck(candidate_idx, assigned_jet, is_fatjet, false)) {
+                std::cout << "Failed deltaR(cand, assigned_jet) check with assigned jet idx " << assigned_jet << std::endl;
                 return false;
             }
         }
         for (int assigned_fatjet : used_fatjets) {
-            if (!checkDeltaR(candidate_idx, assigned_fatjet, is_fatjet, true)) {
+            if (!passDeltaRCheck(candidate_idx, assigned_fatjet, is_fatjet, true)) {
+                std::cout << "Failed deltaR(cand, assigned_fatjet) check with assigned fatjet idx " << assigned_fatjet << std::endl;
                 return false;
             }
         }
@@ -260,7 +268,7 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     auto get_best_fatjet = [&](const std::vector<std::vector<float>>& candidates, const std::set<int>& used) -> std::pair<int, float> {
         for (const auto& cand : candidates) {
             int fj = static_cast<int>(cand[1]);
-            if (fj >= 0 && fj < FatJet_eta.size() && !checkFatJetOverlap(fj) && checkAllOverlaps(fj, true)) {
+            if (fj >= 0 && fj < FatJet_eta.size() && passFatJetIdxCheck(fj) && checkAllOverlaps(fj, true)) {
                 return {fj, cand[0]};
             }
         }
@@ -273,8 +281,8 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
             int j1 = static_cast<int>(cand[1]);
             int j2 = static_cast<int>(cand[2]);
             if (j1 != j2 && j1 >= 0 && j1 < Jet_eta.size() && j2 >= 0 && j2 < Jet_eta.size() && 
-                !checkJetOverlap(j1) && !checkJetOverlap(j2) && 
-                checkDeltaR(j1, j2, false, false) && 
+                passJetIdxCheck(j1) && passJetIdxCheck(j2) && 
+                passDeltaRCheck(j1, j2, false, false) && 
                 checkAllOverlaps(j1, false) && checkAllOverlaps(j2, false)) {
                 return {j1, j2, cand[0]};
             }
@@ -343,9 +351,9 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
                 }
 
                 if (DEBUG) {
-                    std::cout << "Potential second boosted bosons probs: {";
+                    std::cout << "Potential second boosted bosons (boson idx, prob, fj): {";
                     for (const auto& [idx, prob, fj] : best_probs) {
-                        std::cout << prob << ", ";
+                        std::cout << "(" << idx << ", " << prob << ", " << fj << "), ";
                     }
                     std::cout << "}" << std::endl;
                 }
@@ -367,7 +375,7 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
                     result[boosted_result_pos[best_idx]] = best_fj;
                     used_fatjets.insert(best_fj);
                 } else if (DEBUG) {
-                    std::cout << "No jets left after overlap removal for either boson. Returning." << std::endl;
+                    std::cout << "No jets left after overlap removal for either boson." << std::endl;
                 }
 
                 // Last one: pick the remaining index
@@ -382,7 +390,7 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
                 }
             }
         } else if (DEBUG) {
-            std::cout << "No boosted boson left to match. Returning." << std::endl;
+            std::cout << "No boosted boson left to match." << std::endl;
         }
     }
 
@@ -495,9 +503,9 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
                     }
 
                     if (DEBUG) {
-                        std::cout << "Best probs for remaining: {";
+                        std::cout << "Best probs for remaining (idx, prob, j1, j2): {";
                         for (const auto& [idx, prob, j1, j2] : res_best_probs) {
-                            std::cout << prob << ", ";
+                            std::cout << "(" << idx << ", " << prob << ", " << j1 << ", " << j2 << "), ";
                         }
                         std::cout << "}" << std::endl;
                     }
@@ -560,7 +568,7 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     }
 
     if (DEBUG) {
-        std::cout << "matched_bosons (boosted) = {";
+        std::cout << "\n Selected boosted bosons = {";
         std::vector<std::string> bb_labels = {"bh", "bv1", "bv2"};
         for (int i = 0; i < 3; ++i) {
             int pos = boosted_result_pos[i];
@@ -580,7 +588,7 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
         }
         std::cout << "}" << std::endl;
         if (result[0] != -1 && result[1] != -1) {
-            std::cout << "matched_bosons (vbs) = (" << result[0] << ", " << result[1] << ")" << std::endl;
+            std::cout << "Selcted vbs pair = (" << result[0] << ", " << result[1] << ")" << std::endl;
         }
     }
 
