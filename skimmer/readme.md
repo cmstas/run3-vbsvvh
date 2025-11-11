@@ -19,4 +19,5 @@
 ./runSkimmer.sh -i datasets-signal.txt -s
 ```
 
-Make sure to change `OUTPUT_XRD` in executable to your own directory before running this.
+Make sure to change `OUTPUT_XRD` in executable to your own directory before running this. 
+Make sure the `OUTPUT_TAG` is set in `runSkimmer.sh`, including the skims version, e.g. "v2".  
