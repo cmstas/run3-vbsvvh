@@ -84,7 +84,7 @@ class Skimmer():
             .Define("__tight_ele_mask", "Electron_pt > 35. && abs(Electron_eta) < 2.5 && Electron_cutBased >= 4") \
             .Define("__n_tight_leptons", "Sum(__tight_mu_mask) + Sum(__tight_ele_mask)") \
             .Define("__fatjet_mask", "FatJet_pt > 200 && FatJet_msoftdrop > 10") \
-            .Define("__n_fatjets", "Sum(__fatjet_mask)")
+            .Define("__n_fatjets", "Sum(__fatjet_mask)") \
             .Filter("(__n_fatjets + __n_tight_leptons) >= 1")
 
         if self.sample_year in JET_ID_JSONS:
