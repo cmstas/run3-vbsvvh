@@ -161,7 +161,7 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     RVec<float> FatJet_eta,
     RVec<float> FatJet_phi
 ) {
-    bool DEBUG = true;
+    bool DEBUG = false;
 
     if (DEBUG) {
         std::cout << "\n\n EVENT STARTS HERE" << std::endl;
