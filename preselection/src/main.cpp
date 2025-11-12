@@ -8,7 +8,6 @@
 #include "selections.h"
 #include "utils.h"
 #include "genSelections.h"
-#include "genSelections_run2_tmp.h" 
 
 #include "argparser.hpp"
 
@@ -36,14 +35,9 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
     df = runPreselection(df, ana, run_number, makeSpanetTrainingdata);
+    
     if (isSignal) {
-        if (run_number == "2") {
-            df = GenSelections_run2(df, isSignal); // temporarily required due to Run 2 skims having different names for truth branches
-            df = GenSelections(df);
-        }
-        else {
-            df = GenSelections(df);
-        }
+        df = GenSelections(df);
     }
 
     if (!makeSpanetTrainingdata && runSPANetInference) {
