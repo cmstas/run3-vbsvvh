@@ -251,13 +251,13 @@ std::vector<int> SPANet::SPANetInferenceRun2::assign_all_objects_maxprob(
     auto checkAllOverlaps = [&](int candidate_idx, bool is_fatjet) -> bool {
         for (int assigned_jet : used_jets) {
             if (!passDeltaRCheck(candidate_idx, assigned_jet, is_fatjet, false)) {
-                std::cout << "Failed deltaR(cand, assigned_jet) check with assigned jet idx " << assigned_jet << std::endl;
+                if (DEBUG) { std::cout << "Failed deltaR(cand, assigned_jet) check with assigned jet idx " << assigned_jet << std::endl; }
                 return false;
             }
         }
         for (int assigned_fatjet : used_fatjets) {
             if (!passDeltaRCheck(candidate_idx, assigned_fatjet, is_fatjet, true)) {
-                std::cout << "Failed deltaR(cand, assigned_fatjet) check with assigned fatjet idx " << assigned_fatjet << std::endl;
+                if (DEBUG) {std::cout << "Failed deltaR(cand, assigned_fatjet) check with assigned fatjet idx " << assigned_fatjet << std::endl;}
                 return false;
             }
         }
