@@ -22,6 +22,6 @@
     "0Lep2FJ_run2": {
         "bkg": "",
         "data": "",
-        "sig": "/ceph/cms/store/user/mmazza/skim/nanoaodv9_sig_None_VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_*_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8_11Nov2025/*NANOGEN"
+        "sig": "/ceph/cms/store/user/mmazza/skim/nanoaodv9_sig_cuts-None_VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_*_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8_11Nov2025/*NANOGEN"
     }
 }
