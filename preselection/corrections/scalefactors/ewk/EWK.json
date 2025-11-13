@@ -1,0 +1,55 @@
+{
+    "schema_version": 2,
+    "description": "EWK_Reweighting",
+    "corrections": [
+        {
+            "name": "EWK",
+            "description": "EWK_Reweighting",
+            "version": 1,
+            "inputs": [
+                {
+                    "name": "xaxis",
+                    "type": "real",
+                    "description": "pt"
+                }
+            ],
+            "output": {
+                "name": "weight",
+                "type": "real",
+                "description": "weight"
+            },
+            "data": {
+                "nodetype": "binning",
+                "input": "xaxis",
+                "edges": [
+                    0.0,
+                    25.0,
+                    50.0,
+                    75.0,
+                    100.0,
+                    150.0,
+                    200.0,
+                    250.0,
+                    300.0,
+                    400.0,
+                    600.0,
+                    1000.0
+                ],
+                "content": [
+                    1.3345401058309316,
+                    1.4831245988401973,
+                    1.5522074695160983,
+                    1.1522301365695842,
+                    0.948850985201772,
+                    0.47392055137177025,
+                    0.2063269242567559,
+                    0.1255220831980264,
+                    0.11179784962146425,
+                    0.01590188240899853,
+                    0.013824249531440931
+                ],
+                "flow": "clamp"
+            }
+        }
+    ]
+}

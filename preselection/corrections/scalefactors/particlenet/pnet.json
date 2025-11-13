@@ -1,0 +1,646 @@
+{
+    "schema_version": 2,
+    "description": "PNET corrections MD",
+    "corrections": [
+        {
+            "name": "PNET_W",
+            "version": 1,
+            "inputs": [
+                {
+                    "name": "pt",
+                    "type": "real",
+                    "description": "pt"
+                },
+                {
+                    "name": "year",
+                    "type": "string",
+                    "description": "year"
+                },
+                {
+                    "name": "sf",
+                    "type": "string",
+                    "description": "systematic variation"
+                }
+            ],
+            "output": {
+                "name": "weight",
+                "type": "real",
+                "description": "Multiplicative event weight"
+            },
+            "data": {
+                "nodetype": "category",
+                "input": "year",
+                "content": [
+                    {
+                        "key": "2016preVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.92,
+                                            0.93,
+                                            0.94
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.96,
+                                            0.97,
+                                            1.0
+                                        ],
+                                        "flow": 1.06
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.88,
+                                            0.89,
+                                            0.88
+                                        ],
+                                        "flow": 0.82
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2016postVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.96,
+                                            0.89,
+                                            0.85
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            1.01,
+                                            0.93,
+                                            0.92
+                                        ],
+                                        "flow": 0.99
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.91,
+                                            0.85,
+                                            0.79
+                                        ],
+                                        "flow": 0.73
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2017",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.96,
+                                            0.94,
+                                            0.93
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.98,
+                                            0.96,
+                                            0.97
+                                        ],
+                                        "flow": 1.01
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.94,
+                                            0.92,
+                                            0.89
+                                        ],
+                                        "flow": 0.85
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2018",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.91,
+                                            0.9,
+                                            0.85
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.93,
+                                            0.92,
+                                            0.89
+                                        ],
+                                        "flow": 0.93
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            200.0,
+                                            300.0,
+                                            400.0,
+                                            800.0
+                                        ],
+                                        "content": [
+                                            0.89,
+                                            0.88,
+                                            0.81
+                                        ],
+                                        "flow": 0.77
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "PNET_H",
+            "version": 1,
+            "inputs": [
+                {
+                    "name": "pt",
+                    "type": "real",
+                    "description": "pt"
+                },
+                {
+                    "name": "year",
+                    "type": "string",
+                    "description": "year"
+                },
+                {
+                    "name": "sf",
+                    "type": "string",
+                    "description": "systematic variation"
+                }
+            ],
+            "output": {
+                "name": "weight",
+                "type": "real",
+                "description": "Multiplicative event weight"
+            },
+            "data": {
+                "nodetype": "category",
+                "input": "year",
+                "content": [
+                    {
+                        "key": "2016preVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.131,
+                                            1.356,
+                                            1.374,
+                                            1.376,
+                                            1.36
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.291,
+                                            1.548,
+                                            1.597,
+                                            1.618,
+                                            1.659
+                                        ],
+                                        "flow": 1.958
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            0.993,
+                                            1.208,
+                                            1.168,
+                                            1.16,
+                                            1.103
+                                        ],
+                                        "flow": 0.846
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2016postVFP",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.071,
+                                            1.104,
+                                            1.163,
+                                            1.377,
+                                            1.338
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.282,
+                                            1.284,
+                                            1.318,
+                                            1.632,
+                                            1.57
+                                        ],
+                                        "flow": 1.802
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            0.897,
+                                            0.939,
+                                            1.021,
+                                            1.137,
+                                            1.157
+                                        ],
+                                        "flow": 0.976
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2017",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.213,
+                                            1.1,
+                                            1.216,
+                                            1.192,
+                                            1.081
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.425,
+                                            1.375,
+                                            1.408,
+                                            1.393,
+                                            1.323
+                                        ],
+                                        "flow": 1.565
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.012,
+                                            0.829,
+                                            1.038,
+                                            1.004,
+                                            0.844
+                                        ],
+                                        "flow": 0.607
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "key": "2018",
+                        "value": {
+                            "nodetype": "category",
+                            "input": "sf",
+                            "content": [
+                                {
+                                    "key": "nominal",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.003,
+                                            1.172,
+                                            1.15,
+                                            0.977,
+                                            0.998
+                                        ],
+                                        "flow": "clamp"
+                                    }
+                                },
+                                {
+                                    "key": "up",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            1.07,
+                                            1.352,
+                                            1.271,
+                                            1.094,
+                                            1.166
+                                        ],
+                                        "flow": 1.334
+                                    }
+                                },
+                                {
+                                    "key": "down",
+                                    "value": {
+                                        "nodetype": "binning",
+                                        "input": "pt",
+                                        "edges": [
+                                            250.0,
+                                            350.0,
+                                            450.0,
+                                            550.0,
+                                            650.0,
+                                            10000.0
+                                        ],
+                                        "content": [
+                                            0.92,
+                                            0.987,
+                                            1.055,
+                                            0.861,
+                                            0.836
+                                        ],
+                                        "flow": 0.674
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

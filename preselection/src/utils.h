@@ -52,6 +52,7 @@ public:
 
 RNode removeDuplicates(RNode df);
 RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName);
+RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::string &objectName, const std::string &newAffix);
 
 /*
 ############################################
