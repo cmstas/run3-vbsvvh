@@ -1,34 +1,34 @@
 #include "spanet.h"
 
 std::vector<SPANet::SPANetInference::EventData> SPANet::SPANetInference::extractEventsFromDataFrame(RNode df) {
-    auto ak4_pt_vec = df.Take<RVec<float>>("Jet_pt").GetValue();
-    auto ak4_eta_vec = df.Take<RVec<float>>("Jet_eta").GetValue();
-    auto ak4_phi_vec = df.Take<RVec<float>>("Jet_phi").GetValue();
-    auto ak4_mass_vec = df.Take<RVec<float>>("Jet_mass").GetValue();
-    auto ak4_isTightBTag_vec = df.Take<RVec<int>>("Jet_isTightBTag").GetValue();
-    auto ak4_isMediumBTag_vec = df.Take<RVec<int>>("Jet_isMediumBTag").GetValue();
-    auto ak4_isLooseBTag_vec = df.Take<RVec<int>>("Jet_isLooseBTag").GetValue();
+    auto ak4_pt_vec = df.Take<RVec<float>>("jet_pt").GetValue();
+    auto ak4_eta_vec = df.Take<RVec<float>>("jet_eta").GetValue();
+    auto ak4_phi_vec = df.Take<RVec<float>>("jet_phi").GetValue();
+    auto ak4_mass_vec = df.Take<RVec<float>>("jet_mass").GetValue();
+    auto ak4_isTightBTag_vec = df.Take<RVec<int>>("jet_isTightBTag").GetValue();
+    auto ak4_isMediumBTag_vec = df.Take<RVec<int>>("jet_isMediumBTag").GetValue();
+    auto ak4_isLooseBTag_vec = df.Take<RVec<int>>("jet_isLooseBTag").GetValue();
     
-    auto ak8_pt_vec = df.Take<RVec<float>>("FatJet_pt").GetValue();
-    auto ak8_eta_vec = df.Take<RVec<float>>("FatJet_eta").GetValue();
-    auto ak8_phi_vec = df.Take<RVec<float>>("FatJet_phi").GetValue();
-    auto ak8_mass_vec = df.Take<RVec<float>>("FatJet_mass").GetValue();
+    auto ak8_pt_vec = df.Take<RVec<float>>("fatjet_pt").GetValue();
+    auto ak8_eta_vec = df.Take<RVec<float>>("fatjet_eta").GetValue();
+    auto ak8_phi_vec = df.Take<RVec<float>>("fatjet_phi").GetValue();
+    auto ak8_mass_vec = df.Take<RVec<float>>("fatjet_mass").GetValue();
     
-    auto ak8_nConstituents_vec = df.Take<RVec<unsigned char>>("FatJet_nConstituents").GetValue();
-    auto ak8_XbbScore_vec = df.Take<RVec<float>>("FatJet_globalParT3_Xbb").GetValue();
-    auto ak8_XqqScore_vec = df.Take<RVec<float>>("FatJet_globalParT3_Xqq").GetValue();
-    auto ak8_XccScore_vec = df.Take<RVec<float>>("FatJet_globalParT3_Xcc").GetValue();
-    auto ak8_XcsScore_vec = df.Take<RVec<float>>("FatJet_globalParT3_Xcs").GetValue();
-    auto ak8_XqcdScore_vec = df.Take<RVec<float>>("FatJet_globalParT3_QCD").GetValue();
+    auto ak8_nConstituents_vec = df.Take<RVec<unsigned char>>("fatjet_nConstituents").GetValue();
+    auto ak8_XbbScore_vec = df.Take<RVec<float>>("fatjet_globalParT3_Xbb").GetValue();
+    auto ak8_XqqScore_vec = df.Take<RVec<float>>("fatjet_globalParT3_Xqq").GetValue();
+    auto ak8_XccScore_vec = df.Take<RVec<float>>("fatjet_globalParT3_Xcc").GetValue();
+    auto ak8_XcsScore_vec = df.Take<RVec<float>>("fatjet_globalParT3_Xcs").GetValue();
+    auto ak8_XqcdScore_vec = df.Take<RVec<float>>("fatjet_globalParT3_QCD").GetValue();
 
     auto met_pt_vec = df.Take<float>("PuppiMET_pt").GetValue();
     auto met_phi_vec = df.Take<float>("PuppiMET_phi").GetValue();
 
-    auto lepton_pt_vec = df.Take<RVec<float>>("Lepton_pt").GetValue();
-    auto lepton_eta_vec = df.Take<RVec<float>>("Lepton_eta").GetValue();
-    auto lepton_phi_vec = df.Take<RVec<float>>("Lepton_phi").GetValue();
-    auto lepton_mass_vec = df.Take<RVec<float>>("Lepton_mass").GetValue();
-    auto lepton_charge_vec = df.Take<RVec<int>>("Lepton_charge").GetValue();
+    auto lepton_pt_vec = df.Take<RVec<float>>("lepton_pt").GetValue();
+    auto lepton_eta_vec = df.Take<RVec<float>>("lepton_eta").GetValue();
+    auto lepton_phi_vec = df.Take<RVec<float>>("lepton_phi").GetValue();
+    auto lepton_mass_vec = df.Take<RVec<float>>("lepton_mass").GetValue();
+    auto lepton_charge_vec = df.Take<RVec<int>>("lepton_charge").GetValue();
 
     // Extract RDF entry and slot information for proper matching
     auto rdf_entry_vec = df.Take<ULong64_t>("rdfentry_").GetValue();
@@ -729,7 +729,7 @@ RNode SPANet::SPANetInference::ParseSpanetInference(RNode df_){
         "spanet_v1_assignment", "spanet_v2_assignment", "spanet_bv1_assignment", "spanet_bv2_assignment",
         "spanet_vbs_detection", "spanet_h_detection", "spanet_bh_detection", 
         "spanet_v1_detection", "spanet_v2_detection", "spanet_bv1_detection", "spanet_bv2_detection",
-        "Jet_eta", "Jet_phi", "FatJet_eta", "FatJet_phi"
+        "jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"
     })
         .Define("vbs1_idx", "_all_assignments[0]")
         .Define("vbs2_idx", "_all_assignments[1]")
@@ -744,76 +744,76 @@ RNode SPANet::SPANetInference::ParseSpanetInference(RNode df_){
         .Define("bv2_idx", "_all_assignments[10]");
 
     // VBS jet variables
-    df = df.Define("spanet_vbs1_pt", "vbs1_idx >= 0 ? Jet_pt[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs1_eta", "vbs1_idx >= 0 ? Jet_eta[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs1_phi", "vbs1_idx >= 0 ? Jet_phi[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs1_mass", "vbs1_idx >= 0 ? Jet_mass[vbs1_idx] : -999.0f")
-            .Define("spanet_vbs2_pt", "vbs2_idx >= 0 ? Jet_pt[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs2_eta", "vbs2_idx >= 0 ? Jet_eta[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs2_phi", "vbs2_idx >= 0 ? Jet_phi[vbs2_idx] : -999.0f")
-            .Define("spanet_vbs2_mass", "vbs2_idx >= 0 ? Jet_mass[vbs2_idx] : -999.0f")
+    df = df.Define("spanet_vbs1_pt", "vbs1_idx >= 0 ? jet_pt[vbs1_idx] : -999.0f")
+            .Define("spanet_vbs1_eta", "vbs1_idx >= 0 ? jet_eta[vbs1_idx] : -999.0f")
+            .Define("spanet_vbs1_phi", "vbs1_idx >= 0 ? jet_phi[vbs1_idx] : -999.0f")
+            .Define("spanet_vbs1_mass", "vbs1_idx >= 0 ? jet_mass[vbs1_idx] : -999.0f")
+            .Define("spanet_vbs2_pt", "vbs2_idx >= 0 ? jet_pt[vbs2_idx] : -999.0f")
+            .Define("spanet_vbs2_eta", "vbs2_idx >= 0 ? jet_eta[vbs2_idx] : -999.0f")
+            .Define("spanet_vbs2_phi", "vbs2_idx >= 0 ? jet_phi[vbs2_idx] : -999.0f")
+            .Define("spanet_vbs2_mass", "vbs2_idx >= 0 ? jet_mass[vbs2_idx] : -999.0f")
             .Define("spanet_vbs_detajj", "vbs1_idx >= 0 && vbs2_idx >= 0 ? abs(spanet_vbs1_eta - spanet_vbs2_eta) : -999.0f")
             .Define("spanet_vbs_mjj", "vbs1_idx >= 0 && vbs2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_vbs1_pt, spanet_vbs1_eta, spanet_vbs1_phi, spanet_vbs1_mass) + "
                 "ROOT::Math::PtEtaPhiMVector(spanet_vbs2_pt, spanet_vbs2_eta, spanet_vbs2_phi, spanet_vbs2_mass)).M() : -999.0f");
 
     // Resolved Higgs variables
-    df = df.Define("spanet_h1_pt", "h1_idx >= 0 ? Jet_pt[h1_idx] : -999.0f")
-            .Define("spanet_h1_eta", "h1_idx >= 0 ? Jet_eta[h1_idx] : -999.0f")
-            .Define("spanet_h1_phi", "h1_idx >= 0 ? Jet_phi[h1_idx] : -999.0f")
-            .Define("spanet_h1_mass", "h1_idx >= 0 ? Jet_mass[h1_idx] : -999.0f")
-            .Define("spanet_h2_pt", "h2_idx >= 0 ? Jet_pt[h2_idx] : -999.0f")
-            .Define("spanet_h2_eta", "h2_idx >= 0 ? Jet_eta[h2_idx] : -999.0f")
-            .Define("spanet_h2_phi", "h2_idx >= 0 ? Jet_phi[h2_idx] : -999.0f")
-            .Define("spanet_h2_mass", "h2_idx >= 0 ? Jet_mass[h2_idx] : -999.0f")
+    df = df.Define("spanet_h1_pt", "h1_idx >= 0 ? jet_pt[h1_idx] : -999.0f")
+            .Define("spanet_h1_eta", "h1_idx >= 0 ? jet_eta[h1_idx] : -999.0f")
+            .Define("spanet_h1_phi", "h1_idx >= 0 ? jet_phi[h1_idx] : -999.0f")
+            .Define("spanet_h1_mass", "h1_idx >= 0 ? jet_mass[h1_idx] : -999.0f")
+            .Define("spanet_h2_pt", "h2_idx >= 0 ? jet_pt[h2_idx] : -999.0f")
+            .Define("spanet_h2_eta", "h2_idx >= 0 ? jet_eta[h2_idx] : -999.0f")
+            .Define("spanet_h2_phi", "h2_idx >= 0 ? jet_phi[h2_idx] : -999.0f")
+            .Define("spanet_h2_mass", "h2_idx >= 0 ? jet_mass[h2_idx] : -999.0f")
             .Define("spanet_h_mjj", "h1_idx >= 0 && h2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_h1_pt, spanet_h1_eta, spanet_h1_phi, spanet_h1_mass) + "
                 "ROOT::Math::PtEtaPhiMVector(spanet_h2_pt, spanet_h2_eta, spanet_h2_phi, spanet_h2_mass)).M() : -999.0f");
 
     // Boosted Higgs variables
-    df = df.Define("spanet_bh_eta", "bh_idx >= 0 ? FatJet_eta[bh_idx] : -999.0f")
-            .Define("spanet_bh_phi", "bh_idx >= 0 ? FatJet_phi[bh_idx] : -999.0f")
-            .Define("spanet_bh_msoftdrop", "bh_idx >= 0 ? FatJet_msoftdrop[bh_idx] : -999.0f")
-            .Define("spanet_bh_pt", "bh_idx >= 0 ? FatJet_pt[bh_idx] : -999.0f")
-            .Define("spanet_bh_score", "bh_idx >= 0 ? FatJet_globalParT3_Xbb[bh_idx] / (FatJet_globalParT3_Xbb[bh_idx] + FatJet_globalParT3_QCD[bh_idx]) : -999.0f");
+    df = df.Define("spanet_bh_eta", "bh_idx >= 0 ? fatjet_eta[bh_idx] : -999.0f")
+            .Define("spanet_bh_phi", "bh_idx >= 0 ? fatjet_phi[bh_idx] : -999.0f")
+            .Define("spanet_bh_msoftdrop", "bh_idx >= 0 ? fatjet_msoftdrop[bh_idx] : -999.0f")
+            .Define("spanet_bh_pt", "bh_idx >= 0 ? fatjet_pt[bh_idx] : -999.0f")
+            .Define("spanet_bh_score", "bh_idx >= 0 ? fatjet_globalParT3_Xbb[bh_idx] / (fatjet_globalParT3_Xbb[bh_idx] + fatjet_globalParT3_QCD[bh_idx]) : -999.0f");
 
     // Resolved V1 variables
-    df = df.Define("spanet_v1_j1_pt", "v1_j1_idx >= 0 ? Jet_pt[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j1_eta", "v1_j1_idx >= 0 ? Jet_eta[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j1_phi", "v1_j1_idx >= 0 ? Jet_phi[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j1_mass", "v1_j1_idx >= 0 ? Jet_mass[v1_j1_idx] : -999.0f")
-            .Define("spanet_v1_j2_pt", "v1_j2_idx >= 0 ? Jet_pt[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_j2_eta", "v1_j2_idx >= 0 ? Jet_eta[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_j2_phi", "v1_j2_idx >= 0 ? Jet_phi[v1_j2_idx] : -999.0f")
-            .Define("spanet_v1_j2_mass", "v1_j2_idx >= 0 ? Jet_mass[v1_j2_idx] : -999.0f")
+    df = df.Define("spanet_v1_j1_pt", "v1_j1_idx >= 0 ? jet_pt[v1_j1_idx] : -999.0f")
+            .Define("spanet_v1_j1_eta", "v1_j1_idx >= 0 ? jet_eta[v1_j1_idx] : -999.0f")
+            .Define("spanet_v1_j1_phi", "v1_j1_idx >= 0 ? jet_phi[v1_j1_idx] : -999.0f")
+            .Define("spanet_v1_j1_mass", "v1_j1_idx >= 0 ? jet_mass[v1_j1_idx] : -999.0f")
+            .Define("spanet_v1_j2_pt", "v1_j2_idx >= 0 ? jet_pt[v1_j2_idx] : -999.0f")
+            .Define("spanet_v1_j2_eta", "v1_j2_idx >= 0 ? jet_eta[v1_j2_idx] : -999.0f")
+            .Define("spanet_v1_j2_phi", "v1_j2_idx >= 0 ? jet_phi[v1_j2_idx] : -999.0f")
+            .Define("spanet_v1_j2_mass", "v1_j2_idx >= 0 ? jet_mass[v1_j2_idx] : -999.0f")
             .Define("spanet_v1_mjj", "v1_j1_idx >= 0 && v1_j2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_v1_j1_pt, spanet_v1_j1_eta, spanet_v1_j1_phi, spanet_v1_j1_mass) + "
                 "ROOT::Math::PtEtaPhiMVector(spanet_v1_j2_pt, spanet_v1_j2_eta, spanet_v1_j2_phi, spanet_v1_j2_mass)).M() : -999.0f");
 
     // Resolved V2 variables
-    df = df.Define("spanet_v2_j1_pt", "v2_j1_idx >= 0 ? Jet_pt[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j1_eta", "v2_j1_idx >= 0 ? Jet_eta[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j1_phi", "v2_j1_idx >= 0 ? Jet_phi[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j1_mass", "v2_j1_idx >= 0 ? Jet_mass[v2_j1_idx] : -999.0f")
-            .Define("spanet_v2_j2_pt", "v2_j2_idx >= 0 ? Jet_pt[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_j2_eta", "v2_j2_idx >= 0 ? Jet_eta[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_j2_phi", "v2_j2_idx >= 0 ? Jet_phi[v2_j2_idx] : -999.0f")
-            .Define("spanet_v2_j2_mass", "v2_j2_idx >= 0 ? Jet_mass[v2_j2_idx] : -999.0f")
+    df = df.Define("spanet_v2_j1_pt", "v2_j1_idx >= 0 ? jet_pt[v2_j1_idx] : -999.0f")
+            .Define("spanet_v2_j1_eta", "v2_j1_idx >= 0 ? jet_eta[v2_j1_idx] : -999.0f")
+            .Define("spanet_v2_j1_phi", "v2_j1_idx >= 0 ? jet_phi[v2_j1_idx] : -999.0f")
+            .Define("spanet_v2_j1_mass", "v2_j1_idx >= 0 ? jet_mass[v2_j1_idx] : -999.0f")
+            .Define("spanet_v2_j2_pt", "v2_j2_idx >= 0 ? jet_pt[v2_j2_idx] : -999.0f")
+            .Define("spanet_v2_j2_eta", "v2_j2_idx >= 0 ? jet_eta[v2_j2_idx] : -999.0f")
+            .Define("spanet_v2_j2_phi", "v2_j2_idx >= 0 ? jet_phi[v2_j2_idx] : -999.0f")
+            .Define("spanet_v2_j2_mass", "v2_j2_idx >= 0 ? jet_mass[v2_j2_idx] : -999.0f")
             .Define("spanet_v2_mjj", "v2_j1_idx >= 0 && v2_j2_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(spanet_v2_j1_pt, spanet_v2_j1_eta, spanet_v2_j1_phi, spanet_v2_j1_mass) + "
                 "ROOT::Math::PtEtaPhiMVector(spanet_v2_j2_pt, spanet_v2_j2_eta, spanet_v2_j2_phi, spanet_v2_j2_mass)).M() : -999.0f");
 
     // Boosted V1 variables
-    df = df.Define("spanet_bv1_eta", "bv1_idx >= 0 ? FatJet_eta[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_phi", "bv1_idx >= 0 ? FatJet_phi[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_msoftdrop", "bv1_idx >= 0 ? FatJet_msoftdrop[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_pt", "bv1_idx >= 0 ? FatJet_pt[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_score", "bv1_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv1_idx] : -999.0f")
-            .Define("spanet_bv1_w_score", "bv1_idx >= 0 ? FatJet_globalParT3_Xqq[bv1_idx] / (FatJet_globalParT3_Xqq[bv1_idx] + FatJet_globalParT3_Xcs[bv1_idx] + FatJet_globalParT3_QCD[bv1_idx]) : -999.0f");
+    df = df.Define("spanet_bv1_eta", "bv1_idx >= 0 ? fatjet_eta[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_phi", "bv1_idx >= 0 ? fatjet_phi[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_msoftdrop", "bv1_idx >= 0 ? fatjet_msoftdrop[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_pt", "bv1_idx >= 0 ? fatjet_pt[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_score", "bv1_idx >= 0 ? fatjet_particleNet_XqqVsQCD[bv1_idx] : -999.0f")
+            .Define("spanet_bv1_w_score", "bv1_idx >= 0 ? fatjet_globalParT3_Xqq[bv1_idx] / (fatjet_globalParT3_Xqq[bv1_idx] + fatjet_globalParT3_Xcs[bv1_idx] + fatjet_globalParT3_QCD[bv1_idx]) : -999.0f");
 
     // Boosted V2 final_variables
-    df = df.Define("spanet_bv2_eta", "bv2_idx >= 0 ? FatJet_eta[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_phi", "bv2_idx >= 0 ? FatJet_phi[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_msoftdrop", "bv2_idx >= 0 ? FatJet_msoftdrop[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_pt", "bv2_idx >= 0 ? FatJet_pt[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_score", "bv2_idx >= 0 ? FatJet_particleNet_XqqVsQCD[bv2_idx] : -999.0f")
-            .Define("spanet_bv2_w_score", "bv2_idx >= 0 ? FatJet_globalParT3_Xqq[bv2_idx] / (FatJet_globalParT3_Xqq[bv2_idx] + FatJet_globalParT3_Xcs[bv2_idx] + FatJet_globalParT3_QCD[bv2_idx]) : -999.0f");
+    df = df.Define("spanet_bv2_eta", "bv2_idx >= 0 ? fatjet_eta[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_phi", "bv2_idx >= 0 ? fatjet_phi[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_msoftdrop", "bv2_idx >= 0 ? fatjet_msoftdrop[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_pt", "bv2_idx >= 0 ? fatjet_pt[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_score", "bv2_idx >= 0 ? fatjet_particleNet_XqqVsQCD[bv2_idx] : -999.0f")
+            .Define("spanet_bv2_w_score", "bv2_idx >= 0 ? fatjet_globalParT3_Xqq[bv2_idx] / (fatjet_globalParT3_Xqq[bv2_idx] + fatjet_globalParT3_Xcs[bv2_idx] + fatjet_globalParT3_QCD[bv2_idx]) : -999.0f");
 
     return df;
 }

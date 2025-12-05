@@ -11,7 +11,6 @@ class Config:
         self.sample_category = sample_category
         self.samples = sorted(glob(samples))
         self.config = {"samples": {}}
-
         self.process_samples(xsecs, nthreads)
         self.write_config(f"{channel}-{sample_category}.json")
 
@@ -107,6 +106,7 @@ class Config:
             "DY": "DY",
             "TTto": "TTbar",
             "Wto": "WJets",
+            "Zto": "ZJets",
             "VBS": "VBS", 
             "QCD": "QCD",
             "WW": "Boson",
