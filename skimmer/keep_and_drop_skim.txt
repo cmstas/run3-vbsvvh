@@ -18,3 +18,4 @@ keep run
 keep luminosityBlock
 keep truth*
 keep gen*
+keep Rho.*
