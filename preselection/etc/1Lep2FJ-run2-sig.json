@@ -1,0 +1,21 @@
+{
+    "samples": {
+        "VBSWZH_13p0TeV_4f_LO_2017": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15/output_14.root"
+            ],
+            "metadata": {
+                "namewithyear": "2017_VBSWZH_13p0TeV_4f_LO",
+                "category": "sig",
+                "year": "2017",
+                "type": "VBS",
+                "xsec": 0.002585,
+                "lumi": 109.08,
+                "nevents": 81000.0
+            }
+        }
+    }
+}
