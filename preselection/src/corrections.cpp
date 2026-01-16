@@ -1,0 +1,245 @@
+#include "corrections.h"
+
+/*
+############################################
+B-TAGGING WORKING POINTS
+############################################
+*/
+
+float bTagWPLoose(std::string year) {
+    return 0.0521;
+}
+
+float bTagWPMedium(std::string year) {
+    return 0.3033;
+}
+
+float bTagWPTight(std::string year) {
+    return 0.7489;
+}
+
+// /*
+// ############################################
+// JET MASS SCALE CORRECTIONS
+// ############################################
+// */
+
+// RNode applyJMSCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jms, RNode df, std::string variation) { 
+//     auto eval_correction = [cset_jms, variation] (std::string year, float mass) {
+//         if (cset_jms.find(year) == cset_jms.end()) {
+//             return mass;
+//         }
+//         double scaleVal = 1. + 0.05 * cset_jms.at(year).at("JMS")->evaluate({year, variation});
+//         // https://docs.google.com/presentation/d/1C7CqO3Wv3-lYd7vw4IQXq69wmULesTsSniFXXM__ReU
+//         return mass * scaleVal;
+//     };
+//     return df.Redefine("Hbbmass", eval_correction, {"year", "GHiggs_mass"})
+//              .Redefine("Wjetmass", eval_correction, {"year", "GW_mass"});
+// }
+
+// /*
+// ############################################
+// JET MASS RESOLUTION CORRECTIONS
+// ############################################
+// */
+
+// RNode applyJMRCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jmr, RNode df, std::string variation) {
+//     auto eval_correction = [cset_jmr, variation] (std::string year, float mass, unsigned int lumi, unsigned long long event) {
+//         if (cset_jmr.find(year) == cset_jmr.end()) {
+//             return mass;
+//         }
+//         TRandom3 rnd((lumi << 10) + event);
+//         return rnd.Gaus(1, 0.1 * cset_jmr.at(year).at("JMR")->evaluate({year, variation})) * mass;
+//     };
+//     return df.Redefine("Hbbmass", eval_correction, {"year", "GHiggs_mass", "luminosityBlock", "event"})
+//              .Redefine("Wjetmass", eval_correction, {"year", "GW_mass", "luminosityBlock", "event"});
+// }
+
+/*
+############################################
+MET PHI CORRECTIONS
+############################################
+*/
+
+RNode applyMETPhiCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_met, RNode df) {
+    auto eval_correction = [cset_met] (std::string sample_category, std::string year, float pt, float phi, int npvs, long long run) {
+        double pt_corr = pt;
+        double phi_corr = phi;
+        
+        if (cset_met.find(year) == cset_met.end()) {
+            return std::make_pair(pt_corr, phi_corr);
+        }
+        
+        bool isData = (sample_category == "data");
+        std::string pt_corr_name = isData ? "pt_metphicorr_puppimet_data" : "pt_metphicorr_puppimet_mc";
+        std::string phi_corr_name = isData ? "phi_metphicorr_puppimet_data" : "phi_metphicorr_puppimet_mc";
+        
+        pt_corr = cset_met.at(year).at(pt_corr_name)->evaluate({pt, phi, static_cast<double>(npvs), static_cast<double>(run)});
+        phi_corr = cset_met.at(year).at(phi_corr_name)->evaluate({pt, phi, static_cast<double>(npvs), static_cast<double>(run)});
+        
+        return std::make_pair(pt_corr, phi_corr);
+    };
+    return df.Define("_MET_phicorr", eval_correction, {"sample_category", "year", "MET_pt", "MET_phi", "PV_npvs", "run"})
+            .Redefine("MET_pt", "_MET_phicorr.first")
+            .Redefine("MET_phi", "_MET_phicorr.second");
+}
+
+/*
+############################################
+MET UNCLUSTERED CORRECTIONS
+############################################
+*/
+
+RNode applyMETUnclusteredCorrections(RNode df, std::string variation) {
+    if (variation == "up") {
+        return df.Define("_MET_uncert_dx", "MET_pt * TMath::Cos(MET_phi) + MET_MetUnclustEnUpDeltaX")
+                .Define("_MET_uncert_dy", "MET_pt * TMath::Sin(MET_phi) + MET_MetUnclustEnUpDeltaY")
+                .Redefine("MET_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
+    }
+    else if (variation == "down") {
+        return df.Define("_MET_uncert_dx", "MET_pt * TMath::Cos(MET_phi) - MET_MetUnclustEnUpDeltaX")
+                .Define("_MET_uncert_dy", "MET_pt * TMath::Sin(MET_phi) - MET_MetUnclustEnUpDeltaY")
+                .Redefine("MET_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
+    }
+    return df;
+}
+
+/*
+############################################
+JET ENERGY CORRECTIONS
+############################################
+*/
+
+RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jerc, std::unordered_map<std::string, std::string> jec_prefix_map, std::unordered_map<std::string, std::string> jec_suffix_map, RNode df, std::string JEC_type, std::string variation) {
+    auto eval_correction = [cset_jerc, jec_prefix_map, jec_suffix_map, JEC_type, variation] (std::string year, RVec<float> pt, RVec<float> eta, RVec<float> var) {
+        RVec<float> jec_factors;
+
+        if (var.size() == 0) {
+            return var;
+        }
+        
+        if (cset_jerc.find(year) == cset_jerc.end()) {
+            return var;
+        }
+        
+        if (jec_prefix_map.find(year) == jec_prefix_map.end()) {
+            return var;
+        }
+        
+        if (jec_suffix_map.find(year) == jec_suffix_map.end()) {
+            return var;
+        }
+
+        // Construct JEC correction name based on year
+        std::string JEC_name = jec_prefix_map.at(year) + "_" + JEC_type + "_" + jec_suffix_map.at(year);
+
+        for (size_t i = 0; i < var.size(); i++) {
+            if (variation == "up") {
+                jec_factors.push_back(var[i] * (1 + cset_jerc.at(year).at(JEC_name)->evaluate({eta[i], pt[i]})));
+            }
+            else if (variation == "down") {
+                jec_factors.push_back(var[i] * (1 - cset_jerc.at(year).at(JEC_name)->evaluate({eta[i], pt[i]})));
+            }
+            else {
+                return var;
+            }
+        }
+        return jec_factors;
+    };
+    
+    auto df_jetcorr = df.Redefine("Jet_pt", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_pt"})
+                        .Redefine("Jet_mass", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_mass"})
+                        .Redefine("FatJet_pt", eval_correction, {"year", "FatJet_pt", "FatJet_eta", "FatJet_pt"})
+                        .Redefine("FatJet_mass", eval_correction, {"year", "FatJet_pt", "FatJet_eta", "FatJet_mass"});
+
+    auto correctmet = [JEC_type](std::string year, RVec<float> Jet_pt, RVec<float> jet_phi, RVec<float> jet_pt, float MET_pt, float MET_phi) {
+        if (Jet_pt.empty()) {
+            return MET_pt;
+        }
+        float px = MET_pt * TMath::Cos(MET_phi);
+        float py = MET_pt * TMath::Sin(MET_phi);
+        for (size_t i = 0; i < Jet_pt.size(); i++) {
+            px += (Jet_pt[i] - jet_pt[i]) * TMath::Cos(jet_phi[i]);
+            py += (Jet_pt[i] - jet_pt[i]) * TMath::Sin(jet_phi[i]);
+        }
+        return (float)TMath::Sqrt(px * px + py * py);
+    };
+
+    return df_jetcorr.Redefine("MET_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "MET_pt", "MET_phi"});
+}
+
+/*
+############################################
+JET ENERGY RESOLUTION
+############################################
+*/
+
+RNode applyJetEnergyResolution(std::unordered_map<std::string, correction::CorrectionSet> cset_jerc, std::unordered_map<std::string, correction::CorrectionSet> cset_jer_smear, std::unordered_map<std::string, std::string> jer_res_map, std::unordered_map<std::string, std::string> jer_sf_map, RNode df, std::string variation) {
+    auto eval_correction = [cset_jerc, cset_jer_smear, jer_res_map, jer_sf_map, variation] (std::string year, RVec<float> pt, RVec<float> eta, RVec<int> genJet_idx, RVec<float> genJet_pt, float rho, unsigned long long event, RVec<float> var) {
+        RVec<float> jer_factors;
+        std::string vary = (variation == "nominal") ? "nom" : variation;
+        
+        if (var.size() == 0) {
+            return var;
+        }
+        
+        if (cset_jerc.find(year) == cset_jerc.end()) {
+            return var;
+        }
+        
+        if (cset_jer_smear.find("jer_smear") == cset_jer_smear.end()) {
+            return var;
+        }
+        
+        if (jer_res_map.find(year) == jer_res_map.end()) {
+            return var;
+        }
+        
+        if (jer_sf_map.find(year) == jer_sf_map.end()) {
+            return var;
+        }
+
+        std::string jer_res_name = jer_res_map.at(year);
+        std::string jer_sf_name = jer_sf_map.at(year);
+
+        for (size_t i = 0; i < var.size(); i++) {
+            float genjetpt = genJet_idx[i] >= 0 ? genJet_pt[genJet_idx[i]] : -1;
+            float jer = cset_jerc.at(year).at(jer_res_name)->evaluate({eta[i], pt[i], rho});
+            float jer_sf = cset_jerc.at(year).at(jer_sf_name)->evaluate({eta[i], vary});
+            jer_factors.push_back(var[i] * cset_jer_smear.at("jer_smear").at("JERSmear")->evaluate({pt[i], eta[i], genjetpt, rho, (int)event, jer, jer_sf}));
+        }
+        
+        return jer_factors;
+    };
+    
+    return df.Redefine("Jet_pt", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_pt"})
+            .Redefine("Jet_mass", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_mass"});
+}
+
+/*
+############################################
+JET VETO MAPS
+############################################
+*/
+
+RNode applyJetVetoMaps(RNode df) {
+    auto eval_correction = [jetVetoMaps] (std::string year, RVec<float> eta, RVec<float> phi) {
+        RVec<bool> jet_veto_map;
+        
+        if (jetVetoMaps.find(year) == jetVetoMaps.end()) {
+            for (size_t i = 0; i < eta.size(); i++) {
+                jet_veto_map.push_back(false);
+            }
+            return jet_veto_map;
+        }
+
+        for (size_t i = 0; i < eta.size(); i++) {
+            bool is_vetoed = jetVetoMaps.at(year).at("jetvetomap")->evaluate({eta[i], phi[i]}) > 0;
+            jet_veto_map.push_back(is_vetoed);
+        }
+        
+        return jet_veto_map;
+    };
+    
+    return df.Define("Jet_vetoMap", eval_correction, {"year", "Jet_eta", "Jet_phi"});
+}
