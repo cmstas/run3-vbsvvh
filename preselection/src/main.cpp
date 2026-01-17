@@ -142,10 +142,12 @@ int main(int argc, char** argv) {
         std::cout << " -> Running data analysis" << std::endl;
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference);
         df = applyDataWeights(df);
+        df = applyDataCorrections(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
         df = applyMCWeights(df);
+        df = applyMCCorrections(df);
     }
 
     if (isSignal && makeSpanetTrainingdata) {

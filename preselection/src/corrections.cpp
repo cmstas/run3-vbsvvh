@@ -61,8 +61,8 @@ MET PHI CORRECTIONS
 ############################################
 */
 
-RNode applyMETPhiCorrections(RNode df) {
-    auto eval_correction = [] (std::string category, std::string year, float pt, float phi, int npvs, long long run) {
+RNode applyMETPhiCorrections(RNode df, bool isData) {
+    auto eval_correction = [isData] (std::string year, float pt, float phi, unsigned char npvs, unsigned int run) {
         double pt_corr = pt;
         double phi_corr = phi;
         
@@ -71,7 +71,6 @@ RNode applyMETPhiCorrections(RNode df) {
             return std::make_pair(pt_corr, phi_corr);
         }
         
-        bool isData = (category == "data");
         std::string pt_corr_name = isData ? "pt_metphicorr_puppimet_data" : "pt_metphicorr_puppimet_mc";
         std::string phi_corr_name = isData ? "phi_metphicorr_puppimet_data" : "phi_metphicorr_puppimet_mc";
         
@@ -80,7 +79,7 @@ RNode applyMETPhiCorrections(RNode df) {
         
         return std::make_pair(pt_corr, phi_corr);
     };
-    return df.Define("_MET_phicorr", eval_correction, {"category", "year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
+    return df.Define("_MET_phicorr", eval_correction, {"year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
             .Redefine("PuppiMET_pt", "_MET_phicorr.first")
             .Redefine("PuppiMET_phi", "_MET_phicorr.second");
 }
@@ -255,4 +254,20 @@ RNode applyJetVetoMaps(RNode df) {
     };
     
     return df.Define("Jet_vetoMap", eval_correction, {"year", "Jet_eta", "Jet_phi"});
+}
+
+/*
+############################################
+GENERAL CORRECTIONS
+############################################
+*/
+
+RNode applyDataCorrections(RNode df_) {
+    auto df = applyMETPhiCorrections(df_, true);
+    return df;
+}
+
+RNode applyMCCorrections(RNode df_) {
+    auto df = applyMETPhiCorrections(df_, false);
+    return df;
 }

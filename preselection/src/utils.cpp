@@ -13,7 +13,6 @@ RNode defineMetadata(RNode df) {
         .DefinePerSample("category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("category");})
         .DefinePerSample("type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("type");})
         .DefinePerSample("year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("year");})
-        .DefinePerSample("namewithyear", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("namewithyear");})
         .Define("xsec_weight", "1000 * xsec * lumi / nevents")
         .Define("isData", "category == \"data\"")
         .Define("is2016", "year == \"2016preVFP\" || year == \"2016postVFP\"")

@@ -128,8 +128,6 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
-    df = applyMETPhiCorrections(df);
-
     if (noCut)
         return df; // for spanet training data
 

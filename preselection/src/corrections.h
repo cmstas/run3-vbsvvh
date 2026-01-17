@@ -42,7 +42,7 @@ const std::unordered_map<std::string, correction::CorrectionSet> metCorrections 
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/met_xyCorrections_2023_2023.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/met_xyCorrections_2023_2023BPix.json.gz")}
 };
-RNode applyMETPhiCorrections(RNode df);
+RNode applyMETPhiCorrections(RNode df, bool isData);
 RNode applyMETUnclusteredCorrections(RNode df, std::string variation);
 
 /*
@@ -161,5 +161,8 @@ const std::unordered_map<std::string, std::string> jetVetoMap_names = {
 };
 
 RNode applyJetVetoMaps(RNode df);
+
+RNode applyDataCorrections(RNode df_);
+RNode applyMCCorrections(RNode df_);
 
 #endif // CORRECTIONS_H
