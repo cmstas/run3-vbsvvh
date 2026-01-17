@@ -147,6 +147,19 @@ const std::unordered_map<std::string, correction::CorrectionSet> jetVetoMaps = {
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/jetvetomaps.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jetvetomaps.json.gz")}
 };
+
+const std::unordered_map<std::string, std::string> jetVetoMap_names = {
+    {"2016preVFP", "Summer19UL16_V1"},
+    {"2016postVFP", "Summer19UL16_V1"},
+    {"2017", "Summer19UL17_V1"},
+    {"2018", "Summer19UL18_V1"},
+    {"2022Re-recoBCD", "Summer22_23Sep2023_RunCD_V1"},
+    {"2022Re-recoE+PromptFG", "Summer22EE_23Sep2023_RunEFG_V1"},
+    {"2023PromptC", "Summer23Prompt23_RunC_V1"},
+    {"2023PromptD", "Summer23BPixPrompt23_RunD_V1"},
+    {"2024Prompt", "Summer24Prompt24_RunBCDEFGHI_V1"}
+};
+
 RNode applyJetVetoMaps(RNode df);
 
 #endif // CORRECTIONS_H

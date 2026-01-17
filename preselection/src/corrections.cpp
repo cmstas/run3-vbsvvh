@@ -67,6 +67,7 @@ RNode applyMETPhiCorrections(std::unordered_map<std::string, correction::Correct
         double phi_corr = phi;
         
         if (cset_met.find(year) == cset_met.end()) {
+            std::cout << "Warning: MET correction set for year " << year << " not found. Skipping MET phi corrections." << std::endl;
             return std::make_pair(pt_corr, phi_corr);
         }
         
@@ -119,14 +120,17 @@ RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::Corr
         }
         
         if (cset_jerc.find(year) == cset_jerc.end()) {
+            std::cout << "Warning: JEC correction set for year " << year << " not found. Skipping JEC corrections." << std::endl;
             return var;
         }
         
         if (jec_prefix_map.find(year) == jec_prefix_map.end()) {
+            std::cout << "Warning: JEC prefix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
             return var;
         }
         
         if (jec_suffix_map.find(year) == jec_suffix_map.end()) {
+            std::cout << "Warning: JEC suffix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
             return var;
         }
 
@@ -184,18 +188,22 @@ RNode applyJetEnergyResolution(std::unordered_map<std::string, correction::Corre
         }
         
         if (cset_jerc.find(year) == cset_jerc.end()) {
+            std::cout << "Warning: JER correction set for year " << year << " not found. Skipping JER corrections." << std::endl;
             return var;
         }
         
         if (cset_jer_smear.find("jer_smear") == cset_jer_smear.end()) {
+            std::cout << "Warning: JER smear correction set not found. Skipping JER corrections." << std::endl;
             return var;
         }
         
         if (jer_res_map.find(year) == jer_res_map.end()) {
+            std::cout << "Warning: JER resolution map for year " << year << " not found. Skipping JER corrections." << std::endl;
             return var;
         }
         
         if (jer_sf_map.find(year) == jer_sf_map.end()) {
+            std::cout << "Warning: JER scale factor map for year " << year << " not found. Skipping JER corrections." << std::endl;
             return var;
         }
 
@@ -223,10 +231,11 @@ JET VETO MAPS
 */
 
 RNode applyJetVetoMaps(RNode df) {
-    auto eval_correction = [jetVetoMaps] (std::string year, RVec<float> eta, RVec<float> phi) {
+    auto eval_correction = [] (std::string year, RVec<float> eta, RVec<float> phi) {
         RVec<bool> jet_veto_map;
         
         if (jetVetoMaps.find(year) == jetVetoMaps.end()) {
+            std::cout << "Warning: Jet veto map for year " << year << " not found. Setting all jets to not vetoed." << std::endl;
             for (size_t i = 0; i < eta.size(); i++) {
                 jet_veto_map.push_back(false);
             }
@@ -234,7 +243,11 @@ RNode applyJetVetoMaps(RNode df) {
         }
 
         for (size_t i = 0; i < eta.size(); i++) {
-            bool is_vetoed = jetVetoMaps.at(year).at("jetvetomap")->evaluate({eta[i], phi[i]}) > 0;
+            if (std::abs(eta[i]) > 5.19) {
+                jet_veto_map.push_back(true);
+                continue;
+            }
+            bool is_vetoed = jetVetoMaps.at(year).at(jetVetoMap_names.at(year))->evaluate({"jetvetomap", eta[i], phi[i]}) != 0;
             jet_veto_map.push_back(is_vetoed);
         }
         
