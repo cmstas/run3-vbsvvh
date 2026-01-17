@@ -19,3 +19,4 @@ keep luminosityBlock
 keep truth*
 keep gen*
 keep Rho.*
+keep PV.*

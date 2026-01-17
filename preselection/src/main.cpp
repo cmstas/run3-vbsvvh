@@ -34,7 +34,7 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
-    df = runPreselection(df, ana, run_number, makeSpanetTrainingdata);
+    df = runPreselection(df, ana, makeSpanetTrainingdata);
     
     if (isSignal) {
         df = GenSelections(df);

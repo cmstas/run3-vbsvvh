@@ -42,7 +42,7 @@ const std::unordered_map<std::string, correction::CorrectionSet> metCorrections 
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/met_xyCorrections_2023_2023.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/met_xyCorrections_2023_2023BPix.json.gz")}
 };
-RNode applyMETPhiCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_met, RNode df);
+RNode applyMETPhiCorrections(RNode df);
 RNode applyMETUnclusteredCorrections(RNode df, std::string variation);
 
 /*

@@ -23,9 +23,9 @@ const std::unordered_map<std::string, std::string> TriggerMap = {
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map);
 RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
-RNode AK8JetsSelection(RNode df, std::string run_number);
-RNode AK4JetsSelection(RNode df, std::string run_number);
+RNode AK8JetsSelection(RNode df);
+RNode AK4JetsSelection(RNode df);
 
-RNode runPreselection(RNode df_, std::string channel, std::string run_number, bool noCut);
+RNode runPreselection(RNode df_, std::string channel, bool noCut);
 
 #endif // SELECTIONS_H

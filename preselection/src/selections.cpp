@@ -77,7 +77,7 @@ RNode LeptonSelections(RNode df_)
             .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)");
 }
 
-RNode AK4JetsSelection(RNode df_, std::string run_number)
+RNode AK4JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
                 .Define("_good_ak4jets", " _dR_ak4_lep > 0.4 && "
@@ -105,7 +105,7 @@ RNode AK4JetsSelection(RNode df_, std::string run_number)
     return df;
 }
 
-RNode AK8JetsSelection(RNode df_, std::string run_number)
+RNode AK8JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
@@ -120,14 +120,16 @@ RNode AK8JetsSelection(RNode df_, std::string run_number)
     return df;
 }
 
-RNode runPreselection(RNode df_, std::string channel, std::string run_number, bool noCut)
+RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
     auto df = LeptonSelections(df_);
-    df = AK4JetsSelection(df, run_number);
-    df = AK8JetsSelection(df, run_number);
+    df = AK4JetsSelection(df);
+    df = AK8JetsSelection(df);
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
+    df = applyMETPhiCorrections(df);
+
     if (noCut)
         return df; // for spanet training data
 
