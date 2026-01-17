@@ -6,6 +6,18 @@ import argparse
 import uproot
 import concurrent.futures
 
+LUMI_MAP = {
+    "2016preVFP": 19.52,
+    "2016postVFP": 16.81,
+    "2017": 41.48,
+    "2018": 59.83,
+    "2022Re-recoBCD": 7.9804,
+    "2022Re-recoE+PromptFG": 26.6717,
+    "2023PromptC": 18.063,
+    "2023PromptD": 9.693,
+    "2024Prompt": 109.08
+}
+
 class Config:
     def __init__(self, sample_category : str, channel : str, samples: str, xsecs: dict, nthreads: int = 8):
         self.sample_category = sample_category
@@ -18,104 +30,107 @@ class Config:
         with open(output_file, "w") as f:
             json.dump(self.config, f, indent=4)
 
-    @staticmethod
-    def extract_sample_year(sample):
-        # Data
-        if any(run in sample for run in ["Run2022C", "Run2022D"]):
-            return "2022Re-recoBCD"
-        elif any(run in sample for run in ["Run2022E", "Run2022F", "Run2022G"]):
-            return "2022Re-recoE+PromptFG"
-        # MC
-        elif "22EE" in sample:
-            return "2022Re-recoE+PromptFG"
-        elif "22" in sample:
-            return "2022Re-recoBCD"
-        elif "24" in sample:
-            return "2024Prompt"
-        elif "UL16" in sample and "APV" in sample:
-            return "2016preVFP"
-        elif "UL16" in sample and not "APV" in sample:
-            return "2016postVFP"
-        elif "UL17" in sample or "UL2017" in sample or "Run2017" in sample:
-            return "2017"
-        elif "UL18" in sample or "UL2018" in sample or "Run2018" in sample:
-            return "2018"
-        elif ("Run2016B" in sample or "Run2016C" in sample or "Run2016D" in sample or "Run2016E" in sample or "Run2016F" in sample) and "HIPM" in sample:
-            return "2016preVFP"
-        elif ("Run2016F" in sample or "Run2016G" in sample or "Run2016H" in sample) and not "HIPM" in sample:
-            return "2016postVFP"
+    def extract_sample_year(self, sample):
+        if self.sample_category == "data":
+            if any(run in sample for run in ["Run2022C", "Run2022D"]):
+                return "2022Re-recoBCD"
+            elif any(run in sample for run in ["Run2022E", "Run2022F", "Run2022G"]):
+                return "2022Re-recoE+PromptFG"
+            elif any(run in sample for run in ["Run2023C"]):
+                return "2023PromptC"
+            elif any(run in sample for run in ["Run2023D"]):
+                return "2023PromptD"
+            elif any(run in sample for run in ["Run2024B", "Run2024C", "Run2024D", "Run2024E", "Run2024F", "Run2024G", "Run2024H", "Run2024I"]):
+                return "2024Prompt"
         else:
-            raise ValueError(f"Error: year not found for {sample}")
+            # 2016
+            if "UL16" in sample and "APV" in sample:
+                return "2016preVFP"
+            elif "UL16" in sample:
+                return "2016postVFP"
+            elif ("HIPM" in sample and 
+                any(run in sample for run in ["Run2016B", "Run2016C", "Run2016D", "Run2016E", "Run2016F"])):
+                return "2016preVFP"
+            elif (not "HIPM" in sample and 
+                any(run in sample for run in ["Run2016F", "Run2016G", "Run2016H"])):
+                return "2016postVFP"
+            # 2017
+            elif any(tag in sample for tag in ["UL17", "UL2017", "Run2017"]):
+                return "2017"
+            # 2018
+            elif any(tag in sample for tag in ["UL18", "UL2018", "Run2018"]):
+                return "2018"
+            # 2022
+            elif "22EE" in sample:
+                return "2022Re-recoE+PromptFG"
+            elif "22" in sample:
+                return "2022Re-recoBCD"
+            elif "23BPix" in sample:
+                return "2023PromptD"
+            elif "23" in sample:
+                return "2023PromptC"
+            elif "24" in sample:
+                return "2024Prompt"
+            else:
+                raise ValueError(f"Error: year not found for {sample}")
 
-
-    # From a dataset name, get the short version (as defined in the xsec dict)
-    @staticmethod
-    def get_sample_name_and_xsec(dataset_name,xsec_dict,is_data):
-        # Data is data
-        if is_data:
-            return("data",1)
-
-        # The short name for this dataset, as defined in the xsec dict
+    def get_sample_name_and_xsec(self, dataset_name, xsec_dict):
+        if self.sample_category == "data":
+            return ("data", 1)
         dataset_name_short = ""
-
         # Loop through the xsec dict and get the name that matches this dataset
-        # Raise error if no matches, or if more than one matches
-        match_xsec_name = 0
-        for xsec_name in xsec_dict:
-            if dataset_name.startswith(xsec_name):
-                match_xsec_name += 1
-                if match_xsec_name > 1:
-                    raise Exception(f"More than one xsec name matches the dataset \"{dataset_name}\"")
-                else:
-                    dataset_name_short = xsec_name
-                    dataset_xsec = xsec_dict[xsec_name]
-        if match_xsec_name < 1:
-            raise Exception(f"Failed to find xsec name match for the dataset \"{dataset_name}\"")
+        # Find the xsec name that matches this dataset
+        matching_keys = [key for key in xsec_dict if dataset_name.startswith(key)]
 
+        if len(matching_keys) != 1:
+            raise ValueError(f"Error: could not find unique matching xsec name for dataset {dataset_name}. Found matches: {matching_keys}")
+        
+        dataset_name_short = matching_keys[0]
         xsec = xsec_dict[dataset_name_short]
 
-        return(dataset_name_short,xsec)
-
-
-    @staticmethod
-    def get_xsec_weight(xsecs, sample):
-        if sample in xsecs:
-            return xsecs[sample]
-        else:
-            raise ValueError(f"xsec not found for {sample}")
-
-    @staticmethod
-    def get_lumi(year):
-        lumi = {
-            "2016preVFP": 19.52,
-            "2016postVFP": 16.81,
-            "2017": 41.48,
-            "2018": 59.83,
-            "2022Re-recoBCD": 7.9804,
-            "2022Re-recoE+PromptFG": 26.6717,
-            "2024Prompt": 109.08
-        }
-        if year in lumi:
-            return lumi[year]
-        else:
-            raise ValueError(f"lumi not found for {year}")
+        return (dataset_name_short, xsec)
 
     @staticmethod
     def extract_mc_sample_type(sample_name):
         sample_type_mapping = {
+            "VBSWWH_OS": "VBSWWH_OS",
+            "VBSWWH_SS": "VBSWWH_SS",
+            "VBSZZH": "VBSZZH",
+            "VBSWZH": "VBSWZH", 
             "DY": "DY",
             "TTto": "TTbar",
+            "TTTo": "TTbar", # Run2 naming
+            "TT": "ttX", # if made it past other two, likely ttX
+            "ST_": "SingleTop",
             "Wto": "WJets",
+            "WJets": "WJets", # Run2 naming
+            "EWK": "EWK",
             "Zto": "ZJets",
-            "VBS": "VBS", 
             "QCD": "QCD",
             "WW": "Boson",
-            "WZ": "Boson"
+            "WZ": "Boson",
+            "ZZ": "Boson",
+            "ZH": "Boson",
+            "Wminus": "Boson",
+            "Wplus": "Boson",
         }
         for key, value in sample_type_mapping.items():
             if key in sample_name:
                 return value
         return "Other"
+
+    @staticmethod
+    def extract_data_sample_type(sample_name):
+        if "Muon" in sample_name or "SingleMuon" in sample_name:
+            return "Muon"
+        elif "EGamma" in sample_name or "SingleElectron" in sample_name:
+            return "Electron"
+        elif "MuonEG" in sample_name or "DoubleMuon" in sample_name or "DoubleEG" in sample_name:
+            return "DiLepton"
+        elif "JetMET" in sample_name or "JetHT" in sample_name or "MET" in sample_name:
+            return "JetMET"
+        else:
+            return "Other"
 
     @staticmethod
     def get_sample_name(sample):
@@ -127,18 +142,10 @@ class Config:
 
     def process_samples(self, xsecs, nthreads):
         for sample in self.samples:
-            # Get the dataset name
-            #dataset_name = os.path.basename(os.path.dirname(sample))
             dataset_name = os.path.basename(sample)
-            print(dataset_name)
-            if dataset_name.startswith("TTbb"):
-                print("    -> Skipping ttbb for now, we don't have an xsec for it.")
-                continue
-
-            # Get the info about the sample
             sample_name = self.get_sample_name(sample)
             try:
-                process_name_sync_with_xsec_name, xsec = self.get_sample_name_and_xsec(dataset_name,xsecs,is_data=self.sample_category=="data")
+                _, xsec = self.get_sample_name_and_xsec(dataset_name, xsecs)
             except Exception as e:
                 print(f"    -> Skipping {dataset_name} as {e}.")
                 continue
@@ -146,25 +153,32 @@ class Config:
             num_events = 0
             files_path = f"{sample}/*.root"
             if self.sample_category != "data":
+                sample_type = self.extract_mc_sample_type(sample_name)
                 files = glob(files_path)
                 with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
                     results = list(executor.map(self._process_file, files))
                 num_events = sum(results)
+                try:
+                    lumi = LUMI_MAP[sample_year]
+                except KeyError as e:
+                    print(f"    -> Luminosity for year {sample_year} not found. Skipping {dataset_name}.")
+                    continue
             else:
+                sample_type = self.extract_data_sample_type(sample_name)
                 num_events = 1.0
+                lumi = 1.0
             self.config["samples"].update(
                 {
                     f"{sample_name}_{sample_year}": {
                         "trees": ["Events"],
                         "files": [files_path],
                         "metadata": {
-                            "namewithyear": f"{sample_year}_{process_name_sync_with_xsec_name}",
                             "category": self.sample_category,
                             "year": sample_year,
-                            "type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
+                            "type": sample_type,
                             "xsec": float(xsec),
-                            "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
-                            "nevents": num_events
+                            "nevents": num_events,
+                            "lumi": lumi,
                         }
                     }
                 }
