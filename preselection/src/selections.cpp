@@ -96,9 +96,9 @@ RNode AK4JetsSelection(RNode df_)
     df = applyJetVetoMaps(df);
     df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
 
-    df = df.Define("Jet_isTightBTag", "Jet_btagUParTAK4B > 0.4648")
-            .Define("Jet_isMediumBTag", "Jet_btagUParTAK4B > 0.1272")
-            .Define("Jet_isLooseBTag", "Jet_btagUParTAK4B > 0.0246");
+    df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
+            .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
+            .Define("Jet_isLooseBTag", isbTagLoose, {"year", "Jet_btagUParTAK4B"});
 
     df = applyObjectMaskNewAffix(df, "_good_ak4jets", "Jet", "jet");
     df = df.Define("ht_jets", "Sum(jet_pt)");

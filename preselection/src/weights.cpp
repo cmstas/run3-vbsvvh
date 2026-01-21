@@ -21,7 +21,11 @@ RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::Correc
     auto eval_correction = [cset_pileup, year_map] (std::string year, float ntrueint) {
         RVec<double> pileup_weights;
         if (cset_pileup.find(year) == cset_pileup.end()) {
-            std::cout << "Warning: Pileup correction set for year " << year << " not found. Setting pileup weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Pileup correction set for year " << year << " not found. Setting pileup weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             pileup_weights.push_back(1.0);
             pileup_weights.push_back(1.0);
             pileup_weights.push_back(1.0);
@@ -49,7 +53,11 @@ RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::Correc
             return muon_sf_weights;
         }
         if (cset_muon.find(year) == cset_muon.end()) {
-            std::cout << "Warning: Muon ID correction set for year " << year << " not found. Setting muon ID weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Muon ID correction set for year " << year << " not found. Setting muon ID weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return muon_sf_weights;
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
@@ -70,7 +78,11 @@ RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::Corr
             return muon_sf_weights;
         }
         if (cset_muon.find(year) == cset_muon.end()) {
-            std::cout << "Warning: Muon Reco correction set for year " << year << " not found. Setting muon reco weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Muon Reco correction set for year " << year << " not found. Setting muon reco weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return muon_sf_weights;
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
@@ -91,7 +103,11 @@ RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::C
             return muon_sf_weights;
         }
         if (cset_muon.find(year) == cset_muon.end()) {
-            std::cout << "Warning: Muon Trigger correction set for year " << year << " not found. Setting muon trigger weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Muon Trigger correction set for year " << year << " not found. Setting muon trigger weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return muon_sf_weights;
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
@@ -118,7 +134,11 @@ RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::Co
             return electron_sf_weights;
         }
         if (cset_electron.find(year) == cset_electron.end()) {
-            std::cout << "Warning: Electron ID correction set for year " << year << " not found. Setting electron ID weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Electron ID correction set for year " << year << " not found. Setting electron ID weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return electron_sf_weights;
         }
         auto correctionset = cset_electron.at(year).at(year_map.at(year));
@@ -139,7 +159,11 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
             return electron_sf_weights;
         }
         if (cset_electron.find(year) == cset_electron.end()) {
-            std::cout << "Warning: Electron Reco correction set for year " << year << " not found. Setting electron reco weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Electron Reco correction set for year " << year << " not found. Setting electron reco weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return electron_sf_weights;
         }
         auto correctionset = cset_electron.at(year).at(year_map.at(year));
@@ -167,7 +191,11 @@ RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correctio
             return electron_sf_weights;
         }
         if (cset_electron.find(year) == cset_electron.end()) {
-            std::cout << "Warning: Electron Trigger correction set for year " << year << " not found. Setting electron trigger weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Electron Trigger correction set for year " << year << " not found. Setting electron trigger weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return electron_sf_weights;
         }
         auto correctionset = cset_electron.at(year).at(year_map.at(year));
@@ -201,14 +229,22 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
 
         auto cset_it = cset_btag.find(year);
         if (cset_it == cset_btag.end()) {
-            std::cout << "Warning: B-tagging correction set for year " << year << " not found. Setting b-tagging weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: B-tagging correction set for year " << year << " not found. Setting b-tagging weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return btag_sf_weights;
         }
         const auto& cset_btag_year = cset_it->second;
         
         auto cset_eff_it = cset_btag.find("eff");
         if (cset_eff_it == cset_btag.end()) {
-            std::cout << "Warning: B-tagging efficiency correction set not found. Setting b-tagging weights to 1." << std::endl;
+            static bool warned = false;
+            if (!warned) {
+                std::cout << "Warning: B-tagging efficiency correction set not found. Setting b-tagging weights to 1." << std::endl;
+                warned = true;
+            }
             return btag_sf_weights;
         }
         const auto& cset_btag_eff = cset_eff_it->second;
@@ -275,7 +311,11 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                                                  const RVec<float>& pt, const RVec<int>& jetflavor) {
         auto corrname_it = corrname_map_HF.find(year);
         if (corrname_it == corrname_map_HF.end()) {
-            std::cout << "Warning: B-tagging HF correction name for year " << year << " not found. Setting b-tagging HF weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: B-tagging HF correction name for year " << year << " not found. Setting b-tagging HF weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return RVec<double>{1., 1., 1.};
         }
         return calc_btag_sf(year, eta, pt, jetflavor, corrname_it->second, true);
@@ -285,7 +325,11 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                                                  const RVec<float>& pt, const RVec<int>& jetflavor) {
         auto corrname_it = corrname_map_LF.find(year);
         if (corrname_it == corrname_map_LF.end()) {
-            std::cout << "Warning: B-tagging LF correction name for year " << year << " not found. Setting b-tagging LF weights to 1." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: B-tagging LF correction name for year " << year << " not found. Setting b-tagging LF weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
             return RVec<double>{1., 1., 1.};
         }
         return calc_btag_sf(year, eta, pt, jetflavor, corrname_it->second, false);

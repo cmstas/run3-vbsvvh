@@ -23,9 +23,9 @@ using ROOT::VecOps::RVec;
 B-TAGGING WORKING POINTS
 ############################################
 */
-float bTagWPLoose(std::string year);
-float bTagWPMedium(std::string year);
-float bTagWPTight(std::string year);
+RVec<bool> isbTagLoose(std::string year, RVec<float> btag_score);
+RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score);
+RVec<bool> isbTagTight(std::string year, RVec<float> btag_score);
 
 /*
 ############################################

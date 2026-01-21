@@ -6,16 +6,17 @@ B-TAGGING WORKING POINTS
 ############################################
 */
 
-float bTagWPLoose(std::string year) {
-    return 0.0521;
+// FOR NOW IGNORE THE YEAR, FIXME!!!
+RVec<bool> isbTagLoose(std::string year, RVec<float> btag_score) {
+    return btag_score > 0.0246;
 }
 
-float bTagWPMedium(std::string year) {
-    return 0.3033;
+RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score) {
+    return btag_score > 0.1272;
 }
 
-float bTagWPTight(std::string year) {
-    return 0.7489;
+RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
+    return btag_score > 0.4648;
 }
 
 // /*
@@ -67,7 +68,11 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         double phi_corr = phi;
         
         if (metCorrections.find(year) == metCorrections.end()) {
-            std::cout << "Warning: MET correction set for year " << year << " not found. Skipping MET phi corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: MET correction set for year " << year << " not found. Skipping MET phi corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return std::make_pair(pt_corr, phi_corr);
         }
         
@@ -119,17 +124,29 @@ RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::Corr
         }
         
         if (cset_jerc.find(year) == cset_jerc.end()) {
-            std::cout << "Warning: JEC correction set for year " << year << " not found. Skipping JEC corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: JEC correction set for year " << year << " not found. Skipping JEC corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return var;
         }
         
         if (jec_prefix_map.find(year) == jec_prefix_map.end()) {
-            std::cout << "Warning: JEC prefix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: JEC prefix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return var;
         }
         
         if (jec_suffix_map.find(year) == jec_suffix_map.end()) {
-            std::cout << "Warning: JEC suffix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: JEC suffix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return var;
         }
 
@@ -187,22 +204,38 @@ RNode applyJetEnergyResolution(std::unordered_map<std::string, correction::Corre
         }
         
         if (cset_jerc.find(year) == cset_jerc.end()) {
-            std::cout << "Warning: JER correction set for year " << year << " not found. Skipping JER corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: JER correction set for year " << year << " not found. Skipping JER corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return var;
         }
         
         if (cset_jer_smear.find("jer_smear") == cset_jer_smear.end()) {
-            std::cout << "Warning: JER smear correction set not found. Skipping JER corrections." << std::endl;
+            static bool warned = false;
+            if (!warned) {
+                std::cout << "Warning: JER smear correction set not found. Skipping JER corrections." << std::endl;
+                warned = true;
+            }
             return var;
         }
         
         if (jer_res_map.find(year) == jer_res_map.end()) {
-            std::cout << "Warning: JER resolution map for year " << year << " not found. Skipping JER corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: JER resolution map for year " << year << " not found. Skipping JER corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return var;
         }
         
         if (jer_sf_map.find(year) == jer_sf_map.end()) {
-            std::cout << "Warning: JER scale factor map for year " << year << " not found. Skipping JER corrections." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: JER scale factor map for year " << year << " not found. Skipping JER corrections." << std::endl;
+                warned_years.insert(year);
+            }
             return var;
         }
 
@@ -234,7 +267,11 @@ RNode applyJetVetoMaps(RNode df) {
         RVec<bool> jet_veto_map;
         
         if (jetVetoMaps.find(year) == jetVetoMaps.end()) {
-            std::cout << "Warning: Jet veto map for year " << year << " not found. Setting all jets to not vetoed." << std::endl;
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Jet veto map for year " << year << " not found. Setting all jets to not vetoed." << std::endl;
+                warned_years.insert(year);
+            }
             for (size_t i = 0; i < eta.size(); i++) {
                 jet_veto_map.push_back(false);
             }
