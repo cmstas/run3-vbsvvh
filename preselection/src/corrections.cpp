@@ -6,17 +6,16 @@ B-TAGGING WORKING POINTS
 ############################################
 */
 
-// FOR NOW IGNORE THE YEAR, FIXME!!!
 RVec<bool> isbTagLoose(std::string year, RVec<float> btag_score) {
-    return btag_score > 0.0246;
+    return btag_score > btaggingWPMap_Loose.at(year);
 }
 
 RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score) {
-    return btag_score > 0.1272;
+    return btag_score > btaggingWPMap_Medium.at(year);
 }
 
 RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
-    return btag_score > 0.4648;
+    return btag_score > btaggingWPMap_Tight.at(year);
 }
 
 // /*
