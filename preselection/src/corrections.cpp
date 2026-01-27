@@ -307,6 +307,9 @@ RNode applyJetVetoMaps(RNode df) {
             return jet_veto_map;
         }
 
+        std::list<std::string> vetoeventyears = {"2022Re-recoE+PromptFG", "2023PromptC", "2023PromptD", "2024Prompt"};
+        bool veto_event = std::find(std::begin(vetoeventyears), std::end(vetoeventyears), year) != std::end(vetoeventyears);
+
         for (size_t i = 0; i < eta.size(); i++) {
             if (std::abs(eta[i]) > 5.19) {
                 jet_veto_map.push_back(true);
@@ -314,6 +317,13 @@ RNode applyJetVetoMaps(RNode df) {
             }
             bool is_vetoed = jetVetoMaps.at(year).at(jetVetoMap_names.at(year))->evaluate({"jetvetomap", eta[i], phi[i]}) != 0;
             jet_veto_map.push_back(is_vetoed);
+        }
+
+        if (veto_event && Any(jet_veto_map)) {
+            // If any jet is vetoed, set all jets to vetoed (proxy for event veto)
+            for (size_t i = 0; i < jet_veto_map.size(); i++) {
+                jet_veto_map[i] = true;
+            }
         }
         
         return jet_veto_map;
