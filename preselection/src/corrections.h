@@ -178,6 +178,8 @@ const std::unordered_map<std::string, std::string> jetVetoMap_names = {
 
 RNode applyJetVetoMaps(RNode df);
 
+RNode HEMCorrection(RNode df, bool isData);
+
 RNode applyDataCorrections(RNode df_);
 RNode applyMCCorrections(RNode df_);
 

@@ -57,6 +57,36 @@ RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
 
 /*
 ############################################
+HEM Corrections
+############################################
+*/
+
+RNode HEMCorrection(RNode df, bool isData) {
+    auto HEMCorrections = [isData](unsigned int run, unsigned long long event, std::string sample_year, RVec<float> eta, RVec<float> phi, RVec<float> jet_id) {
+        RVec<bool> jet_mask;
+        if (sample_year.find("2016") != std::string::npos) {
+            jet_mask = jet_id >= 1;
+        } else {
+            jet_mask = jet_id >= 2;
+        }
+        // Need to check if there is dependence on jet ID in v15
+        auto eta_ = eta[jet_mask];
+        auto phi_ = phi[jet_mask];
+        if (sample_year == "2018" && ((isData && run >= 319077) || (!isData && event % 1961 < 1286))) {
+            for (size_t i = 0; i < eta_.size(); i++) {
+                if (eta_[i] > -3.2 && eta_[i] < -1.3 && phi_[i] > -1.57 && phi_[i] < -0.87) {
+                    return 0.0;
+                }
+            }
+        }
+        return 1.0;
+    };
+
+    return df.Define("HEMweight", HEMCorrections, {"run", "event", "year", "Jet_eta", "Jet_phi", "Jet_jetId"});
+}
+
+/*
+############################################
 MET PHI CORRECTIONS
 ############################################
 */
@@ -300,10 +330,12 @@ GENERAL CORRECTIONS
 
 RNode applyDataCorrections(RNode df_) {
     auto df = applyMETPhiCorrections(df_, true);
+    df = HEMCorrection(df, true);
     return df;
 }
 
 RNode applyMCCorrections(RNode df_) {
     auto df = applyMETPhiCorrections(df_, false);
+    df = HEMCorrection(df, false);
     return df;
 }
