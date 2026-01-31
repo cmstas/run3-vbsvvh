@@ -1,5 +1,4 @@
 #include "selections.h"
-#include "corrections_run2.h" // FIXME
 
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
 {
@@ -21,14 +20,13 @@ RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map
 RNode ElectronSelections(RNode df_)
 {
     auto df = df_.Define("Electron_SC_eta", "Electron_eta + Electron_deltaEtaSC")
-                  .Define("_looseElectrons",
-                          "Electron_pt > 7 &&"
-                          "abs(Electron_SC_eta) < 2.5 && "
-                          "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || (abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
-                          "abs(Electron_sip3d) < 8 && "
-                          "Electron_cutBased >= 2 && "
-                          "Electron_pfRelIso03_all < 0.4 && "
-                          "Electron_lostHits <= 1")
+                  .Define("_looseElectrons", "Electron_pt > 7 &&"
+                                            "abs(Electron_SC_eta) < 2.5 && "
+                                            "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || (abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
+                                            "abs(Electron_sip3d) < 8 && "
+                                            "Electron_cutBased >= 2 && "
+                                            "Electron_pfRelIso03_all < 0.4 && "
+                                            "Electron_lostHits <= 1")
                   .Define("_tightElectrons", "_looseElectrons &&"
                                              "Electron_pt > 30 && "
                                              "Electron_cutBased >= 4 && "
@@ -47,14 +45,13 @@ RNode ElectronSelections(RNode df_)
 
 RNode MuonSelections(RNode df_)
 {
-    auto df = df_.Define("_looseMuons",
-                         "Muon_pt > 5 && "
-                         "Muon_pfIsoId >= 2 && "
-                         "abs(Muon_eta) < 2.4 && "
-                         "abs(Muon_dxy) < 0.2 && "
-                         "abs(Muon_dz) < 0.5 && "
-                         "abs(Muon_sip3d) < 8 && "
-                         "Muon_looseId")
+    auto df = df_.Define("_looseMuons", "Muon_pt > 5 && "
+                                        "Muon_pfIsoId >= 2 && "
+                                        "abs(Muon_eta) < 2.4 && "
+                                        "abs(Muon_dxy) < 0.2 && "
+                                        "abs(Muon_dz) < 0.5 && "
+                                        "abs(Muon_sip3d) < 8 && "
+                                        "Muon_looseId")
                   .Define("_tightMuons", "_looseMuons && "
                                          "Muon_pt > 30 && "
                                          "Muon_pfIsoId > 4 && "
@@ -72,55 +69,44 @@ RNode LeptonSelections(RNode df_)
     auto df = ElectronSelections(df_);
     df = MuonSelections(df);
     return df.Define("lepton_pt", "Concatenate(electron_pt, muon_pt)")
-        .Define("_leptonSorted", "Argsort(-lepton_pt)")
-        .Redefine("lepton_pt", "Take(lepton_pt, _leptonSorted)")
-        .Define("lepton_eta", "Take(Concatenate(electron_eta, muon_eta), _leptonSorted)")
-        .Define("lepton_phi", "Take(Concatenate(electron_phi, muon_phi), _leptonSorted)")
-        .Define("lepton_mass", "Take(Concatenate(electron_mass, muon_mass), _leptonSorted)")
-        .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)");
+            .Define("_leptonSorted", "Argsort(-lepton_pt)")
+            .Redefine("lepton_pt", "Take(lepton_pt, _leptonSorted)")
+            .Define("lepton_eta", "Take(Concatenate(electron_eta, muon_eta), _leptonSorted)")
+            .Define("lepton_phi", "Take(Concatenate(electron_phi, muon_phi), _leptonSorted)")
+            .Define("lepton_mass", "Take(Concatenate(electron_mass, muon_mass), _leptonSorted)")
+            .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)");
 }
 
-RNode AK4JetsSelection(RNode df_, std::string run_number)
+RNode AK4JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
                 .Define("_good_ak4jets", " _dR_ak4_lep > 0.4 && "
-                        "Jet_pt > 20 && "
-                        "((abs(Jet_eta) <= 2.5) || (abs(Jet_eta) >= 3.0 && abs(Jet_eta) < 5.0) || "
-                        "((Jet_pt > 30 && (Jet_neHEF < ((Jet_pt - 30) / 20) && ((Jet_puIdDisc > 0.3) || " 
-                        "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 35 * (Jet_pt - 30) + 0.4)) && "
-                        "(Jet_puIdDisc > -0.6) && "
-                        "(Jet_muEF < 0.4))) || "
-                        "(Jet_pt < 30 && Jet_pt > 20 && (Jet_neHEF < ((Jet_pt - 20) / 15) && ((Jet_puIdDisc > 0.3) || " 
-                        "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 25 * (Jet_pt - 20) + 0.4)) && "
-                        "(Jet_puIdDisc > -0.6) && "
-                        "(Jet_muEF < 0.4))))) && "
-                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");              
-    // run 2 only
-    if (run_number == "2")
-    {
-        df = df.Redefine("_good_ak4jets", "_good_ak4jets && "
-                                          "(Jet_pt >= 50 || (Jet_pt < 50 && Jet_puId != 0))")
-                 .Define("_ak4tightBjetScore", Run2::tightDFBtagWP, {"year"})
-                 .Define("_ak4mediumBjetScore", Run2::mediumDFBtagWP, {"year"})
-                 .Define("_ak4looseBjetScore", Run2::looseDFBtagWP, {"year"})
-                 .Define("Jet_isTightBTag", "Jet_btagDeepFlavB > _ak4tightBjetScore")
-                 .Define("Jet_isMediumBTag", "Jet_btagDeepFlavB > _ak4mediumBjetScore")
-                 .Define("Jet_isLooseBTag", "Jet_btagDeepFlavB > _ak4looseBjetScore");
-    }
-    // run 3 only
-    else
-    {
-        df = df.Define("Jet_isTightBTag", "Jet_btagUParTAK4B > 0.4648")
-                 .Define("Jet_isMediumBTag", "Jet_btagUParTAK4B > 0.1272")
-                 .Define("Jet_isLooseBTag", "Jet_btagUParTAK4B > 0.0246");
-    }
+                                        "Jet_pt > 20 && "
+                                        "((abs(Jet_eta) <= 2.5) || (abs(Jet_eta) >= 3.0 && abs(Jet_eta) < 5.0) || "
+                                        "((Jet_pt > 30 && (Jet_neHEF < ((Jet_pt - 30) / 20) && ((Jet_puIdDisc > 0.3) || " 
+                                        "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 35 * (Jet_pt - 30) + 0.4)) && "
+                                        "(Jet_puIdDisc > -0.6) && "
+                                        "(Jet_muEF < 0.4))) || "
+                                        "(Jet_pt < 30 && Jet_pt > 20 && (Jet_neHEF < ((Jet_pt - 20) / 15) && ((Jet_puIdDisc > 0.3) || " 
+                                        "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 25 * (Jet_pt - 20) + 0.4)) && "
+                                        "(Jet_puIdDisc > -0.6) && "
+                                        "(Jet_muEF < 0.4))))) && "
+                                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+    
+    df = applyJetVetoMaps(df);
+    df = df.Filter("Sum(Jet_vetoMap) == Jet_pt.size()"); // for 2022EE+, events with any jet in veto region are removed
+    df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
+
+    df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
+            .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
+            .Define("Jet_isLooseBTag", isbTagLoose, {"year", "Jet_btagUParTAK4B"});
 
     df = applyObjectMaskNewAffix(df, "_good_ak4jets", "Jet", "jet");
     df = df.Define("ht_jets", "Sum(jet_pt)");
     return df;
 }
 
-RNode AK8JetsSelection(RNode df_, std::string run_number)
+RNode AK8JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
@@ -128,38 +114,25 @@ RNode AK8JetsSelection(RNode df_, std::string run_number)
                                            "abs(FatJet_eta) <= 2.5 && "
                                            "FatJet_msoftdrop > 40 && "
                                            "FatJet_jetId > 0");
-    // run 2 only
-    if (run_number == "2")
-    {
-        df = df.Define("FatJet_HbbScore", "FatJet_particleNetMD_Xbb / (FatJet_particleNetMD_Xbb + FatJet_particleNetMD_QCD)")
-                 .Define("FatJet_WqqScore", "(FatJet_particleNetMD_Xcc + FatJet_particleNetMD_Xqq) / (FatJet_particleNetMD_Xcc + FatJet_particleNetMD_Xqq + FatJet_particleNetMD_QCD)");
-    }
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
 
-    if (run_number == "2")
-    {
-        df = df.Define("puIDJets_pt", "jet_pt") // CHECKME
-            .Define("puIDJets_eta", "jet_eta");
-    }
     return df;
 }
 
-RNode runPreselection(RNode df_, std::string channel, std::string run_number, bool noCut)
+RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
     auto df = LeptonSelections(df_);
-    df = AK4JetsSelection(df, run_number);
-    df = AK8JetsSelection(df, run_number);
+    df = AK4JetsSelection(df);
+    df = AK8JetsSelection(df);
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
-                          .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
+            .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
-
     if (noCut)
         return df; // for spanet training data
 
     df = TriggerSelections(df, channel, TriggerMap);
-    // channel-specific selections
     if (channel == "1Lep2FJ")
     {
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "

@@ -147,7 +147,7 @@ class Skimmer():
 
     @property
     def sample_year(self):
-        match = re.search(r'Run3Summer24|RunIII2024Summer24NanoAODv15|Run2024', self.inFiles[0])
+        match = re.search(r'v15', self.inFiles[0])
         if not match:
             raise ValueError("Could not determine sample year from filename")
         else:
