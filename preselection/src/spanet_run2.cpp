@@ -7,9 +7,9 @@ std::vector<SPANetRun2::SPANetInference::EventData> SPANetRun2::SPANetInference:
     auto ak4_eta_vec = df.Take<RVec<float>>("jet_eta").GetValue();
     auto ak4_phi_vec = df.Take<RVec<float>>("jet_phi").GetValue();
     auto ak4_mass_vec = df.Take<RVec<float>>("jet_mass").GetValue();
-    auto ak4_isTightBTag_vec = df.Take<RVec<int>>("jet_isTightBTag").GetValue();
-    auto ak4_isMediumBTag_vec = df.Take<RVec<int>>("jet_isMediumBTag").GetValue();
-    auto ak4_isLooseBTag_vec = df.Take<RVec<int>>("jet_isLooseBTag").GetValue();
+    auto ak4_isTightBTag_vec = df.Take<RVec<bool>>("jet_isTightBTag").GetValue();
+    auto ak4_isMediumBTag_vec = df.Take<RVec<bool>>("jet_isMediumBTag").GetValue();
+    auto ak4_isLooseBTag_vec = df.Take<RVec<bool>>("jet_isLooseBTag").GetValue();
 
     auto ak8_pt_vec = df.Take<RVec<float>>("fatjet_pt").GetValue();
     auto ak8_eta_vec = df.Take<RVec<float>>("fatjet_eta").GetValue();
