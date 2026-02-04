@@ -189,7 +189,7 @@ class Config:
                 {
                     f"{sample_name}_{sample_year}": {
                         "trees": ["Events"],
-                        "files": list(files),
+                        "files": list(files) if self.n_files != -1 else [files_path],
                         "metadata": {
                             "category": self.sample_category,
                             "year": sample_year,
