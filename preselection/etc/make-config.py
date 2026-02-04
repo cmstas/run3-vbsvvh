@@ -225,6 +225,10 @@ if __name__ == "__main__":
 
     if not args.category or not any(cat in args.category for cat in ["bkg", "sig", "data"]):
         raise ValueError("Please provide a valid category")
+    
+    if args.category == "data" and args.n_files != -1:
+        print("Warning: --n-files should not be used for data category. Ignoring the provided value.")
+        args.n_files = -1
 
     with open(args.xsecs, "r") as f_xsecs:
         xsecs = json.load(f_xsecs)
