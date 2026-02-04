@@ -4,7 +4,9 @@ import json
 import re
 import argparse
 import uproot
+import numpy as np
 import concurrent.futures
+from tqdm import tqdm
 
 LUMI_MAP = {
     "2016preVFP": 19.52,
@@ -19,16 +21,21 @@ LUMI_MAP = {
 }
 
 class Config:
-    def __init__(self, sample_category : str, channel : str, samples: str, xsecs: dict, nthreads: int = 8):
+    def __init__(self, sample_category : str, channel : str, samples: str, xsecs: dict, nthreads: int = 8, n_files: int = -1):
         self.sample_category = sample_category
+        self.channel = channel
         self.samples = sorted(glob(samples))
-        self.config = {"samples": {}}
-        self.process_samples(xsecs, nthreads)
-        self.write_config(f"{channel}-{sample_category}.json")
+        self.n_files = n_files
+        self.configs = {}  # Dictionary to store configs grouped by era/type
+        self.process_samples(xsecs, nthreads, n_files)
+        self.write_configs()
 
-    def write_config(self, output_file):
-        with open(output_file, "w") as f:
-            json.dump(self.config, f, indent=4)
+    def write_configs(self):
+        for group_key, config_data in self.configs.items():
+            output_file = f"{self.channel}-{self.sample_category}-{group_key}.json"
+            with open(output_file, "w") as f:
+                json.dump({"samples": config_data}, f, indent=4)
+            print(f"Written config to {output_file}")
 
     def extract_sample_year(self, sample):
         if self.sample_category == "data":
@@ -91,6 +98,7 @@ class Config:
         return (dataset_name_short, xsec)
 
     @staticmethod
+    # we need to come up with a better way to do this
     def extract_mc_sample_type(sample_name):
         sample_type_mapping = {
             "VBSWWH_OS": "VBSWWH_OS",
@@ -102,17 +110,17 @@ class Config:
             "TTTo": "TTbar", # Run2 naming
             "TT": "ttX", # if made it past other two, likely ttX
             "ST_": "SingleTop",
-            "Wto": "WJets",
-            "WJets": "WJets", # Run2 naming
-            "EWK": "EWK",
-            "Zto": "ZJets",
-            "QCD": "QCD",
             "WW": "Boson",
             "WZ": "Boson",
             "ZZ": "Boson",
             "ZH": "Boson",
             "Wminus": "Boson",
             "Wplus": "Boson",
+            "Wto": "WJets",
+            "WJets": "WJets", # Run2 naming
+            "EWK": "EWK",
+            "Zto": "ZJets",
+            "QCD": "QCD",
         }
         for key, value in sample_type_mapping.items():
             if key in sample_name:
@@ -140,38 +148,48 @@ class Config:
         else:
             return re.search(r"/([^/]+)_TuneCP5", sample).group(1)
 
-    def process_samples(self, xsecs, nthreads):
-        for sample in self.samples:
+    def process_samples(self, xsecs, nthreads, n_files):
+        for sample in tqdm(self.samples, desc=f"Processing {self.sample_category} samples"):
             dataset_name = os.path.basename(sample)
             sample_name = self.get_sample_name(sample)
             try:
                 _, xsec = self.get_sample_name_and_xsec(dataset_name, xsecs)
             except Exception as e:
-                print(f"    -> Skipping {dataset_name} as {e}.")
+                tqdm.write(f"    -> Skipping {dataset_name} as {e}.")
                 continue
             sample_year = self.extract_sample_year(sample)
             num_events = 0
             files_path = f"{sample}/*.root"
             if self.sample_category != "data":
                 sample_type = self.extract_mc_sample_type(sample_name)
-                files = glob(files_path)
+                files = np.random.choice(glob(files_path), size=min(n_files if n_files > 0 else 100, len(glob(files_path))), replace=False)
                 with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
                     results = list(executor.map(self._process_file, files))
                 num_events = sum(results)
                 try:
                     lumi = LUMI_MAP[sample_year]
                 except KeyError as e:
-                    print(f"    -> Luminosity for year {sample_year} not found. Skipping {dataset_name}.")
+                    tqdm.write(f"    -> Luminosity for year {sample_year} not found. Skipping {dataset_name}.")
                     continue
+                # Don't group signal samples ?
+                if self.sample_category == "sig":
+                    group_key = "all"
+                else:
+                    group_key = sample_type  # Group by sample type for MC background
             else:
                 sample_type = self.extract_data_sample_type(sample_name)
                 num_events = 1.0
                 lumi = 1.0
-            self.config["samples"].update(
+                group_key = sample_year  # Group by era for data
+            
+            if group_key not in self.configs:
+                self.configs[group_key] = {}
+            
+            self.configs[group_key].update(
                 {
                     f"{sample_name}_{sample_year}": {
                         "trees": ["Events"],
-                        "files": [files_path],
+                        "files": list(files),
                         "metadata": {
                             "category": self.sample_category,
                             "year": sample_year,
@@ -188,7 +206,6 @@ class Config:
     def _process_file(file):
         try:
             with uproot.open(file) as upf:
-                # check if file is corrupted
                 assert upf["Events"]
                 return sum(upf["Runs"]["genEventSumw"].array())
         except Exception as e:
@@ -202,6 +219,7 @@ if __name__ == "__main__":
     argparser.add_argument("--category", help="categories: bkg, sig or data", required=True)
     argparser.add_argument("--config", help="paths file", default="paths.json")
     argparser.add_argument("--xsecs", help="xsec file", default="xsecs.json")
+    argparser.add_argument("--n-files", type=int, default=-1, help="number of files to process per sample")
     argparser.add_argument("-n", "--nthreads", type=int, default=8, help="number of threads to use for processing files")
     args = argparser.parse_args()
 
@@ -219,4 +237,4 @@ if __name__ == "__main__":
     if args.category not in skim_paths[args.channel]:
         raise ValueError(f"No skim paths found for category {args.category}")
     
-    config = Config(args.category, args.channel, skim_paths[args.channel][args.category], xsecs, args.nthreads)
+    config = Config(args.category, args.channel, skim_paths[args.channel][args.category], xsecs, args.nthreads, args.n_files)
