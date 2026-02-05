@@ -1,6 +1,6 @@
 # Preselection Framework
 
-C++ framework for VBS VVH preselection using RDataFrame.
+C++ framework for VBS VVH preselection using RDataFrame. The paths provided in this README assume you are running on the UAF cluster.
 
 ## Directory Structure
 
