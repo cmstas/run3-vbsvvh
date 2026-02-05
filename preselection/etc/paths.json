@@ -1,27 +1,29 @@
 {
-    "0Lep3FJ": {
+    "0Lep3FJ_run3": {
         "bkg": "/ceph/cms/store/user/aaarora/skims_v1/bkg/*/*/*",
         "data": "/ceph/cms/store/user/aaarora/skims_v1/data/*/*/*",
         "sig": "/ceph/cms/store/user/aaarora/skims_v1/sig/Run3Summer24/*/*"
     },
-    "0Lep2FJ": {
-        "bkg": "/ceph/cms/store/user/aaarora/skims_v1/bkg/*/*/*",
-        "data": "/ceph/cms/store/user/aaarora/skims_v1/data/*/*/*",
-        "sig": "/ceph/cms/store/user/mmazza/skim/skims_Run3Summer2024_NoCuts_11Sep2025/*/*"
+    "0Lep2FJ_run3": {
+        "bkg": "/ceph/cms/store/user/aaarora/skims_v3/bkg/*/*",
+        "data": "/ceph/cms/store/user/aaarora/skims_v3/data/*/*",
+        "sig": "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/*"
     },
-    "1Lep2FJ": {
+    "1Lep2FJ_run3": {
         "bkg": "/ceph/cms/store/user/aaarora/skims_v3/bkg/*/*",
         "data": "/ceph/cms/store/user/aaarora/skims_v3/data/*/*",
         "sig": "/ceph/cms/store/user/aaarora/skims_v3/sig/*/*1p5*"
+    },
+
+    "0Lep2FJ_run2": {
+        "bkg": "",
+        "data": "",
+        "sig": "/ceph/cms/store/user/mmazza/skim/nanoaodv9_sig_cuts-None_VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_*_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8_11Nov2025/*NANOGEN"
     },
     "1Lep1FJ_run2": {
         "bkg": "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1/*/",
         "data": "",
         "sig": "/ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/*/"
-    },
-    "0Lep2FJ_run2": {
-        "bkg": "",
-        "data": "",
-        "sig": "/ceph/cms/store/user/mmazza/skim/nanoaodv9_sig_cuts-None_VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_*_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8_11Nov2025/*NANOGEN"
     }
+
 }

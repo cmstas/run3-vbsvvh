@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# OBSOLETE: use setup.sh instead for faster setup
+
 CMSSW_VERSION="CMSSW_15_0_4"
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh

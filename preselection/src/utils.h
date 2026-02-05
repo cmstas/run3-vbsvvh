@@ -15,7 +15,6 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
 #include "TString.h"
 
 using RNode = ROOT::RDF::RNode;
@@ -29,6 +28,7 @@ DEFINE METADATA
 */
 
 RNode defineMetadata(RNode df);
+std::string getCategoryFromConfig(const std::string& config_path);
 
 class FilterOnePerKind {
     std::unordered_set<size_t> _seenCategories;

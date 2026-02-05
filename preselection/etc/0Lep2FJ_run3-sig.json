@@ -1,0 +1,196 @@
+{
+    "samples": {
+        "VBSWWH_OS_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWWH_OS_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWWH_OS",
+                "xsec": 0.001715,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWWH_OS_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWWH_OS_C2V_1p5_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWWH_OS",
+                "xsec": 0.002221,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWWH_OS_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWWH_OS_C2V_2p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWWH_OS",
+                "xsec": 0.003654,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWWH_SS_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWWH_SS_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWWH_SS",
+                "xsec": 0.0003585,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWWH_SS_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWWH_SS_C2V_1p5_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWWH_SS",
+                "xsec": 0.000728,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWWH_SS_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWWH_SS_C2V_2p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWWH_SS",
+                "xsec": 0.001788,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWZH",
+                "xsec": 0.000747,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWZH",
+                "xsec": 0.001106,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSWZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSWZH",
+                "xsec": 0.002123,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSZZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSZZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSZZH",
+                "xsec": 0.0001302,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSZZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSZZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSZZH",
+                "xsec": 0.0004435,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        },
+        "VBSZZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/sig/Run3Summer24/VBSZZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/*.root"
+            ],
+            "metadata": {
+                "category": "sig",
+                "year": "2024Prompt",
+                "type": "VBSZZH",
+                "xsec": 0.001376,
+                "lumi": 109.08,
+                "nevents": 100000.0
+            }
+        }
+    }
+}
