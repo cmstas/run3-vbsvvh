@@ -101,6 +101,11 @@ int main(int argc, char** argv) {
         auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
     }
 
+    if (args.runSPANetInference && args.nthread > 1) {
+        std::cout << " -> SPANet inference requires single-threaded execution, setting nthread=1" << std::endl;
+        args.nthread = 1;
+    }
+
     if (args.nthread > 1) {
         ROOT::EnableImplicitMT(args.nthread);
         ROOT::EnableThreadSafety();
