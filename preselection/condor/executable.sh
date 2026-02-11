@@ -229,7 +229,25 @@ EOF
 # Main script
 echo ""
 echo "=== Checking proxy ==="
-voms-proxy-info -timeleft
+PROXY_TIMELEFT=$(voms-proxy-info -timeleft 2>&1)
+PROXY_STATUS=$?
+
+MIN_PROXY_TIME=$((7 * 24 * 3600))  # 1 week in seconds (604800)
+
+if [ $PROXY_STATUS -ne 0 ] || [ -z "$PROXY_TIMELEFT" ] || [ "$PROXY_TIMELEFT" -le 0 ] 2>/dev/null; then
+    echo "ERROR: No valid proxy found or proxy has expired"
+    echo "Proxy check output: $PROXY_TIMELEFT"
+    echo "Please run: voms-proxy-init -voms cms -valid 192:00"
+    exit 1
+fi
+
+if [ "$PROXY_TIMELEFT" -lt "$MIN_PROXY_TIME" ]; then
+    echo "ERROR: Proxy expires in less than 1 week (${PROXY_TIMELEFT} seconds remaining)"
+    echo "Please renew your proxy: voms-proxy-init -voms cms -valid 192:00"
+    exit 1
+fi
+
+echo "Proxy time remaining: ${PROXY_TIMELEFT} seconds (~$((PROXY_TIMELEFT / 3600)) hours)"
 
 echo ""
 echo "=== Setting up CMS environment ==="
@@ -269,14 +287,21 @@ run_analysis
 ANALYSIS_STATUS=$?
 
 if [ $ANALYSIS_STATUS -ne 0 ]; then
-    echo "Analysis failed with status $ANALYSIS_STATUS, retrying..."
-    run_analysis
-    ANALYSIS_STATUS=$?
-    if [ $ANALYSIS_STATUS -ne 0 ]; then
-        echo "ERROR: Analysis failed twice. Aborting."
-        exit 1
-    fi
+    echo "ERROR: Analysis failed twice. Aborting."
+    exit 1
 fi
+
+
+# Resubmission is now handled via condor/resubmit.py to keep track of resubmits 
+# if [ $ANALYSIS_STATUS -ne 0 ]; then
+#     echo "Analysis failed with status $ANALYSIS_STATUS, retrying..."
+#     run_analysis
+#     ANALYSIS_STATUS=$?
+#     if [ $ANALYSIS_STATUS -ne 0 ]; then
+#         echo "ERROR: Analysis failed twice. Aborting."
+#         exit 1
+#     fi
+# fi
 
 echo ""
 echo "=== Directory contents after analysis ==="
