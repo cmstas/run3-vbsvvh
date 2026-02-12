@@ -442,7 +442,7 @@ RNode applyMCWeights(RNode df_) {
     df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
     df = applyBTaggingScaleFactors(bTaggingScaleFactors, bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname,  df);
-    df = applyEWKCorrections(cset_ewk, df);
+    //df = applyEWKCorrections(cset_ewk, df);
     df = applyL1PreFiringReweighting(df);
     df = applyPSWeight_FSR(df);
     df = applyPSWeight_ISR(df);
@@ -459,7 +459,7 @@ RNode applyMCWeights(RNode df_) {
         "weight_electrontrigger[0] * "
         // "weight_btagging_sf_HF[0] * "
         // "weight_btagging_sf_LF[0] * "
-        "weight_ewk * "
+        //"weight_ewk * "
         // "weight_l1prefiring[0] * "
         "weight_PSFSR[0] * "
         "weight_PSISR[0] * "
