@@ -22,6 +22,8 @@ from glob import glob
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
+import uproot
+
 
 # Constants
 CONDOR_OUTPUT_DIR = "jobs"
@@ -160,6 +162,10 @@ Examples:
                         help=f"Memory request per job (default: {DEFAULT_MEMORY})")
     parser.add_argument("--files-per-job", type=int, default=DEFAULT_FILES_PER_JOB,
                         help=f"Number of input files per job (default: {DEFAULT_FILES_PER_JOB})")
+    parser.add_argument("--events-per-job", type=int, default=None,
+                        help="Maximum events per job (if set, takes priority over --files-per-job)")
+    parser.add_argument("--events-per-job-override", default=None,
+                        help="JSON file mapping sample regex patterns to per-sample events-per-job values")
     parser.add_argument("--dry-run", action="store_true",
                         help="Prepare jobs but don't submit")
     parser.add_argument("--sample", default=None,
@@ -193,6 +199,96 @@ def expand_file_glob(file_pattern: str) -> List[str]:
 def split_into_chunks(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of given size."""
     return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
+def get_event_count(file_path: str) -> int:
+    """
+    Get the number of events in a ROOT file from the "Events" tree.
+
+    Args:
+        file_path: Path to the ROOT file
+
+    Returns:
+        Number of events in the file, or 0 if file cannot be read
+    """
+    try:
+        with uproot.open(file_path) as f:
+            return f["Events"].num_entries
+    except Exception as e:
+        print(f"  WARNING: Could not read {file_path}: {e}")
+        return 0
+
+
+def estimate_events_per_file(files: List[str]) -> int:
+    """
+    Estimate events per file by checking the first two files and taking the max.
+
+    For a given sample, files typically have the same number of events,
+    except possibly the last file which may have fewer. By checking two
+    files and taking the max, we get a safe estimate.
+
+    Args:
+        files: List of file paths
+
+    Returns:
+        Estimated events per file
+    """
+    if not files:
+        return 0
+
+    files_to_check = files[:2]
+    counts = [get_event_count(f) for f in files_to_check]
+    return max(counts) if counts else 0
+
+
+def split_by_events(
+    files: List[str],
+    events_per_file: int,
+    max_events_per_job: int
+) -> List[List[str]]:
+    """
+    Split files into chunks based on estimated event count.
+
+    Args:
+        files: List of file paths
+        events_per_file: Estimated events per file
+        max_events_per_job: Maximum events per job
+
+    Returns:
+        List of file lists, one per job
+    """
+    if events_per_file <= 0:
+        # Fallback: one file per job if we can't estimate
+        return [[f] for f in files]
+
+    # Calculate how many files fit in one job
+    files_per_job = max(1, max_events_per_job // events_per_file)
+
+    return split_into_chunks(files, files_per_job)
+
+
+def load_events_per_job_overrides(path: str) -> List[tuple]:
+    """
+    Load per-sample events-per-job overrides from a JSON file.
+
+    The file maps regex patterns to events-per-job values, e.g.:
+        {"QCD_Bin-PT-600to800": 100000, "TTtoLNu2Q": 200000}
+
+    Returns a list of (compiled_regex, events_per_job) tuples.
+    """
+    with open(path) as f:
+        raw = json.load(f)
+    return [(re.compile(pattern), epj) for pattern, epj in raw.items()]
+
+
+def get_events_per_job(sample_name: str, default: Optional[int],
+                       overrides: Optional[List[tuple]]) -> Optional[int]:
+    """Return the events-per-job for a sample, checking overrides first."""
+    if overrides:
+        for pattern, epj in overrides:
+            if pattern.search(sample_name):
+                return epj
+    return default
 
 
 def create_job_config(sample_name: str, sample_config: Dict, file_list: List[str],
@@ -507,7 +603,20 @@ def main():
     print(f"Analysis:     {args.analysis}")
     print(f"Run number:   {args.run_number}")
     print(f"Tag:          {args.tag or '(none)'}")
-    print(f"Files/job:    {args.files_per_job}")
+    # Load per-sample events-per-job overrides
+    epj_overrides = None
+    if args.events_per_job_override:
+        override_path = preselection_dir / args.events_per_job_override
+        if not override_path.exists():
+            print(f"ERROR: Override file not found: {override_path}")
+            sys.exit(1)
+        epj_overrides = load_events_per_job_overrides(str(override_path))
+        print(f"Loaded {len(epj_overrides)} events-per-job override(s) from {args.events_per_job_override}")
+
+    if args.events_per_job:
+        print(f"Events/job:   {args.events_per_job} (max, default)")
+    else:
+        print(f"Files/job:    {args.files_per_job}")
     print(f"CPUs/job:     {args.ncpus}")
     print(f"Memory/job:   {args.memory}")
     print(f"Task dir:     {task_dir}")
@@ -540,11 +649,20 @@ def main():
             print(f"  Skipping {sample_name}: no files found")
             continue
 
-        # Split files into chunks
-        file_chunks = split_into_chunks(all_files, args.files_per_job)
-        n_jobs = len(file_chunks)
-
-        print(f"  {sample_name}: {len(all_files)} files -> {n_jobs} job(s)")
+        # Split files into chunks - by events or by file count
+        sample_epj = get_events_per_job(sample_name, args.events_per_job, epj_overrides)
+        if sample_epj:
+            events_per_file = estimate_events_per_file(all_files)
+            total_events_est = events_per_file * len(all_files)
+            file_chunks = split_by_events(all_files, events_per_file, sample_epj)
+            n_jobs = len(file_chunks)
+            files_per_job = len(all_files) // n_jobs if n_jobs > 0 else 0
+            override_tag = " (override)" if sample_epj != args.events_per_job else ""
+            print(f"  {sample_name}: {len(all_files)} files, ~{total_events_est} events ({events_per_file}/file) -> {n_jobs} job(s) ({files_per_job} files/job, {sample_epj} evts/job{override_tag})")
+        else:
+            file_chunks = split_into_chunks(all_files, args.files_per_job)
+            n_jobs = len(file_chunks)
+            print(f"  {sample_name}: {len(all_files)} files -> {n_jobs} job(s)")
 
         # Create job configs and submit files
         for job_idx, file_chunk in enumerate(file_chunks):

@@ -50,7 +50,10 @@ python condor/submit.py -c <config> -a <analysis> -r <run_number> [options]
 | `-n`, `--ncpus` | 4 | CPUs per job |
 | `-m`, `--memory` | 2G | Memory per job |
 | `--files-per-job` | 10 | Input files per job |
+| `--events-per-job` | (none) | Max events per job (takes priority over `--files-per-job`) |
+| `--events-per-job-override` | (none) | JSON file mapping sample regex patterns to per-sample events-per-job |
 | `--sample` | (all) | Regex to filter samples |
+| `--spanet-infer` | false | Run SPANet inference |
 | `--dry-run` | false | Prepare jobs without submitting |
 | `--monitor` | false | Monitor jobs and auto-resubmit failed ones |
 | `--max-resubmits` | 3 | Maximum resubmit attempts per job |
@@ -65,6 +68,9 @@ python condor/submit.py -c etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -r 3
 
 # Submit with custom tag and fewer files per job
 python condor/submit.py -c etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -r 3 -t v2 --files-per-job 5
+
+# Split jobs by event count instead of file count
+python condor/submit.py -c etc/0Lep2FJ_run3-bkg.json -a 0Lep2FJ -r 3 --events-per-job 500000
 
 # Submit only specific samples (regex match)
 python condor/submit.py -c etc/0Lep2FJ_run3-bkg.json -a 0Lep2FJ -r 3 --sample "QCD"
@@ -194,9 +200,9 @@ python condor/resubmit.py --task 0Lep2FJ_run3-sig_0Lep2FJ --failed --dry-run
 
 ## Output Location
 
-Job outputs are staged to XRootD:
+Job outputs are staged to:
 ```
-root://redirector.t2.ucsd.edu:1095//store/user/<USER>/vbsvvh/preselection/run3-vbsvvh/<task_name>/<sample_name>/output_<job_idx>.root
+/ceph/cms/store/user/<USER>/vbsvvh/preselection/run3-vbsvvh/<task_name>/<sample_name>/output_<job_idx>.root
 ```
 
 ## Troubleshooting
@@ -217,9 +223,6 @@ Use standar Condor commands for manual job control:
 ```bash
 # Remove all jobs for a task
 condor_rm <cluster_id>
-
-# Release held jobs
-condor_release <cluster_id>
 
 # Check job details
 condor_q -l <cluster_id>
