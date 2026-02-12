@@ -232,7 +232,7 @@ echo "=== Checking proxy ==="
 PROXY_TIMELEFT=$(voms-proxy-info -timeleft 2>&1)
 PROXY_STATUS=$?
 
-MIN_PROXY_TIME=$((7 * 24 * 3600))  # 1 week in seconds (604800)
+MIN_PROXY_TIME=$((6 * 3600))  # 6 hours in seconds (21600)
 
 if [ $PROXY_STATUS -ne 0 ] || [ -z "$PROXY_TIMELEFT" ] || [ "$PROXY_TIMELEFT" -le 0 ] 2>/dev/null; then
     echo "ERROR: No valid proxy found or proxy has expired"
@@ -242,7 +242,7 @@ if [ $PROXY_STATUS -ne 0 ] || [ -z "$PROXY_TIMELEFT" ] || [ "$PROXY_TIMELEFT" -l
 fi
 
 if [ "$PROXY_TIMELEFT" -lt "$MIN_PROXY_TIME" ]; then
-    echo "ERROR: Proxy expires in less than 1 week (${PROXY_TIMELEFT} seconds remaining)"
+    echo "ERROR: Proxy expires in less than 6 hours (${PROXY_TIMELEFT} seconds remaining)"
     echo "Please renew your proxy: voms-proxy-init -voms cms -valid 192:00"
     exit 1
 fi
