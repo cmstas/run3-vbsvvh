@@ -324,10 +324,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         final_variables.push_back(ColName);
     }
 
-    // add LHE info
+    // add LHE info (not present in all samples, e.g. QCD)
     if (!isData) {
-        final_variables.push_back("LHEReweightingWeight");
-        final_variables.push_back("nLHEReweightingWeight");
+        auto allColNames = df.GetColumnNames();
+        auto hasColumn = [&allColNames](const std::string& name) {
+            return std::find(allColNames.begin(), allColNames.end(), name) != allColNames.end();
+        };
+        if (hasColumn("LHEReweightingWeight"))
+            final_variables.push_back("LHEReweightingWeight");
+        if (hasColumn("nLHEReweightingWeight"))
+            final_variables.push_back("nLHEReweightingWeight");
     }
 
     // store all columns from input nanoAOD tree

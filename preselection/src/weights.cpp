@@ -432,6 +432,14 @@ RNode applyDataWeights(RNode df_) {
 }
 
 RNode applyMCWeights(RNode df_) {
+    // Check for LHE branches (not present in all samples, e.g. QCD)
+    auto colNames = df_.GetColumnNames();
+    auto hasColumn = [&colNames](const std::string& name) {
+        return std::find(colNames.begin(), colNames.end(), name) != colNames.end();
+    };
+    bool hasLHEScale = hasColumn("LHEScaleWeight");
+    bool hasLHEPart = hasColumn("LHEPart_pt");
+
     auto df = applyPileupScaleFactors(pileupScaleFactors, pileupScaleFactors_yearmap, df_);
     df = applyMuonIDScaleFactors(muonScaleFactors, muonIDScaleFactors_yearmap, df);
     df = applyMuonRecoScaleFactors(muonScaleFactors, muonRecoScaleFactors_yearmap, df);
@@ -442,14 +450,26 @@ RNode applyMCWeights(RNode df_) {
     df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
     df = applyBTaggingScaleFactors(bTaggingScaleFactors, bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname,  df);
-    //df = applyEWKCorrections(cset_ewk, df);
+
+    if (hasLHEPart) {
+        df = applyEWKCorrections(cset_ewk, df);
+    } else {
+        df = df.Define("weight_ewk", [] () { return 1.; }, {});
+    }
+
     df = applyL1PreFiringReweighting(df);
     df = applyPSWeight_FSR(df);
     df = applyPSWeight_ISR(df);
-    df = applyLHEScaleWeight_muF(df);
-    df = applyLHEScaleWeight_muR(df);
 
-    return df.Define("weight", 
+    if (hasLHEScale) {
+        df = applyLHEScaleWeight_muF(df);
+        df = applyLHEScaleWeight_muR(df);
+    } else {
+        df = df.Define("weight_muF", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+    }
+
+    return df.Define("weight",
         "weight_pileup[0] * "
         "weight_muonid[0] * "
         "weight_muonreco[0] * "
@@ -459,10 +479,10 @@ RNode applyMCWeights(RNode df_) {
         "weight_electrontrigger[0] * "
         // "weight_btagging_sf_HF[0] * "
         // "weight_btagging_sf_LF[0] * "
-        //"weight_ewk * "
+        "weight_ewk * "
         // "weight_l1prefiring[0] * "
-        "weight_PSFSR[0] * "
         "weight_PSISR[0] * "
+        "weight_PSFSR[0] * "
         "weight_muF[0] * "
         "weight_muR[0] * "
         "genWeight * "
