@@ -1,71 +1,121 @@
 # Preselection Framework
 
+C++ framework for VBS VVH preselection using RDataFrame. The paths provided in this README assume you are running on the UAF cluster.
+
 ## Directory Structure
 
-- `src/`: Contains the source code for the preselection framework.
-- `include/`: Contains the header files miscellaneous imports.
-- `etc/`: Contains configuration scripts and JSON files for defining inputs.
-- `bin/`: Directory where the compiled binary will be placed.
-- `build/`: Directory where the object files will be placed.
+```
+preselection/
+├── src/           # C++ source files
+├── include/       # Header files
+├── etc/           # Config generation scripts and JSON files
+├── condor/        # HTCondor batch submission scripts
+├── corrections/   # Scale factors and corrections
+├── bin/           # Compiled binaries (generated)
+└── build/         # Object files (generated)
+```
+
+## Quick Start
+
+```bash
+# 1. Set up environment
+source setup.sh
+
+# 2. Compile
+cd preselection/
+make -j8
+
+# 3. Generate config
+python3 etc/make_config.py --channel 0Lep2FJ_run3 --category sig
+
+# 4. Run locally (for testing)
+bin/runAnalysis -i etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -n 8 --run_number 3
+
+# 5. Or submit to Condor (for production)
+python condor/submit.py -c etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -r 3
+```
 
 ## Prerequisites
+
 Included in CMSSW 15_0_4:
+- ROOT with RDataFrame
 - Python 3.x
-- ROOT
 - Uproot
-- Boost library (for GoldenJSON)
+- Boost (for GoldenJSON)
 - Correctionlib
 
-A script to set up the environment is included in `misc/env.sh`
+Environment setup script: `setup.sh`
 
 ## Compilation
-
 To set up and compile the preselection framework, navigate to the top level directory and run:
 
 ```bash
-cd misc/CMSSW_15_0_4/src/
-cmsenv
-cd ../../../preselection/
-make
+source setup.sh
+cd preselection/
+make -j8
 ```
-
 This will compile the source files and place the binary in the bin/ directory.
 
----
-## Configuration
-The inputs for the preselection framework are defined using JSON files. The make-config.py script in the etc/ directory is used to generate these JSON configuration files, specifics will have to be adapted by the analyzer.
+## Configuration Files
+The inputs for the preselection framework are defined using configuration JSON files. The config files define input samples, cross-sections, and metadata in JSON format for RDataFrame's `FromSpec`. Specifics will have to be adapted by the analyzer.
 
-### Generating Configuration Files
-To generate a configuration file, run the make-config.py script with the appropriate category (bkg, sig, or data). The script expects to be run from within `etc/`.
-
-```bash
-python3 make-config.py --category <category> --channel <channel>
-```
-
-For example, to generate a configuration file for background samples:
+### Generating Configs
+To generate a configuration file, run the make-config.py script with the appropriate category and channel name.
 
 ```bash
-python3 make-config.py --category bkg --channel 1Lep2FJ
+python3 etc/make_config.py --category <category> --channel <channel>
 ```
 
-This will create a JSON file in the etc/ directory with the necessary configuration for the specified category.
-
----
-## Running the Preselection
-To run the preselection, use the compiled binary and provide the input specification and output file:
+For example, to generate a configuration file for signal samples using the skims for the channel `0Lep2FJ_run3`:
 
 ```bash
-bin/runAnalysis -i <input_spec.json> -a <channel> -n <n_threads> --run_number <run_number>
+python3 etc/make_config.py --channel 0Lep2FJ_run3 --category sig
 ```
 
-For example,
+This creates `0Lep2FJ_run3-sig.json` in the `etc/` directory.
+
+**See [`etc/README.md`](etc/README.md) for detailed documentation.**
+
+## Running Locally
+To run the preselection, use the compiled binary and provide the input specification and output file.
+
+For testing or small samples:
 
 ```bash
-bin/runAnalysis -i etc/1Lep2FJ-bkg.json -a 1Lep2FJ -n 64 --run_number 3
+bin/runAnalysis -i <config.json> -a <channel> -n <threads> --run_number <2|3>
 ```
 
-More command line options can be found by running 
+Example:
+```bash
+bin/runAnalysis -i etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -n 8 --run_number 3
+```
 
+Full options:
 ```bash
 bin/runAnalysis --help
 ```
+
+---
+## Condor Batch Submission
+
+For production processing, submit jobs to HTCondor:
+
+```bash
+# Submit jobs
+python condor/submit.py -c <config.json> -a <channel> -r <run_number>
+
+# Check status
+python condor/status.py --task <task_name>
+
+# Resubmit failed jobs
+python condor/resubmit.py --task <task_name> --failed
+```
+
+For automatic monitoring and resubmission:
+```bash
+screen -S condor_monitor
+python condor/submit.py -c <config.json> -a <channel> -r <run_number> --monitor --timeout 12
+# Ctrl+A, D to detach
+```
+
+**See [`condor/README.md`](condor/README.md) for detailed documentation.**

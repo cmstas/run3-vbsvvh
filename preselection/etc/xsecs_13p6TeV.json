@@ -1,0 +1,108 @@
+{
+    "VBSWWH_OS_C2V_1p0_C3_1p0_13p6TeV_5f_LO": 1.715e-03,
+    "VBSWWH_OS_C2V_1p5_C3_1p0_13p6TeV_5f_LO": 2.221e-03,
+    "VBSWWH_OS_C2V_2p0_C3_1p0_13p6TeV_5f_LO": 3.654e-03,
+    "VBSWWH_OS_C2V_1p0_C3_10p0_13p6TeV_5f_LO": 2.879e-03,
+    
+    "VBSWWH_SS_C2V_1p0_C3_1p0_13p6TeV_5f_LO": 3.585e-04,
+    "VBSWWH_SS_C2V_1p5_C3_1p0_13p6TeV_5f_LO": 7.280e-04,
+    "VBSWWH_SS_C2V_2p0_C3_1p0_13p6TeV_5f_LO": 1.788e-03,
+    "VBSWWH_SS_C2V_1p0_C3_10p0_13p6TeV_5f_LO": 5.013e-04,
+
+    "VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO": 7.470e-04,
+    "VBSWZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO": 1.106e-03,
+    "VBSWZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO": 2.123e-03,
+    "VBSWZH_C2V_1p0_C3_10p0_13p6TeV_5f_LO": 1.086e-03,
+
+    "VBSZZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO": 1.302e-04,
+    "VBSZZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO": 4.435e-04,
+    "VBSZZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO": 1.376e-03,
+    "VBSZZH_C2V_1p0_C3_10p0_13p6TeV_5f_LO": 5.366e-04,
+
+    "VBSWWH_OS_C2V_1p0_C3_1p0_13p6TeV_4f_LO": 7.233e-04,
+    "VBSWWH_OS_C2V_1p5_C3_1p0_13p6TeV_4f_LO": 1.277e-03,
+    "VBSWWH_OS_C2V_2p0_C3_1p0_13p6TeV_4f_LO": 2.838e-03,
+    "VBSWWH_OS_C2V_1p0_C3_10p0_13p6TeV_4f_LO": 1.789e-03,
+
+    "VBSWWH_SS_C2V_1p0_C3_1p0_13p6TeV_4f_LO": 3.590e-04,
+    "VBSWWH_SS_C2V_1p5_C3_1p0_13p6TeV_4f_LO": 7.359e-04,
+    "VBSWWH_SS_C2V_2p0_C3_1p0_13p6TeV_4f_LO": 1.813e-03,
+    "VBSWWH_SS_C2V_1p0_C3_10p0_13p6TeV_4f_LO": 5.075e-04,
+
+    "VBSWZH_C2V_1p0_C3_1p0_13p6TeV_4f_LO": 4.740e-04,
+    "VBSWZH_C2V_1p5_C3_1p0_13p6TeV_4f_LO": 8.252e-04,
+    "VBSWZH_C2V_2p0_C3_1p0_13p6TeV_4f_LO": 1.863e-03,
+    "VBSWZH_C2V_1p0_C3_10p0_13p6TeV_4f_LO": 7.107e-04,
+
+    "VBSZZH_C2V_1p0_C3_1p0_13p6TeV_4f_LO": 1.250e-04,
+    "VBSZZH_C2V_1p5_C3_1p0_13p6TeV_4f_LO": 4.378e-04,
+    "VBSZZH_C2V_2p0_C3_1p0_13p6TeV_4f_LO": 1.367e-03,
+    "VBSZZH_C2V_1p0_C3_10p0_13p6TeV_4f_LO": 4.690e-04,
+
+    "TTto4Q": 431.5,
+    "TTto2L2Nu": 97.45,
+    "TTtoLNu2Q": 403.25,
+
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100": 475.3,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200": 45.42,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400": 3.382,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600": 0.1162,
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600": 0.01392,
+
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100": 179.3,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200": 51.68,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
+
+    "WtoLNu-2Jets_Bin-1J-PTLNu-40to100": 4427,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-100to200": 368.2,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-200to400": 25.6,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-400to600": 0.8785,
+    "WtoLNu-2Jets_Bin-1J-PTLNu-600": 0.1053,
+
+    "WtoLNu-2Jets_Bin-2J-PTLNu-40to100": 1598,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-100to200": 421.9,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-200to400": 54.77,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-400to600": 3.119,
+    "WtoLNu-2Jets_Bin-2J-PTLNu-600": 0.5261,
+
+    "WtoLNu-4Jets_Bin-1J": 9084,
+    "WtoLNu-4Jets_Bin-2J": 2925,
+    "WtoLNu-4Jets_Bin-3J": 861.7,
+    "WtoLNu-4Jets_Bin-4J": 416.5,
+
+    "WWto2L2Nu": 11.79,
+    "WWto4Q": 50.79,
+    "WWtoLNu2Q": 48.94,
+
+    "WZto2L2Q": 7.568,
+    "WZto3LNu": 4.924,
+    "WZto4Q-1Jets-4FS": 24.88,
+    "WZtoLNu2Q": 15.87,
+
+    "ZZto2L2Nu": 1.031,
+    "ZZto2L2Q": 6.788,
+    "ZZto2Nu2Q": 4.826,
+
+    "QCD-4Jets_Bin-HT-40to70": 311400000.0,
+    "QCD-4Jets_Bin-HT-70to100": 58500000.0,
+    "QCD-4Jets_Bin-HT-100to200": 25400000.0,
+    "QCD-4Jets_Bin-HT-200to400": 1961000.0,
+    "QCD-4Jets_Bin-HT-400to600": 95620.0,
+    "QCD-4Jets_Bin-HT-600to800": 13540.0,
+    "QCD-4Jets_Bin-HT-800to1000": 3033.0,
+    "QCD-4Jets_Bin-HT-1000to1200": 883.7,
+    "QCD-4Jets_Bin-HT-1200to1500": 383.5,
+    "QCD-4Jets_Bin-HT-1500to2000": 125.2,
+    "QCD-4Jets_Bin-HT-2000": 26.49,
+
+    "QCD_Bin-PT-300to470_TuneCP5_13p6TeV_pythia8": 7581.0,
+    "QCD_Bin-PT-470to600_TuneCP5_13p6TeV_pythia8": 623.3,
+    "QCD_Bin-PT-600to800_TuneCP5_13p6TeV_pythia8": 178.7,
+    "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV_pythia8": 30.62,
+    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8": 9.306,
+    "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8": 0.5015,
+    "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8": 0.04264,
+    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8": 0.004454
+}

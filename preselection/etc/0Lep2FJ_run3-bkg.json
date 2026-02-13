@@ -1,0 +1,724 @@
+{
+    "samples": {
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 45.42,
+                "lumi": 109.08,
+                "nevents": 61867595552.10537
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 3.382,
+                "lumi": 109.08,
+                "nevents": 442284590.8058759
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 0.1162,
+                "lumi": 109.08,
+                "nevents": 8945803.0201248
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 475.3,
+                "lumi": 109.08,
+                "nevents": 698300331852.6248
+            }
+        },
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 0.01392,
+                "lumi": 109.08,
+                "nevents": 1186629.5307990606
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 51.68,
+                "lumi": 109.08,
+                "nevents": 75660101829.36069
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 7.159,
+                "lumi": 109.08,
+                "nevents": 1065046536.0847963
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 0.4157,
+                "lumi": 109.08,
+                "nevents": 10032993.635827204
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 179.3,
+                "lumi": 109.08,
+                "nevents": 314229914733.3649
+            }
+        },
+        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "DY",
+                "xsec": 0.07019,
+                "lumi": 109.08,
+                "nevents": 1327715.8806338005
+            }
+        },
+        "QCD_Bin-PT-1000to1500_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 9.306,
+                "lumi": 109.08,
+                "nevents": 79974618.0
+            }
+        },
+        "QCD_Bin-PT-1500to2000_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 0.5015,
+                "lumi": 109.08,
+                "nevents": 17748815.0
+            }
+        },
+        "QCD_Bin-PT-2000to2500_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 0.04264,
+                "lumi": 109.08,
+                "nevents": 19311060.0
+            }
+        },
+        "QCD_Bin-PT-2500to3000_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 0.004454,
+                "lumi": 109.08,
+                "nevents": 19996725.0
+            }
+        },
+        "QCD_Bin-PT-300to470_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-300to470_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 7581.0,
+                "lumi": 109.08,
+                "nevents": 79821390.20635606
+            }
+        },
+        "QCD_Bin-PT-470to600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-470to600_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 623.3,
+                "lumi": 109.08,
+                "nevents": 77529082.15088554
+            }
+        },
+        "QCD_Bin-PT-600to800_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-600to800_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 178.7,
+                "lumi": 109.08,
+                "nevents": 79708520.0
+            }
+        },
+        "QCD_Bin-PT-800to1000_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/QCD_Bin-PT-800to1000_TuneCP5_13p6TeV_pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 30.62,
+                "lumi": 109.08,
+                "nevents": 79505640.0
+            }
+        },
+        "TTto2L2Nu_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "TTbar",
+                "xsec": 97.45,
+                "lumi": 109.08,
+                "nevents": 37820112169.87069
+            }
+        },
+        "TTto4Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "TTbar",
+                "xsec": 431.5,
+                "lumi": 109.08,
+                "nevents": 164126801380.3698
+            }
+        },
+        "TTtoLNu2Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "TTbar",
+                "xsec": 403.25,
+                "lumi": 109.08,
+                "nevents": 161967473084.4692
+            }
+        },
+        "WWto2L2Nu_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 11.79,
+                "lumi": 109.08,
+                "nevents": 2828732622.7649994
+            }
+        },
+        "WWto4Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WWto4Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 50.79,
+                "lumi": 109.08,
+                "nevents": 7680164604.4045
+            }
+        },
+        "WWtoLNu2Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 48.94,
+                "lumi": 109.08,
+                "nevents": 13493842027.914522
+            }
+        },
+        "WZto2L2Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 7.568,
+                "lumi": 109.08,
+                "nevents": 1743026280.6276793
+            }
+        },
+        "WZto3LNu_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 4.924,
+                "lumi": 109.08,
+                "nevents": 1221944255.2106209
+            }
+        },
+        "WZto4Q-1Jets-4FS_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 24.88,
+                "lumi": 109.08,
+                "nevents": 255679063.950726
+            }
+        },
+        "WZtoLNu2Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 15.87,
+                "lumi": 109.08,
+                "nevents": 2283328955.8789988
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 368.2,
+                "lumi": 109.08,
+                "nevents": 340263982711.54285
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 25.6,
+                "lumi": 109.08,
+                "nevents": 6849106033.653836
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 0.8785,
+                "lumi": 109.08,
+                "nevents": 91151080.34839003
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 4427.0,
+                "lumi": 109.08,
+                "nevents": 4970041590012.561
+            }
+        },
+        "WtoLNu-2Jets_Bin-1J-PTLNu-600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 0.1053,
+                "lumi": 109.08,
+                "nevents": 13635438.984685998
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 421.9,
+                "lumi": 109.08,
+                "nevents": 345712822291.9702
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 54.77,
+                "lumi": 109.08,
+                "nevents": 13632565347.08401
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 3.119,
+                "lumi": 109.08,
+                "nevents": 105725905.72650003
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 1598.0,
+                "lumi": 109.08,
+                "nevents": 3209443673113.663
+            }
+        },
+        "WtoLNu-2Jets_Bin-2J-PTLNu-600_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 0.5261,
+                "lumi": 109.08,
+                "nevents": 14914731.474920705
+            }
+        },
+        "WtoLNu-4Jets_Bin-1J_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 9084.0,
+                "lumi": 109.08,
+                "nevents": 5447187172241.949
+            }
+        },
+        "WtoLNu-4Jets_Bin-2J_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 2925.0,
+                "lumi": 109.08,
+                "nevents": 3875187795558.6147
+            }
+        },
+        "WtoLNu-4Jets_Bin-3J_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 861.7,
+                "lumi": 109.08,
+                "nevents": 1669192464456.089
+            }
+        },
+        "WtoLNu-4Jets_Bin-4J_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "WJets",
+                "xsec": 416.5,
+                "lumi": 109.08,
+                "nevents": 622793538982.8904
+            }
+        },
+        "ZZto2L2Nu_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 1.031,
+                "lumi": 109.08,
+                "nevents": 194528941.98204
+            }
+        },
+        "ZZto2L2Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 6.788,
+                "lumi": 109.08,
+                "nevents": 1165248674.9085004
+            }
+        },
+        "ZZto2Nu2Q_2024Prompt": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/*.root"
+            ],
+            "metadata": {
+                "category": "bkg",
+                "year": "2024Prompt",
+                "type": "ZJets",
+                "xsec": 4.826,
+                "lumi": 109.08,
+                "nevents": 222217843.54160002
+            }
+        }
+    }
+}

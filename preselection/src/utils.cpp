@@ -26,6 +26,19 @@ RNode defineMetadata(RNode df) {
         .Define("isRun3", "is2022 || is2023 || is2024");
 }
 
+// Extract sample category from the JSON config file
+// Returns the category of the first sample found (assumes all samples in a config have the same category)
+std::string getCategoryFromConfig(const std::string& config_path) {
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(config_path, pt);
+
+    // Navigate to samples and get the first sample's category
+    for (const auto& sample : pt.get_child("samples")) {
+        return sample.second.get<std::string>("metadata.category");
+    }
+    return "";
+}
+
 RNode removeDuplicates(RNode df){
     return df.Filter(FilterOnePerKind(), {"run", "luminosityBlock", "event"}, "REMOVED DUPLICATES");
 }
@@ -311,10 +324,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         final_variables.push_back(ColName);
     }
 
-    // add LHE info
+    // add LHE info (not present in all samples, e.g. QCD)
     if (!isData) {
-        final_variables.push_back("LHEReweightingWeight");
-        final_variables.push_back("nLHEReweightingWeight");
+        auto allColNames = df.GetColumnNames();
+        auto hasColumn = [&allColNames](const std::string& name) {
+            return std::find(allColNames.begin(), allColNames.end(), name) != allColNames.end();
+        };
+        if (hasColumn("LHEReweightingWeight"))
+            final_variables.push_back("LHEReweightingWeight");
+        if (hasColumn("nLHEReweightingWeight"))
+            final_variables.push_back("nLHEReweightingWeight");
     }
 
     // store all columns from input nanoAOD tree

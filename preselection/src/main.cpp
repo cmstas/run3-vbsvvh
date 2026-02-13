@@ -14,6 +14,7 @@
 #include "spanet_run2.h"
 
 
+
 struct MyArgs : public argparse::Args {
     std::string &spec = kwarg("i,input", "spec.json path");
     std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection").set_default("");
@@ -60,6 +61,11 @@ int main(int argc, char** argv) {
     std::string input_spec = args.spec;
     std::string output_file = args.output;
 
+    if (args.nthread > 64) {
+        std::cerr << "Error: nthread cannot exceed 64 (requested: " << args.nthread << ")" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
     if (std::find(channels.begin(), channels.end(), args.ana) == channels.end()) {
         if (!args.makeSpanetTrainingdata) {
@@ -95,6 +101,11 @@ int main(int argc, char** argv) {
         auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
     }
 
+    if (args.runSPANetInference && args.nthread > 1) {
+        std::cout << " -> SPANet inference requires single-threaded execution, setting nthread=1" << std::endl;
+        args.nthread = 1;
+    }
+
     if (args.nthread > 1) {
         ROOT::EnableImplicitMT(args.nthread);
         ROOT::EnableThreadSafety();
@@ -107,28 +118,35 @@ int main(int argc, char** argv) {
     // Define metadata
     auto df = defineMetadata(df_);
 
-    // Set output file name and input type
+    // Get sample category from config file
+    std::string category = getCategoryFromConfig(input_spec);
+    std::cout << " -> Sample category from config: " << category << std::endl;
+
+    // Set output file name and input type based on category
     bool isData = false;
     bool isSignal = false;
-    if (input_spec.find("data") != std::string::npos) {
+    if (category.find("data") != std::string::npos) {
         isData = true;
         if (output_file.empty()) {
             output_file = "data";
         }
     }
-    else if (input_spec.find("bkg") != std::string::npos) {
+    else if (category.find("sig") != std::string::npos) {
+        // Handle categories like "sig", "sig_c2v_1p5_c3_1p0", etc.
+        isSignal = true;
+        if (output_file.empty()) {
+            output_file = "sig";
+        }
+    }
+    else if (category.find("bkg") != std::string::npos) {
+        // Handle categories like "bkg", "bkg_QCD", "bkg_ttbar", etc.
         if (output_file.empty()) {
             output_file = "bkg";
         }
     }
-    else if (input_spec.find("sig") != std::string::npos) {
-        if (output_file.empty()) {
-            output_file = "sig";
-        }
-        isSignal = true;
-    }
     else {
-        std::cerr << "Could not guess output name from spec name, file must contain sig, bkg or data." << std::endl;
+        std::cerr << "Unknown category in config: " << category << std::endl;
+        std::cerr << "Expected: data, sig, or bkg*" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
