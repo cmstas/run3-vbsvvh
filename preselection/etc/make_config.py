@@ -271,6 +271,12 @@ class ConfigGenerator:
     def _process_sample(self, sample_dir: str):
         """Process a single sample directory."""
         dataset_name = os.path.basename(sample_dir.rstrip('/'))
+
+        # Skip PT-binned QCD samples (use HT-binned instead)
+        if dataset_name.startswith("QCD_Bin-PT"):
+            print(f"Skipping PT-binned QCD sample: {dataset_name}")
+            return
+
         print(f"Processing: {dataset_name}")
 
         # Extract metadata
