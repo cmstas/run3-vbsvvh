@@ -80,17 +80,10 @@ RNode LeptonSelections(RNode df_)
 RNode AK4JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
-                .Define("_good_ak4jets", " _dR_ak4_lep > 0.4 && "
-                                        "Jet_pt > 20 && "
-                                        "((abs(Jet_eta) <= 2.5) || (abs(Jet_eta) >= 3.0 && abs(Jet_eta) < 5.0) || "
-                                        "((Jet_pt > 30 && (Jet_neHEF < ((Jet_pt - 30) / 20) && ((Jet_puIdDisc > 0.3) || " 
-                                        "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 35 * (Jet_pt - 30) + 0.4)) && "
-                                        "(Jet_puIdDisc > -0.6) && "
-                                        "(Jet_muEF < 0.4))) || "
-                                        "(Jet_pt < 30 && Jet_pt > 20 && (Jet_neHEF < ((Jet_pt - 20) / 15) && ((Jet_puIdDisc > 0.3) || " 
-                                        "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 25 * (Jet_pt - 20) + 0.4)) && "
-                                        "(Jet_puIdDisc > -0.6) && "
-                                        "(Jet_muEF < 0.4))))) && "
+                .Define("_good_ak4jets", "_dR_ak4_lep > 0.4 &&"
+                                        "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
+                                        "(Jet_pt > 50 && abs(Jet_eta) >= 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
+                                        "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  " 
                                         "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
     
     df = applyJetVetoMaps(df);
