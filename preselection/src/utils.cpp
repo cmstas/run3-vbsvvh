@@ -364,7 +364,7 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
             ColName.starts_with("FatJet_") ||
             ColName.starts_with("PuppiMET_") ||
             ColName.starts_with("GenPart_") ||  
-            ColName.starts_with("Lepton_") ||
+            ColName.starts_with("lepton_") ||
             ColName.starts_with("gen_") || 
             ColName.starts_with("truth_")) {
                 final_variables.push_back(ColName);
