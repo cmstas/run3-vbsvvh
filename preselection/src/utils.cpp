@@ -360,11 +360,11 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
     final_variables.push_back("event");
 
     for (auto &&ColName : ColNames) {
-        if (ColName.starts_with("jet_") || 
-            ColName.starts_with("fatjet_") ||
-            ColName.starts_with("lepton_") ||
+        if (ColName.starts_with("Jet_") || 
+            ColName.starts_with("FatJet_") ||
             ColName.starts_with("PuppiMET_") ||
             ColName.starts_with("GenPart_") ||  
+            ColName.starts_with("Lepton_") ||
             ColName.starts_with("gen_") || 
             ColName.starts_with("truth_")) {
                 final_variables.push_back(ColName);
