@@ -82,7 +82,7 @@ RNode AK4JetsSelection(RNode df_)
     auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
                 .Define("_good_ak4jets", "_dR_ak4_lep > 0.4 &&"
                                         "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
-                                        "(Jet_pt > 50 && abs(Jet_eta) >= 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
+                                        "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
                                         "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  " 
                                         "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
     
@@ -122,9 +122,6 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
-    if (noCut)
-        return df; // for spanet training data
-
     df = TriggerSelections(df, channel, TriggerMap);
     if (channel == "1Lep2FJ")
     {
