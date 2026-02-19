@@ -104,5 +104,6 @@
     "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8": 9.306,
     "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8": 0.5015,
     "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8": 0.04264,
-    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8": 0.004454
+    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8": 0.004454,
+    "QCD_Bin-PT-3000_TuneCP5_13p6TeV_pythia8": 0.0005539
 }
