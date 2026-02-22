@@ -1,4 +1,23 @@
-dataset_dict_run2_bkg = [
+dataset_info_run2_sig_lst = [
+    {"year": "UL16APV", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+    {"year": "UL16APV", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+    {"year": "UL16APV", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+    {"year": "UL16APV", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+]
+
+dataset_info_run2_bkg_lst = [
     {"year": "UL16APV", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
     {"year": "UL16APV", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v5_NANOAODSIM"},
     {"year": "UL16APV", "dataset_name": "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},

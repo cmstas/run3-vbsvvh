@@ -9,40 +9,53 @@ import dataset_names
 # Dictionary of the skim sets and the analysis channels they serve
 # NOTE: 2lepSS has no skim?
 SKIM_INFO_DICT = {
+    "all_events" : {
+        "type"     : "sig",
+        "path"     : "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8",
+    },
     "0lep_0FJ" : {
         "ana_chans": ["0lep_0FJ_6j"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4",
     },
     "0lep_1FJ" : {
         "ana_chans": ["0lep_1FJ_met", "0lep_1FJ_4j"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep1FJ_11Feb2026_v4",
     },
     "0lep_2FJ" : {
         "ana_chans": ["0lep_2FJ_met", "0lep_2FJ_2j"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep2FJ_11Feb2026_v4",
     },
     "0lep_3FJ" : {
         "ana_chans": ["0lep_3FJ"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep3FJ_11Feb2026_v4",
     },
     "1lep_1FJ" : {
         "ana_chans": ["1lep_1FJ","1lep_2FJ"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_1Lep1FJ_11Feb2026_v4",
     },
     "2lep_1FJ" : {
         "ana_chans": ["2lepOSOF_1FJ", "2lepOSSF_1FJ"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4",
     },
     "2lep_2FJ" : {
         "ana_chans": ["2lepOSSF_2FJ"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep2FJ_11Feb2026_v4",
     },
     "3lep"    : {
         "ana_chans": ["3lep"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4",
     },
     "4lep"    : {
         "ana_chans": ["4lep"],
+        "type"     : "bkg",
         "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4",
     },
 }
@@ -149,17 +162,23 @@ def make_json_for_dataset(path_to_dataset,year,xsec_dict):
 
 def main():
 
-    xsec_dict = xsec_ref.xsec_dict["bkg_run2"]
+    #xsec_dict = xsec_ref.xsec_dict["bkg_run2"]
+    xsec_dict = xsec_ref.xsec_dict["sig_sm_run2"]
 
     cat = "bkg"
+    cat = "sig"
+
+    datasets_lst_bkg = dataset_names.dataset_info_run2_bkg_lst
+    datasets_lst_sig = dataset_names.dataset_info_run2_sig_lst
+
+    datasets_lst = datasets_lst_sig
 
     # Loop over the skim sets
     for skim_set_name in SKIM_INFO_DICT:
         print(skim_set_name)
-        if skim_set_name == "0lep_0FJ": continue
         path = SKIM_INFO_DICT[skim_set_name]["path"]
         skim_fulpath_dict = {}
-        n_datasets = len(dataset_names.dataset_dict_run2_bkg)
+        n_datasets = len(datasets_lst_sig)
 
         # Get the modified tag at the end of the skim name, remove this when skim formatting is updated
         # NOTE: Remove this when skim formatting is updated in later versions
@@ -167,13 +186,14 @@ def main():
         tag_tmp = tag_tmp[:-1] + "2"
 
         # Loop over the set of datasets
-        for i,dataset_info in enumerate(dataset_names.dataset_dict_run2_bkg):
+        for i,dataset_info in enumerate(datasets_lst):
 
             dataset_name = dataset_info["dataset_name"]
 
             # Modify the dataset name with the second tag
             # NOTE Remove this when skim formatting is updated in later versions
-            dataset_name_tmp = f"{dataset_name}_{tag_tmp}"
+            #dataset_name_tmp = f"{dataset_name}_{tag_tmp}"
+            dataset_name_tmp = dataset_name
 
             year = dataset_info["year"]
 
