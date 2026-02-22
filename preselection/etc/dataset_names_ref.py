@@ -1,215 +1,414 @@
-import os
-import uproot
-import json
+dataset_info_run2_sig_lst = [
+    {"year": "UL16APV", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+    {"year": "UL16APV", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+    {"year": "UL16APV", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+    {"year": "UL16APV", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
+    {"year": "UL16", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
+    {"year": "UL17", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
+    {"year": "UL18", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
+]
 
-import xsec_ref
-import dataset_names
+dataset_info_run2_bkg_lst = [
+    {"year": "UL16APV", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v5_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluToContinToZZTo4e_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluToContinToZZTo4mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "GluGluToContinToZZTo4tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT100to200_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT200to300_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT500to700_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT50to100_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "QCD_HT700to1000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTToHadronic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "VHToNonbb_M125_TuneCP5_13TeV-amcatnloFXFX_madspin_pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext2-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WWTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WWTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WWTo4Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZTo1L3Nu_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WZ_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZTo2Nu2Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ZZ_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+    {"year": "UL16APV", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
 
+    {"year": "UL16", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluToContinToZZTo4e_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluToContinToZZTo4mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluToContinToZZTo4tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT100to200_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT200to300_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT500to700_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT50to100_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "QCD_HT700to1000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v2_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTToHadronic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v2_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v2_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "VHToNonbb_M125_TuneCP5_13TeV-amcatnloFXFX_madspin_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext2-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WWTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WWTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WWTo4Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZTo1L3Nu_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WZ_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZTo2Nu2Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ZZ_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+    {"year": "UL16", "dataset_name": "ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
 
-# Dictionary of the skim sets and the analysis channels they serve
-# NOTE: 2lepSS has no skim?
-SKIM_INFO_DICT = {
-    "all_events" : {
-        "type"     : "sig",
-        "path"     : "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8",
-    },
-    "0lep_0FJ" : {
-        "ana_chans": ["0lep_0FJ_6j"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4",
-    },
-    "0lep_1FJ" : {
-        "ana_chans": ["0lep_1FJ_met", "0lep_1FJ_4j"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep1FJ_11Feb2026_v4",
-    },
-    "0lep_2FJ" : {
-        "ana_chans": ["0lep_2FJ_met", "0lep_2FJ_2j"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep2FJ_11Feb2026_v4",
-    },
-    "0lep_3FJ" : {
-        "ana_chans": ["0lep_3FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep3FJ_11Feb2026_v4",
-    },
-    "1lep_1FJ" : {
-        "ana_chans": ["1lep_1FJ","1lep_2FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_1Lep1FJ_11Feb2026_v4",
-    },
-    "2lep_1FJ" : {
-        "ana_chans": ["2lepOSOF_1FJ", "2lepOSSF_1FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4",
-    },
-    "2lep_2FJ" : {
-        "ana_chans": ["2lepOSSF_2FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep2FJ_11Feb2026_v4",
-    },
-    "3lep"    : {
-        "ana_chans": ["3lep"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4",
-    },
-    "4lep"    : {
-        "ana_chans": ["4lep"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4",
-    },
-}
+    {"year": "UL17", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluToContinToZZTo4e_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluToContinToZZTo4mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluToContinToZZTo4tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT100to200_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT200to300_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT500to700_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT50to100_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "QCD_HT700to1000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTToHadronic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "VHToNonbb_M125_TuneCP5_13TeV-amcatnloFXFX_madspin_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext2-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WWTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WWTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WWTo4Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WW_TuneCP5_13TeV-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZTo1L3Nu_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WZ_TuneCP5_13TeV-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZTo2Nu2Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ZZ_TuneCP5_13TeV-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL17", "dataset_name": "ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
 
-LUMI_DICT = {
-    "UL16APV": 19.52,
-    "UL16": 16.81,
-    "UL17": 41.48,
-    "UL18": 59.83,
-    "2022": 7.9804,
-    "2022EE": 26.6717,
-    "2023": 17.794,
-    "2023BPix": 9.451,
-    "2024": 109.08,
-}
-
-
-################# Helper functions #################
-
-# Get the list of root files in a given dir
-#     - Input should be a full path to the given dir
-#     - Return the list of root files joined with the full path
-def get_root_file_lst(path_to_dir):
-    out_lst = []
-    file_name_lst = os.listdir(path_to_dir)
-    for fname in file_name_lst:
-        if not fname.endswith(".root"): continue
-        fname_fullpath = os.path.join(path_to_dir,fname)
-        out_lst.append(fname_fullpath)
-    return out_lst
-
-
-# Match a sample name to an xsec in the given list
-# Return the name of the xsec and the value
-def match_xsec(dataset_name,xsec_dict):
-    n_matches = 0
-    for xsec_name in xsec_dict:
-        if dataset_name.startswith(xsec_name):
-            dataset_name_short = xsec_name
-            dataset_xsec = xsec_dict[xsec_name]
-            n_matches = n_matches + 1
-
-    # Throw and error if we did not find a match
-    if n_matches == 0:
-        raise Exception(f"Failed to find xsec match for sample: \"{dataset_name}\"")
-    if n_matches > 1:
-        raise Exception(f"Found more than one matching xsec for sample: \"{dataset_name}\"")
-
-    return [dataset_name_short,dataset_xsec]
-
-
-# Get sum of weights for files in a list
-# File list should be full path
-def get_sow(list_of_files):
-    sumw_tot = 0
-    for filepath in list_of_files:
-        with uproot.open(filepath) as f:
-            sumw = sum(f["Runs"]["genEventSumw"].array())
-            sumw_tot = sumw_tot + sumw
-    return(sumw_tot)
-
-
-
-################# Main wrapper for producing json #################
-
-# Create a json for a given sample
-#     - Input is the full path to the sample in question
-def make_json_for_dataset(path_to_dataset,year,xsec_dict):
-
-        out_dict = {}
-
-        # Get dataset_name from /full/path/to/dataset_name
-        dataset_name = path_to_dataset.split("/")[-1]
-
-        # Get full paths to all root files for this dataset
-        file_fullpath_lst = get_root_file_lst(path_to_dataset)
-        #print(file_fullpath_lst)
-
-        # Get the xsec for this dataset
-        dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
-
-        # Get the lumi
-        lumi = LUMI_DICT[year]
-
-        # Get the sum of weights
-        sumw = get_sow(file_fullpath_lst)
-
-        # Fill the out dict
-        out_dict["trees"] = "Events"
-        out_dict["files"] = file_fullpath_lst
-        out_dict["metadata"] = {
-            "category" : "bkg", # TODO fix
-            "year" : year,
-            "xsec" : xsec_val,
-            "lumi" : lumi,
-            "sumw" : sumw,
-        }
-
-        return [dataset_name_short, out_dict]
-
-
-
-################# Main function #################
-
-def main():
-
-    #xsec_dict = xsec_ref.xsec_dict["bkg_run2"]
-    xsec_dict = xsec_ref.xsec_dict["sig_sm_run2"]
-
-    cat = "bkg"
-    cat = "sig"
-
-    datasets_lst_bkg = dataset_names.dataset_info_run2_bkg_lst
-    datasets_lst_sig = dataset_names.dataset_info_run2_sig_lst
-
-    datasets_lst = datasets_lst_sig
-
-    # Loop over the skim sets
-    for skim_set_name in SKIM_INFO_DICT:
-        print(skim_set_name)
-        path = SKIM_INFO_DICT[skim_set_name]["path"]
-        skim_fulpath_dict = {}
-        n_datasets = len(datasets_lst_sig)
-
-        # Get the modified tag at the end of the skim name, remove this when skim formatting is updated
-        # NOTE: Remove this when skim formatting is updated in later versions
-        tag_tmp = path.split("/")[-1] 
-        tag_tmp = tag_tmp[:-1] + "2"
-
-        # Loop over the set of datasets
-        for i,dataset_info in enumerate(datasets_lst):
-
-            dataset_name = dataset_info["dataset_name"]
-
-            # Modify the dataset name with the second tag
-            # NOTE Remove this when skim formatting is updated in later versions
-            #dataset_name_tmp = f"{dataset_name}_{tag_tmp}"
-            dataset_name_tmp = dataset_name
-
-            year = dataset_info["year"]
-
-            # Get the full path to this dataset, and create the json
-            path_full = os.path.join(path,dataset_name_tmp)
-
-            short_name, info_dict = make_json_for_dataset(path_full,year,xsec_dict)
-
-            # Add the dict for this dataset into the full dict
-            skim_fulpath_dict[short_name] = info_dict
-
-            print(f"{i+1}/{n_datasets}: {dataset_name_tmp}")
-
-        with open(f"{skim_set_name}_run2.json", "w") as fp:
-            json.dump(skim_fulpath_dict, fp, indent=4)
-
-
-
-main()
+    {"year": "UL18", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluToContinToZZTo4e_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluToContinToZZTo4mu_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "GluGluToContinToZZTo4tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT100to200_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT200to300_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT500to700_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT50to100_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "QCD_HT700to1000_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTToHadronic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v2_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "VHToNonbb_M125_TuneCP5_13TeV-amcatnloFXFX_madspin_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext2-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WWTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WWTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WWTo4Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WW_TuneCP5_13TeV-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZTo1L3Nu_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WZ_TuneCP5_13TeV-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZTo2Nu2Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1_ext1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ZZ_TuneCP5_13TeV-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+    {"year": "UL18", "dataset_name": "ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+]
