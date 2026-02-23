@@ -191,8 +191,8 @@ def make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict):
         #print(file_fullpath_lst)
 
         # Get the sum of weights for all of the files in this dataset
-        #sumw = get_sow(file_fullpath_lst)
-        sumw = 0
+        sumw = get_sow(file_fullpath_lst)
+        #sumw = 0
 
         # Get rid of the local prefix
         local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
