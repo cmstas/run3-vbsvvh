@@ -6,7 +6,7 @@
             "year": "UL18",
             "xsec": 0.000643,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 100000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1019,7 +1019,7 @@
             "year": "UL18",
             "xsec": 0.000316,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 99900.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2031,7 +2031,7 @@
             "year": "UL18",
             "xsec": 0.000418,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 99900.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3043,7 +3043,7 @@
             "year": "UL18",
             "xsec": 0.000108,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 99900.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [

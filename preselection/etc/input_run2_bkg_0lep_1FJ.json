@@ -6,7 +6,7 @@
             "year": "UL18",
             "xsec": 20657,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 99288125.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -88,7 +88,7 @@
             "year": "UL18",
             "xsec": 6198,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 96233328.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -185,7 +185,7 @@
             "year": "UL18",
             "xsec": 32.26,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 4479000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -205,7 +205,7 @@
             "year": "UL18",
             "xsec": 39.33,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 4488000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -224,7 +224,7 @@
             "year": "UL18",
             "xsec": 10.67,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 9655000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -250,7 +250,7 @@
             "year": "UL18",
             "xsec": 10.67,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 9991000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -278,7 +278,7 @@
             "year": "UL18",
             "xsec": 6.22,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 1000000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -295,7 +295,7 @@
             "year": "UL18",
             "xsec": 10.72,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 2969000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -312,7 +312,7 @@
             "year": "UL18",
             "xsec": 10.67,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 9940000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -339,7 +339,7 @@
             "year": "UL18",
             "xsec": 0.0082323,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 27138279.5322,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -355,7 +355,7 @@
             "year": "UL18",
             "xsec": 0.005423,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 500000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -369,7 +369,7 @@
             "year": "UL18",
             "xsec": 0.005423,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 500000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -383,7 +383,7 @@
             "year": "UL18",
             "xsec": 0.005423,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 496000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -398,7 +398,7 @@
             "year": "UL18",
             "xsec": 0.002703,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 974000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -414,7 +414,7 @@
             "year": "UL18",
             "xsec": 0.002703,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 845232.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -428,7 +428,7 @@
             "year": "UL18",
             "xsec": 0.002703,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 493998.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -443,7 +443,7 @@
             "year": "UL18",
             "xsec": 1206,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 14527915.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -480,7 +480,7 @@
             "year": "UL18",
             "xsec": 27849880,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 84461486.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -558,7 +558,7 @@
             "year": "UL18",
             "xsec": 98.71,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 10871473.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -593,7 +593,7 @@
             "year": "UL18",
             "xsec": 20.2,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 5374711.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -619,7 +619,7 @@
             "year": "UL18",
             "xsec": 1716997,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 57336623.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -696,7 +696,7 @@
             "year": "UL18",
             "xsec": 351302,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 61705174.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -774,7 +774,7 @@
             "year": "UL18",
             "xsec": 31630,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 49184771.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -866,7 +866,7 @@
             "year": "UL18",
             "xsec": 187700000,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 38599389.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -910,7 +910,7 @@
             "year": "UL18",
             "xsec": 6802,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 48506751.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1000,7 +1000,7 @@
             "year": "UL18",
             "xsec": 0.02794,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 998000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1015,7 +1015,7 @@
             "year": "UL18",
             "xsec": 3.74,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 68767082.3186916,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1049,7 +1049,7 @@
             "year": "UL18",
             "xsec": 80.95,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 6055713800.100619,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1162,7 +1162,7 @@
             "year": "UL18",
             "xsec": 136.02,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 19000619620.260006,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1344,7 +1344,7 @@
             "year": "UL18",
             "xsec": 19.559,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 251902163.21000007,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1369,7 +1369,7 @@
             "year": "UL18",
             "xsec": 19.559,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 258137398.58080006,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1397,7 +1397,7 @@
             "year": "UL18",
             "xsec": 88.29,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 10528968068.886404,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1579,7 +1579,7 @@
             "year": "UL18",
             "xsec": 377.96,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 107748737931.51602,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -1999,7 +1999,7 @@
             "year": "UL18",
             "xsec": 365.34,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 138456928612.68405,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2601,7 +2601,7 @@
             "year": "UL18",
             "xsec": 0.2043,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 3525043.6305702003,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2635,7 +2635,7 @@
             "year": "UL18",
             "xsec": 0.4377,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 656374.2728368,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2651,7 +2651,7 @@
             "year": "UL18",
             "xsec": 0.0115,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 944000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2667,7 +2667,7 @@
             "year": "UL18",
             "xsec": 0.003884,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 498000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2682,7 +2682,7 @@
             "year": "UL18",
             "xsec": 0.2529,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 4782962.671003082,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2724,7 +2724,7 @@
             "year": "UL18",
             "xsec": 0.0015,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 1503.079102063,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2741,7 +2741,7 @@
             "year": "UL18",
             "xsec": 0.02656,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 4985000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2763,7 +2763,7 @@
             "year": "UL18",
             "xsec": 2.207,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 7023767.516864,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2778,7 +2778,7 @@
             "year": "UL18",
             "xsec": 1324.85,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 68704723.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2865,7 +2865,7 @@
             "year": "UL18",
             "xsec": 1.177367725,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 6481518.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2894,7 +2894,7 @@
             "year": "UL18",
             "xsec": 347.935075,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 56649809.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -2975,7 +2975,7 @@
             "year": "UL18",
             "xsec": 0.02426248275,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 15200908.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3018,7 +3018,7 @@
             "year": "UL18",
             "xsec": 46.62084375,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 7444030.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3045,7 +3045,7 @@
             "year": "UL18",
             "xsec": 11.23292175,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 7718765.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3075,7 +3075,7 @@
             "year": "UL18",
             "xsec": 1308.9025,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 72376692.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3161,7 +3161,7 @@
             "year": "UL18",
             "xsec": 5.07420335,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 7306187.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3189,7 +3189,7 @@
             "year": "UL18",
             "xsec": 66680,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 5018116854201.358,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3230,7 +3230,7 @@
             "year": "UL18",
             "xsec": 2549,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 14494966.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3259,7 +3259,7 @@
             "year": "UL18",
             "xsec": 276.5,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 9335298.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3287,7 +3287,7 @@
             "year": "UL18",
             "xsec": 59.25,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 13633226.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3321,7 +3321,7 @@
             "year": "UL18",
             "xsec": 28.75,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 13581343.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3357,7 +3357,7 @@
             "year": "UL18",
             "xsec": 0.284,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 2000000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3374,7 +3374,7 @@
             "year": "UL18",
             "xsec": 49.997,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 3384979335.9084206,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3430,7 +3430,7 @@
             "year": "UL18",
             "xsec": 12.178,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 110795281.86700004,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3453,7 +3453,7 @@
             "year": "UL18",
             "xsec": 51.79,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 3386857809.771921,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3510,7 +3510,7 @@
             "year": "UL18",
             "xsec": 0.2086,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 2135751.02131464,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3539,7 +3539,7 @@
             "year": "UL18",
             "xsec": 0.1651,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 1701326.7746178003,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3568,7 +3568,7 @@
             "year": "UL18",
             "xsec": 75.95,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 15679122.7146132,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3595,7 +3595,7 @@
             "year": "UL18",
             "xsec": 0.01701,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 29237.15565968,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3611,7 +3611,7 @@
             "year": "UL18",
             "xsec": 49.997,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 111635546.18117303,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3633,7 +3633,7 @@
             "year": "UL18",
             "xsec": 3.05402,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 14066954.673564006,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3651,7 +3651,7 @@
             "year": "UL18",
             "xsec": 5.6,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 274146243.456856,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3696,7 +3696,7 @@
             "year": "UL18",
             "xsec": 4.42965,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 83145979.09836999,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3722,7 +3722,7 @@
             "year": "UL18",
             "xsec": 0.05565,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 571468.6796678341,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3751,7 +3751,7 @@
             "year": "UL18",
             "xsec": 27.59,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 7940000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3775,7 +3775,7 @@
             "year": "UL18",
             "xsec": 0.0490124,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 862915.6701139999,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3794,7 +3794,7 @@
             "year": "UL18",
             "xsec": 0.3675,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 3676316.9352900013,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3821,7 +3821,7 @@
             "year": "UL18",
             "xsec": 0.084876,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 1377077.4378200006,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3841,7 +3841,7 @@
             "year": "UL18",
             "xsec": 0.589,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 5872008.70866,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3865,7 +3865,7 @@
             "year": "UL18",
             "xsec": 0.5612,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 2686413.4038130003,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3885,7 +3885,7 @@
             "year": "UL18",
             "xsec": 0.0262749,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 389609.6289225,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3905,7 +3905,7 @@
             "year": "UL18",
             "xsec": 0.1573,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 764252.4046060003,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3924,7 +3924,7 @@
             "year": "UL18",
             "xsec": 0.5612,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 5611322.638808,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3951,7 +3951,7 @@
             "year": "UL18",
             "xsec": 1012,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 14808858.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -3982,7 +3982,7 @@
             "year": "UL18",
             "xsec": 114.2,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 13930474.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4021,7 +4021,7 @@
             "year": "UL18",
             "xsec": 25.34,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 12029507.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4052,7 +4052,7 @@
             "year": "UL18",
             "xsec": 12.99,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 9681521.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4082,7 +4082,7 @@
             "year": "UL18",
             "xsec": 0.564,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 55393058.968736015,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4148,7 +4148,7 @@
             "year": "UL18",
             "xsec": 49.997,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 37590250.764148004,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4168,7 +4168,7 @@
             "year": "UL18",
             "xsec": 3.28,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 161924457.81939876,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4216,7 +4216,7 @@
             "year": "UL18",
             "xsec": 1.256,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 887384416.6911001,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4284,7 +4284,7 @@
             "year": "UL18",
             "xsec": 3.451,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 14508182.721835002,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4301,7 +4301,7 @@
             "year": "UL18",
             "xsec": 0.01398,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 146027.50457004798,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4329,7 +4329,7 @@
             "year": "UL18",
             "xsec": 12.17,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 3526000.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4347,7 +4347,7 @@
             "year": "UL18",
             "xsec": 0.04319,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 200515.34817500005,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4367,7 +4367,7 @@
             "year": "UL18",
             "xsec": 0.0024614,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 30249.12315,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4389,7 +4389,7 @@
             "year": "UL18",
             "xsec": 0.01222,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 59566.1625,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4409,7 +4409,7 @@
             "year": "UL18",
             "xsec": 0.04319,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 215713.33300000007,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4432,7 +4432,7 @@
             "year": "UL18",
             "xsec": 0.0758,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 924058.9126336002,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4463,7 +4463,7 @@
             "year": "UL18",
             "xsec": 0.215,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 3671562.4015979986,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4493,7 +4493,7 @@
             "year": "UL18",
             "xsec": 0.1279,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 4808883.8321159985,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4524,7 +4524,7 @@
             "year": "UL17",
             "xsec": 0.00282,
             "lumi": 41.48,
-            "sumw": 0,
+            "sumw": 27998.171229600008,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4539,7 +4539,7 @@
             "year": "UL17",
             "xsec": 0.00177,
             "lumi": 41.48,
-            "sumw": 0,
+            "sumw": 547283.0045010003,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4564,7 +4564,7 @@
             "year": "UL18",
             "xsec": 0.4611,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 27686862.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
@@ -4625,7 +4625,7 @@
             "year": "UL18",
             "xsec": 0.5407,
             "lumi": 59.83,
-            "sumw": 0,
+            "sumw": 28025800.0,
             "local_prefix": "/ceph/cms/"
         },
         "files": [
