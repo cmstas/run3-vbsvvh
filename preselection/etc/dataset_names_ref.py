@@ -2,7 +2,7 @@
 # Note the name of each list should correspond to a key in the SKIM_PATH_DICT
 
 datasets = {
-    "sig_sm" : [
+    ("run2", "sig_sm") : [
         {"year": "UL16APV", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOv15"},
         {"year": "UL16", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15"},
         {"year": "UL17", "dataset_name": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOv15"},
@@ -21,7 +21,7 @@ datasets = {
         {"year": "UL18", "dataset_name": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOv15"},
     ],
 
-    "bkg" : [
+    ("run2", "bkg") : [
         {"year": "UL16APV", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
         {"year": "UL16APV", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v5_NANOAODSIM"},
         {"year": "UL16APV", "dataset_name": "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
