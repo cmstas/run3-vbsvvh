@@ -1,20 +1,22 @@
+# Note the keys of each dict should correspond to a key in the SKIM_PATH_DICT
+
 xsec_dict = {
 
-    "sig_sm_run2" : {
+    "sig_sm" : {
         "VBSWWH_OS_VBSCuts_13TeV": 0.000643,
         "VBSWWH_SS_VBSCuts_13TeV": 0.000316,
         "VBSWZH_VBSCuts_13TeV": 0.000418,
         "VBSZZH_VBSCuts_13TeV": 0.000108
     },
 
-    "sig_kl10_run2" : {
+    "sig_kl10" : {
         "VBSWWH_OS_VBSCuts_13TeV": 0.001587,
         "VBSWWH_SS_VBSCuts_13TeV": 0.000445,
         "VBSWZH_VBSCuts_13TeV": 0.000624,
         "VBSZZH_VBSCuts_13TeV": 0.000416
     },
 
-    "bkg_run2": {
+    "bkg": {
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV"                    : 187700000,
         "QCD_HT100to200_TuneCP5_PSWeights_13TeV"                             : 27849880,
         "QCD_HT200to300_TuneCP5_PSWeights_13TeV"                             : 1716997,

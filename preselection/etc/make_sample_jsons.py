@@ -3,60 +3,60 @@ import uproot
 import json
 
 import xsec_ref
-import dataset_names
+import dataset_names_ref
+
+# Which skims serve which analysis channels 
+#    0lep_0FJ : 0lep_0FJ_6j,
+#    0lep_1FJ : 0lep_1FJ_met, 0lep_1FJ_4j,
+#    0lep_2FJ : 0lep_2FJ_met, 0lep_2FJ_2j,
+#    0lep_3FJ : 0lep_3FJ,
+#    1lep_1FJ : 1lep_1FJ,1lep_2FJ,
+#    2lep_1FJ : 2lepOSOF_1FJ, 2lepOSSF_1FJ,
+#    2lep_2FJ : 2lepOSSF_2FJ,
+#    3lep     : 3lep,
+#    4lep     : 4lep,
 
 
-# Dictionary of the skim sets and the analysis channels they serve
-# NOTE: 2lepSS has no skim?
-SKIM_INFO_DICT = {
+# Dictionary of the paths to the skim sets
+SKIM_PATH_DICT = {
     "all_events" : {
-        "type"     : "sig",
-        "path"     : "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8",
+        "sig_sm"  : "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8",
     },
     "0lep_0FJ" : {
-        "ana_chans": ["0lep_0FJ_6j"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "0lep_1FJ" : {
-        "ana_chans": ["0lep_1FJ_met", "0lep_1FJ_4j"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep1FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep1FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "0lep_2FJ" : {
-        "ana_chans": ["0lep_2FJ_met", "0lep_2FJ_2j"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep2FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep2FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "0lep_3FJ" : {
-        "ana_chans": ["0lep_3FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep3FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep3FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "1lep_1FJ" : {
-        "ana_chans": ["1lep_1FJ","1lep_2FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_1Lep1FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_1Lep1FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "2lep_1FJ" : {
-        "ana_chans": ["2lepOSOF_1FJ", "2lepOSSF_1FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "2lep_2FJ" : {
-        "ana_chans": ["2lepOSSF_2FJ"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep2FJ_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep2FJ_11Feb2026_v4",
+        #"data" : "",
     },
     "3lep"    : {
-        "ana_chans": ["3lep"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4",
+        #"data" : "",
     },
     "4lep"    : {
-        "ana_chans": ["4lep"],
-        "type"     : "bkg",
-        "path"     : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4",
+        "bkg"  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4",
+        #"data" : "",
     },
 }
 
@@ -121,39 +121,53 @@ def get_sow(list_of_files):
 
 ################# Main wrapper for producing json #################
 
-# Create a json for a given sample
-#     - Input is the full path to the sample in question
-def make_json_for_dataset(path_to_dataset,year,xsec_dict):
-
+# Create the dict to dump to the json for a given sample
+#     - dataset_info should be from the dataset ref file
+#     - path should be absolute
+#     - kind should be e.g. "bkg"
+#     - xsec_dict should be from the xsec ref file for this kind
+def make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict):
         out_dict = {}
 
-        # Get dataset_name from /full/path/to/dataset_name
-        dataset_name = path_to_dataset.split("/")[-1]
+        # Get year for this dataset
+        year = dataset_info["year"]
 
-        # Get full paths to all root files for this dataset
-        file_fullpath_lst = get_root_file_lst(path_to_dataset)
-        #print(file_fullpath_lst)
-
-        # Get the xsec for this dataset
-        dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
-
-        # Get the lumi
+        # Get the lumi for this year
         lumi = LUMI_DICT[year]
 
-        # Get the sum of weights
-        sumw = get_sow(file_fullpath_lst)
+        # Get name of this dataset
+        dataset_name = dataset_info["dataset_name"]
+
+        ### NOTE Remove this when skim formatting is updated ###
+        # Modify the dataset name with the second tag
+        tag_tmp = path.split("/")[-1] 
+        tag_tmp = tag_tmp[:-1] + "2"
+        if kind == "bkg": dataset_name = f"{dataset_name}_{tag_tmp}"
+        ########################################################
+
+        # Get the xsec name and value for this dataset
+        dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
+
+        # Get full paths to all root files for this dataset
+        file_fullpath_lst = get_root_file_lst(os.path.join(path,dataset_name))
+        #print(file_fullpath_lst)
+
+        # Get the sum of weights for all of the files in this dataset
+        #sumw = get_sow(file_fullpath_lst)
+        sumw = 0
 
         # Fill the out dict
         out_dict["trees"] = "Events"
         out_dict["files"] = file_fullpath_lst
         out_dict["metadata"] = {
-            "category" : "bkg", # TODO fix
+            "category" : kind,
             "year" : year,
             "xsec" : xsec_val,
             "lumi" : lumi,
             "sumw" : sumw,
         }
 
+        # Return what will be the key and value of the full json
         return [dataset_name_short, out_dict]
 
 
@@ -162,53 +176,35 @@ def make_json_for_dataset(path_to_dataset,year,xsec_dict):
 
 def main():
 
-    #xsec_dict = xsec_ref.xsec_dict["bkg_run2"]
-    xsec_dict = xsec_ref.xsec_dict["sig_sm_run2"]
+    # Loop over the skim sets (e.g., 3lep)
+    for skim_set_name in SKIM_PATH_DICT:
+        print(f"\nSkim set: {skim_set_name}")
 
-    cat = "bkg"
-    cat = "sig"
+        # Loop over the kinds of samples for each skim (e.g., bkg)
+        for kind in SKIM_PATH_DICT[skim_set_name]:
 
-    datasets_lst_bkg = dataset_names.dataset_info_run2_bkg_lst
-    datasets_lst_sig = dataset_names.dataset_info_run2_sig_lst
+            # Get the set of datasets and xsecs for this kind of sample
+            datasets_lst = dataset_names_ref.datasets[kind]
+            xsec_dict = xsec_ref.xsec_dict[kind]
 
-    datasets_lst = datasets_lst_sig
+            # Get the path to this set of skims
+            path = SKIM_PATH_DICT[skim_set_name][kind]
 
-    # Loop over the skim sets
-    for skim_set_name in SKIM_INFO_DICT:
-        print(skim_set_name)
-        path = SKIM_INFO_DICT[skim_set_name]["path"]
-        skim_fulpath_dict = {}
-        n_datasets = len(datasets_lst_sig)
+            # Loop over all of the datasets and build up a dict we will dump to json
+            dict_for_json = {}
+            print(f"\n{kind}: {len(datasets_lst)} total datasets.")
+            for i,dataset_info in enumerate(datasets_lst):
+                print(f"{i+1}/{len(datasets_lst)}: {dataset_info['dataset_name']}")
 
-        # Get the modified tag at the end of the skim name, remove this when skim formatting is updated
-        # NOTE: Remove this when skim formatting is updated in later versions
-        tag_tmp = path.split("/")[-1] 
-        tag_tmp = tag_tmp[:-1] + "2"
+                # Get the key and value for the output json
+                short_name, info_dict = make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict)
 
-        # Loop over the set of datasets
-        for i,dataset_info in enumerate(datasets_lst):
+                # Add this into the full dict
+                dict_for_json[short_name] = info_dict
 
-            dataset_name = dataset_info["dataset_name"]
 
-            # Modify the dataset name with the second tag
-            # NOTE Remove this when skim formatting is updated in later versions
-            #dataset_name_tmp = f"{dataset_name}_{tag_tmp}"
-            dataset_name_tmp = dataset_name
-
-            year = dataset_info["year"]
-
-            # Get the full path to this dataset, and create the json
-            path_full = os.path.join(path,dataset_name_tmp)
-
-            short_name, info_dict = make_json_for_dataset(path_full,year,xsec_dict)
-
-            # Add the dict for this dataset into the full dict
-            skim_fulpath_dict[short_name] = info_dict
-
-            print(f"{i+1}/{n_datasets}: {dataset_name_tmp}")
-
-        with open(f"{skim_set_name}_run2.json", "w") as fp:
-            json.dump(skim_fulpath_dict, fp, indent=4)
+            with open(f"{skim_set_name}_run2.json", "w") as fp:
+                json.dump(dict_for_json, fp, indent=4)
 
 
 
