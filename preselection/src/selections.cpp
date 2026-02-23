@@ -87,7 +87,7 @@ RNode AK4JetsSelection(RNode df_)
                                         "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
     
     df = applyJetVetoMaps(df);
-    df = df.Filter("Sum(Jet_vetoMap) != Jet_pt.size()"); // for 2022EE+, events with any jet in veto region are removed
+    df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
     df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
 
     df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
