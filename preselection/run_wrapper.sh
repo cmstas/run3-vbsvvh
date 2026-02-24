@@ -4,8 +4,8 @@
 PREFIX="/ceph/cms/"
 #PREFIX="root://redirector.t2.ucsd.edu:1095//"
 
-# Run over a single file locally
-# TODO add example
+# Run over a single file locally (for testing)
+#python run_rdf.py etc/input_sample_jsons/sig_sm/all_events/UL17_VBSWZH_VBSCuts_13TeV.json --prefix $PREFIX -n r2_sig_sm -m local -r 2
 
 # Run at scale over signal
 python run_rdf.py etc/input_sample_jsons/sig_sm/all_events --prefix $PREFIX -n r2_sig_sm -m condor -r 2

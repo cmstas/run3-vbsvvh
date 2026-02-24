@@ -9,21 +9,36 @@ import subprocess
 def merge_jsons(input_paths_lst):
     out_dict = {"samples": {}}
 
+    def _append_info_to_dict(the_dict,path_to_json):
+        # Modify the dict in place with the info from a given json
+        with open(path_to_json, 'r') as file:
+            data = json.load(file)["samples"]
+            for k,v in data.items():
+                if k in the_dict: raise Exception(f"ERROR: key \"{k}\" already exsists in the output dict")
+                the_dict["samples"][k] = v 
+
     # Loop over paths
     for path in input_paths_lst:
 
-        # Loop over files in this path
-        for filename in os.listdir(path):
+        # This isn't a path! It's a json file
+        if path.endswith(".json"):
+            _append_info_to_dict(out_dict,path)
 
-            # Skip non json files
-            if not filename.endswith('.json'): continue
+        # This is a dir
+        elif os.path.isdir(path):
 
-            # Append the info from this json into the out dict
-            with open(os.path.join(path, filename), 'r') as file:
-                data = json.load(file)["samples"]
-                for k,v in data.items():
-                    if k in out_dict: raise Exception(f"ERROR: key \"{k}\" already exsists in the output dict")
-                    out_dict["samples"][k] = v 
+            # Loop over files in this path
+            for filename in os.listdir(path):
+
+                # Skip any non json files
+                if not filename.endswith('.json'): continue
+
+                # Append the info from this json into the out dict
+                _append_info_to_dict(out_dict,os.path.join(path,filename))
+
+        # It's not a json or a dir, what are you trying to pass?
+        else:
+            raise Exception("Unknown input type, please pass json files or a directory with json files in it.")
 
     return out_dict
 
@@ -49,7 +64,7 @@ def main():
     parser.add_argument('-o', "--output-path", help = "Output directory")
     parser.add_argument('-n', "--output-name", help = "Output name")
     parser.add_argument('-r', "--run",         help = "Which run (2 or 3)", choices=["2","3"])
-    parser.add_argument('-p', "--prefix",      help = "Prefix to append to the file paths")
+    parser.add_argument('-p', "--prefix",      help = "Prefix to append to the file paths", default=None)
     parser.add_argument('-j', "--n-cores",     help = "Number of cores to use for local execution")
     args = parser.parse_args()
 
@@ -57,7 +72,8 @@ def main():
     merged_json_dict = merge_jsons(args.jsons)
 
     # Prepend the appropriate prefix to all files in the input json
-    apply_prefix(merged_json_dict,args.prefix)
+    if args.prefix is not None:
+        apply_prefix(merged_json_dict,args.prefix)
 
     # Dump the merged content to a json file in merged_jsons/
     if not os.path.exists("merged_jsons"): os.mkdir("merged_jsons")
@@ -65,15 +81,15 @@ def main():
     merged_json_name = os.path.join("merged_jsons",f"merged_{args.output_name}_{timestamp}.json")
     print(f"\nWriting merged file \"{merged_json_name}\"")
     with open(merged_json_name, 'w') as outfile:
-        json.dump({"samples": merged_json_dict}, outfile, indent=4)
+        json.dump(merged_json_dict, outfile, indent=4)
 
     # Construct the bash run command
     if args.mode == "local":
-        command = f"bin/runAnalysis -i {merged_json_name} -o {args.output_path} -t {args.output_name} -j 8"
+        command = f"bin/runAnalysis -i {merged_json_name} -o {args.output_path} -a {args.output_name} -j 8 --run_number {args.run}"
         print(f"Running command \"{command}\"")
         #os.system(command)
     elif args.mode == "condor":
-        command = f"python condor/submit.py -i {merged_json_name} -o {args.output_path} -t {args.output_name}"
+        command = f"python condor/submit.py -i {merged_json_name} -o {args.output_path} -a {args.output_name}"
         print(f"Running command \"{command}\"")
         #os.system(command)
 
