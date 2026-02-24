@@ -59,10 +59,10 @@ def main():
     # Prepend the appropriate prefix to all files in the input json
     apply_prefix(merged_json_dict,args.prefix)
 
-    # Dump the merged content to a json file
-    now = datetime.now()
-    timestamp = now.strftime("%Y%m%d%H%M%S")
-    merged_json_name = f"merged_{args.output_name}_{timestamp}.json"
+    # Dump the merged content to a json file in merged_jsons/
+    if not os.path.exists("merged_jsons"): os.mkdir("merged_jsons")
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    merged_json_name = os.path.join("merged_jsons",f"merged_{args.output_name}_{timestamp}.json")
     print(f"\nWriting merged file \"{merged_json_name}\"")
     with open(merged_json_name, 'w') as outfile:
         json.dump({"samples": merged_json_dict}, outfile, indent=4)
