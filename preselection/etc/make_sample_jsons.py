@@ -13,7 +13,7 @@ import dataset_names_ref
 #    1lep_1FJ : 1lep_1FJ,1lep_2FJ,
 #    2lep_1FJ : 2lepOSOF_1FJ, 2lepOSSF_1FJ,
 #    2lep_2FJ : 2lepOSSF_2FJ,
-#    3lepSS   : 2lepSS
+#    2lepSS   : 2lepSS
 #    3lep     : 3lep,
 #    4lep     : 4lep,
 
@@ -164,7 +164,7 @@ def strip_prefixes(fullpaths_lst,split_on="store"):
 #     - path should be absolute
 #     - kind should be e.g. "bkg"
 #     - xsec_dict should be from the xsec ref file for this kind
-def make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict):
+def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
         out_dict = {}
 
         # Get year for this dataset
@@ -191,8 +191,8 @@ def make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict):
         #print(file_fullpath_lst)
 
         # Get the sum of weights for all of the files in this dataset
-        sumw = get_sow(file_fullpath_lst)
-        #sumw = 0
+        #sumw = get_sow(file_fullpath_lst)
+        sumw = -999
 
         # Get rid of the local prefix
         local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
@@ -200,7 +200,7 @@ def make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict):
         # Fill the out dict
         out_dict["trees"] = "Events"
         out_dict["metadata"] = {
-            "category" : kind,
+            "kind" : kind,
             "year" : year,
             "xsec" : xsec_val,
             "lumi" : lumi,
@@ -209,8 +209,9 @@ def make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict):
         }
         out_dict["files"] = file_fullpath_lst
 
-        # Return what will be the key and value of the full json
-        return [dataset_name_short, out_dict]
+        # Dump the dict to an output json
+        with open(f"input_sample_jsons/{kind}/{skim_set_name}/{year}_{dataset_name_short}.json", "w") as fp:
+            json.dump({"samples": {dataset_name: out_dict}}, fp, indent=4)
 
 
 
@@ -233,20 +234,13 @@ def main():
             path = SKIM_PATH_DICT[skim_set_name][(run_tag,kind)]
 
             # Loop over all of the datasets and build up a dict we will dump to json
-            dict_for_json = {}
             print(f"\n{run_tag} {kind}: {len(datasets_lst)} total datasets.")
             for i,dataset_info in enumerate(datasets_lst):
                 print(f"{i+1}/{len(datasets_lst)}: {dataset_info['dataset_name']}")
 
-                # Get the key and value for the output json
-                short_name, info_dict = make_json_dict_for_dataset(dataset_info, path, kind, xsec_dict)
+                # Make the output json
+                make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name)
 
-                # Add this into the full dict
-                dict_for_json[short_name] = info_dict
-
-            # Dump the dict to an output json
-            with open(f"input_{run_tag}_{kind}_{skim_set_name}.json", "w") as fp:
-                json.dump(dict_for_json, fp, indent=4)
 
 
 
