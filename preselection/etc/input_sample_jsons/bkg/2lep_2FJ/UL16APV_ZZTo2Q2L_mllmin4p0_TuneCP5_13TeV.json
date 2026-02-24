@@ -1,13 +1,15 @@
 {
     "samples": {
         "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep2FJ_11Feb2026_v2": {
-            "trees": "Events",
+            "trees": [
+                "Events"
+            ],
             "metadata": {
                 "kind": "bkg",
                 "year": "UL16APV",
                 "xsec": 3.28,
                 "lumi": 19.52,
-                "sumw": -999,
+                "sumw": 10.1,
                 "local_prefix": "/ceph/cms/"
             },
             "files": [

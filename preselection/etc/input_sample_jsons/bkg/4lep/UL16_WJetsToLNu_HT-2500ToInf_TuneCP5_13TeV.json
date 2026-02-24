@@ -1,13 +1,15 @@
 {
     "samples": {
         "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext2-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2": {
-            "trees": "Events",
+            "trees": [
+                "Events"
+            ],
             "metadata": {
                 "kind": "bkg",
                 "year": "UL16",
                 "xsec": 0.02426248275,
                 "lumi": 16.81,
-                "sumw": -999,
+                "sumw": 10.1,
                 "local_prefix": "/ceph/cms/"
             },
             "files": [

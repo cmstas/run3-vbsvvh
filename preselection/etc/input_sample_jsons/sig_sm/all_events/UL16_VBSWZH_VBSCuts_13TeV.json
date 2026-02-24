@@ -1,13 +1,15 @@
 {
     "samples": {
         "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOv15": {
-            "trees": "Events",
+            "trees": [
+                "Events"
+            ],
             "metadata": {
                 "kind": "sig_sm",
                 "year": "UL16",
                 "xsec": 0.000418,
                 "lumi": 16.81,
-                "sumw": -999,
+                "sumw": 10.1,
                 "local_prefix": "/ceph/cms/"
             },
             "files": [

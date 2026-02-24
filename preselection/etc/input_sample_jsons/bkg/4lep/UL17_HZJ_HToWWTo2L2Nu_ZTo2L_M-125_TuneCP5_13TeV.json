@@ -1,13 +1,15 @@
 {
     "samples": {
         "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2": {
-            "trees": "Events",
+            "trees": [
+                "Events"
+            ],
             "metadata": {
                 "kind": "bkg",
                 "year": "UL17",
                 "xsec": 0.00177,
                 "lumi": 41.48,
-                "sumw": -999,
+                "sumw": 10.1,
                 "local_prefix": "/ceph/cms/"
             },
             "files": [
