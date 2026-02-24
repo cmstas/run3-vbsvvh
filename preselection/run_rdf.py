@@ -15,7 +15,7 @@ def merge_jsons(input_paths_lst):
             data = json.load(file)["samples"]
             for k,v in data.items():
                 if k in the_dict: raise Exception(f"ERROR: key \"{k}\" already exsists in the output dict")
-                the_dict["samples"][k] = v 
+                the_dict["samples"][k] = v
 
     # Loop over paths
     for path in input_paths_lst:
@@ -60,12 +60,13 @@ def main():
     # Set up the command line parser
     parser = argparse.ArgumentParser()
     parser.add_argument('jsons', nargs='+',    help = 'Input json file(s) containing files and metadata')
-    parser.add_argument('-m', "--mode",        help = "Which mode to run in (local or condor)", choices=["local","condor"])
-    parser.add_argument('-o', "--output-path", help = "Output directory")
-    parser.add_argument('-n', "--output-name", help = "Output name")
-    parser.add_argument('-r', "--run",         help = "Which run (2 or 3)", choices=["2","3"])
-    parser.add_argument('-p', "--prefix",      help = "Prefix to append to the file paths", default=None)
-    parser.add_argument('-j', "--n-cores",     help = "Number of cores to use for local execution")
+    parser.add_argument('-m', '--mode',        help = 'Which mode to run in (local or condor)', choices=['local','condor'])
+    parser.add_argument('-o', '--output-path', help = 'Output directory')
+    parser.add_argument('-n', '--output-name', help = 'Output name')
+    parser.add_argument('-r', '--run',         help = 'Which run (2 or 3)', choices=['2','3'])
+    parser.add_argument('-p', '--prefix',      help = 'Prefix to append to the file paths', default=None)
+    parser.add_argument('-j', '--n-cores',     help = 'Number of cores to use for local execution')
+    parser.add_argument('-d', '--dry-run',     help = 'Do not actually execute the run command', action='store_true')
     args = parser.parse_args()
 
     # Merge the input jsons
@@ -87,12 +88,13 @@ def main():
     if args.mode == "local":
         command = f"bin/runAnalysis -i {merged_json_name} -o {args.output_path} -a 1Lep2FJ -j 8 --run_number {args.run}"
         print(f"Running command \"{command}\"...\n")
-        os.system(command)
+        if not args.dry_run: os.system(command)
     elif args.mode == "condor":
         command = f"python condor/submit.py -i {merged_json_name} -o {args.output_path} -a {args.output_name}"
         print(f"Running command \"{command}\"...\n")
-        #os.system(command)
+        if not args.dry_run: os.system(command)
 
+    print("Done!")
 
 main()
 
