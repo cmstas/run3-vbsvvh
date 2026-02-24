@@ -2,19 +2,22 @@
 
 # If running locally the /ceph prefix, otherwise use the redirector
 PREFIX="/ceph/cms/"
-#PREFIX="root://redirector.t2.ucsd.edu:1095"
+#PREFIX="root://redirector.t2.ucsd.edu:1095//"
+
+# Run over a single file locally
+# TODO add example
 
 # Run at scale over signal
-python condor/submit.py etc/input_sig_sm_all_events.json --prefix PREFIX --tag sig_sm -r 2
+python run_rdf.py etc/input_sample_jsons/sig_sm/all_events --prefix $PREFIX -n r2_sig_sm -m condor -r 2
 
 # Run at scale over the 10 sets of data/bkg skims
-python condor/submit.py etc/input_r2_bkg_0lep_0FJ.json etc/input_r2_data_0lep_0FJ.json --prefix PREFIX --tag r2_0lep_0FJ -r 2
-python condor/submit.py etc/input_r2_bkg_0lep_1FJ.json etc/input_r2_data_0lep_1FJ.json --prefix PREFIX --tag r2_0lep_1FJ -r 2
-python condor/submit.py etc/input_r2_bkg_0lep_2FJ.json etc/input_r2_data_0lep_2FJ.json --prefix PREFIX --tag r2_0lep_2FJ -r 2
-python condor/submit.py etc/input_r2_bkg_0lep_3FJ.json etc/input_r2_data_0lep_3FJ.json --prefix PREFIX --tag r2_0lep_3FJ -r 2
-python condor/submit.py etc/input_r2_bkg_1lep_1FJ.json etc/input_r2_data_1lep_1FJ.json --prefix PREFIX --tag r2_1lep_1FJ -r 2
-python condor/submit.py etc/input_r2_bkg_2lep_1FJ.json etc/input_r2_data_2lep_1FJ.json --prefix PREFIX --tag r2_2lep_1FJ -r 2
-python condor/submit.py etc/input_r2_bkg_2lep_2FJ.json etc/input_r2_data_2lep_2FJ.json --prefix PREFIX --tag r2_2lep_2FJ -r 2
-python condor/submit.py etc/input_r2_bkg_2lepSS.json   etc/input_r2_data_2lepSS.json   --prefix PREFIX --tag r2_2lepSS   -r 2 # DNE yet
-python condor/submit.py etc/input_r2_bkg_3lep.json     etc/input_r2_data_3lep.json     --prefix PREFIX --tag r2_3lep     -r 2
-python condor/submit.py etc/input_r2_bkg_4lep.json     etc/input_r2_data_4lep.json     --prefix PREFIX --tag r2_4lep     -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/0lep_0FJ etc/input_sample_jsons/data/0lep_0FJ --prefix $PREFIX -n r2_0lep_0FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/0lep_1FJ etc/input_sample_jsons/data/0lep_1FJ --prefix $PREFIX -n r2_0lep_1FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/0lep_2FJ etc/input_sample_jsons/data/0lep_2FJ --prefix $PREFIX -n r2_0lep_2FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/0lep_3FJ etc/input_sample_jsons/data/0lep_3FJ --prefix $PREFIX -n r2_0lep_3FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/1lep_1FJ etc/input_sample_jsons/data/1lep_1FJ --prefix $PREFIX -n r2_1lep_1FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/2lep_1FJ etc/input_sample_jsons/data/2lep_1FJ --prefix $PREFIX -n r2_2lep_1FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/2lep_2FJ etc/input_sample_jsons/data/2lep_2FJ --prefix $PREFIX -n r2_2lep_2FJ -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/2lepSS   etc/input_sample_jsons/data/2lepSS   --prefix $PREFIX -n r2_2lepSS   -m condor -r 2 # DNE yet
+python run_rdf.py etc/input_sample_jsons/bkg/3lep     etc/input_sample_jsons/data/3lep     --prefix $PREFIX -n r2_3lep     -m condor -r 2
+python run_rdf.py etc/input_sample_jsons/bkg/4lep     etc/input_sample_jsons/data/4lep     --prefix $PREFIX -n r2_4lep     -m condor -r 2
