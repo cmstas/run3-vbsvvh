@@ -1,15 +1,19 @@
 {
-    "trees": "Events",
-    "metadata": {
-        "kind": "bkg",
-        "year": "UL18",
-        "xsec": 0.02794,
-        "lumi": 59.83,
-        "sumw": -999,
-        "local_prefix": "/ceph/cms/"
-    },
-    "files": [
-        "store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4/SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2/output_1.root",
-        "store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4/SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2/output_2.root"
-    ]
+    "samples": {
+        "SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2": {
+            "trees": "Events",
+            "metadata": {
+                "kind": "bkg",
+                "year": "UL18",
+                "xsec": 0.02794,
+                "lumi": 59.83,
+                "sumw": -999,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4/SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2/output_1.root",
+                "store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4/SSWW_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_4Lep_11Feb2026_v2/output_2.root"
+            ]
+        }
+    }
 }

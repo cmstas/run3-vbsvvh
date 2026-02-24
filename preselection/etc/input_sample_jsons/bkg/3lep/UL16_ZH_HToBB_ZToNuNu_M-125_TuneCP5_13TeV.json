@@ -1,16 +1,20 @@
 {
-    "trees": "Events",
-    "metadata": {
-        "kind": "bkg",
-        "year": "UL16",
-        "xsec": 0.1573,
-        "lumi": 16.81,
-        "sumw": -999,
-        "local_prefix": "/ceph/cms/"
-    },
-    "files": [
-        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_1.root",
-        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_2.root",
-        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_3.root"
-    ]
+    "samples": {
+        "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2": {
+            "trees": "Events",
+            "metadata": {
+                "kind": "bkg",
+                "year": "UL16",
+                "xsec": 0.1573,
+                "lumi": 16.81,
+                "sumw": -999,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_1.root",
+                "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_2.root",
+                "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_3.root"
+            ]
+        }
+    }
 }
