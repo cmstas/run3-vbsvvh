@@ -85,12 +85,12 @@ def main():
 
     # Construct the bash run command
     if args.mode == "local":
-        command = f"bin/runAnalysis -i {merged_json_name} -o {args.output_path} -a {args.output_name} -j 8 --run_number {args.run}"
-        print(f"Running command \"{command}\"")
-        #os.system(command)
+        command = f"bin/runAnalysis -i {merged_json_name} -o {args.output_path} -a 1Lep2FJ -j 8 --run_number {args.run}"
+        print(f"Running command \"{command}\"...\n")
+        os.system(command)
     elif args.mode == "condor":
         command = f"python condor/submit.py -i {merged_json_name} -o {args.output_path} -a {args.output_name}"
-        print(f"Running command \"{command}\"")
+        print(f"Running command \"{command}\"...\n")
         #os.system(command)
 
 

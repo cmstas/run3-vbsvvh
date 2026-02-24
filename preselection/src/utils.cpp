@@ -9,13 +9,13 @@ RDF UTILS
 RNode defineMetadata(RNode df) {
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
         .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
-        .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
-        .DefinePerSample("category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("category");})
-        .DefinePerSample("type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("type");})
+        .DefinePerSample("sumw", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("sumw");})
+        .DefinePerSample("kind", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("kind");})
+        //.DefinePerSample("type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("type");})
         .DefinePerSample("year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("year");})
         .DefinePerSample("name", [](unsigned int slot, const RSampleInfo &id) { return id.GetSampleName();})
-        .Define("xsec_weight", "1000 * xsec * lumi / nevents")
-        .Define("isData", "category == \"data\"")
+        .Define("xsec_weight", "1000 * xsec * lumi / sumw")
+        .Define("isData", "kind== \"data\"")
         .Define("is2016", "year == \"2016preVFP\" || year == \"2016postVFP\"")
         .Define("is2017", "year == \"2017\"")
         .Define("is2018", "year == \"2018\"")
@@ -26,15 +26,15 @@ RNode defineMetadata(RNode df) {
         .Define("isRun3", "is2022 || is2023 || is2024");
 }
 
-// Extract sample category from the JSON config file
-// Returns the category of the first sample found (assumes all samples in a config have the same category)
+// Extract sample kind from the JSON config file
+// Returns the kind of the first sample found (assumes all samples in a config have the same kind)
 std::string getCategoryFromConfig(const std::string& config_path) {
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(config_path, pt);
 
-    // Navigate to samples and get the first sample's category
+    // Navigate to samples and get the first sample's kind
     for (const auto& sample : pt.get_child("samples")) {
-        return sample.second.get<std::string>("metadata.category");
+        return sample.second.get<std::string>("metadata.kind");
     }
     return "";
 }

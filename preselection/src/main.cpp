@@ -20,10 +20,10 @@ struct MyArgs : public argparse::Args {
     std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
     std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
-    std::string &run_number = kwarg("run_number", "Run number: 2 or 3");    
+    std::string &run_number = kwarg("r,run_number", "Run number: 2 or 3");    
     
     int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
-    int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
+    int &nthread = kwarg("j,nthread", "number of threads for ROOT").set_default(0);
 
     bool &debug = flag("debug", "enable debug mode").set_default(false);
     bool &dumpInput = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
@@ -37,9 +37,9 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
 
     df = runPreselection(df, ana, makeSpanetTrainingdata);
     
-    if (isSignal) {
-        df = GenSelections(df);
-    }
+    //if (isSignal) {
+        //df = GenSelections(df);
+    //}
 
     if (!makeSpanetTrainingdata && runSPANetInference) {
         std::cout << "Running spanet" << std::endl;
@@ -118,34 +118,34 @@ int main(int argc, char** argv) {
     // Define metadata
     auto df = defineMetadata(df_);
 
-    // Get sample category from config file
-    std::string category = getCategoryFromConfig(input_spec);
-    std::cout << " -> Sample category from config: " << category << std::endl;
+    // Get sample kind from config file
+    std::string kind = getCategoryFromConfig(input_spec);
+    std::cout << " -> Sample kind from config: " << kind << std::endl;
 
-    // Set output file name and input type based on category
+    // Set output file name and input type based on kind
     bool isData = false;
     bool isSignal = false;
-    if (category.find("data") != std::string::npos) {
+    if (kind.find("data") != std::string::npos) {
         isData = true;
         if (output_file.empty()) {
             output_file = "data";
         }
     }
-    else if (category.find("sig") != std::string::npos) {
+    else if (kind.find("sig") != std::string::npos) {
         // Handle categories like "sig", "sig_c2v_1p5_c3_1p0", etc.
         isSignal = true;
         if (output_file.empty()) {
             output_file = "sig";
         }
     }
-    else if (category.find("bkg") != std::string::npos) {
+    else if (kind.find("bkg") != std::string::npos) {
         // Handle categories like "bkg", "bkg_QCD", "bkg_ttbar", etc.
         if (output_file.empty()) {
             output_file = "bkg";
         }
     }
     else {
-        std::cerr << "Unknown category in config: " << category << std::endl;
+        std::cerr << "Unknown kind in config: " << kind << std::endl;
         std::cerr << "Expected: data, sig, or bkg*" << std::endl;
         std::exit(EXIT_FAILURE);
     }

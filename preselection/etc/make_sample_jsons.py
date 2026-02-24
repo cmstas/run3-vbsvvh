@@ -192,13 +192,13 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
 
         # Get the sum of weights for all of the files in this dataset
         #sumw = get_sow(file_fullpath_lst)
-        sumw = -999
+        sumw = 10.1
 
         # Get rid of the local prefix
         local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
 
         # Fill the out dict
-        out_dict["trees"] = "Events"
+        out_dict["trees"] = ["Events"]
         out_dict["metadata"] = {
             "kind" : kind,
             "year" : year,
