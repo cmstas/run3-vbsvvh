@@ -1,0 +1,18 @@
+{
+    "trees": "Events",
+    "metadata": {
+        "kind": "bkg",
+        "year": "UL17",
+        "xsec": 0.01701,
+        "lumi": 41.48,
+        "sumw": -999,
+        "local_prefix": "/ceph/cms/"
+    },
+    "files": [
+        "store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4/WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep0FJ_11Feb2026_v2/output_1.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4/WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep0FJ_11Feb2026_v2/output_2.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4/WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep0FJ_11Feb2026_v2/output_3.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4/WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep0FJ_11Feb2026_v2/output_4.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4/WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep0FJ_11Feb2026_v2/output_5.root"
+    ]
+}

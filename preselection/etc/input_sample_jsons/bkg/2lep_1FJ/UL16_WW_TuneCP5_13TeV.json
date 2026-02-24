@@ -1,0 +1,28 @@
+{
+    "trees": "Events",
+    "metadata": {
+        "kind": "bkg",
+        "year": "UL16",
+        "xsec": 75.95,
+        "lumi": 16.81,
+        "sumw": -999,
+        "local_prefix": "/ceph/cms/"
+    },
+    "files": [
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_1.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_10.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_11.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_12.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_13.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_14.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_15.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_2.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_3.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_4.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_5.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_6.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_7.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_8.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4/WW_TuneCP5_13TeV-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM_nanoaodv15_bkg_2Lep1FJ_11Feb2026_v2/output_9.root"
+    ]
+}

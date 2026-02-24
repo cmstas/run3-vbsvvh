@@ -1,0 +1,37 @@
+{
+    "trees": "Events",
+    "metadata": {
+        "kind": "bkg",
+        "year": "UL17",
+        "xsec": 28.75,
+        "lumi": 41.48,
+        "sumw": -999,
+        "local_prefix": "/ceph/cms/"
+    },
+    "files": [
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_1.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_10.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_11.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_12.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_13.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_14.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_15.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_16.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_17.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_18.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_19.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_2.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_20.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_21.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_22.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_23.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_24.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_3.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_4.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_5.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_6.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_7.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_8.root",
+        "store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4/WJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_3Lep_11Feb2026_v2/output_9.root"
+    ]
+}
