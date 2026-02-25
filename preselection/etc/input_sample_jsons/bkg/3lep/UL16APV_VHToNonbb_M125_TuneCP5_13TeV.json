@@ -9,7 +9,7 @@
                 "year": "UL16APV",
                 "xsec": 2.207,
                 "lumi": 19.52,
-                "sumw": 10.1,
+                "sumw": 2561276.2952920003,
                 "local_prefix": "/ceph/cms/"
             },
             "files": [
