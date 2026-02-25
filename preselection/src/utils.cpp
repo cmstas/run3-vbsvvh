@@ -276,26 +276,19 @@ SNAPSHOT
 ############################################
 */
 
-std::string setOutputDirectory(const std::string &ana, const std::string &output_subdir, bool spanet_training) {
-    // If on UAF and the USER environment variable is defined, store output on ceph
-    const char* userEnv = getenv("USER");
-    std::string storage_dir = "/data/userdata/";
-    std::string output_dir = "./";
+std::string setOutputDirectory(const std::string &outdir, bool spanet_training) {
+    std::string output_dir = "";
     if (spanet_training) {
-        output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/spanet_training/";
+        output_dir = outdir + "/vbsvvhAnalysis/spanet_training/";
     }
-    else if (userEnv != nullptr && std::filesystem::exists(storage_dir) && std::filesystem::is_directory(storage_dir)) {
-        output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/preselection/" + ana + "/";
-    }
-
-    if (!output_subdir.empty()) {
-        output_dir += "/" + output_subdir + "/";
+    else {
+        output_dir = outdir;
     }
 
     std::filesystem::path directory_path(output_dir);
     // Check if the directory exists
     if (std::filesystem::exists(directory_path)) {
-        std::cerr << "Output directory already exists: " << directory_path << std::endl;
+        std::cerr << "Output directory: " << directory_path << std::endl;
     }
     // Try to create the directory and any missing parent directories
     else if (std::filesystem::create_directories(directory_path)) {
