@@ -87,15 +87,10 @@ SKIM_PATH_DICT = {
 }
 
 LUMI_DICT = {
-    "UL16APV": 19.52,
-    "UL16": 16.81,
-    "UL17": 41.48,
-    "UL18": 59.83,
-    "2022": 7.9804,
-    "2022EE": 26.6717,
-    "2023": 17.794,
-    "2023BPix": 9.451,
-    "2024": 109.08,
+    "2016preVFP": 19.52,
+    "2016postVFP": 16.81,
+    "2017": 41.48,
+    "2018": 59.83,
 }
 
 
@@ -204,9 +199,9 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
     # Get rid of the local prefix
     local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
 
-    # Check if this dataset needs and ewk correction
-    do_ewk_corr = False
-    if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = True
+    # Check if dataset needs and ewk correction (note RDF metadata cannot be bool so pass int)
+    do_ewk_corr = 0
+    if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = 1
 
     # Fill the out dict
     out_dict["trees"] = ["Events"]

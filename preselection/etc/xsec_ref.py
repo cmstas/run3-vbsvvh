@@ -93,6 +93,7 @@ xsec_dict = {
         "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
         "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 49.997,
         "ZZTo4Q_5f_TuneCP5_13TeV"                                  : 3.451,
+        "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 999, # TODO FIXME
         "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
         "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 3.28,
         "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 1.256,
