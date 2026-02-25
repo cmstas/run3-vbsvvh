@@ -209,11 +209,16 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
         ###
 
         # Get the sum of weights for all of the files in this dataset, reading from ref
+        #sumw = get_sow(file_fullpath_lst)
         with open("dataset_sumw_ref.json", 'r') as file:
             sumw = json.load(file)[dataset_name_]
 
         # Get rid of the local prefix
         local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
+
+        # Check if this dataset needs and ewk correction
+        do_ewk_corr = False
+        if dataset_name_ in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = True
 
         # Fill the out dict
         out_dict["trees"] = ["Events"]
@@ -223,6 +228,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
             "xsec" : xsec_val,
             "lumi" : lumi,
             "sumw" : sumw,
+            "do_ewk_corr" : do_ewk_corr,
             "local_prefix" : local_prefix,
         }
         out_dict["files"] = file_fullpath_lst
