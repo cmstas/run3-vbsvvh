@@ -1,0 +1,28 @@
+{
+    "samples": {
+        "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2016postVFP",
+                "xsec": 12.99,
+                "lumi": 16.81,
+                "sumw": 4388402.0,
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_1.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_2.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_3.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_4.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_5.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_6.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_7.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1/ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_8.root"
+            ]
+        }
+    }
+}

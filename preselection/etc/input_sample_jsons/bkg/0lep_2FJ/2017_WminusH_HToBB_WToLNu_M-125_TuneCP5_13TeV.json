@@ -1,0 +1,27 @@
+{
+    "samples": {
+        "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2017",
+                "xsec": 0.0490124,
+                "lumi": 41.48,
+                "sumw": 854748.6177300002,
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_1.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_2.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_3.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_4.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_5.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_6.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_7.root"
+            ]
+        }
+    }
+}

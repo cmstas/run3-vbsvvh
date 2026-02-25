@@ -1,0 +1,24 @@
+{
+    "samples": {
+        "ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2018",
+                "xsec": 3.451,
+                "lumi": 59.83,
+                "sumw": 14508182.721835002,
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_1.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_2.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_3.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/ZZTo4Q_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_4.root"
+            ]
+        }
+    }
+}
