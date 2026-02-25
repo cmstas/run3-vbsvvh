@@ -1,6 +1,6 @@
 {
     "samples": {
-        "TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep2FJ_11Feb2026_v2": {
+        "TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM": {
             "trees": [
                 "Events"
             ],
@@ -14,7 +14,7 @@
                 "local_prefix": "/ceph/cms/"
             },
             "files": [
-                "store/user/mdittric/skim/nanoaodv15_bkg_0Lep2FJ_11Feb2026_v4/TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM_nanoaodv15_bkg_0Lep2FJ_11Feb2026_v2/output_1.root"
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1/TTWZ_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_1.root"
             ]
         }
     }

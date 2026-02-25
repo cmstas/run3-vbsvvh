@@ -1,0 +1,23 @@
+{
+    "samples": {
+        "ZZJJTo4L_EWKnotop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "UL16",
+                "xsec": 999,
+                "lumi": 16.81,
+                "sumw": 1149069.0,
+                "do_ewk_corr": false,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep2FJ_24Feb2026_v1/ZZJJTo4L_EWKnotop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_1.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep2FJ_24Feb2026_v1/ZZJJTo4L_EWKnotop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_2.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep2FJ_24Feb2026_v1/ZZJJTo4L_EWKnotop_TuneCP5_13TeV-madgraph-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_3.root"
+            ]
+        }
+    }
+}
