@@ -10,6 +10,7 @@
                 "xsec": 51.79,
                 "lumi": 59.83,
                 "sumw": 3386857809.771921,
+                "do_ewk_corr": false,
                 "local_prefix": "/ceph/cms/"
             },
             "files": [
