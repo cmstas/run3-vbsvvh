@@ -164,7 +164,8 @@ def strip_prefixes(fullpaths_lst,split_on="store"):
 #     - path should be absolute
 #     - kind should be e.g. "bkg"
 #     - xsec_dict should be from the xsec ref file for this kind
-def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
+#     - If dump_sumw is True, we will just calculate sumw and dump to file
+def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, dump_sumw):
         out_dict = {}
 
         # Get year for this dataset
@@ -175,6 +176,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
 
         # Get name of this dataset
         dataset_name = dataset_info["dataset_name"]
+        dataset_name_ = dataset_name # NOTE Can remove this when new skims arrive without trailing tag and just use dataset_name everywhere
 
         ##################################################################
         ### NOTE Remove this when skim formatting is updated next time ###
@@ -190,9 +192,25 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
         file_fullpath_lst = get_root_file_lst(os.path.join(path,dataset_name))
         #print(file_fullpath_lst)
 
-        # Get the sum of weights for all of the files in this dataset
-        #sumw = get_sow(file_fullpath_lst)
-        sumw = 10.1
+        ### Calculate the sum of weights for all of the files in this dataset if dump_sumw ###
+        if dump_sumw:
+            # Get the sumw
+            sumw = get_sow(file_fullpath_lst)
+            # Open the ref file, write this sumw into it
+            with open("dataset_sumw_ref.json", 'r') as file:
+                dataset_sumw_dict = json.load(file)
+                if dataset_name not in dataset_sumw_dict:
+                    dataset_sumw_dict[dataset_name_] = sumw
+                else:
+                    raise Exception("Duplication in the skim sets you are getting sumw from")
+            with open("dataset_sumw_ref.json", "w") as fp:
+                json.dump(dataset_sumw_dict, fp, indent=4)
+            return
+        ###
+
+        # Get the sum of weights for all of the files in this dataset, reading from ref
+        with open("dataset_sumw_ref.json", 'r') as file:
+            sumw = json.load(file)[dataset_name_]
 
         # Get rid of the local prefix
         local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
@@ -215,12 +233,18 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
 
 
 
+
 ################# Main function #################
 
 def main():
 
+    # If the dump_sumw is True, we will just dump the sumw to an out file
+    skim_sets_for_sumw_calc = ["all_events", "0lep_0FJ"]
+    dump_sumw = False
+
     # Loop over the skim sets (e.g., 3lep)
     for skim_set_name in SKIM_PATH_DICT:
+        if dump_sumw and (skim_set_name not in skim_sets_for_sumw_calc): continue
         print(f"\nSkim set: {skim_set_name}")
 
         # Loop over the kinds of samples for each skim (e.g., bkg)
@@ -239,7 +263,7 @@ def main():
                 print(f"{i+1}/{len(datasets_lst)}: {dataset_info['dataset_name']}")
 
                 # Make the output json
-                make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name)
+                make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, dump_sumw)
 
 
 
