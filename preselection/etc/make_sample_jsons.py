@@ -25,43 +25,43 @@ SKIM_PATH_DICT = {
         #("run3", "sig_sm")  : "",
     },
     "0lep_0FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep0FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep0FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "0lep_1FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep1FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep1FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "0lep_2FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep2FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "0lep_3FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_0Lep3FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep3FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "1lep_1FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_1Lep1FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_1Lep1FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "2lep_1FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep1FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep1FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "2lep_2FJ" : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_2Lep2FJ_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep2FJ_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
@@ -73,13 +73,13 @@ SKIM_PATH_DICT = {
         #("run3", "data") : "",
     },
     "3lep"    : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_3Lep_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "4lep"    : {
-        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/skim/nanoaodv15_bkg_4Lep_11Feb2026_v4",
+        ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_4Lep_24Feb2026_v1",
         #("run2", "data") : "",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
@@ -176,49 +176,37 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
 
     # Get name of this dataset
     dataset_name = dataset_info["dataset_name"]
-    dataset_name_ = dataset_name # NOTE Can remove this when new skims arrive without trailing tag and just use dataset_name everywhere
-
-    ##################################################################
-    ### NOTE Remove this when skim formatting is updated next time ###
-    tag_tmp = path.split("/")[-1] 
-    tag_tmp = tag_tmp[:-1] + "2"
-    if kind == "bkg": dataset_name = f"{dataset_name}_{tag_tmp}"
-    ##################################################################
 
     # Get the xsec name and value for this dataset
     dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
 
     # Get full paths to all root files for this dataset
     file_fullpath_lst = get_root_file_lst(os.path.join(path,dataset_name))
-    #print(file_fullpath_lst)
 
     ### Calculate the sum of weights for all of the files in this dataset if dump_sumw ###
     if dump_sumw:
-        # Get the sumw
-        sumw = get_sow(file_fullpath_lst)
-        # Open the ref file, write this sumw into it
         with open("dataset_sumw_ref.json", 'r') as file:
             dataset_sumw_dict = json.load(file)
             if dataset_name not in dataset_sumw_dict:
-                dataset_sumw_dict[dataset_name_] = sumw
+                sumw = get_sow(file_fullpath_lst)
+                dataset_sumw_dict[dataset_name] = sumw
             else:
                 raise Exception("Duplication in the skim sets you are getting sumw from")
         with open("dataset_sumw_ref.json", "w") as fp:
             json.dump(dataset_sumw_dict, fp, indent=4)
         return
-    ###
 
     # Get the sum of weights for all of the files in this dataset, reading from ref
     #sumw = get_sow(file_fullpath_lst)
     with open("dataset_sumw_ref.json", 'r') as file:
-        sumw = json.load(file)[dataset_name_]
+        sumw = json.load(file)[dataset_name]
 
     # Get rid of the local prefix
     local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
 
     # Check if this dataset needs and ewk correction
     do_ewk_corr = False
-    if dataset_name_ in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = True
+    if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = True
 
     # Fill the out dict
     out_dict["trees"] = ["Events"]
