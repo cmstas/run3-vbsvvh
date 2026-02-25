@@ -166,76 +166,76 @@ def strip_prefixes(fullpaths_lst,split_on="store"):
 #     - xsec_dict should be from the xsec ref file for this kind
 #     - If dump_sumw is True, we will just calculate sumw and dump to file
 def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, dump_sumw):
-        out_dict = {}
+    out_dict = {}
 
-        # Get year for this dataset
-        year = dataset_info["year"]
+    # Get year for this dataset
+    year = dataset_info["year"]
 
-        # Get the lumi for this year
-        lumi = LUMI_DICT[year]
+    # Get the lumi for this year
+    lumi = LUMI_DICT[year]
 
-        # Get name of this dataset
-        dataset_name = dataset_info["dataset_name"]
-        dataset_name_ = dataset_name # NOTE Can remove this when new skims arrive without trailing tag and just use dataset_name everywhere
+    # Get name of this dataset
+    dataset_name = dataset_info["dataset_name"]
+    dataset_name_ = dataset_name # NOTE Can remove this when new skims arrive without trailing tag and just use dataset_name everywhere
 
-        ##################################################################
-        ### NOTE Remove this when skim formatting is updated next time ###
-        tag_tmp = path.split("/")[-1] 
-        tag_tmp = tag_tmp[:-1] + "2"
-        if kind == "bkg": dataset_name = f"{dataset_name}_{tag_tmp}"
-        ##################################################################
+    ##################################################################
+    ### NOTE Remove this when skim formatting is updated next time ###
+    tag_tmp = path.split("/")[-1] 
+    tag_tmp = tag_tmp[:-1] + "2"
+    if kind == "bkg": dataset_name = f"{dataset_name}_{tag_tmp}"
+    ##################################################################
 
-        # Get the xsec name and value for this dataset
-        dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
+    # Get the xsec name and value for this dataset
+    dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
 
-        # Get full paths to all root files for this dataset
-        file_fullpath_lst = get_root_file_lst(os.path.join(path,dataset_name))
-        #print(file_fullpath_lst)
+    # Get full paths to all root files for this dataset
+    file_fullpath_lst = get_root_file_lst(os.path.join(path,dataset_name))
+    #print(file_fullpath_lst)
 
-        ### Calculate the sum of weights for all of the files in this dataset if dump_sumw ###
-        if dump_sumw:
-            # Get the sumw
-            sumw = get_sow(file_fullpath_lst)
-            # Open the ref file, write this sumw into it
-            with open("dataset_sumw_ref.json", 'r') as file:
-                dataset_sumw_dict = json.load(file)
-                if dataset_name not in dataset_sumw_dict:
-                    dataset_sumw_dict[dataset_name_] = sumw
-                else:
-                    raise Exception("Duplication in the skim sets you are getting sumw from")
-            with open("dataset_sumw_ref.json", "w") as fp:
-                json.dump(dataset_sumw_dict, fp, indent=4)
-            return
-        ###
-
-        # Get the sum of weights for all of the files in this dataset, reading from ref
-        #sumw = get_sow(file_fullpath_lst)
+    ### Calculate the sum of weights for all of the files in this dataset if dump_sumw ###
+    if dump_sumw:
+        # Get the sumw
+        sumw = get_sow(file_fullpath_lst)
+        # Open the ref file, write this sumw into it
         with open("dataset_sumw_ref.json", 'r') as file:
-            sumw = json.load(file)[dataset_name_]
+            dataset_sumw_dict = json.load(file)
+            if dataset_name not in dataset_sumw_dict:
+                dataset_sumw_dict[dataset_name_] = sumw
+            else:
+                raise Exception("Duplication in the skim sets you are getting sumw from")
+        with open("dataset_sumw_ref.json", "w") as fp:
+            json.dump(dataset_sumw_dict, fp, indent=4)
+        return
+    ###
 
-        # Get rid of the local prefix
-        local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
+    # Get the sum of weights for all of the files in this dataset, reading from ref
+    #sumw = get_sow(file_fullpath_lst)
+    with open("dataset_sumw_ref.json", 'r') as file:
+        sumw = json.load(file)[dataset_name_]
 
-        # Check if this dataset needs and ewk correction
-        do_ewk_corr = False
-        if dataset_name_ in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = True
+    # Get rid of the local prefix
+    local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
 
-        # Fill the out dict
-        out_dict["trees"] = ["Events"]
-        out_dict["metadata"] = {
-            "kind" : kind,
-            "year" : year,
-            "xsec" : xsec_val,
-            "lumi" : lumi,
-            "sumw" : sumw,
-            "do_ewk_corr" : do_ewk_corr,
-            "local_prefix" : local_prefix,
-        }
-        out_dict["files"] = file_fullpath_lst
+    # Check if this dataset needs and ewk correction
+    do_ewk_corr = False
+    if dataset_name_ in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = True
 
-        # Dump the dict to an output json
-        with open(f"input_sample_jsons/{kind}/{skim_set_name}/{year}_{dataset_name_short}.json", "w") as fp:
-            json.dump({"samples": {dataset_name: out_dict}}, fp, indent=4)
+    # Fill the out dict
+    out_dict["trees"] = ["Events"]
+    out_dict["metadata"] = {
+        "kind" : kind,
+        "year" : year,
+        "xsec" : xsec_val,
+        "lumi" : lumi,
+        "sumw" : sumw,
+        "do_ewk_corr" : do_ewk_corr,
+        "local_prefix" : local_prefix,
+    }
+    out_dict["files"] = file_fullpath_lst
+
+    # Dump the dict to an output json
+    with open(f"input_sample_jsons/{kind}/{skim_set_name}/{year}_{dataset_name_short}.json", "w") as fp:
+        json.dump({"samples": {dataset_name: out_dict}}, fp, indent=4)
 
 
 
