@@ -90,12 +90,14 @@ RNode AK4JetsSelection(RNode df_)
                                         "(Jet_pt < 30 && Jet_pt > 20 && (Jet_neHEF < ((Jet_pt - 20) / 15) && ((Jet_puIdDisc > 0.3) || " 
                                         "(Jet_puIdDisc > 2 * Jet_chHEF)) && (Jet_puIdDisc > (-1 / 25 * (Jet_pt - 20) + 0.4)) && "
                                         "(Jet_puIdDisc > -0.6) && "
-                                        "(Jet_muEF < 0.4))))) && "
-                                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+                                        "(Jet_muEF < 0.4)))))"
+                                        );
+                                        //"(Jet_muEF < 0.4))))) && "
+                                        //"((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
     
-    df = applyJetVetoMaps(df);
-    df = df.Filter("Sum(Jet_vetoMap) == Jet_pt.size()"); // for 2022EE+, events with any jet in veto region are removed
-    df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
+    //df = applyJetVetoMaps(df);
+    //df = df.Filter("Sum(Jet_vetoMap) == Jet_pt.size()"); // for 2022EE+, events with any jet in veto region are removed
+    //df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
 
     df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
             .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
@@ -112,8 +114,9 @@ RNode AK8JetsSelection(RNode df_)
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
                                            "FatJet_pt > 250 && "
                                            "abs(FatJet_eta) <= 2.5 && "
-                                           "FatJet_msoftdrop > 40 && "
-                                           "FatJet_jetId > 0");
+                                           "FatJet_msoftdrop > 40 ");
+                                           //"FatJet_msoftdrop > 40 && "
+                                           //"FatJet_jetId > 0");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -132,7 +135,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     if (noCut)
         return df; // for spanet training data
 
-    df = TriggerSelections(df, channel, TriggerMap);
+    //df = TriggerSelections(df, channel, TriggerMap);
     if (channel == "1Lep2FJ")
     {
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
