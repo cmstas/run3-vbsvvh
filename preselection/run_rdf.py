@@ -107,14 +107,14 @@ def main():
 
     # Construct the bash run command
     if args.mode == "local":
-        command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -a {args.channel} -j {args.n_cores} --run_number {args.run}"
+        command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {args.channel} -j {args.n_cores} --run_number {args.run}"
         print(f"  -> Now running command \"{command}\"...\n")
         if not args.dry_run: os.system(command)
     elif args.mode == "condor":
         # TODO how to pass output dir to the condor run script
-        command = f"python condor/submit.py -c {merged_json_name} -o {outdir} -a {args.channel} --run_number {args.run}"
+        command = f"python3 condor/submit.py -c {merged_json_name} -a {args.channel} --run_number {args.run}"
         print(f"  -> Running command \"{command}\"...\n")
-        #if not args.dry_run: os.system(command)
+        if not args.dry_run: os.system(command)
 
     print("Done!")
 

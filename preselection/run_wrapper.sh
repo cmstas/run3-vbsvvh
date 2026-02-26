@@ -8,8 +8,10 @@ PREFIX="/ceph/cms/"
 OUT_DIR="/data/userdata/$USER/vbs_vvh_rdf/"
 mkdir $OUT_DIR
 
-# Run over a single file locally (for testing)
+# Run over a single file locally (for testing sig, bkg, data)
 #python run_rdf.py etc/input_sample_jsons/sig_sm/all_events/2017_VBSWZH_VBSCuts_13TeV.json --prefix $PREFIX -o $OUT_DIR -n test_small -a all_events -m local -r 2 -j 1
+#python run_rdf.py etc/input_sample_jsons/bkg/1lep_1FJ/2018_WZTo1L1Nu2Q_4f_TuneCP5_13TeV.json --prefix $PREFIX -o $OUT_DIR -n test_small -a 1lep_1FJ -m condor -r 2 -j 1
+#python run_rdf.py etc/input_sample_jsons/data/0lep_2FJ/2016postVFP_JetHT_Run2016G-UL2016_NanoAODv15-v1_NANOAOD.json --prefix $PREFIX -o $OUT_DIR -n test_small -a 0lep_2FJ -m local -r 2 -j 1
 
 # Run at scale over signal
 python run_rdf.py etc/input_sample_jsons/sig_sm/all_events/ -p $PREFIX -o $OUT_DIR -n sigsm -a all_events -m condor -r 2
