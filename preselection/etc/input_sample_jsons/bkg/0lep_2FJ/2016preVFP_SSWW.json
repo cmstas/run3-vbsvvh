@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "SSWW",
                 "year": "2016preVFP",
                 "xsec": 0.02794,
                 "lumi": 19.52,

@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "WJetsToLNu_HT-200To400_TuneCP5_13TeV",
                 "year": "2018",
                 "xsec": 347.935075,
                 "lumi": 59.83,

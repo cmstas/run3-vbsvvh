@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "TTToHadronic_TuneCP5_13TeV",
                 "year": "2016postVFP",
                 "xsec": 377.96,
                 "lumi": 16.81,

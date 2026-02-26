@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "ttHToNonbb_M125_TuneCP5_13TeV",
                 "year": "2016postVFP",
                 "xsec": 0.215,
                 "lumi": 16.81,

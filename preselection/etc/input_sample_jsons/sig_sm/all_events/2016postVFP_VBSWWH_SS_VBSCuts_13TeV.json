@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "sig_sm",
+                "name": "VBSWWH_SS_VBSCuts_13TeV",
                 "year": "2016postVFP",
                 "xsec": 0.000316,
                 "lumi": 16.81,

@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "TTWJetsToQQ_TuneCP5_13TeV",
                 "year": "2016postVFP",
                 "xsec": 0.4377,
                 "lumi": 16.81,

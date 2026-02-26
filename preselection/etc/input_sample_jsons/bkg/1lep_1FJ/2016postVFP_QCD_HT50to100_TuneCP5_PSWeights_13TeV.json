@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
                 "year": "2016postVFP",
                 "xsec": 187700000,
                 "lumi": 16.81,

@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
                 "year": "2017",
                 "xsec": 80.95,
                 "lumi": 41.48,

@@ -1,0 +1,25 @@
+{
+    "samples": {
+        "SingleMuon_Run2016F-UL2016_NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "data",
+                "name": "data",
+                "year": "2016postVFP",
+                "xsec": 1,
+                "lumi": 16.81,
+                "sumw": 0,
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2data_2Lep2FJ_25Feb2026_v1/SingleMuon_Run2016F-UL2016_NanoAODv15-v1_NANOAOD/output_1.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2data_2Lep2FJ_25Feb2026_v1/SingleMuon_Run2016F-UL2016_NanoAODv15-v1_NANOAOD/output_2.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2data_2Lep2FJ_25Feb2026_v1/SingleMuon_Run2016F-UL2016_NanoAODv15-v1_NANOAOD/output_3.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2data_2Lep2FJ_25Feb2026_v1/SingleMuon_Run2016F-UL2016_NanoAODv15-v1_NANOAOD/output_4.root"
+            ]
+        }
+    }
+}

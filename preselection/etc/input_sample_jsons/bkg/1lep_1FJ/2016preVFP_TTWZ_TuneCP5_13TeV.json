@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "TTWZ_TuneCP5_13TeV",
                 "year": "2016preVFP",
                 "xsec": 0.003884,
                 "lumi": 19.52,

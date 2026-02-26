@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
                 "year": "2017",
                 "xsec": 0.005423,
                 "lumi": 41.48,

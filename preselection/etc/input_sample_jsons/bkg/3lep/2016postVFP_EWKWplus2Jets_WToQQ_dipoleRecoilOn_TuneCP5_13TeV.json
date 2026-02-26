@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
                 "year": "2016postVFP",
                 "xsec": 10.67,
                 "lumi": 16.81,

@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "TTToSemiLeptonic_TuneCP5_13TeV",
                 "year": "2016preVFP",
                 "xsec": 365.34,
                 "lumi": 19.52,

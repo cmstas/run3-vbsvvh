@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV",
                 "year": "2016postVFP",
                 "xsec": 12.99,
                 "lumi": 16.81,

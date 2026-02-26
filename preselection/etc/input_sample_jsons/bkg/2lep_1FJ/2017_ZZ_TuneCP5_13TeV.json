@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "ZZ_TuneCP5_13TeV",
                 "year": "2017",
                 "xsec": 12.17,
                 "lumi": 41.48,

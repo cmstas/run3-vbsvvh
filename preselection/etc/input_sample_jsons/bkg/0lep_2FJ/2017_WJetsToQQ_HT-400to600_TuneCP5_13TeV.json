@@ -6,6 +6,7 @@
             ],
             "metadata": {
                 "kind": "bkg",
+                "name": "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
                 "year": "2017",
                 "xsec": 276.5,
                 "lumi": 41.48,
