@@ -83,12 +83,13 @@ RNode AK4JetsSelection(RNode df_)
                 .Define("_good_ak4jets", "_dR_ak4_lep > 0.4 &&"
                                         "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
                                         "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
-                                        "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  " 
-                                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+                                        "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) ");
+                                        //"(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
+                                        //"((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
     
-    df = applyJetVetoMaps(df);
-    df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
-    df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
+    //df = applyJetVetoMaps(df);
+    //df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
+    //df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
 
     df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
             .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
@@ -105,9 +106,10 @@ RNode AK8JetsSelection(RNode df_)
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
                                            "FatJet_pt > 250 && "
                                            "abs(FatJet_eta) <= 2.5 && "
-                                           "FatJet_msoftdrop > 40 ");
+                                           "FatJet_msoftdrop > 40 ")
                                            //"FatJet_msoftdrop > 40 && "
                                            //"FatJet_jetId > 0");
+                  .Define("nFatJets", "Sum(_good_ak8jets)");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -124,16 +126,79 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
     df = TriggerSelections(df, channel, TriggerMap);
-    if (channel == "1Lep2FJ")
-    {
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-                       "(lepton_pt[0] > 40)",
-                       "C2: 1-lepton selection");
+    if (channel == "all_events"){
+        df = df.Filter(
+            "nMuon_Loose > -1", // Probably there is a better way to write a pass through
+            "C2: all_events"
+        );
     }
-    else if (channel == "0Lep3FJ")
-    {
-        df = df.Filter("nMuon_Loose == 0 && nElectron_Loose == 0", "C2: 0-lepton selection");
+    else if (channel == "0lep_0FJ"){
+        df = df.Filter(
+            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
+            "(nFatJets == 0)",
+            "C2: 0lep_0FJ"
+        );
+    }
+    else if (channel == "0lep_1FJ"){
+        df = df.Filter(
+            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
+            "(nFatJets == 1)",
+            "C2: 0lep_1FJ"
+        );
+    }
+    else if (channel == "0lep_2FJ"){
+        df = df.Filter(
+            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
+            "(nFatJets == 2)",
+            "C2: 0lep_2FJ"
+        );
+    }
+    else if (channel == "0lep_3FJ"){
+        df = df.Filter(
+            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
+            "(nFatJets == 3)",
+            "C2: 0lep_3FJ"
+        );
+    }
+    else if (channel == "1lep_1FJ"){
+        df = df.Filter(
+            "((nMuon_Loose == 1) | (nElectron_Loose == 1)) &&"
+            "(nFatJets == 1)",
+            "C2: 1lep_1FJ"
+        );
+    }
+    else if (channel == "2lep_1FJ"){
+        df = df.Filter(
+            "((nMuon_Loose + nElectron_Loose) == 2) &&"
+            "(nFatJets == 1)",
+            "C2: 2lep_1FJ"
+        );
+    }
+    else if (channel == "2lep_2FJ"){
+        df = df.Filter(
+            "((nMuon_Loose + nElectron_Loose) == 2) &&"
+            "(nFatJets == 2)",
+            "C2: 2lep_2FJ"
+        );
+    }
+    //else if (channel == "2lepSS"){
+    //    df = df.Filter(
+    //        "((nMuon_Loose + nElectron_Loose) == 2) &&"
+    //        //same sign requirement
+    //        "C2: 2lepSS"
+    //    );
+    //}
+    else if (channel == "3lep"){
+        df = df.Filter(
+            "((nMuon_Loose + nElectron_Loose) == 3) &&"
+            "C2: 3lep"
+        );
+    }
+    else if (channel == "4lep"){
+        df = df.Filter(
+            "((nMuon_Loose + nElectron_Loose) == 4) &&"
+            "C2: 4lep"
+        );
     }
     return df;
 }
