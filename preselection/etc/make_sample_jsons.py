@@ -26,43 +26,43 @@ SKIM_PATH_DICT = {
     },
     "0lep_0FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep0FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_0Lep0FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "0lep_1FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep1FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_0Lep1FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "0lep_2FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep2FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_0Lep2FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "0lep_3FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_0Lep3FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_0Lep3FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "1lep_1FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_1Lep1FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_1Lep1FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "2lep_1FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep1FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_2Lep1FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "2lep_2FJ" : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_2Lep2FJ_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_2Lep2FJ_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
@@ -74,13 +74,13 @@ SKIM_PATH_DICT = {
     },
     "3lep"    : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_3Lep_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_3Lep_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
     "4lep"    : {
         ("run2", "bkg")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2bkg_4Lep_24Feb2026_v1",
-        #("run2", "data") : "",
+        ("run2", "data")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2data_4Lep_25Feb2026_v1",
         #("run3", "bkg")  : "",
         #("run3", "data") : "",
     },
@@ -173,7 +173,10 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
     dataset_name = dataset_info["dataset_name"]
 
     # Get the xsec name and value for this dataset
-    dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
+    if kind == "data":
+        dataset_name_short, xsec_val  = dataset_name, 1.0
+    else:
+        dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
 
     # Get full paths to all root files for this dataset
     file_fullpath_lst = get_root_file_lst(os.path.join(path,dataset_name))
@@ -192,9 +195,12 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
         return
 
     # Get the sum of weights for all of the files in this dataset, reading from ref
-    #sumw = get_sow(file_fullpath_lst)
-    with open("dataset_sumw_ref.json", 'r') as file:
-        sumw = json.load(file)[dataset_name]
+    if kind == "data":
+        sumw = 0.0 # We don't need sumw for data
+    else:
+        #sumw = get_sow(file_fullpath_lst)
+        with open("dataset_sumw_ref.json", 'r') as file:
+            sumw = json.load(file)[dataset_name]
 
     # Get rid of the local prefix
     local_prefix, file_fullpath_lst = strip_prefixes(file_fullpath_lst)
@@ -203,10 +209,15 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
     do_ewk_corr = 0
     if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = 1
 
+    # What name to include for the metadata
+    if kind == "data": name_for_metadata = "data"
+    else: name_for_metadata = dataset_name_short
+
     # Fill the out dict
     out_dict["trees"] = ["Events"]
     out_dict["metadata"] = {
         "kind" : kind,
+        "name" : name_for_metadata,
         "year" : year,
         "xsec" : xsec_val,
         "lumi" : lumi,

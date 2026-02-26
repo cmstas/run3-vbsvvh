@@ -2,6 +2,9 @@
 
 xsec_dict = {
 
+    "data" : {
+    },
+
     "sig_sm" : {
         "VBSWWH_OS_VBSCuts_13TeV": 0.000643,
         "VBSWWH_SS_VBSCuts_13TeV": 0.000316,
