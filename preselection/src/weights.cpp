@@ -348,8 +348,7 @@ OTHER SFs
 
 // See https://github.com/cmstas/run3-vbsvvh/pull/28#issuecomment-3820814039
 RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
-    //auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, std::string sample_type) {
-    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId) {
+    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, int do_ewk_corr) {
         if(do_ewk_corr == 0) return 1.;
         else{
             TLorentzVector TEWKq1, TEWKq2, TEWKlep, TEWKnu;
