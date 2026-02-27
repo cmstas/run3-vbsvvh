@@ -369,7 +369,7 @@ OTHER SFs
 ############################################
 */
 
-/*RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
+RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
     auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, std::string sample_type) {
         if(sample_type != "EWK") return 1.;
         else{
@@ -405,59 +405,6 @@ OTHER SFs
             }
             if(EWKbjet_pt > -998){
                 return cset_ewk.at("EWK")->evaluate({EWKbjet_pt});
-            }
-            else return 1.;
-        }
-    };
-    return df.Define("weight_ewk", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "type"});
-}*/
-
-RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
-    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, std::string sample_type) {
-        if(sample_type != "EWK") return 1.;
-        else{
-            TLorentzVector TEWKq1, TEWKq2, TEWKlep, TEWKnu;
-            TEWKq1.SetPtEtaPhiM(LHEPart_pt[4],LHEPart_eta[4],LHEPart_phi[4],LHEPart_mass[4]);
-            TEWKq2.SetPtEtaPhiM(LHEPart_pt[5],LHEPart_eta[5],LHEPart_phi[5],LHEPart_mass[5]);
-            TEWKlep.SetPtEtaPhiM(LHEPart_pt[2],LHEPart_eta[2],LHEPart_phi[2],LHEPart_mass[2]);
-            TEWKnu.SetPtEtaPhiM(LHEPart_pt[3],LHEPart_eta[3],LHEPart_phi[3],LHEPart_mass[3]);
-            int chargequark[7] = {0,-1,2,-1,2,-1,2};
-            int EWKpdgq1 = LHEPart_pdgId[4];
-            int EWKpdgq2 = LHEPart_pdgId[5];
-            int EWKsignq1 = (EWKpdgq1 > 0) - (EWKpdgq1 < 0);
-            int EWKsignq2 = (EWKpdgq2 > 0) - (EWKpdgq2 < 0);
-            double EWKMass_q12 = (TEWKq1 + TEWKq2).M();
-            double EWKMass_lnu = (TEWKlep + TEWKnu).M();
-            double fabscharge=(fabs((double)(EWKsignq1 * chargequark[abs(EWKpdgq1)] + (EWKsignq2 * chargequark[abs(EWKpdgq2)]))))/3;
-            double EWKbjet_pt = -999;
-            if(fabscharge == 1){
-                if( EWKMass_q12 >= 70 && EWKMass_q12 < 90  &&
-                    EWKMass_lnu >= 70 && EWKMass_lnu < 90){
-                    return 0.;
-                }
-            }
-            if(EWKMass_q12 >= 95){
-                if( abs(EWKpdgq1) == 5 && abs(EWKpdgq2) == 5){
-                    if(TEWKq1.Pt() > TEWKq2.Pt())  EWKbjet_pt = TEWKq1.Pt();
-                    else                           EWKbjet_pt = TEWKq2.Pt();
-                }else if(abs(EWKpdgq1) == 5){
-                    EWKbjet_pt = TEWKq1.Pt();
-                }else if(abs(EWKpdgq2) == 5){
-                    EWKbjet_pt = TEWKq2.Pt();
-                }
-            }
-            if(EWKbjet_pt > -998){
-                // --- ADDED TRY/CATCH TO PREVENT MAP::AT CRASH ---
-                try {
-                    return (double)cset_ewk.at("EWK")->evaluate({EWKbjet_pt});
-                } catch (const std::out_of_range& e) {
-                    static bool warned = false;
-                    if (!warned) {
-                        std::cout << "Warning: Key 'EWK' not found in EWK Correction JSON! Setting EWK weight to 1.0" << std::endl;
-                        warned = true;
-                    }
-                    return 1.;
-                }
             }
             else return 1.;
         }
