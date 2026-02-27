@@ -5,18 +5,24 @@ xsec_dict = {
     "data" : {
     },
 
-    "sig_sm" : {
-        "VBSWWH_OS_VBSCuts_13TeV": 0.000643,
-        "VBSWWH_SS_VBSCuts_13TeV": 0.000316,
-        "VBSWZH_VBSCuts_13TeV": 0.000418,
-        "VBSZZH_VBSCuts_13TeV": 0.000108
+    "sig_c2v1p0_c3_1p0" : {
+        "VBSWWH_OS_c2v1p0_c3_1p0": 0.000643,
+        "VBSWWH_SS_c2v1p0_c3_1p0": 0.000316,
+        "VBSWZH_c2v1p0_c3_1p0"   : 0.000418,
+        "VBSZZH_c2v1p0_c3_1p0"   : 0.000108
+    },
+    "sig_c2v1p5_c3_1p0" : {
+        "VBSWWH_OS_c2v1p5_c3_1p0": 0.001091,
+        "VBSWWH_SS_c2v1p5_c3_1p0": 0.000620,
+        "VBSWZH_c2v1p5_c3_1p0"   : 0.000707,
+        "VBSZZH_c2v1p5_c3_1p0"   : 0.000368 
     },
 
-    "sig_kl10" : {
-        "VBSWWH_OS_VBSCuts_13TeV": 0.001587,
-        "VBSWWH_SS_VBSCuts_13TeV": 0.000445,
-        "VBSWZH_VBSCuts_13TeV": 0.000624,
-        "VBSZZH_VBSCuts_13TeV": 0.000416
+    "sig_c2v1p0_c3_10p0" : {
+        "VBSWWH_OS_c2v1p0_c3_10p0": 0.001587,
+        "VBSWWH_SS_c2v1p0_c3_10p0": 0.000445,
+        "VBSWZH_c2v1p0_c3_10p0"   : 0.000624,
+        "VBSZZH_c2v1p0_c3_10p0"   : 0.000416
     },
 
     "bkg": {

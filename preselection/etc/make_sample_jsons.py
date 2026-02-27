@@ -21,7 +21,9 @@ import dataset_names_ref
 # Dictionary of the paths to the skim sets
 SKIM_PATH_DICT = {
     "all_events" : {
-        ("run2", "sig_sm")  : "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8",
+        ("run2", "sig_c2v1p0_c3_1p0")  : "/ceph/cms/store/user/mdittric/VVH_Skims/Run2_Sig_v15_26Feb2026_v1_Sig",
+        ("run2", "sig_c2v1p5_c3_1p0")  : "/ceph/cms/store/user/mdittric/VVH_Skims/Run2_Sig_v15_26Feb2026_v1_Sig",
+        ("run2", "sig_c2v1p0_c3_10p0") : "/ceph/cms/store/user/mdittric/VVH_Skims/Run2_Sig_v15_26Feb2026_v1_Sig",
         #("run3", "sig_sm")  : "",
     },
     "0lep_0FJ" : {
@@ -239,6 +241,8 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
 def main():
 
     # If the dump_sumw is True, we will just dump the sumw to an out file
+    # If this is turned on, won't make the actual sample jsons
+    # Only need to do this if we have new skims
     skim_sets_for_sumw_calc = ["all_events", "0lep_0FJ"]
     dump_sumw = False
 
