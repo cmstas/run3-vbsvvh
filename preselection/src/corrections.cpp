@@ -292,7 +292,7 @@ JET VETO MAPS
 */
 
 RNode applyJetVetoMaps(RNode df) {
-    auto eval_correction = [] (std::string year, RVec<float> eta, RVec<float> phi) {
+    auto eval_correction = [] (std::string year, RVec<float> pt, RVec<float> eta, RVec<float> phi, RVec<float> jet_id, RVec<float> jet_nuEmEF, RVec<float> jet_chEmEF) {
         RVec<bool> jet_veto_map;
         
         if (jetVetoMaps.find(year) == jetVetoMaps.end()) {
@@ -307,29 +307,23 @@ RNode applyJetVetoMaps(RNode df) {
             return jet_veto_map;
         }
 
-        std::list<std::string> vetoeventyears = {"2022Re-recoE+PromptFG", "2023PromptC", "2023PromptD", "2024Prompt"};
-        bool veto_event = std::find(std::begin(vetoeventyears), std::end(vetoeventyears), year) != std::end(vetoeventyears);
-
         for (size_t i = 0; i < eta.size(); i++) {
-            if (std::abs(eta[i]) > 5.19) {
-                jet_veto_map.push_back(true);
-                continue;
+            float eta_ = eta[i];
+            if (std::abs(eta_) > 5.19) {
+                eta_ = 5.19 * (eta_ > 0 ? 1 : -1);
             }
-            bool is_vetoed = jetVetoMaps.at(year).at(jetVetoMap_names.at(year))->evaluate({"jetvetomap", eta[i], phi[i]}) != 0;
-            jet_veto_map.push_back(is_vetoed);
+            bool is_vetoed = jetVetoMaps.at(year).at(jetVetoMap_names.at(year))->evaluate({"jetvetomap", eta_, phi[i]}) != 0;
+            if (is_vetoed && (pt[i] > 15.0 && jet_id[i] == 6 && (jet_nuEmEF[i] + jet_chEmEF[i]) < 0.9)) {
+                jet_veto_map.push_back(true);
+            } else {
+                jet_veto_map.push_back(false);
+            }
         }
 
-        if (veto_event && Any(jet_veto_map)) {
-            // If any jet is vetoed, set all jets to vetoed (proxy for event veto)
-            for (size_t i = 0; i < jet_veto_map.size(); i++) {
-                jet_veto_map[i] = true;
-            }
-        }
-        
         return jet_veto_map;
     };
     
-    return df.Define("Jet_vetoMap", eval_correction, {"year", "Jet_eta", "Jet_phi"});
+    return df.Define("Jet_vetoMap", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_phi", "Jet_jetId", "Jet_neEmEF", "Jet_chEmEF"});
 }
 
 /*

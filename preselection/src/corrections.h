@@ -26,21 +26,51 @@ B-TAGGING WORKING POINTS
 RVec<bool> isbTagLoose(std::string year, RVec<float> btag_score);
 RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score);
 RVec<bool> isbTagTight(std::string year, RVec<float> btag_score);
+/*
+const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrections = {
+    {"2018", 0.0490},{"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
+};
+
+static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
+    {"2018", 0.0490},{"2024Prompt", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
+};
+
+static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
+    {"2018", 0.2783},{"2024Prompt", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
+};
+
+static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
+    {"2018", 0.7100},{"2024Prompt", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
+};
+*/
 
 const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrections = {
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
 
+// 2. Map of Numbers: Put the actual numeric thresholds here
 static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
-    {"2024Prompt", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
+    {"2016preVFP",  0.0508f}, 
+    {"2016postVFP", 0.0480f},
+    {"2017",        0.0532f},
+    {"2018",        0.0494f}, // This is where the 2018 Loose number belongs
+    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
-    {"2024Prompt", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
+    {"2016preVFP",  0.2589f},
+    {"2016postVFP", 0.3093f},
+    {"2017",        0.3040f},
+    {"2018",        0.2783f}, // 2018 Medium
+    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
-    {"2024Prompt", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
+    {"2016preVFP",  0.6377f},
+    {"2016postVFP", 0.7221f},
+    {"2017",        0.7476f},
+    {"2018",        0.7100f}, // 2018 Tight
+    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
 };
 
 /*
