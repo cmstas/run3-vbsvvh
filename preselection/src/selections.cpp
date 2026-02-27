@@ -83,13 +83,12 @@ RNode AK4JetsSelection(RNode df_)
                 .Define("_good_ak4jets", "_dR_ak4_lep > 0.4 &&"
                                         "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
                                         "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
-                                        "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) ");
-                                        //"(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
-                                        //"((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+                                        "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
+                                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
     
-    //df = applyJetVetoMaps(df);
-    //df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
-    //df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
+    df = applyJetVetoMaps(df);
+    df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
+    df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
 
     df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
             .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
@@ -106,9 +105,8 @@ RNode AK8JetsSelection(RNode df_)
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
                                            "FatJet_pt > 250 && "
                                            "abs(FatJet_eta) <= 2.5 && "
-                                           "FatJet_msoftdrop > 40 ")
-                                           //"FatJet_msoftdrop > 40 && "
-                                           //"FatJet_jetId > 0");
+                                           "FatJet_msoftdrop > 40 && "
+                                           "FatJet_jetId > 0")
                   .Define("nFatJets", "Sum(_good_ak8jets)");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
