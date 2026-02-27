@@ -12,9 +12,49 @@ RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map
         std::cerr << "    Warning: Channel '" << channel << "' not found in trigger map. Skipping trigger selection." << std::endl;
         return df_;
     }
+    
 
     std::string trigger_condition = trigger_map.at(channel);
-    return df_.Filter(trigger_condition, "C1: Trigger Selection");
+    auto available_columns = df_.GetColumnNames();
+    std::unordered_set<std::string> col_set(available_columns.begin(), available_columns.end());
+
+    std::string word = "";
+    std::string safe_condition = "";
+
+    for (char c : trigger_condition) {
+        // Build words from alphanumeric characters and underscores
+        if (std::isalnum(c) || c == '_') {
+            word += c;
+        } else {
+            if (!word.empty()) {
+                // If it's a Trigger or Flag, check if it exists in the ROOT file
+                if (word.find("HLT_") == 0 || word.find("L1_") == 0 || word.find("Flag_") == 0) {
+                    if (col_set.find(word) == col_set.end()) {
+                        safe_condition += "false"; // Missing branch becomes safely 'false'
+                    } else {
+                        safe_condition += word;    // Branch exists, keep it
+                    }
+                } else {
+                    safe_condition += word;        // Not a trigger, keep it (e.g., '||', '&&')
+                }
+                word = "";
+            }
+            safe_condition += c; // Keep the whitespace/operator
+        }
+    }
+    // Handle the last word if string ends with alphanumeric
+    if (!word.empty()) {
+        if (word.find("HLT_") == 0 || word.find("L1_") == 0 || word.find("Flag_") == 0) {
+            if (col_set.find(word) == col_set.end()) safe_condition += "false";
+            else safe_condition += word;
+        } else {
+            safe_condition += word;
+        }
+    }
+    
+    std::cout << " -> Safely evaluating trigger condition: " << safe_condition << std::endl;
+    
+    return df_.Filter(safe_condition, "C1: Trigger Selection");
 }
 
 RNode ElectronSelections(RNode df_)
@@ -124,11 +164,12 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     
     df = TriggerSelections(df, channel, TriggerMap);
     if (channel == "1Lep2FJ")
-    {
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+    { //This was changed just to pass 3lep case, if need just uncomment original channel and erase new definition
+      /*  df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)",
-                       "C2: 1-lepton selection");
+                       "C2: 1-lepton selection");*/
+	  df = df.Filter("(nMuon_Loose + nElectron_Loose) >= 3 && Sum(lepton_pt > 30) >= 1", "C2: 1-lepton selection");
     }
     else if (channel == "0Lep3FJ")
     {
