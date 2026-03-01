@@ -188,13 +188,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     //}
     else if (channel == "3lep"){
         df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 3) &&"
+            "((nMuon_Loose + nElectron_Loose) == 3)",
             "C2: 3lep"
         );
     }
     else if (channel == "4lep"){
         df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 4) &&"
+            "((nMuon_Loose + nElectron_Loose) == 4)",
             "C2: 4lep"
         );
     }
