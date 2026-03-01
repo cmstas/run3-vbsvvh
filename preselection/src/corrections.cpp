@@ -107,9 +107,12 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         
         std::string pt_corr_name = isData ? "pt_metphicorr_puppimet_data" : "pt_metphicorr_puppimet_mc";
         std::string phi_corr_name = isData ? "phi_metphicorr_puppimet_data" : "phi_metphicorr_puppimet_mc";
-        
-        pt_corr = metCorrections.at(year).at(pt_corr_name)->evaluate({pt, phi, static_cast<double>(npvs), static_cast<double>(run)});
-        phi_corr = metCorrections.at(year).at(phi_corr_name)->evaluate({pt, phi, static_cast<double>(npvs), static_cast<double>(run)});
+
+        // Note the correction json is only defined for up to 6500, so do not pass larger values
+        float pt_max = 6499.9;
+        float pt_to_pass = std::min(pt,pt_max);
+        pt_corr = metCorrections.at(year).at(pt_corr_name)->evaluate({pt_to_pass, phi, static_cast<double>(npvs), static_cast<double>(run)});
+        phi_corr = metCorrections.at(year).at(phi_corr_name)->evaluate({pt_to_pass, phi, static_cast<double>(npvs), static_cast<double>(run)});
         
         return std::make_pair(pt_corr, phi_corr);
     };
