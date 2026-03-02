@@ -37,7 +37,7 @@ static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
     {"2016preVFP",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}, 
     {"2016postVFP", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2017",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
-    {"2018",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
+    {"2018",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
 };
 
