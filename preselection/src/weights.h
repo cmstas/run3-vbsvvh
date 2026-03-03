@@ -95,10 +95,10 @@ const std::unordered_map<std::string, std::string> muonIDScaleFactors_yearmap = 
 RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
 const std::unordered_map<std::string, std::string> muonRecoScaleFactors_yearmap = {
-    {"2016preVFP", "NUM_TightPFIso_DEN_TightID"},
-    {"2016postVFP", "NUM_TightPFIso_DEN_TightID"},
-    {"2017", "NUM_TightPFIso_DEN_TightID"},
-    {"2018", "NUM_TightPFIso_DEN_TightID"},
+    {"2016preVFP", "NUM_TightRelIso_DEN_TightIDandIPCut"},
+    {"2016postVFP", "NUM_TightRelIso_DEN_TightIDandIPCut"},
+    {"2017", "NUM_TightRelIso_DEN_TightIDandIPCut"},
+    {"2018", "NUM_TightRelIso_DEN_TightIDandIPCut"},
     {"2022Re-recoBCD", "NUM_TightPFIso_DEN_TightID"},
     {"2022Re-recoE+PromptFG", "NUM_TightPFIso_DEN_TightID"},
     {"2023PromptC", "NUM_TightPFIso_DEN_TightID"},
