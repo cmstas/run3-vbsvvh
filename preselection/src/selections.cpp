@@ -164,12 +164,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     
     df = TriggerSelections(df, channel, TriggerMap);
     if (channel == "1Lep2FJ")
-    { //This was changed just to pass 3lep case, if need just uncomment original channel and erase new definition
-      /*  df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+    {
+    	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)",
-                       "C2: 1-lepton selection");*/
-	  df = df.Filter("(nMuon_Loose + nElectron_Loose) >= 3 && Sum(lepton_pt > 30) >= 1", "C2: 1-lepton selection");
+                       "C2: 1-lepton selection");
     }
     else if (channel == "0Lep3FJ")
     {
