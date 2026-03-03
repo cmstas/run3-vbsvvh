@@ -387,8 +387,7 @@ RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
             else return 1.;
         }
     };
-    //return df.Define("weight_ewk", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "type"});
-    return df.Define("weight_ewk", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId"});
+    return df.Define("weight_ewk", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "do_ewk_corr"});
 }
 
 RNode applyL1PreFiringReweighting(RNode df){
