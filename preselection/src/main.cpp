@@ -9,6 +9,7 @@
 #include "genSelections.h"
 
 #include "argparser.hpp"
+#include "cutflow.h"
 
 #include "spanet.h"
 #include "spanet_run2.h"
@@ -155,6 +156,8 @@ int main(int argc, char** argv) {
         makeSpanetTrainingdata = false; // do not make training data for non-signal samples
     }
 
+    Cutflow::SetWeightCol(isData ? "1" : "weight");
+
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
@@ -168,13 +171,17 @@ int main(int argc, char** argv) {
         df = applyMCCorrections(df);
     }
 
+    Cutflow::Add(df, "C3: After SFs and corrections");
+
     if (isSignal && makeSpanetTrainingdata) {
         std::cout << " -> Saving SPANet training data" << std::endl;
         saveSpanetSnapshot(df, output_dir, output_file);
+        Cutflow::Print();
         return 0; // Exit after saving training data
     }
 
     saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
+    Cutflow::Print();
 
     return 0;
 }
