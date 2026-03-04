@@ -93,7 +93,7 @@ RNode MuonSelections(RNode df_)
                                         "abs(Muon_sip3d) < 8 && "
                                         "Muon_looseId")
                   .Define("_tightMuons", "_looseMuons && "
-                                         "Muon_pt > 30 && "
+                                         "Muon_pt > 10 && "
                                          "Muon_pfIsoId > 4 && "
                                          "Muon_tightCharge == 2 && "
                                          "Muon_highPurity && "
