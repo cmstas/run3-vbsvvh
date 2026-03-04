@@ -12,6 +12,7 @@ RNode defineMetadata(RNode df) {
         .DefinePerSample("sumw", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("sumw");})
         .DefinePerSample("kind", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("kind");})
         .DefinePerSample("year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("year");})
+        .DefinePerSample("shortname", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("shortname");})
         .DefinePerSample("name", [](unsigned int slot, const RSampleInfo &id) { return id.GetSampleName();})
         .DefinePerSample("do_ewk_corr", [](unsigned int slot, const RSampleInfo &id) { return id.GetI("do_ewk_corr");})
         .Define("xsec_weight", "1000 * xsec * lumi / sumw")

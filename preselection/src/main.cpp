@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
-        //df = applyMCWeights(df);
+        df = applyMCWeights(df);
         df = applyMCCorrections(df);
     }
 
