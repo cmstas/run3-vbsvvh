@@ -281,7 +281,7 @@ std::string setOutputDirectory(const std::string &ana, const std::string &output
     const char* userEnv = getenv("USER");
     std::string storage_dir = "/data/userdata/";
     std::string output_dir = "./";
-    if (spanet_training) {
+    if (spanet_training && userEnv != nullptr && std::filesystem::exists(storage_dir) && std::filesystem::is_directory(storage_dir)) {
         output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/spanet_training/";
     }
     else if (userEnv != nullptr && std::filesystem::exists(storage_dir) && std::filesystem::is_directory(storage_dir)) {

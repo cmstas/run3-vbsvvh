@@ -308,19 +308,28 @@ echo "=== Directory contents after analysis ==="
 ls -la
 ls -la $OUTPUTDIR/ 2>/dev/null || echo "Output directory not found"
 
+# Determine output file path (spanet_training uses a different output file name)
+if [[ "$EXTRA_FLAGS" == *"--spanet_training"* ]]; then
+    OUTPUT_ROOT_FILE="$OUTPUTDIR/${OUTPUTFILE}_spanet_training_data.root"
+else
+    OUTPUT_ROOT_FILE="$OUTPUTDIR/$OUTPUTFILE.root"
+fi
+
 # Check if output file exists
-if [ ! -f "$OUTPUTDIR/$OUTPUTFILE.root" ]; then
-    echo "ERROR: Output file not found: $OUTPUTDIR/$OUTPUTFILE.root"
+if [ ! -f "$OUTPUT_ROOT_FILE" ]; then
+    echo "ERROR: Output file not found: $OUTPUT_ROOT_FILE"
+    echo "=== Searching for any .root files ==="
+    find . -name "*.root" -ls 2>/dev/null
     exit 1
 fi
 
 echo ""
 echo "=== Validating output ROOT file ==="
-validate_root_file "$OUTPUTDIR/$OUTPUTFILE.root" "Events"
+validate_root_file "$OUTPUT_ROOT_FILE" "Events"
 if [ $? -ne 0 ]; then
     echo "ERROR: Output ROOT file validation failed"
-    echo "Removing corrupted file: $OUTPUTDIR/$OUTPUTFILE.root"
-    rm -f "$OUTPUTDIR/$OUTPUTFILE.root"
+    echo "Removing corrupted file: $OUTPUT_ROOT_FILE"
+    rm -f "$OUTPUT_ROOT_FILE"
     exit 1
 fi
 
@@ -328,7 +337,7 @@ echo ""
 echo "=== Staging out results ==="
 
 # Stage out to: OUTPUT_XRD/JOB_OUTPUT_NAME/SAMPLE_NAME/output_JOB_IDX.root
-COPY_SRC="file://$(pwd)/$OUTPUTDIR/$OUTPUTFILE.root"
+COPY_SRC="file://$(pwd)/$OUTPUT_ROOT_FILE"
 COPY_DEST="${OUTPUT_XRD}/${JOB_OUTPUT_NAME}/${SAMPLE_NAME}/output_${JOB_IDX}.root"
 
 echo "Copying: ${COPY_SRC} -> ${COPY_DEST}"
