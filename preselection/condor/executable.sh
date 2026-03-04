@@ -339,14 +339,55 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Verify output file exists at the destistation path
+# Verify output file integrity at the destination via checksum comparison
 echo "=== Verifying output file on XRootD ==="
-env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-stat "${COPY_DEST}" > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    echo "ERROR: Output verification failed - file not found on XRootD: ${COPY_DEST}"
-    exit 1
+LOCAL_CHECKSUM=$(env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-sum "${COPY_SRC}" ADLER32 2>&1)
+LOCAL_STATUS=$?
+REMOTE_CHECKSUM=$(env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-sum "${COPY_DEST}" ADLER32 2>&1)
+REMOTE_STATUS=$?
+
+if [ $LOCAL_STATUS -ne 0 ] || [ $REMOTE_STATUS -ne 0 ]; then
+    echo "WARNING: Could not compute checksums (local status=$LOCAL_STATUS, remote status=$REMOTE_STATUS)"
+    echo "  Local:  $LOCAL_CHECKSUM"
+    echo "  Remote: $REMOTE_CHECKSUM"
+    echo "Falling back to remote ROOT file validation..."
+    python3 << PYEOF
+import sys
+try:
+    import ROOT
+    ROOT.gErrorIgnoreLevel = ROOT.kError
+    f = ROOT.TFile.Open("${COPY_DEST}")
+    if not f or f.IsZombie():
+        print("[VALIDATE] ERROR: Cannot open remote file or file is zombie")
+        sys.exit(1)
+    t = f.Get("Events")
+    if not t:
+        print("[VALIDATE] ERROR: Tree 'Events' not found in remote file")
+        f.Close()
+        sys.exit(1)
+    print(f"[VALIDATE] PASSED: Remote file readable with {t.GetEntries()} entries")
+    f.Close()
+except Exception as e:
+    print(f"[VALIDATE] ERROR: {e}")
+    sys.exit(1)
+PYEOF
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Remote ROOT file validation failed for ${COPY_DEST}"
+        exit 1
+    fi
+    echo "Output file validated on XRootD (checksum could not be verified)"
+else
+    # Extract just the checksum value (second field in gfal-sum output)
+    LOCAL_SUM=$(echo "$LOCAL_CHECKSUM" | awk '{print $2}')
+    REMOTE_SUM=$(echo "$REMOTE_CHECKSUM" | awk '{print $2}')
+    echo "  Local checksum:  $LOCAL_SUM"
+    echo "  Remote checksum: $REMOTE_SUM"
+    if [ "$LOCAL_SUM" != "$REMOTE_SUM" ]; then
+        echo "ERROR: Checksum mismatch! File may be corrupted during transfer."
+        exit 1
+    fi
+    echo "Output file verified successfully (ADLER32 checksums match)"
 fi
-echo "Output file verified successfully"
 
 # Stage out cutflow file if it exists
 if [ -f "$OUTPUTDIR/${OUTPUTFILE}_cutflow.txt" ]; then
