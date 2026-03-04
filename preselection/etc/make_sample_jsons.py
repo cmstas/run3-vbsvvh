@@ -219,11 +219,11 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, du
     out_dict["trees"] = ["Events"]
     out_dict["metadata"] = {
         "kind" : kind,
-        "name" : name_for_metadata,
         "year" : year,
         "xsec" : xsec_val,
         "lumi" : lumi,
         "sumw" : sumw,
+        "shortname" : name_for_metadata,
         "do_ewk_corr" : do_ewk_corr,
         "local_prefix" : local_prefix,
     }

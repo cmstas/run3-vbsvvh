@@ -79,7 +79,7 @@ def main():
     parser.add_argument('-n', '--outname',     help = 'Output name', default="rdf_output")
     parser.add_argument('-r', '--run',         help = 'Which run (2 or 3)', choices=['2','3'])
     parser.add_argument('-p', '--prefix',      help = 'Prefix to append to the file paths', default=None)
-    parser.add_argument('-j', '--n-cores',     help = 'Number of cores to use for local execution')
+    parser.add_argument('-j', '--n-cores',     help = 'Number of cores to use for local execution', default=64)
     parser.add_argument('-d', '--dry-run',     help = 'Do not actually execute the run command', action='store_true')
     args = parser.parse_args()
 
