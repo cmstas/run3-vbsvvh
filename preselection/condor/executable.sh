@@ -339,13 +339,19 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Verify output file integrity at the destination via checksum comparison
+# Verify output file integrity at the destination via checksum comparison.
+# First try ADLER32 checksums (fast). If checksums can't be computed (e.g. gfal-sum
+# not available or XRootD doesn't support it), fall back to opening the remote file
+# with ROOT and checking the Events tree is readable.
+# In either case, if verification fails the remote file is deleted to avoid leaving
+# corrupted files on storage that would look like successful output.
 echo "=== Verifying output file on XRootD ==="
 LOCAL_CHECKSUM=$(env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-sum "${COPY_SRC}" ADLER32 2>&1)
 LOCAL_STATUS=$?
 REMOTE_CHECKSUM=$(env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-sum "${COPY_DEST}" ADLER32 2>&1)
 REMOTE_STATUS=$?
 
+# If checksum computation failed, fall back to ROOT file validation
 if [ $LOCAL_STATUS -ne 0 ] || [ $REMOTE_STATUS -ne 0 ]; then
     echo "WARNING: Could not compute checksums (local status=$LOCAL_STATUS, remote status=$REMOTE_STATUS)"
     echo "  Local:  $LOCAL_CHECKSUM"
@@ -373,17 +379,23 @@ except Exception as e:
 PYEOF
     if [ $? -ne 0 ]; then
         echo "ERROR: Remote ROOT file validation failed for ${COPY_DEST}"
+        echo "Removing corrupted remote file: ${COPY_DEST}"
+        env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-rm "${COPY_DEST}" 2>&1 || echo "WARNING: Failed to remove remote file"
         exit 1
     fi
     echo "Output file validated on XRootD (checksum could not be verified)"
 else
-    # Extract just the checksum value (second field in gfal-sum output)
+    # If checksums computed successfullym compare local vs remote
+    # gfal-sum output format: "<filepath> <checksum>", extract the checksum (2nd field)
     LOCAL_SUM=$(echo "$LOCAL_CHECKSUM" | awk '{print $2}')
     REMOTE_SUM=$(echo "$REMOTE_CHECKSUM" | awk '{print $2}')
     echo "  Local checksum:  $LOCAL_SUM"
     echo "  Remote checksum: $REMOTE_SUM"
     if [ "$LOCAL_SUM" != "$REMOTE_SUM" ]; then
+        # If mismatch, the file was corrupted during transfer 
         echo "ERROR: Checksum mismatch! File may be corrupted during transfer."
+        echo "Removing corrupted remote file: ${COPY_DEST}"
+        env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-rm "${COPY_DEST}" 2>&1 || echo "WARNING: Failed to remove remote file"
         exit 1
     fi
     echo "Output file verified successfully (ADLER32 checksums match)"
