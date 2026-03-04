@@ -6,7 +6,8 @@ RDF UTILS
 ############################################
 */
 
-RNode defineMetadata(RNode df) {
+RNode defineMetadata(RNode df, bool isData = false) {
+    if (isData) {df = df.Define("genWeight", []() { return 1.f; }, {});}
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
         .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
         .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
@@ -23,7 +24,8 @@ RNode defineMetadata(RNode df) {
         .Define("is2024", "year == \"2024Prompt\"")
         .Define("isRun2", "is2016 || is2017 || is2018")
         .Define("isRun3", "is2022 || is2023 || is2024")
-        .Define("weight", "isData ? 1 : 1000 * xsec * lumi / nevents * genWeight");
+        .Define("xsec_weight", "isData ? 1 : 1000 * xsec * lumi / nevents")
+        .Define("weight", "xsec_weight * genWeight");
 }
 
 // Extract sample category from the JSON config file

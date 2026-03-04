@@ -15,6 +15,8 @@ using RNode = ROOT::RDF::RNode;
 class Cutflow
 {
 public:
+    static void Enable(bool enabled = true);
+    static bool IsEnabled();
     static void SetWeightCol(const std::string &col);
     static void Add(RNode df, const std::string &label);
     static void Print(std::ostream &out = std::cout);
@@ -35,6 +37,7 @@ private:
 
     static std::string &weightCol();
     static std::vector<Entry> &entries();
+    static bool &enabled();
 };
 
 #endif // CUTFLOW_H

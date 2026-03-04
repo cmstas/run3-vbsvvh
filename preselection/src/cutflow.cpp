@@ -14,11 +14,25 @@ std::vector<Cutflow::Entry> &Cutflow::entries() {
     return s;
 }
 
+bool &Cutflow::enabled() {
+    static bool s = false;
+    return s;
+}
+
+void Cutflow::Enable(bool val) {
+    enabled() = val;
+}
+
+bool Cutflow::IsEnabled() {
+    return enabled();
+}
+
 void Cutflow::SetWeightCol(const std::string &col) {
     weightCol() = col;
 }
 
 void Cutflow::Add(RNode df, const std::string &label) {
+    if (!enabled()) return;
     Entry e;
     e.label = label;
     if (weightCol() == "1" || weightCol().empty()) {
@@ -40,6 +54,7 @@ std::size_t Cutflow::Size() {
 }
 
 void Cutflow::Print(std::ostream &out) {
+    if (!enabled()) return;
     auto &ents = entries();
     if (ents.empty()) {
         out << "[Cutflow] No entries booked.\n";
