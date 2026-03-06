@@ -6,7 +6,8 @@ RDF UTILS
 ############################################
 */
 
-RNode defineMetadata(RNode df) {
+RNode defineMetadata(RNode df, bool isData = false) {
+    if (isData) {df = df.Define("genWeight", []() { return 1.f; }, {});}
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
         .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
         .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
@@ -14,7 +15,6 @@ RNode defineMetadata(RNode df) {
         .DefinePerSample("type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("type");})
         .DefinePerSample("year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("year");})
         .DefinePerSample("name", [](unsigned int slot, const RSampleInfo &id) { return id.GetSampleName();})
-        .Define("xsec_weight", "1000 * xsec * lumi / nevents")
         .Define("isData", "category == \"data\"")
         .Define("is2016", "year == \"2016preVFP\" || year == \"2016postVFP\"")
         .Define("is2017", "year == \"2017\"")
@@ -23,7 +23,9 @@ RNode defineMetadata(RNode df) {
         .Define("is2023", "year == \"2023PromptC\" || year == \"2023PromptD\"")
         .Define("is2024", "year == \"2024Prompt\"")
         .Define("isRun2", "is2016 || is2017 || is2018")
-        .Define("isRun3", "is2022 || is2023 || is2024");
+        .Define("isRun3", "is2022 || is2023 || is2024")
+        .Define("xsec_weight", "isData ? 1 : 1000 * xsec * lumi / nevents")
+        .Define("weight", "xsec_weight * genWeight");
 }
 
 // Extract sample category from the JSON config file
