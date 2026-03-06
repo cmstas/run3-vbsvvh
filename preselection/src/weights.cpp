@@ -458,7 +458,7 @@ RNode applyLHEScaleWeight_muR(RNode df) {
 
 RNode applyDataWeights(RNode df_) {
     auto df = applyGoldenJSONWeight(LumiMask, df_);
-    return df.Define("weight", "_goldenJSON");
+    return df.Redefine("weight", "_goldenJSON"); // weight initially defined in utils.cpp
 }
 
 RNode applyMCWeights(RNode df_) {
@@ -499,6 +499,7 @@ RNode applyMCWeights(RNode df_) {
         df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
 
+<<<<<<< HEAD
     df = df.Define("baseweight", "1000 * xsec * lumi * genWeight / sumw");
 
     return df.Define("weight",

@@ -27,7 +27,7 @@ DEFINE METADATA
 ############################################
 */
 
-RNode defineMetadata(RNode df);
+RNode defineMetadata(RNode df, bool isData);
 std::string getCategoryFromConfig(const std::string& config_path);
 
 class FilterOnePerKind {

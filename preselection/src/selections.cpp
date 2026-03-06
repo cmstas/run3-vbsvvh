@@ -1,4 +1,5 @@
 #include "selections.h"
+#include "cutflow.h"
 
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
 {
@@ -163,7 +164,10 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
+    Cutflow::Add(df_, "All events");
     df = TriggerSelections(df, channel, TriggerMap);
+    Cutflow::Add(df, "C1: Trigger selection");
+
     if (channel == "all_events"){
         df = df.Filter(
             "nMuon_Loose > -1", // Probably there is a better way to write a pass through

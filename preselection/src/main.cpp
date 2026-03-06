@@ -9,6 +9,7 @@
 #include "genSelections.h"
 
 #include "argparser.hpp"
+#include "cutflow.h"
 
 #include "spanet.h"
 #include "spanet_run2.h"
@@ -29,6 +30,7 @@ struct MyArgs : public argparse::Args {
     bool &dumpInput              = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
     bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
+    bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
 };
 
 RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference &spanet_inference, SPANetRun2::SPANetInference &spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
@@ -127,10 +129,7 @@ int main(int argc, char** argv) {
     ROOT::RDataFrame df_ = ROOT::RDF::Experimental::FromSpec(input_spec);
     ROOT::RDF::Experimental::AddProgressBar(df_);
 
-    // Define metadata
-    auto df = defineMetadata(df_);
-
-    // Get sample kind from config file
+    // Get sample category from config file
     std::string kind = getCategoryFromConfig(input_spec);
     std::cout << " -> Sample kind from config: " << kind << std::endl;
 
@@ -167,6 +166,13 @@ int main(int argc, char** argv) {
         makeSpanetTrainingdata = false; // do not make training data for non-signal samples
     }
 
+    // Define metadata
+    auto df = defineMetadata(df_, isData);
+
+    Cutflow::SetWeightCol(isData ? "1" : "weight");
+
+    if (args.cutflow) Cutflow::Enable();
+
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
@@ -180,13 +186,17 @@ int main(int argc, char** argv) {
         df = applyMCCorrections(df);
     }
 
+    Cutflow::Add(df, "C3: After SFs and corrections");
+
     if (isSignal && makeSpanetTrainingdata) {
         std::cout << " -> Saving SPANet training data" << std::endl;
         saveSpanetSnapshot(df, output_dir, output_file);
+        Cutflow::Print();
         return 0; // Exit after saving training data
     }
 
     saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
+    Cutflow::Print();
 
     return 0;
 }
