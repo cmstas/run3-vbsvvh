@@ -499,7 +499,6 @@ RNode applyMCWeights(RNode df_) {
         df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
 
-<<<<<<< HEAD
     df = df.Define("baseweight", "1000 * xsec * lumi * genWeight / sumw");
 
     return df.Define("weight",
