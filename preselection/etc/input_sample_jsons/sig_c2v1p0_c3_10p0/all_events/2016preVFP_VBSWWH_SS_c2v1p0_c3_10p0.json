@@ -1,0 +1,71 @@
+{
+    "samples": {
+        "VBSWWH_SS_c2v1p0_c3_10p0_UL16APV": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "sig_c2v1p0_c3_10p0",
+                "year": "2016preVFP",
+                "xsec": 0.000445,
+                "lumi": 19.52,
+                "sumw": 99900.0,
+                "shortname": "VBSWWH_SS_c2v1p0_c3_10p0",
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_1.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_10.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_11.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_12.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_13.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_14.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_15.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_16.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_17.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_18.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_19.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_2.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_20.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_21.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_22.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_23.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_24.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_25.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_26.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_27.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_28.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_29.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_3.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_30.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_31.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_32.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_33.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_34.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_35.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_36.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_37.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_38.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_39.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_4.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_40.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_41.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_42.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_43.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_44.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_45.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_46.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_47.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_48.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_49.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_5.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_50.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_6.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_7.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_8.root",
+                "store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig/VBSWWH_SS_c2v1p0_c3_10p0_UL16APV/output_9.root"
+            ]
+        }
+    }
+}
