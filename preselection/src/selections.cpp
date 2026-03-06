@@ -68,7 +68,7 @@ RNode ElectronSelections(RNode df_)
                                             "Electron_pfRelIso03_all < 0.4 && "
                                             "Electron_lostHits <= 1")
                   .Define("_tightElectrons", "_looseElectrons &&"
-                                             "Electron_pt > 30 && "
+                                             "Electron_pt > 10 && "
                                              "Electron_cutBased >= 4 && "
                                              "Electron_pfRelIso03_all < 0.15 && "
                                              "Electron_hoe < 0.1 && "

@@ -62,9 +62,11 @@ RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::Correc
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt[i], "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt[i], "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt[i], "systdown"});
+            float pt_max = 15.1;
+            float pt_to_pass = std::max(pt[i],pt_max);
+            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
+            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
+            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
@@ -87,9 +89,11 @@ RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::Corr
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt[i], "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt[i], "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt[i], "systdown"});
+            float pt_max = 15.1;
+            float pt_to_pass = std::max(pt[i],pt_max);
+            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
+            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
+            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
@@ -112,9 +116,11 @@ RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::C
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt[i], "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt[i], "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt[i], "systdown"});
+            float pt_max = 29.1;
+            float pt_to_pass = std::max(pt[i],pt_max);
+            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
+            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
+            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
@@ -493,6 +499,8 @@ RNode applyMCWeights(RNode df_) {
         df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
 
+    df = df.Define("baseweight", "1000 * xsec * lumi * genWeight / sumw");
+
     return df.Define("weight",
         "weight_pileup[0] * "
         "weight_muonid[0] * "
@@ -509,6 +517,5 @@ RNode applyMCWeights(RNode df_) {
         "weight_PSFSR[0] * "
         "weight_muF[0] * "
         "weight_muR[0] * "
-        "genWeight * "
-        "xsec_weight");
+        "baseweight");
 }

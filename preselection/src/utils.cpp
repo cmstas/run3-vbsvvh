@@ -15,7 +15,6 @@ RNode defineMetadata(RNode df) {
         .DefinePerSample("shortname", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("shortname");})
         .DefinePerSample("name", [](unsigned int slot, const RSampleInfo &id) { return id.GetSampleName();})
         .DefinePerSample("do_ewk_corr", [](unsigned int slot, const RSampleInfo &id) { return id.GetI("do_ewk_corr");})
-        .Define("xsec_weight", "1000 * xsec * lumi / sumw")
         .Define("isData", "kind== \"data\"")
         .Define("is2016", "year == \"2016preVFP\" || year == \"2016postVFP\"")
         .Define("is2017", "year == \"2017\"")
