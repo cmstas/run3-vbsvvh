@@ -39,9 +39,9 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
 
     df = runPreselection(df, ana, makeSpanetTrainingdata);
     
-    //if (isSignal) {
-        //df = GenSelections(df);
-    //}
+    if (isSignal) {
+        df = GenSelections(df);
+    }
 
     if (!makeSpanetTrainingdata && runSPANetInference) {
         std::cout << "Running spanet" << std::endl;

@@ -21,9 +21,9 @@ import dataset_names_ref
 # Dictionary of the paths to the skim sets
 SKIM_PATH_DICT = {
     "all_events" : {
-        ("run2", "sig_c2v1p0_c3_1p0")  : "/ceph/cms/store/user/mdittric/VVH_Skims/Run2_Sig_v15_26Feb2026_v1_Sig",
-        ("run2", "sig_c2v1p5_c3_1p0")  : "/ceph/cms/store/user/mdittric/VVH_Skims/Run2_Sig_v15_26Feb2026_v1_Sig",
-        ("run2", "sig_c2v1p0_c3_10p0") : "/ceph/cms/store/user/mdittric/VVH_Skims/Run2_Sig_v15_26Feb2026_v1_Sig",
+        ("run2", "sig_c2v1p0_c3_1p0")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig",
+        ("run2", "sig_c2v1p5_c3_1p0")  : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig",
+        ("run2", "sig_c2v1p0_c3_10p0") : "/ceph/cms/store/user/mdittric/VVH_Skims/nanoaodv15_r2sig_02Mar2026_v2_Sig",
         #("run3", "sig_sm")  : "",
     },
     "0lep_0FJ" : {
