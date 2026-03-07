@@ -62,8 +62,8 @@ RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::Correc
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            float pt_max = 15.1;
-            float pt_to_pass = std::max(pt[i],pt_max);
+            float pt_min = 15.1;
+            float pt_to_pass = std::max(pt[i],pt_min);
             muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
             muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
             muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
@@ -116,8 +116,8 @@ RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::C
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            float pt_max = 29.1;
-            float pt_to_pass = std::max(pt[i],pt_max);
+            float pt_min = 29.1;
+            float pt_to_pass = std::max(pt[i],pt_min);
             muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
             muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
             muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});

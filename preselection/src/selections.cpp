@@ -209,6 +209,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "C2: 1lep_1FJ"
         );
     }
+    else if (channel == "1lep_2FJ"){
+        df = df.Filter(
+            "((nMuon_Loose == 1) | (nElectron_Loose == 1)) &&"
+            "(nFatJets == 2)",
+            "C2: 1lep_2FJ"
+        );
+    }
     else if (channel == "2lep_1FJ"){
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2) &&"
