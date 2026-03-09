@@ -156,8 +156,8 @@ function run_analysis {
         echo "./bin/runAnalysis -b 518 -i $CONFIG -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS"
         ./bin/runAnalysis -b 518 -i $CONFIG -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS
     else
-        echo "./bin/runAnalysis -n $N_CPUS -i $CONFIG -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS"
-        ./bin/runAnalysis -n $N_CPUS -i $CONFIG -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS
+        echo "./bin/runAnalysis -j $N_CPUS -i $CONFIG -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS"
+        ./bin/runAnalysis -j $N_CPUS -i $CONFIG -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS
     fi
     return $?
 }
