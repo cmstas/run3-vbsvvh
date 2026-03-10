@@ -57,7 +57,6 @@ static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
 };
 
-
 /*
 ############################################
 MET CORRECTIONS
