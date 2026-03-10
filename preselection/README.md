@@ -57,22 +57,7 @@ make -j8
 This will compile the source files and place the binary in the bin/ directory.
 
 ## Configuration Files
-The inputs for the preselection framework are defined using configuration JSON files. The config files define input samples, cross-sections, and metadata in JSON format for RDataFrame's `FromSpec`. Specifics will have to be adapted by the analyzer.
-
-### Generating Configs
-To generate a configuration file, run the make-config.py script with the appropriate category and channel name.
-
-```bash
-python3 etc/make_config.py --category <category> --channel <channel>
-```
-
-For example, to generate a configuration file for signal samples using the skims for the channel `0Lep2FJ_run3`:
-
-```bash
-python3 etc/make_config.py --channel 0Lep2FJ_run3 --category sig
-```
-
-This creates `0Lep2FJ_run3-sig.json` in the `etc/` directory.
+The inputs for the preselection framework are defined using configuration JSON files. The config files define input samples, cross-sections, and metadata in JSON format for RDataFrame's `FromSpec`. The json files for all of the skim sets are provided in the `preselection/etc/input_sample_jsons` directory. See the readme in `preselection/etc` for more details. 
 
 **See [`etc/README.md`](etc/README.md) for detailed documentation.**
 
