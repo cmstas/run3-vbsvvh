@@ -17,19 +17,19 @@
 
 
 struct MyArgs : public argparse::Args {
-    std::string &spec = kwarg("i,input", "spec.json path");
-    std::string &ana = kwarg("a,ana", "Tag of analyzer to use for event selection").set_default("");
-    std::string &output = kwarg("o,output", "output root file").set_default("");
-    std::string &output_subdir = kwarg("outdir", "output project subdirectory").set_default("");
-    std::string &run_number = kwarg("run_number", "Run number: 2 or 3");    
+    std::string &spec       = kwarg("i,input", "spec.json path");
+    std::string &ana        = kwarg("a,ana", "Which skim selection channel for event selection");
+    std::string &name       = kwarg("n,name", "Naming tag for the output").set_default("rdf_output");
+    std::string &outdir     = kwarg("o,outdir", "Path to output").set_default(".");
+    std::string &run_number = kwarg("r,run_number", "Run number (2 or 3)");
     
     int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
-    int &nthread = kwarg("n,nthread", "number of threads for ROOT").set_default(0);
+    int &nthread    = kwarg("j,nthread", "number of threads for ROOT").set_default(0);
 
-    bool &debug = flag("debug", "enable debug mode").set_default(false);
-    bool &dumpInput = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
+    bool &debug                  = flag("debug", "enable debug mode").set_default(false);
+    bool &dumpInput              = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
-    bool &runSPANetInference = flag("spanet_infer", "Run SPANet inference").set_default(false);
+    bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
 };
 
@@ -61,14 +61,26 @@ int main(int argc, char** argv) {
     // Read input args
     auto args = argparse::parse<MyArgs>(argc, argv);
     std::string input_spec = args.spec;
-    std::string output_file = args.output;
+    std::string output_file = args.name;
 
     if (args.nthread > 64) {
         std::cerr << "Error: nthread cannot exceed 64 (requested: " << args.nthread << ")" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    std::vector<std::string> channels = {"0Lep3FJ", "0Lep2FJ", "0Lep2FJMET", "1Lep2FJ", "1Lep1FJ"};
+    std::vector<std::string> channels = {
+        "all_events",
+        "0lep_0FJ",
+        "0lep_1FJ",
+        "0lep_2FJ",
+        "0lep_3FJ",
+        "1lep_1FJ",
+        "2lep_1FJ",
+        "2lep_2FJ",
+        //"2lepSS",
+        "3lep",
+        "4lep",
+    };
     if (std::find(channels.begin(), channels.end(), args.ana) == channels.end()) {
         if (!args.makeSpanetTrainingdata) {
             std::cerr << "Did not recognize analysis tag: " << args.ana << std::endl;
@@ -77,7 +89,7 @@ int main(int argc, char** argv) {
     }
 
     // Create output directory
-    std::string output_dir = setOutputDirectory(args.ana, args.output_subdir, args.makeSpanetTrainingdata);
+    std::string output_dir = setOutputDirectory(args.outdir, args.makeSpanetTrainingdata);
     
     if (args.run_number != "2" && args.run_number != "3") {
         throw std::runtime_error("Invalid run_number: must be 2 or 3");
@@ -118,33 +130,33 @@ int main(int argc, char** argv) {
     ROOT::RDF::Experimental::AddProgressBar(df_);
 
     // Get sample category from config file
-    std::string category = getCategoryFromConfig(input_spec);
-    std::cout << " -> Sample category from config: " << category << std::endl;
+    std::string kind = getCategoryFromConfig(input_spec);
+    std::cout << " -> Sample kind from config: " << kind << std::endl;
 
-    // Set output file name and input type based on category
+    // Set output file name and input type based on kind
     bool isData = false;
     bool isSignal = false;
-    if (category.find("data") != std::string::npos) {
+    if (kind.find("data") != std::string::npos) {
         isData = true;
         if (output_file.empty()) {
             output_file = "data";
         }
     }
-    else if (category.find("sig") != std::string::npos) {
+    else if (kind.find("sig") != std::string::npos) {
         // Handle categories like "sig", "sig_c2v_1p5_c3_1p0", etc.
         isSignal = true;
         if (output_file.empty()) {
             output_file = "sig";
         }
     }
-    else if (category.find("bkg") != std::string::npos) {
+    else if (kind.find("bkg") != std::string::npos) {
         // Handle categories like "bkg", "bkg_QCD", "bkg_ttbar", etc.
         if (output_file.empty()) {
             output_file = "bkg";
         }
     }
     else {
-        std::cerr << "Unknown category in config: " << category << std::endl;
+        std::cerr << "Unknown kind in config: " << kind << std::endl;
         std::cerr << "Expected: data, sig, or bkg*" << std::endl;
         std::exit(EXIT_FAILURE);
     }

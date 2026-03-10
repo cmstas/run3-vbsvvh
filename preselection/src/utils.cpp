@@ -10,12 +10,13 @@ RNode defineMetadata(RNode df, bool isData = false) {
     if (isData) {df = df.Define("genWeight", []() { return 1.f; }, {});}
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
         .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
-        .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
-        .DefinePerSample("category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("category");})
-        .DefinePerSample("type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("type");})
+        .DefinePerSample("sumw", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("sumw");})
+        .DefinePerSample("kind", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("kind");})
         .DefinePerSample("year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("year");})
+        .DefinePerSample("shortname", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("shortname");})
         .DefinePerSample("name", [](unsigned int slot, const RSampleInfo &id) { return id.GetSampleName();})
-        .Define("isData", "category == \"data\"")
+        .DefinePerSample("do_ewk_corr", [](unsigned int slot, const RSampleInfo &id) { return id.GetI("do_ewk_corr");})
+        .Define("isData", "kind == \"data\"")
         .Define("is2016", "year == \"2016preVFP\" || year == \"2016postVFP\"")
         .Define("is2017", "year == \"2017\"")
         .Define("is2018", "year == \"2018\"")
@@ -24,19 +25,19 @@ RNode defineMetadata(RNode df, bool isData = false) {
         .Define("is2024", "year == \"2024Prompt\"")
         .Define("isRun2", "is2016 || is2017 || is2018")
         .Define("isRun3", "is2022 || is2023 || is2024")
-        .Define("xsec_weight", "isData ? 1 : 1000 * xsec * lumi / nevents")
-        .Define("weight", "xsec_weight * genWeight");
+        .Define("baseweight", "isData ? 1 : 1000 * xsec * lumi * genWeight / sumw");
+
 }
 
-// Extract sample category from the JSON config file
-// Returns the category of the first sample found (assumes all samples in a config have the same category)
+// Extract sample kind from the JSON config file
+// Returns the kind of the first sample found (assumes all samples in a config have the same kind)
 std::string getCategoryFromConfig(const std::string& config_path) {
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(config_path, pt);
 
-    // Navigate to samples and get the first sample's category
+    // Navigate to samples and get the first sample's kind
     for (const auto& sample : pt.get_child("samples")) {
-        return sample.second.get<std::string>("metadata.category");
+        return sample.second.get<std::string>("metadata.kind");
     }
     return "";
 }
@@ -278,26 +279,19 @@ SNAPSHOT
 ############################################
 */
 
-std::string setOutputDirectory(const std::string &ana, const std::string &output_subdir, bool spanet_training) {
-    // If on UAF and the USER environment variable is defined, store output on ceph
-    const char* userEnv = getenv("USER");
-    std::string storage_dir = "/data/userdata/";
-    std::string output_dir = "./";
+std::string setOutputDirectory(const std::string &outdir, bool spanet_training) {
+    std::string output_dir = "";
     if (spanet_training) {
-        output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/spanet_training/";
+        output_dir = outdir + "/vbsvvhAnalysis/spanet_training/";
     }
-    else if (userEnv != nullptr && std::filesystem::exists(storage_dir) && std::filesystem::is_directory(storage_dir)) {
-        output_dir = storage_dir + std::string(userEnv) + "/vbsvvhAnalysis/preselection/" + ana + "/";
-    }
-
-    if (!output_subdir.empty()) {
-        output_dir += "/" + output_subdir + "/";
+    else {
+        output_dir = outdir;
     }
 
     std::filesystem::path directory_path(output_dir);
     // Check if the directory exists
     if (std::filesystem::exists(directory_path)) {
-        std::cerr << "Output directory already exists: " << directory_path << std::endl;
+        std::cerr << "Output directory: " << directory_path << std::endl;
     }
     // Try to create the directory and any missing parent directories
     else if (std::filesystem::create_directories(directory_path)) {

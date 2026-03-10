@@ -62,9 +62,11 @@ RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::Correc
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt[i], "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt[i], "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt[i], "systdown"});
+            float pt_min = 15.1;
+            float pt_to_pass = std::max(pt[i],pt_min);
+            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
+            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
+            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
@@ -87,9 +89,11 @@ RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::Corr
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt[i], "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt[i], "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt[i], "systdown"});
+            float pt_max = 15.1;
+            float pt_to_pass = std::max(pt[i],pt_max);
+            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
+            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
+            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
@@ -112,9 +116,11 @@ RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::C
         }
         auto correctionset = cset_muon.at(year).at(year_map.at(year));
         for (size_t i = 0; i < eta.size(); i++) {
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt[i], "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt[i], "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt[i], "systdown"});
+            float pt_min = 29.1;
+            float pt_to_pass = std::max(pt[i],pt_min);
+            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
+            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
+            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
@@ -369,9 +375,10 @@ OTHER SFs
 ############################################
 */
 
+// See https://github.com/cmstas/run3-vbsvvh/pull/28#issuecomment-3820814039
 RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
-    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, std::string sample_type) {
-        if(sample_type != "EWK") return 1.;
+    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, int do_ewk_corr) {
+        if(do_ewk_corr == 0) return 1.;
         else{
             TLorentzVector TEWKq1, TEWKq2, TEWKlep, TEWKnu;
             TEWKq1.SetPtEtaPhiM(LHEPart_pt[4],LHEPart_eta[4],LHEPart_phi[4],LHEPart_mass[4]);
@@ -409,7 +416,7 @@ RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
             else return 1.;
         }
     };
-    return df.Define("weight_ewk", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "type"});
+    return df.Define("weight_ewk", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "do_ewk_corr"});
 }
 
 RNode applyL1PreFiringReweighting(RNode df){
@@ -492,8 +499,8 @@ RNode applyMCWeights(RNode df_) {
         df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
 
-    return df.Redefine("weight",
-        "weight * " // weight initially defined in utils.cpp and includes the genWeight!
+    return df.Define("weight",
+        "baseweight *"
         "weight_pileup[0] * "
         "weight_muonid[0] * "
         "weight_muonreco[0] * "
@@ -508,5 +515,5 @@ RNode applyMCWeights(RNode df_) {
         "weight_PSISR[0] * "
         "weight_PSFSR[0] * "
         "weight_muF[0] * "
-        "weight_muR[0]"); 
+        "weight_muR[0]");
 }

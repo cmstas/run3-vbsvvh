@@ -156,7 +156,7 @@ Examples:
                         help="Run number (2 or 3)")
     parser.add_argument("-t", "--tag", default="",
                         help="Optional tag for output directory naming")
-    parser.add_argument("-n", "--ncpus", type=int, default=DEFAULT_NCPUS,
+    parser.add_argument("-j", "--ncpus", type=int, default=DEFAULT_NCPUS,
                         help=f"Number of CPUs per job (default: {DEFAULT_NCPUS})")
     parser.add_argument("-m", "--memory", default=DEFAULT_MEMORY,
                         help=f"Memory request per job (default: {DEFAULT_MEMORY})")
