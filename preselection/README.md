@@ -18,21 +18,15 @@ preselection/
 ## Quick Start
 
 ```bash
-# 1. Set up environment
+# Set up environment
 source setup.sh
 
-# 2. Compile
+# Compile
 cd preselection/
 make -j8
 
-# 3. Generate config
-python3 etc/make_config.py --channel 0Lep2FJ_run3 --category sig
-
-# 4. Run locally (for testing)
-bin/runAnalysis -i etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -n 8 --run_number 3
-
-# 5. Or submit to Condor (for production)
-python condor/submit.py -c etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -r 3
+# Run examples in `run_wrapper.sh`, e.g., for running over locally over one signal sample on UAF:
+python run_rdf.py etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix /ceph/cms/ -o some_dir -n test_small -a all_events -m local -r 2
 ```
 
 ## Prerequisites
@@ -57,33 +51,22 @@ make -j8
 This will compile the source files and place the binary in the bin/ directory.
 
 ## Configuration Files
-The inputs for the preselection framework are defined using configuration JSON files. The config files define input samples, cross-sections, and metadata in JSON format for RDataFrame's `FromSpec`. The json files for all of the skim sets are provided in the `preselection/etc/input_sample_jsons` directory. See the readme in `preselection/etc` for more details. 
+The inputs for the preselection framework are defined using configuration JSON files. The config files define input samples, cross-sections, and metadata in JSON format for RDataFrame's `FromSpec`. The json files for all of the skim sets are provided in the `preselection/etc/input_sample_jsons` directory.  
 
 **See [`etc/README.md`](etc/README.md) for detailed documentation.**
 
-## Running Locally
-To run the preselection, use the compiled binary and provide the input specification and output file.
+## Notes on running 
+To run the preselection, use the compiled binary and provide the input specification and output file. The `run_rdf.py` serves as a wrapper around the `bin/runAnalysis`. This script will:
+* **Prepare the json files**: The scrip will prepend a given prefix to the paths in all of the json files (to accommodate running either with direct file paths on UAF, or with xrd). 
+* **Merge the given json files**: The underlying analysis code expects to receive a single json, so this script will merge all jsons into one single json. Note that `bin/runAnalysis` expects all samples to be the same kind (either signal, background, or data), so if running locally do not mix multiple kinds of jsons into a single run. The final json is saved locally to the `merged_jsons` dir for reference. 
+* **Run the analysis**: It will either directly run the `bin/runAnalysis` (if the mode is local) or will wrap around the condor submission (if the mode is condor).
 
-For testing or small samples:
-
-```bash
-bin/runAnalysis -i <config.json> -a <channel> -n <threads> --run_number <2|3>
-```
-
-Example:
-```bash
-bin/runAnalysis -i etc/0Lep2FJ_run3-sig.json -a 0Lep2FJ -n 8 --run_number 3
-```
-
-Full options:
-```bash
-bin/runAnalysis --help
-```
+There are examples in `run_wrapper.sh` for running `run_rdf.py` either locally over single jsons for tests, or for running the full analysis at scale over all skim selections. 
 
 ---
-## Condor Batch Submission
+## Details on the condor batch submission
 
-For production processing, submit jobs to HTCondor:
+For large-scale processing, the HTCondor submission should be used. Some overview information is provided here, with more details in the condor README. 
 
 ```bash
 # Submit jobs
