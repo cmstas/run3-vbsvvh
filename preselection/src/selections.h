@@ -4,6 +4,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <regex>
 
 #include "ROOT/RDataFrame.hxx"
 
@@ -13,12 +14,19 @@
 using RNode = ROOT::RDF::RNode;
 
 const std::unordered_map<std::string, std::string> TriggerMap = {
-    {"1Lep2FJ", "HLT_Ele30_WPTight_Gsf || HLT_IsoMu24"},
-//	{"1Lep2FJ", "HLT_Ele32_WPTight_Gsf || HLT_Ele30_WPTight_Gsf || HLT_IsoMu24 || HLT_IsoMu27"},
- 	{"1Lep1FJ", "HLT_Ele30_WPTight_Gsf || HLT_IsoMu24"},
-    	{"0Lep3FJ", "HLT_PFHT1050"},
-    // {"0Lep2FJ", "HLT_BLAH"},
-    // {"0Lep2FJMET", "HLT_BLAH"},
+	{"1lep_2FJ", 
+        "(is2016 && (HLT_Ele27_eta2p1_WPTight_Gsf == true || HLT_IsoMu24 == true || HLT_IsoTkMu24 == true)) || "
+        "(is2017 && (HLT_Ele32_WPTight_Gsf_L1DoubleEG == true || HLT_IsoMu27 == true)) || "
+        "(is2018 && (HLT_Ele32_WPTight_Gsf == true || HLT_IsoMu24 == true)) || "
+        "(isRun3 && (HLT_Ele30_WPTight_Gsf == true || HLT_IsoMu24 == true))"
+    },
+    {"1lep_1FJ", 
+        "(is2016 && (HLT_Ele27_eta2p1_WPTight_Gsf == true || HLT_IsoMu24 == true || HLT_IsoTkMu24 == true)) || "
+        "(is2017 && (HLT_Ele32_WPTight_Gsf_L1DoubleEG == true || HLT_IsoMu27 == true)) || "
+        "(is2018 && (HLT_Ele32_WPTight_Gsf == true || HLT_IsoMu24 == true)) || "
+        "(isRun3 && (HLT_Ele30_WPTight_Gsf == true || HLT_IsoMu24 == true))"
+    },
+    {"0lep_3FJ", "HLT_PFHT1050"},
 };
 
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map);
