@@ -17,15 +17,17 @@ RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map
     std::regex hlt_regex("HLT_[a-zA-Z0-9_]+");
     auto hlt_begin = std::sregex_iterator(trigger_condition.begin(), trigger_condition.end(), hlt_regex);
     auto hlt_end = std::sregex_iterator();
+    std::vector<std::string> seen_triggers;
+
     for (auto it = hlt_begin; it != hlt_end; ++it)
     {
         std::string hlt_name = it->str(0);
-        auto column_names = df_.GetColumnNames();
-        if (std::find(column_names.begin(), column_names.end(), hlt_name) == column_names.end()){
-            df_ = df_.DefaultValueFor(hlt_name, (int)0);
-        }
+        if (std::find(seen_triggers.begin(), seen_triggers.end(), hlt_name) != seen_triggers.end())
+            continue;
+        seen_triggers.push_back(hlt_name);
+        df_ = df_.DefaultValueFor(hlt_name, (bool)false);
     }
-    
+
     return df_.Filter(trigger_condition, "C1: Trigger Selection");
 }
 
