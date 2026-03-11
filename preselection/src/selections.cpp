@@ -3,6 +3,11 @@
 
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
 {
+    if (trigger_map.empty())
+    {
+        std::cerr << "    Warning: No trigger map provided. Skipping trigger selection." << std::endl;
+        return df_;
+    }
     if (trigger_map.find(channel) == trigger_map.end())
     {
         std::cerr << "    Warning: Channel '" << channel << "' not found in trigger map. Skipping trigger selection." << std::endl;
