@@ -7,7 +7,7 @@
             "metadata": {
                 "kind": "bkg",
                 "year": "2024Prompt",
-                "xsec": 9084,
+                "xsec": 9084.0,
                 "lumi": 109.08,
                 "sumw": 5447187172241.949,
                 "shortname": "WtoLNu-4Jets_Bin-1J",
