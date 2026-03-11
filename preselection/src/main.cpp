@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
     // Define metadata
     auto df = defineMetadata(df_, isData);
 
-    //Cutflow::SetWeightCol(isData ? "1" : "weight");
+    Cutflow::SetWeightCol(isData ? "1" : "weight");
 
     if (args.cutflow) Cutflow::Enable();
 
@@ -176,7 +176,6 @@ int main(int argc, char** argv) {
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference);
         df = applyDataWeights(df);
         df = applyDataCorrections(df);
-        //df = removeDuplicates(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
