@@ -1,0 +1,71 @@
+{
+    "samples": {
+        "VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "sig_c2v1p0_c3_1p0",
+                "year": "2024Prompt",
+                "xsec": 0.000747,
+                "lumi": 109.08,
+                "sumw": 100000.0,
+                "shortname": "VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO",
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/04f9f54e-a2a2-4855-929f-217d74900a73.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/07046ac7-3f2e-4707-b4e1-c7d15d496898.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/0b22cabd-0eb2-4ee1-8308-bf0295174752.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/0e5beed8-a1b9-48e7-a845-ea314e2924b0.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/0e8b4817-92ba-49dd-90e3-13d6d31b1f5b.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/0f2fb7e9-f46d-4775-bc7d-53087ccc4c1f.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/10975721-55cc-409f-9191-a5685c1b42cc.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/15041388-80fe-4ace-8495-099c687205b0.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/215c6b43-a1ff-4154-a097-4b6373dc8b9b.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/34c383d0-9073-45ee-9285-4e70fb53777f.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/3719585d-ddc8-449f-9c55-ba8d2d945763.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/399ae5ed-4570-409a-a974-97d2d00ba5ac.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/39b75d70-c6f9-4058-abd1-2382dc832997.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/3b3ad89e-e58e-4392-9257-f305defcd2b6.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/460fc769-6b02-4ddf-805f-8885668c72fe.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/47d05dd1-73e6-4e41-84e7-431da718b1d5.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/47f155b6-e4fc-40fc-825b-b99848bb6297.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/56f53c81-3826-46b7-885d-078bb93da361.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/5747f265-1af0-46fe-a5fe-31fd52e3b1c3.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/5eeddbe0-d3d7-4dfb-b0a0-88da761e6491.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/602185ef-1cb5-4e99-b421-885f90677602.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/662aa37f-cbc9-4e7e-bc8e-83f24432cf36.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/66b975d7-a36d-45f3-8b48-a18a91e2f6ad.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/6a657534-ef1d-408e-b0f5-b884c2ffe0d0.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/6babc74d-4997-4bf4-9b62-54e350aa8a9f.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/6c98d484-7226-4026-b9e8-70fe519aca0f.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/77395e85-0ade-4794-bdc9-ce7b8cbabb1e.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/79bc99a7-b76d-4e19-99cb-e6e5a15f0911.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/7c084c01-1264-4dd1-ab7c-eb1f5cd3a653.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/80807d4f-32d2-4ab5-99f4-661e240f158e.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/8d6b2b3b-ef2c-4367-a93d-1c6b826b429a.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/8f8f7da2-8565-4545-ba67-68bd5eea64ea.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/9d31e7d7-b217-45ab-8fb0-3eba3016efb0.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/a85bb912-6ee6-442d-ac26-8c8f2a597ce7.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/b2890635-2596-4dbf-b2cb-6045fe26cce9.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/b2fbc5a5-536e-4706-b66e-8f56b746c3eb.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/b5962cfb-037b-47f3-a30f-b340ce17182a.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/b5eb86e1-0758-49b1-a61f-2cf32a5b8310.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/c22d479e-cdfa-44f9-82ed-75e9e2aae21e.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/c48f1b85-e782-4231-83a9-ccb04930d53b.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/c54ff9f0-eecd-497e-ae64-f2b17dd4458f.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/cd4fc4a5-0e36-4e6b-8530-23dbb8a43853.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/ceba76c4-599c-43c7-bbdd-7a31c2365af2.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/ceda6c34-1d85-42a6-b674-46dcfde991db.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/d412fe55-1c0a-42d1-b143-e2a50b0179f9.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/ded9f219-6292-444f-9f28-b56f857edad8.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/e38373a8-b5d2-474f-be60-0d64ca12ac02.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/e6f25b33-f472-4e99-b0f4-5a2bd6e785a4.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/e8fc7260-d4f3-4a61-8ad6-4c633c78f552.root",
+                "store/user/aaarora/skims_v3/sig/Run3Summer24/VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_TuneCP5/efe7a34f-8c13-4f58-b621-bb31b4ab866c.root"
+            ]
+        }
+    }
+}
