@@ -28,7 +28,7 @@ EXTRA_FLAGS="$@"
 OUTPUTDIR="output"
 OUTPUTFILE="output"
 OUTPUT_XRD="root://redirector.t2.ucsd.edu:1095//store/user/$USER/vbsvvh/preselection/"
-CMSSW_VERSION='CMSSW_15_0_4'
+CMSSW_VERSION='CMSSW_16_1_0_pre2'
 MAX_RETRIES=5
 SLEEP_DURATION="1m"
 
@@ -96,7 +96,7 @@ function setup_cmssw {
     echo "Setting up CMSSW environment: $CMSSW_VERSION"
 
     # Use pre-built CMSSW from CVMFS with ONNX Runtime already included
-    cd /cvmfs/cms.cern.ch/el8_amd64_gcc12/cms/cmssw/$CMSSW_VERSION
+    cd /cvmfs/cms.cern.ch/el8_amd64_gcc13/cms/cmssw/$CMSSW_VERSION
     eval `scramv1 runtime -sh`
     cd -
 
