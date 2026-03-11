@@ -26,7 +26,7 @@ struct MyArgs : public argparse::Args {
     int &batch_size = kwarg("b,batch_size", "batch size for spanet inference").set_default(64);
     int &nthread    = kwarg("j,nthread", "number of threads for ROOT").set_default(0);
 
-    bool &debug                  = flag("debug", "enable debug mode").set_default(false);
+    bool &progress = flag("progress", "Show progress bar").set_default(false);
     bool &dumpInput              = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
     bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
         "0lep_2FJ",
         "0lep_3FJ",
         "1lep_1FJ",
+        "1lep_2FJ",
         "2lep_1FJ",
         "2lep_2FJ",
         //"2lepSS",
@@ -109,12 +110,6 @@ int main(int argc, char** argv) {
     SPANet::SPANetInference spanet_inference(model_path, args.batch_size);
     std::cout << "    ONNX session loaded successfully." << std::endl;
 
-    // add debugging
-    if (args.debug) {
-        std::cout << " -> Debug mode enabled" << std::endl;
-        auto verbosity = ROOT::Experimental::RLogScopedVerbosity(ROOT::Detail::RDF::RDFLogChannel(), ROOT::Experimental::ELogLevel::kInfo);
-    }
-
     if (args.runSPANetInference && args.nthread > 1) {
         std::cout << " -> SPANet inference requires single-threaded execution, setting nthread=1" << std::endl;
         args.nthread = 1;
@@ -127,7 +122,9 @@ int main(int argc, char** argv) {
 
     // Load df
     ROOT::RDataFrame df_ = ROOT::RDF::Experimental::FromSpec(input_spec);
-    ROOT::RDF::Experimental::AddProgressBar(df_);
+    if (args.progress) { // progress bar isn't needed if using condor so turn off by default
+        ROOT::RDF::Experimental::AddProgressBar(df_);
+    }
 
     // Get sample category from config file
     std::string kind = getCategoryFromConfig(input_spec);
@@ -186,7 +183,7 @@ int main(int argc, char** argv) {
         df = applyMCCorrections(df);
     }
 
-    Cutflow::Add(df, "C3: After SFs and corrections");
+    Cutflow::Add(df, "After SFs and corrections");
 
     if (isSignal && makeSpanetTrainingdata) {
         std::cout << " -> Saving SPANet training data" << std::endl;
