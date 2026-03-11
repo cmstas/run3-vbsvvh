@@ -47,7 +47,7 @@ python condor/submit.py -c <config> -a <analysis> -r <run_number> [options]
 | Argument | Default | Description |
 |----------|---------|-------------|
 | `-t`, `--tag` | (none) | Tag for output directory naming |
-| `-n`, `--ncpus` | 4 | CPUs per job |
+| `-j`, `--ncpus` | 4 | CPUs per job |
 | `-m`, `--memory` | 2G | Memory per job |
 | `--files-per-job` | 10 | Input files per job |
 | `--events-per-job` | (none) | Max events per job (takes priority over `--files-per-job`) |

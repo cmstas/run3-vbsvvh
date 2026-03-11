@@ -6,3 +6,11 @@
 	path = production/mcproduction
 	url = https://github.com/aashayarora/mcproduction
 	branch = main
+[submodule "skimmer/rdf"]
+	path = skimmer/rdf
+	url = https://github.com/aashayarora/skimmer.git
+	branch = main
+[submodule "skimmer/nanotools"]
+	path = skimmer/nanotools
+	url = https://github.com/MatthewDittrich/NanoTools.git
+	branch = vvh_skimmer
