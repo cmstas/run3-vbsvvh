@@ -1,5 +1,8 @@
 #include "utils.h"
 
+#include "TFile.h"
+#include "TTree.h"
+
 /*
 ############################################
 RDF UTILS
@@ -283,7 +286,7 @@ SNAPSHOT
 std::string setOutputDirectory(const std::string &outdir, bool spanet_training) {
     std::string output_dir = "";
     if (spanet_training) {
-        output_dir = outdir + "/vbsvvhAnalysis/spanet_training/";
+        output_dir = outdir + "/spanet_training/";
     }
     else {
         output_dir = outdir;
@@ -346,6 +349,19 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
     std::string outputFile = outputDir + "/" + outputFileName + ".root";
     df.Snapshot("Events", outputFile, final_variables);
+
+    // RDataFrame::Snapshot() in multi-threaded mode does not write a TTree when
+    // 0 events pass the filters, producing a ROOT file with no keys.  Ensure the
+    // output always contains an "Events" TTree so downstream code can open it.
+    {
+        TFile f(outputFile.c_str(), "UPDATE");
+        if (!f.Get("Events")) {
+            TTree t("Events", "Events");
+            t.Write();
+        }
+        f.Close();
+    }
+
     std::cout << " -> Stored output file: " << outputFile << std::endl;
 }
 
@@ -357,12 +373,12 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
     final_variables.push_back("event");
 
     for (auto &&ColName : ColNames) {
-        if (ColName.starts_with("jet_") || 
+        if (ColName.starts_with("jet_") ||
             ColName.starts_with("fatjet_") ||
             ColName.starts_with("PuppiMET_") ||
-            ColName.starts_with("GenPart_") ||  
+            ColName.starts_with("GenPart_") ||
             ColName.starts_with("lepton_") ||
-            ColName.starts_with("gen_") || 
+            ColName.starts_with("gen_") ||
             ColName.starts_with("truth_")) {
                 final_variables.push_back(ColName);
             }
@@ -370,5 +386,15 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
 
     std::string outputFile = outputDir + "/" + outputFileName + "_spanet_training_data.root";
     df.Snapshot("Events", outputFile, final_variables);
+
+    {
+        TFile f(outputFile.c_str(), "UPDATE");
+        if (!f.Get("Events")) {
+            TTree t("Events", "Events");
+            t.Write();
+        }
+        f.Close();
+    }
+
     std::cout << " -> Stored output file: " << outputFile << std::endl;
 }
