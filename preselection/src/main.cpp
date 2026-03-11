@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
         return 0; // Exit after saving training data
     }
 
-    saveSnapshot(df, output_dir, output_file, isData, args.dumpInput);
+    saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput);
     Cutflow::Print();
 
     return 0;
