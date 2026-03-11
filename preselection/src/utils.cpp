@@ -1,5 +1,8 @@
 #include "utils.h"
 
+#include "TFile.h"
+#include "TTree.h"
+
 /*
 ############################################
 RDF UTILS
@@ -25,7 +28,9 @@ RNode defineMetadata(RNode df, bool isData = false) {
         .Define("is2024", "year == \"2024Prompt\"")
         .Define("isRun2", "is2016 || is2017 || is2018")
         .Define("isRun3", "is2022 || is2023 || is2024")
-        .Define("baseweight", "isData ? 1 : 1000 * xsec * lumi * genWeight / sumw");
+        .Define("xsecweight", "isData ? 1 : 1000 * xsec * lumi / sumw")
+        .Define("baseweight", "xsecweight * genWeight")
+        .Define("weight", "baseweight");
 
 }
 
@@ -282,7 +287,7 @@ SNAPSHOT
 std::string setOutputDirectory(const std::string &outdir, bool spanet_training) {
     std::string output_dir = "";
     if (spanet_training) {
-        output_dir = outdir + "/vbsvvhAnalysis/spanet_training/";
+        output_dir = outdir + "/spanet_training/";
     }
     else {
         output_dir = outdir;
@@ -305,7 +310,7 @@ std::string setOutputDirectory(const std::string &outdir, bool spanet_training) 
     return directory_path;
 }
 
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData, bool dumpInput)
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput)
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
@@ -313,23 +318,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
     // do not store branches that start with "_" nor raw NanoAOD collections
     for (auto &&ColName : ColNames) {
-        if ((ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") && ColName.starts_with("Muon_")) && !ColName.starts_with("_cut"))
+        if ((ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") || ColName.starts_with("Muon_")) || ColName.starts_with("HLT"))
         {
             continue;
         }
         final_variables.push_back(ColName);
     }
 
-    // add LHE info (not present in all samples, e.g. QCD)
-    if (!isData) {
-        auto allColNames = df.GetColumnNames();
-        auto hasColumn = [&allColNames](const std::string& name) {
-            return std::find(allColNames.begin(), allColNames.end(), name) != allColNames.end();
-        };
-        if (hasColumn("LHEReweightingWeight"))
-            final_variables.push_back("LHEReweightingWeight");
-        if (hasColumn("nLHEReweightingWeight"))
-            final_variables.push_back("nLHEReweightingWeight");
+    if (isSig) {
+        final_variables.push_back("LHEReweightingWeight");
+        final_variables.push_back("nLHEReweightingWeight");
     }
 
     // store all columns from input nanoAOD tree
@@ -345,6 +343,19 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
     std::string outputFile = outputDir + "/" + outputFileName + ".root";
     df.Snapshot("Events", outputFile, final_variables);
+
+    // RDataFrame::Snapshot() in multi-threaded mode does not write a TTree when
+    // 0 events pass the filters, producing a ROOT file with no keys.  Ensure the
+    // output always contains an "Events" TTree so downstream code can open it.
+    {
+        TFile f(outputFile.c_str(), "UPDATE");
+        if (!f.Get("Events")) {
+            TTree t("Events", "Events");
+            t.Write();
+        }
+        f.Close();
+    }
+
     std::cout << " -> Stored output file: " << outputFile << std::endl;
 }
 
@@ -356,12 +367,12 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
     final_variables.push_back("event");
 
     for (auto &&ColName : ColNames) {
-        if (ColName.starts_with("jet_") || 
+        if (ColName.starts_with("jet_") ||
             ColName.starts_with("fatjet_") ||
             ColName.starts_with("PuppiMET_") ||
-            ColName.starts_with("GenPart_") ||  
+            ColName.starts_with("GenPart_") ||
             ColName.starts_with("lepton_") ||
-            ColName.starts_with("gen_") || 
+            ColName.starts_with("gen_") ||
             ColName.starts_with("truth_")) {
                 final_variables.push_back(ColName);
             }
@@ -369,5 +380,15 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
 
     std::string outputFile = outputDir + "/" + outputFileName + "_spanet_training_data.root";
     df.Snapshot("Events", outputFile, final_variables);
+
+    {
+        TFile f(outputFile.c_str(), "UPDATE");
+        if (!f.Get("Events")) {
+            TTree t("Events", "Events");
+            t.Write();
+        }
+        f.Close();
+    }
+
     std::cout << " -> Stored output file: " << outputFile << std::endl;
 }

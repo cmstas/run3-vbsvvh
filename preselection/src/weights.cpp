@@ -499,8 +499,8 @@ RNode applyMCWeights(RNode df_) {
         df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
 
-    return df.Define("weight",
-        "baseweight *"
+    return df.Redefine("weight",
+        "weight *"
         "weight_pileup[0] * "
         "weight_muonid[0] * "
         "weight_muonreco[0] * "

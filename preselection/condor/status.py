@@ -357,29 +357,33 @@ def print_failed_jobs(jobs: Dict[str, dict], statuses: Dict[str, str]):
     print(f"Failed Jobs ({len(failed)})")
     print(f"{'='*60}")
 
+    red = "\033[91m"
+    reset = "\033[0m"
+
     for job_id, job in failed[:20]:  # Limit to first 20
         resubmit_count = job.get('resubmit_count', 0)
-        print(f"\n  {job_id}")
+        print(f"\n  {red}{job_id}{reset}")
         print(f"    Sample: {job.get('sample')}")
         print(f"    Files:  {job.get('n_files', 0)}")
         print(f"    Resubmits: {resubmit_count}")
         print(f"    Dir:    {job.get('job_dir')}")
 
-        # Check for error in stderr (use most recent file)
+        # Show tail of stdout and stderr (use most recent files)
         job_dir = Path(job.get('job_dir', ''))
-        stderr_files = sorted(job_dir.glob("job.*.stderr"), key=lambda f: f.stat().st_mtime, reverse=True)
-        if stderr_files:
-            try:
-                with open(stderr_files[0]) as f:
-                    stderr = f.read().strip()
-                if stderr:
-                    # Show last few lines
-                    lines = stderr.split('\n')[-5:]
-                    print(f"    Error (last 5 lines):")
-                    for line in lines:
-                        print(f"      {line}")
-            except IOError:
-                pass
+        for stream, label in [("stdout", "STDOUT"), ("stderr", "STDERR")]:
+            log_files = sorted(job_dir.glob(f"job.*.{stream}"), key=lambda f: f.stat().st_mtime, reverse=True)
+            if log_files:
+                try:
+                    with open(log_files[0]) as f:
+                        content = f.read().strip()
+                    if content:
+                        lines = content.split('\n')[-5:]
+                        print()
+                        print(f"    {label} (last {len(lines)} lines):")
+                        for line in lines:
+                            print(f"      {line}")
+                except IOError:
+                    pass
 
     if len(failed) > 20:
         print(f"\n  ... and {len(failed) - 20} more failed jobs")

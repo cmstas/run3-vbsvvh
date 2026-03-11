@@ -308,19 +308,28 @@ echo "=== Directory contents after analysis ==="
 ls -la
 ls -la $OUTPUTDIR/ 2>/dev/null || echo "Output directory not found"
 
+# Determine output file path (spanet_training uses a different output file name)
+if [[ "$EXTRA_FLAGS" == *"--spanet_training"* ]]; then
+    OUTPUT_ROOT_FILE="$OUTPUTDIR/${OUTPUTFILE}_spanet_training_data.root"
+else
+    OUTPUT_ROOT_FILE="$OUTPUTDIR/$OUTPUTFILE.root"
+fi
+
 # Check if output file exists
-if [ ! -f "$OUTPUTDIR/$OUTPUTFILE.root" ]; then
-    echo "ERROR: Output file not found: $OUTPUTDIR/$OUTPUTFILE.root"
+if [ ! -f "$OUTPUT_ROOT_FILE" ]; then
+    echo "ERROR: Output file not found: $OUTPUT_ROOT_FILE"
+    echo "=== Searching for any .root files ==="
+    find . -name "*.root" -ls 2>/dev/null
     exit 1
 fi
 
 echo ""
 echo "=== Validating output ROOT file ==="
-validate_root_file "$OUTPUTDIR/$OUTPUTFILE.root" "Events"
+validate_root_file "$OUTPUT_ROOT_FILE" "Events"
 if [ $? -ne 0 ]; then
     echo "ERROR: Output ROOT file validation failed"
-    echo "Removing corrupted file: $OUTPUTDIR/$OUTPUTFILE.root"
-    rm -f "$OUTPUTDIR/$OUTPUTFILE.root"
+    echo "Removing corrupted file: $OUTPUT_ROOT_FILE"
+    rm -f "$OUTPUT_ROOT_FILE"
     exit 1
 fi
 
@@ -328,7 +337,7 @@ echo ""
 echo "=== Staging out results ==="
 
 # Stage out to: OUTPUT_XRD/JOB_OUTPUT_NAME/SAMPLE_NAME/output_JOB_IDX.root
-COPY_SRC="file://$(pwd)/$OUTPUTDIR/$OUTPUTFILE.root"
+COPY_SRC="file://$(pwd)/$OUTPUT_ROOT_FILE"
 COPY_DEST="${OUTPUT_XRD}/${JOB_OUTPUT_NAME}/${SAMPLE_NAME}/output_${JOB_IDX}.root"
 
 echo "Copying: ${COPY_SRC} -> ${COPY_DEST}"
@@ -339,14 +348,67 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Verify output file exists at the destistation path
+# Verify output file integrity at the destination via checksum comparison.
+# First try ADLER32 checksums (fast). If checksums can't be computed (e.g. gfal-sum
+# not available or XRootD doesn't support it), fall back to opening the remote file
+# with ROOT and checking the Events tree is readable.
+# In either case, if verification fails the remote file is deleted to avoid leaving
+# corrupted files on storage that would look like successful output.
 echo "=== Verifying output file on XRootD ==="
-env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-stat "${COPY_DEST}" > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    echo "ERROR: Output verification failed - file not found on XRootD: ${COPY_DEST}"
-    exit 1
+LOCAL_CHECKSUM=$(env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-sum "${COPY_SRC}" ADLER32 2>&1)
+LOCAL_STATUS=$?
+REMOTE_CHECKSUM=$(env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-sum "${COPY_DEST}" ADLER32 2>&1)
+REMOTE_STATUS=$?
+
+# If checksum computation failed, fall back to ROOT file validation
+if [ $LOCAL_STATUS -ne 0 ] || [ $REMOTE_STATUS -ne 0 ]; then
+    echo "WARNING: Could not compute checksums (local status=$LOCAL_STATUS, remote status=$REMOTE_STATUS)"
+    echo "  Local:  $LOCAL_CHECKSUM"
+    echo "  Remote: $REMOTE_CHECKSUM"
+    echo "Falling back to remote ROOT file validation..."
+    python3 << PYEOF
+import sys
+try:
+    import ROOT
+    ROOT.gErrorIgnoreLevel = ROOT.kError
+    f = ROOT.TFile.Open("${COPY_DEST}")
+    if not f or f.IsZombie():
+        print("[VALIDATE] ERROR: Cannot open remote file or file is zombie")
+        sys.exit(1)
+    t = f.Get("Events")
+    if not t:
+        print("[VALIDATE] ERROR: Tree 'Events' not found in remote file")
+        f.Close()
+        sys.exit(1)
+    print(f"[VALIDATE] PASSED: Remote file readable with {t.GetEntries()} entries")
+    f.Close()
+except Exception as e:
+    print(f"[VALIDATE] ERROR: {e}")
+    sys.exit(1)
+PYEOF
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Remote ROOT file validation failed for ${COPY_DEST}"
+        echo "Removing corrupted remote file: ${COPY_DEST}"
+        env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-rm "${COPY_DEST}" 2>&1 || echo "WARNING: Failed to remove remote file"
+        exit 1
+    fi
+    echo "Output file validated on XRootD (checksum could not be verified)"
+else
+    # If checksums computed successfullym compare local vs remote
+    # gfal-sum output format: "<filepath> <checksum>", extract the checksum (2nd field)
+    LOCAL_SUM=$(echo "$LOCAL_CHECKSUM" | awk '{print $2}')
+    REMOTE_SUM=$(echo "$REMOTE_CHECKSUM" | awk '{print $2}')
+    echo "  Local checksum:  $LOCAL_SUM"
+    echo "  Remote checksum: $REMOTE_SUM"
+    if [ "$LOCAL_SUM" != "$REMOTE_SUM" ]; then
+        # If mismatch, the file was corrupted during transfer 
+        echo "ERROR: Checksum mismatch! File may be corrupted during transfer."
+        echo "Removing corrupted remote file: ${COPY_DEST}"
+        env -i X509_USER_PROXY=${X509_USER_PROXY} gfal-rm "${COPY_DEST}" 2>&1 || echo "WARNING: Failed to remove remote file"
+        exit 1
+    fi
+    echo "Output file verified successfully (ADLER32 checksums match)"
 fi
-echo "Output file verified successfully"
 
 # Stage out cutflow file if it exists
 if [ -f "$OUTPUTDIR/${OUTPUTFILE}_cutflow.txt" ]; then
