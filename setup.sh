@@ -1,8 +1,8 @@
-CMSSW_VERSION=CMSSW_15_0_4
+CMSSW_VERSION=CMSSW_16_1_0_pre2
 echo "Setting up CMSSW environment: $CMSSW_VERSION"
 # Use pre-built CMSSW from CVMFS with ONNX Runtime already included
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd /cvmfs/cms.cern.ch/el8_amd64_gcc12/cms/cmssw/$CMSSW_VERSION
+cd /cvmfs/cms.cern.ch/el8_amd64_gcc13/cms/cmssw/$CMSSW_VERSION
 eval `scramv1 runtime -sh`
 cd -
 echo "CMSSW_BASE=$CMSSW_BASE"
