@@ -323,12 +323,15 @@ class ConfigGenerator:
             "trees": ["Events"],
             "files": [f"{sample_dir_clean}/*.root"],
             "metadata": {
-                "category": self.category,
+                "kind": self.category,
                 "year": year,
                 "type": sample_type,
                 "xsec": float(xsec),
                 "lumi": lumi,
-                "nevents": nevents
+                "sumw": nevents,
+                "shortname": sample_name,
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/store/user/"
             }
         }
         print(f"  -> {sample_key}: {len(files)} files, {nevents:.0f} events")
