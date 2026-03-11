@@ -28,7 +28,9 @@ RNode defineMetadata(RNode df, bool isData = false) {
         .Define("is2024", "year == \"2024Prompt\"")
         .Define("isRun2", "is2016 || is2017 || is2018")
         .Define("isRun3", "is2022 || is2023 || is2024")
-        .Define("baseweight", "isData ? 1 : 1000 * xsec * lumi * genWeight / sumw");
+        .Define("xsecweight", "isData ? 1 : 1000 * xsec * lumi / sumw")
+        .Define("baseweight", "xsecweight * genWeight")
+        .Define("weight", "baseweight");
 
 }
 
@@ -308,7 +310,7 @@ std::string setOutputDirectory(const std::string &outdir, bool spanet_training) 
     return directory_path;
 }
 
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData, bool dumpInput)
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput)
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
@@ -316,23 +318,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
     // do not store branches that start with "_" nor raw NanoAOD collections
     for (auto &&ColName : ColNames) {
-        if ((ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") && ColName.starts_with("Muon_")) && !ColName.starts_with("_cut"))
+        if ((ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") || ColName.starts_with("Muon_")) || ColName.starts_with("HLT"))
         {
             continue;
         }
         final_variables.push_back(ColName);
     }
 
-    // add LHE info (not present in all samples, e.g. QCD)
-    if (!isData) {
-        auto allColNames = df.GetColumnNames();
-        auto hasColumn = [&allColNames](const std::string& name) {
-            return std::find(allColNames.begin(), allColNames.end(), name) != allColNames.end();
-        };
-        if (hasColumn("LHEReweightingWeight"))
-            final_variables.push_back("LHEReweightingWeight");
-        if (hasColumn("nLHEReweightingWeight"))
-            final_variables.push_back("nLHEReweightingWeight");
+    if (isSig) {
+        final_variables.push_back("LHEReweightingWeight");
+        final_variables.push_back("nLHEReweightingWeight");
     }
 
     // store all columns from input nanoAOD tree

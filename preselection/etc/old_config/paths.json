@@ -12,7 +12,7 @@
     "1Lep2FJ_run3": {
         "bkg": "/ceph/cms/store/user/aaarora/skims_v3/bkg/*/*",
         "data": "/ceph/cms/store/user/aaarora/skims_v3/data/*/*",
-        "sig": "/ceph/cms/store/user/aaarora/skims_v3/sig/*/*1p5*"
+        "sig": "/ceph/cms/store/user/aaarora/skims_4f/*/*/*1p5*"
     },
 
     "0Lep2FJ_run2": {

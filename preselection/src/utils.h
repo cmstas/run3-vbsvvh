@@ -119,7 +119,7 @@ SNAPSHOT
 ############################################
 */
 std::string setOutputDirectory(const std::string &outdir, bool spanet_training);
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isData, bool dumpInput);
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput);
 void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName);
 
 #endif

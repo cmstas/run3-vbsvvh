@@ -13,49 +13,22 @@ RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map
         std::cerr << "    Warning: Channel '" << channel << "' not found in trigger map. Skipping trigger selection." << std::endl;
         return df_;
     }
-    
-
     std::string trigger_condition = trigger_map.at(channel);
-    auto available_columns = df_.GetColumnNames();
-    std::unordered_set<std::string> col_set(available_columns.begin(), available_columns.end());
+    std::regex hlt_regex("HLT_[a-zA-Z0-9_]+");
+    auto hlt_begin = std::sregex_iterator(trigger_condition.begin(), trigger_condition.end(), hlt_regex);
+    auto hlt_end = std::sregex_iterator();
+    std::vector<std::string> seen_triggers;
 
-    std::string word = "";
-    std::string safe_condition = "";
+    for (auto it = hlt_begin; it != hlt_end; ++it)
+    {
+        std::string hlt_name = it->str(0);
+        if (std::find(seen_triggers.begin(), seen_triggers.end(), hlt_name) != seen_triggers.end())
+            continue;
+        seen_triggers.push_back(hlt_name);
+        df_ = df_.DefaultValueFor(hlt_name, (bool)false);
+    }
 
-    for (char c : trigger_condition) {
-        // Build words from alphanumeric characters and underscores
-        if (std::isalnum(c) || c == '_') {
-            word += c;
-        } else {
-            if (!word.empty()) {
-                // If it's a Trigger or Flag, check if it exists in the ROOT file
-                if (word.find("HLT_") == 0 || word.find("L1_") == 0 || word.find("Flag_") == 0) {
-                    if (col_set.find(word) == col_set.end()) {
-                        safe_condition += "false"; // Missing branch becomes safely 'false'
-                    } else {
-                        safe_condition += word;    // Branch exists, keep it
-                    }
-                } else {
-                    safe_condition += word;        // Not a trigger, keep it (e.g., '||', '&&')
-                }
-                word = "";
-            }
-            safe_condition += c; // Keep the whitespace/operator
-        }
-    }
-    // Handle the last word if string ends with alphanumeric
-    if (!word.empty()) {
-        if (word.find("HLT_") == 0 || word.find("L1_") == 0 || word.find("Flag_") == 0) {
-            if (col_set.find(word) == col_set.end()) safe_condition += "false";
-            else safe_condition += word;
-        } else {
-            safe_condition += word;
-        }
-    }
-    
-    std::cout << " -> Safely evaluating trigger condition: " << safe_condition << std::endl;
-    
-    return df_.Filter(safe_condition, "C1: Trigger Selection");
+    return df_.Filter(trigger_condition, "C1: Trigger Selection");
 }
 
 RNode ElectronSelections(RNode df_)
@@ -203,18 +176,24 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         );
     }
     else if (channel == "1lep_1FJ"){
-        df = df.Filter(
-            "((nMuon_Loose == 1) | (nElectron_Loose == 1)) &&"
-            "(nFatJets == 1)",
-            "C2: 1lep_1FJ"
-        );
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+                       "(lepton_pt[0] > 40)");
+        Cutflow::Add(df, "C2: 1-lepton selection");
+        df = df.Filter("nfatjet == 1");
+        Cutflow::Add(df, "C3: exactly 1 fat jet");
+        df = df.Filter("njet >= 4");
+        Cutflow::Add(df, "C4: at-least 4 jets");
     }
     else if (channel == "1lep_2FJ"){
-        df = df.Filter(
-            "((nMuon_Loose == 1) | (nElectron_Loose == 1)) &&"
-            "(nFatJets == 2)",
-            "C2: 1lep_2FJ"
-        );
+    	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+                       "(lepton_pt[0] > 40)");
+        Cutflow::Add(df, "C2: 1-lepton selection");
+        df = df.Filter("nfatjet >= 2");
+        Cutflow::Add(df, "C3: at-least 2 fat jets");
+        df = df.Filter("njet >= 2");
+        Cutflow::Add(df, "C4: at-least 2 jets");
     }
     else if (channel == "2lep_1FJ"){
         df = df.Filter(
