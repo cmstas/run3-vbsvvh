@@ -1,4 +1,5 @@
 #include "selections.h"
+#include "cutflow.h"
 
 RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
 {
@@ -162,17 +163,30 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
     
+    Cutflow::Add(df_, "All events");
     df = TriggerSelections(df, channel, TriggerMap);
+    Cutflow::Add(df, "C1: Trigger selection");
+    
     if (channel == "1Lep2FJ")
     {
     	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-                       "(lepton_pt[0] > 40)",
+                       "(lepton_pt[0] > 40) && njet >= 2 && nfatjet >= 2",
                        "C2: 1-lepton selection");
+        Cutflow::Add(df, "C2: 1-lepton selection");
+    }
+    else if (channel == "1Lep1FJ")
+    {
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+                       "(lepton_pt[0] > 40) && njet >= 4 && nfatjet >= 1",
+                       "C2: 1-lepton selection");
+        Cutflow::Add(df, "C2: 1-lepton selection");
     }
     else if (channel == "0Lep3FJ")
     {
         df = df.Filter("nMuon_Loose == 0 && nElectron_Loose == 0", "C2: 0-lepton selection");
+        Cutflow::Add(df, "C2: 0-lepton selection");
     }
     return df;
 }
