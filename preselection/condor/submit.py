@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import fnmatch
 import json
 import os
 import re
@@ -190,8 +191,70 @@ def get_user():
     return os.environ.get("USER", os.environ.get("USERNAME", "unknown"))
 
 
+def is_xrootd_path(path: str) -> bool:
+    """Check if a path is an xrootd URL."""
+    return path.startswith("root://")
+
+
+def parse_xrootd_url(url: str) -> tuple:
+    """
+    Parse an xrootd URL into (host, path) components.
+
+    Example: root://redirector.t2.ucsd.edu:1095//store/user/foo/bar
+    Returns: ("redirector.t2.ucsd.edu:1095", "/store/user/foo/bar")
+    """
+    remainder = url[len("root://"):]
+    slash_idx = remainder.index("/")
+    host = remainder[:slash_idx]
+    path = "/" + remainder[slash_idx:].lstrip("/")
+    return host, path
+
+
+def expand_xrootd_glob(file_pattern: str) -> List[str]:
+    """
+    Expand a glob pattern for xrootd paths using xrdfs ls.
+
+    Example pattern: root://redirector.t2.ucsd.edu:1095//store/user/foo/bar/*.root
+    """
+    host, full_path = parse_xrootd_url(file_pattern)
+    directory = os.path.dirname(full_path)
+    pattern = os.path.basename(full_path)
+
+    cmd = ["xrdfs", host, "ls", directory]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            print(f"  WARNING: xrdfs ls failed: {result.stderr.strip()}")
+            return []
+    except subprocess.TimeoutExpired:
+        print(f"  WARNING: xrdfs ls timed out for {directory}")
+        return []
+    except FileNotFoundError:
+        print(f"  ERROR: xrdfs command not found. Is XRootD client installed?")
+        return []
+
+    all_entries = [line.strip() for line in result.stdout.strip().split("\n") if line.strip()]
+
+    matched = []
+    for entry in all_entries:
+        filename = os.path.basename(entry)
+        if fnmatch.fnmatch(filename, pattern):
+            matched.append(f"root://{host}/{entry}")
+
+    return sorted(matched)
+
+
+def has_glob_wildcards(pattern: str) -> bool:
+    """Check if a string contains glob wildcard characters."""
+    return any(c in pattern for c in ('*', '?', '['))
+
+
 def expand_file_glob(file_pattern: str) -> List[str]:
-    """Expand a glob pattern to list of actual files."""
+    """Expand a glob pattern to list of actual files. Supports both local and xrootd paths."""
+    if not has_glob_wildcards(file_pattern):
+        return [file_pattern]
+    if is_xrootd_path(file_pattern):
+        return expand_xrootd_glob(file_pattern)
     files = sorted(glob(file_pattern))
     return files
 
