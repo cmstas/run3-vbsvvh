@@ -8,7 +8,7 @@ GOLDEN JSON
 
 RNode applyGoldenJSONWeight(const lumiMask& golden, RNode df){
     auto goldenjson = [&golden](unsigned int &run, unsigned int &luminosityBlock){ return golden.accept(run, luminosityBlock); };
-    return df.Define("_goldenJSON", goldenjson, {"run", "luminosityBlock"});
+    return df.Filter(goldenjson, {"run", "luminosityBlock"});
 }
 
 /*
@@ -457,8 +457,7 @@ RNode applyLHEScaleWeight_muR(RNode df) {
 }
 
 RNode applyDataWeights(RNode df_) {
-    auto df = applyGoldenJSONWeight(LumiMask, df_);
-    return df.Redefine("weight", "_goldenJSON"); // weight initially defined in utils.cpp
+    return applyGoldenJSONWeight(LumiMask, df_);
 }
 
 RNode applyMCWeights(RNode df_) {
