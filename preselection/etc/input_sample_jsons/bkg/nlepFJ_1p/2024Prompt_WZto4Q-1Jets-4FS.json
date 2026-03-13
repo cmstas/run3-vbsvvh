@@ -1,0 +1,73 @@
+{
+    "samples": {
+        "WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2024Prompt",
+                "xsec": 24.88,
+                "lumi": 109.08,
+                "sumw": 255679063.950726,
+                "shortname": "WZto4Q-1Jets-4FS",
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/08dbfb34-8638-4e7e-b4a2-899ed6855fad.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/0e424418-d6bf-4d2a-a31e-dd0df1bc268d.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/0f63976e-2796-4ec2-bc96-a6912563b53b.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/12e35dd0-764d-4c92-b516-66e7b59f567b.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/14733bf2-ad9d-4088-a054-35d0b61d3699.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/1877b65c-10c6-4fbc-abb3-f204451ec0f7.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/1db8e627-cb11-4a1b-b5b0-c08cadb66bd5.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/1e97486f-b8bd-4610-9b95-de67dd3eb655.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/1f8cbe75-4d8a-4620-9367-15aa8c513e67.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/2131d94f-1919-402f-9583-8aa752a09859.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/2781cd13-4c80-4563-b35a-340e5ab87616.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/2ab0e5a0-199f-4986-816b-ce0e9ad2474a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/30bc7cad-e020-42e9-9c4e-d9c27b2bafcf.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/4561a208-04dc-43f5-98ed-117843637b33.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/4837fcd5-df92-475f-824a-59af0901b4b2.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/4ebc6067-0ed5-4a02-acce-160d2cc4d98b.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/532a946f-881f-4b13-be51-990d96a25a14.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/57298f21-641e-44dc-9c74-e3d65f09a45e.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5a4887e1-6bd7-4971-875e-fe3ed0e9d6dd.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5c43ef11-4ac1-4993-8b69-cff9bfbd77af.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5cc3e57a-5406-4b52-9e95-6ba0372b044f.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5d91f2b5-fed6-48a4-ac46-2444b2649b6e.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5dc39617-f3f0-4374-8757-ae823c90a5ca.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/62aa6308-efa5-432e-bd4c-b1dee9221149.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/70d50fe3-d5e9-4fed-86e0-cdb97a1b6343.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/735c7032-5e84-40cd-b0c2-eafbb9037cfc.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/741ca8e0-362c-4d09-8977-91a608a0c84a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/7b720df9-38d1-4406-80a2-66adb0eda8ce.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/815c4a5a-f699-49b5-a729-63edb207a64e.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/8bf32d29-4b11-4fa6-a120-f402fe939b16.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/8c87d0ec-0508-4b27-acb0-b3ebcb8d9f55.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/90ea8ec1-93da-44a6-9c0e-2ef7e983ecd7.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/967bb27f-7bf1-40b0-bdb7-29d16c81b24d.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/9ac77029-15f7-495a-b6d9-0f8966ed0543.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/9d4d7b88-0950-4b78-b06a-8f89f141f9bd.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/9f271a13-0547-4662-a50d-ccf035eee023.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/a19080c9-ef07-4359-a50e-82af8b0d429a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/a62369f2-1672-40bd-b441-2876b966c3cf.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/b2c50839-e826-45cd-af4e-7c64a2427d62.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/c1786191-ea90-43c0-979f-2b0c3dde68d7.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/c4c9c1e0-c570-4a91-b5e6-a4a285a32d5a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/c9789c1a-4cf9-4349-8c9c-2d420c4a312e.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/cc109056-3208-4bd0-94e8-15bf5b977864.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/d096020f-876f-4e6e-ba04-a6cb27a64d05.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/dd3d93a3-2648-46c1-bc84-d4310610ad12.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/e0855612-ed63-4feb-a96f-c47c1fd2480d.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f02f1ab3-2038-4c89-9397-27a3a93e8761.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f418d528-75a6-4d27-ace4-dbbd7cc10114.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f72a5aef-1f40-43ab-b1f4-6d999670f9b1.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/fb5cb5b9-5288-4027-b30c-a52d1892a8ef.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/fc63c20c-58a0-4a1f-9786-969562781fbe.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/ffc07592-5a3d-4a90-8f53-2aa31735decb.root"
+            ]
+        }
+    }
+}
