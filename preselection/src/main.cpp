@@ -177,14 +177,14 @@ int main(int argc, char** argv) {
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
+        df = applyDataCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference);
         df = applyDataWeights(df);
-        df = applyDataCorrections(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
+        df = applyMCCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
         df = applyMCWeights(df);
-        df = applyMCCorrections(df);
     }
 
     Cutflow::Add(df, "After SFs and corrections");
