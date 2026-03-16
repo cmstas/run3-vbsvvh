@@ -72,7 +72,7 @@ RNode HEMCorrection(RNode df, bool isData) {
         // Need to check if there is dependence on jet ID in v15
         auto eta_ = eta[jet_mask];
         auto phi_ = phi[jet_mask];
-        if (sample_year == "2018" && ((isData && run >= 319077) || (!isData && event % 1961 < 1286))) {
+        if (sample_year == "2018" && ((isData && run >= 319077) || (!isData && event % 100 < 64))) {
             for (size_t i = 0; i < eta_.size(); i++) {
                 if (eta_[i] > -3.2 && eta_[i] < -1.3 && phi_[i] > -1.57 && phi_[i] < -0.87) {
                     return false;
