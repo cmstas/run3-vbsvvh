@@ -11,6 +11,7 @@ SKIM_CHANNELS = [
     "0lep_2FJ",
     "0lep_3FJ",
     "1lep_1FJ",
+    "1lep_2FJ",
     "2lep_1FJ",
     "2lep_2FJ",
     "2lepSS",
@@ -78,7 +79,7 @@ def main():
     parser.add_argument('-o', '--outpath',     help = 'Output directory', default=".")
     parser.add_argument('-n', '--outname',     help = 'Output name', default="rdf_output")
     parser.add_argument('-r', '--run',         help = 'Which run (2 or 3)', choices=['2','3'])
-    parser.add_argument('-p', '--prefix',      help = 'Prefix to append to the file paths', default=None)
+    parser.add_argument('-p', '--prefix',      help = 'Prefix to append to the file paths', default="/ceph/cms/")
     parser.add_argument('-j', '--n-cores',     help = 'Number of cores to use for local execution', default=64)
     parser.add_argument('-d', '--dry-run',     help = 'Do not actually execute the run command', action='store_true')
     args = parser.parse_args()
@@ -107,7 +108,7 @@ def main():
 
     # Construct the bash run command
     if args.mode == "local":
-        command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {args.channel} -j {args.n_cores} --run_number {args.run}"
+        command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {args.channel} -j {args.n_cores} --run_number {args.run} --progress True"
         print(f"  -> Now running command \"{command}\"...\n")
         if not args.dry_run: os.system(command)
     elif args.mode == "condor":
