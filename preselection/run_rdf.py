@@ -108,7 +108,7 @@ def main():
 
     # Construct the bash run command
     if args.mode == "local":
-        command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {args.channel} -j {args.n_cores} --run_number {args.run} --progress True"
+        command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {args.channel} -j {args.n_cores} --run_number {args.run} --progress"
         print(f"  -> Now running command \"{command}\"...\n")
         if not args.dry_run: os.system(command)
     elif args.mode == "condor":
