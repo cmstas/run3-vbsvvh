@@ -349,7 +349,7 @@ RNode applyElectronScaleAndSmearing(RNode df, bool isData) {
 
         for (size_t i = 0; i < pt.size(); i++) {
             float scEta = eta[i] + deltaEtaSC[i];
-            scales[i] = electronSSCorrections.at(year).at("Scale")->evaluate({"scale", static_cast<double>(run), scEta, r9[i], pt[i], static_cast<double>(seedGain[i])});
+            scales[i] = electronSSCorrections.at(year).compound().at("Scale")->evaluate({"scale", static_cast<double>(run), scEta, r9[i], pt[i], static_cast<double>(seedGain[i])}); 
         }
         return scales;
     };
