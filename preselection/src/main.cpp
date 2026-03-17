@@ -180,6 +180,7 @@ int main(int argc, char** argv) {
         df = applyDataCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference);
         df = applyDataWeights(df);
+        df = removeDuplicates(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);

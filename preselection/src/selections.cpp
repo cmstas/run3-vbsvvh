@@ -136,7 +136,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     df = AK8JetsSelection(df);
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
-    
+
     Cutflow::Add(df_, "All events");
     
     if (noCut) return df;
