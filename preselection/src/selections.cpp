@@ -119,8 +119,8 @@ RNode AK8JetsSelection(RNode df_)
                   .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
                                            "FatJet_pt > 250 && "
                                            "abs(FatJet_eta) <= 2.5 && "
-                                           "FatJet_msoftdrop > 40")
-                                           //"FatJet_jetId > 0")
+                                           "FatJet_msoftdrop > 40 && "
+                                           "FatJet_jetId > 0")
                   .Define("nFatJets", "Sum(_good_ak8jets)");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");

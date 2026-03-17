@@ -322,10 +322,6 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         {
             continue;
         }
-        // For now skip FJ ID till we get new skims (since it's sometimes wrong length)
-        if (ColName.starts_with("fatjet_jetId")){
-            continue;
-        }
         final_variables.push_back(ColName);
     }
 
