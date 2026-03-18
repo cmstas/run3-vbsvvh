@@ -219,7 +219,8 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
     else: name_for_metadata = dataset_name_short
 
     # Get the sum of weights for all of the files in this dataset and build metadata dict
-    metadata_dict = sum_runs_summaries(json_fullpath_lst, dataset_fullpath)
+    #metadata_dict = sum_runs_summaries(json_fullpath_lst, dataset_fullpath) # No good for now, since RDF cannot read lists
+    metadata_dict = {}
     metadata_dict["kind"] = kind
     metadata_dict["year"] = year
     metadata_dict["xsec"] = xsec_val
@@ -227,6 +228,12 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
     metadata_dict["shortname"] = name_for_metadata
     metadata_dict["do_ewk_corr"] = do_ewk_corr
     metadata_dict["local_prefix"] = local_prefix
+    if kind == "data":
+        # RDF expects to read something for sumw, even if not used
+        metadata_dict["sumw"] = float(0)
+    else:
+        # Otherwise grab the sumw from the runs summary dict
+        metadata_dict["sumw"] = float(sum_runs_summaries(json_fullpath_lst, dataset_fullpath)["genEventSumw"])
 
     # Fill the out dict
     out_dict["trees"] = ["Events"]
