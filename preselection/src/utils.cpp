@@ -284,14 +284,9 @@ SNAPSHOT
 ############################################
 */
 
-std::string setOutputDirectory(const std::string &outdir, bool spanet_training) {
+std::string setOutputDirectory(const std::string &outdir) {
     std::string output_dir = "";
-    if (spanet_training) {
-        output_dir = outdir + "/spanet_training/";
-    }
-    else {
-        output_dir = outdir;
-    }
+    output_dir = outdir;
 
     std::filesystem::path directory_path(output_dir);
     // Check if the directory exists
@@ -310,7 +305,7 @@ std::string setOutputDirectory(const std::string &outdir, bool spanet_training) 
     return directory_path;
 }
 
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput)
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool dumpInput)
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
@@ -325,10 +320,6 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         final_variables.push_back(ColName);
     }
 
-    if (isSig) {
-        final_variables.push_back("LHEReweightingWeight");
-        final_variables.push_back("nLHEReweightingWeight");
-    }
     final_variables.push_back("run");
     final_variables.push_back("luminosityBlock");
     final_variables.push_back("Electron_pt");
