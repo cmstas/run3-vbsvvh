@@ -2,17 +2,9 @@
 #include "ROOT/RDFHelpers.hxx"
 #include "ROOT/RLogger.hxx"
 
-#include "weights.h"
-#include "corrections.h"
-#include "selections.h"
 #include "utils.h"
-#include "genSelections.h"
 
 #include "argparser.hpp"
-#include "cutflow.h"
-
-#include "spanet.h"
-#include "spanet_run2.h"
 
 
 
@@ -72,7 +64,6 @@ int main(int argc, char** argv) {
 
     // Run analysis
     std::cout << " -> Running data analysis" << std::endl;
-    df = runPreselection(df);
 
     saveSnapshot(df, output_dir, output_file, args.dumpInput);
 
