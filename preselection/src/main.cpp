@@ -2,24 +2,17 @@
 #include "ROOT/RDFHelpers.hxx"
 #include "ROOT/RLogger.hxx"
 
-#include "utils.h"
-
 #include "argparser.hpp"
 
-
+#include "TFile.h"
+#include "TTree.h"
 
 struct MyArgs : public argparse::Args {
-    std::string &spec       = kwarg("i,input", "spec.json path");
-    std::string &name       = kwarg("n,name", "Naming tag for the output").set_default("rdf_output");
-    std::string &outdir     = kwarg("o,outdir", "Path to output").set_default(".");
-    std::string &run_number = kwarg("r,run_number", "Run number (2 or 3)");
-    
-    int &nthread    = kwarg("j,nthread", "number of threads for ROOT").set_default(0);
-
-    bool &progress = flag("progress", "Show progress bar").set_default(false);
-    bool &dumpInput              = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
-    bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
+    std::string &spec  = kwarg("i,input", "spec.json path");
+    std::string &name  = kwarg("n,name", "Naming tag for the output").set_default("rdf_output");
+    int &nthread       = kwarg("j,nthread", "number of threads for ROOT").set_default(0);
 };
+
 
 
 int main(int argc, char** argv) {
@@ -28,37 +21,45 @@ int main(int argc, char** argv) {
     std::string input_spec = args.spec;
     std::string output_file = args.name;
 
-    if (args.nthread > 64) {
-        std::cerr << "Error: nthread cannot exceed 64 (requested: " << args.nthread << ")" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // Create output directory
-    std::string output_dir = setOutputDirectory(args.outdir);
-    
-    std::cout << " -> Running analysis for Run " << args.run_number << std::endl;
-    
     if (args.nthread > 1) {
         ROOT::EnableImplicitMT(args.nthread);
         ROOT::EnableThreadSafety();
     }
 
-    // Load df
-    ROOT::RDataFrame df_ = ROOT::RDF::Experimental::FromSpec(input_spec);
-    if (args.progress) { // progress bar isn't needed if using condor so turn off by default
-        ROOT::RDF::Experimental::AddProgressBar(df_);
+    ROOT::RDataFrame df = ROOT::RDF::Experimental::FromSpec(input_spec);
+
+    ROOT::RDF::Experimental::AddProgressBar(df);
+
+    std::vector<std::string> final_variables;
+    final_variables.push_back("event");
+    final_variables.push_back("run");
+    final_variables.push_back("luminosityBlock");
+    final_variables.push_back("Electron_pt");
+    final_variables.push_back("Electron_eta");
+    final_variables.push_back("Electron_phi");
+    final_variables.push_back("Electron_mass");
+    final_variables.push_back("Muon_pt");
+    final_variables.push_back("Muon_eta");
+    final_variables.push_back("Muon_phi");
+    final_variables.push_back("Muon_mass");
+
+
+    std::string outputFile = output_file + ".root";
+    df.Snapshot("Events", outputFile, final_variables);
+
+    // RDataFrame::Snapshot() in multi-threaded mode does not write a TTree when
+    // 0 events pass the filters, producing a ROOT file with no keys.  Ensure the
+    // output always contains an "Events" TTree so downstream code can open it.
+    {
+        TFile f(outputFile.c_str(), "UPDATE");
+        if (!f.Get("Events")) {
+            TTree t("Events", "Events");
+            t.Write();
+        }
+        f.Close();
     }
 
-    // Set output file name and input type based on kind
-    bool isData = true;
-    if (output_file.empty()) {
-        output_file = "data";
-    }
-
-    // Run analysis
-    std::cout << " -> Running data analysis" << std::endl;
-
-    saveSnapshot(df_, output_dir, output_file, args.dumpInput);
+    std::cout << " -> Stored output file: " << outputFile << std::endl;
 
     return 0;
 }
