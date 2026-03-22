@@ -33,27 +33,12 @@ struct MyArgs : public argparse::Args {
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
 };
 
-RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference &spanet_inference, SPANetRun2::SPANetInference &spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
+RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal)
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
-    df = runPreselection(df, ana, makeSpanetTrainingdata);
+    df = runPreselection(df);
     
-    if (isSignal) {
-        df = GenSelections(df);
-    }
-
-    if (!makeSpanetTrainingdata && runSPANetInference) {
-        std::cout << "Running spanet" << std::endl;
-        if (run_number == "2"){
-    	    df = spanet_inference_run2.RunSPANetInference(df);
-            df = spanet_inference_run2.ParseSpanetInference(df);
-        }
-        else {
-            df = spanet_inference.RunSPANetInference(df);
-            df = spanet_inference.ParseSpanetInference(df);
-        }
-    }
     return df;
 }
 
@@ -68,48 +53,11 @@ int main(int argc, char** argv) {
         std::exit(EXIT_FAILURE);
     }
 
-    std::vector<std::string> channels = {
-        "all_events",
-        "0lep_0FJ",
-        "0lep_1FJ",
-        "0lep_2FJ",
-        "0lep_3FJ",
-        "1lep_1FJ",
-        "1lep_2FJ",
-        "2lep_1FJ",
-        "2lep_2FJ",
-        //"2lepSS",
-        "3lep",
-        "4lep",
-    };
-    if (std::find(channels.begin(), channels.end(), args.ana) == channels.end()) {
-        if (!args.makeSpanetTrainingdata) {
-            std::cerr << "Did not recognize analysis tag: " << args.ana << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    }
-
     // Create output directory
     std::string output_dir = setOutputDirectory(args.outdir, args.makeSpanetTrainingdata);
     
-    if (args.run_number != "2" && args.run_number != "3") {
-        throw std::runtime_error("Invalid run_number: must be 2 or 3");
-    }
     std::cout << " -> Running analysis for Run " << args.run_number << std::endl;
     
-    // Instantiate SPANet inference for run 2 and run 3
-    std::string  model_path;
-
-    model_path = "spanet/run2/v31/model.onnx";
-    SPANetRun2::SPANetInference spanet_inference_run2(model_path, args.batch_size);
-    std::cout << " -> Loading Run 2 ONNX model from: " << model_path << std::endl;
-    std::cout << "    ONNX session loaded successfully." << std::endl;
-    
-    model_path = "spanet/v2/model.onnx";
-    std::cout << " -> Loading Run 3 ONNX model from: " << model_path << std::endl;
-    SPANet::SPANetInference spanet_inference(model_path, args.batch_size);
-    std::cout << "    ONNX session loaded successfully." << std::endl;
-
     if (args.runSPANetInference && args.nthread > 1) {
         std::cout << " -> SPANet inference requires single-threaded execution, setting nthread=1" << std::endl;
         args.nthread = 1;
@@ -131,70 +79,20 @@ int main(int argc, char** argv) {
     std::cout << " -> Sample kind from config: " << kind << std::endl;
 
     // Set output file name and input type based on kind
-    bool isData = false;
+    bool isData = true;
     bool isSignal = false;
-    if (kind.find("data") != std::string::npos) {
-        isData = true;
-        if (output_file.empty()) {
-            output_file = "data";
-        }
-    }
-    else if (kind.find("sig") != std::string::npos) {
-        // Handle categories like "sig", "sig_c2v_1p5_c3_1p0", etc.
-        isSignal = true;
-        if (output_file.empty()) {
-            output_file = "sig";
-        }
-    }
-    else if (kind.find("bkg") != std::string::npos) {
-        // Handle categories like "bkg", "bkg_QCD", "bkg_ttbar", etc.
-        if (output_file.empty()) {
-            output_file = "bkg";
-        }
-    }
-    else {
-        std::cerr << "Unknown kind in config: " << kind << std::endl;
-        std::cerr << "Expected: data, sig, or bkg*" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    bool makeSpanetTrainingdata = args.makeSpanetTrainingdata;
-    if (!isSignal) {
-        makeSpanetTrainingdata = false; // do not make training data for non-signal samples
+    if (output_file.empty()) {
+        output_file = "data";
     }
 
     // Define metadata
     auto df = defineMetadata(df_, isData);
 
-    Cutflow::SetWeightCol(isData ? "1" : "weight");
-
-    if (args.cutflow) Cutflow::Enable();
-
     // Run analysis
-    if (isData) {
-        std::cout << " -> Running data analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference);
-        df = applyDataWeights(df);
-        df = applyDataCorrections(df);
-        df = removeDuplicates(df);
-    } else {
-        std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
-        df = applyMCCorrections(df);
-    }
-
-    Cutflow::Add(df, "After SFs and corrections");
-
-    if (isSignal && makeSpanetTrainingdata) {
-        std::cout << " -> Saving SPANet training data" << std::endl;
-        saveSpanetSnapshot(df, output_dir, output_file);
-        Cutflow::Print();
-        return 0; // Exit after saving training data
-    }
+    std::cout << " -> Running data analysis" << std::endl;
+    df = runAnalysis(df, args.ana, args.run_number, isSignal);
 
     saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput);
-    Cutflow::Print();
 
     return 0;
 }

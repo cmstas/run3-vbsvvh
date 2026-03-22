@@ -29,12 +29,11 @@ const std::unordered_map<std::string, std::string> TriggerMap = {
     {"0lep_3FJ", "HLT_PFHT1050"},
 };
 
-RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map);
 RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
 RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
 
-RNode runPreselection(RNode df_, std::string channel, bool noCut);
+RNode runPreselection(RNode df_);
 
 #endif // SELECTIONS_H

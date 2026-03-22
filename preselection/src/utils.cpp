@@ -329,6 +329,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         final_variables.push_back("LHEReweightingWeight");
         final_variables.push_back("nLHEReweightingWeight");
     }
+    final_variables.push_back("run");
+    final_variables.push_back("luminosityBlock");
+    final_variables.push_back("Electron_pt");
+    final_variables.push_back("Electron_eta");
+    final_variables.push_back("Electron_phi");
+    final_variables.push_back("Electron_mass");
+    final_variables.push_back("Muon_pt");
+    final_variables.push_back("Muon_eta");
+    final_variables.push_back("Muon_phi");
+    final_variables.push_back("Muon_mass");
 
     // store all columns from input nanoAOD tree
     if (dumpInput) {

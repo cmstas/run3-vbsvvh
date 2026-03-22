@@ -1,35 +1,6 @@
 #include "selections.h"
 #include "cutflow.h"
 
-RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
-{
-    if (trigger_map.empty())
-    {
-        std::cerr << "    Warning: No trigger map provided. Skipping trigger selection." << std::endl;
-        return df_;
-    }
-    if (trigger_map.find(channel) == trigger_map.end())
-    {
-        std::cerr << "    Warning: Channel '" << channel << "' not found in trigger map. Skipping trigger selection." << std::endl;
-        return df_;
-    }
-    std::string trigger_condition = trigger_map.at(channel);
-    std::regex hlt_regex("HLT_[a-zA-Z0-9_]+");
-    auto hlt_begin = std::sregex_iterator(trigger_condition.begin(), trigger_condition.end(), hlt_regex);
-    auto hlt_end = std::sregex_iterator();
-    std::vector<std::string> seen_triggers;
-
-    for (auto it = hlt_begin; it != hlt_end; ++it)
-    {
-        std::string hlt_name = it->str(0);
-        if (std::find(seen_triggers.begin(), seen_triggers.end(), hlt_name) != seen_triggers.end())
-            continue;
-        seen_triggers.push_back(hlt_name);
-        df_ = df_.DefaultValueFor(hlt_name, (bool)false);
-    }
-
-    return df_.Filter(trigger_condition, "C1: Trigger Selection");
-}
 
 RNode ElectronSelections(RNode df_)
 {
@@ -129,104 +100,8 @@ RNode AK8JetsSelection(RNode df_)
     return df;
 }
 
-RNode runPreselection(RNode df_, std::string channel, bool noCut)
+RNode runPreselection(RNode df_)
 {
     auto df = LeptonSelections(df_);
-    df = AK4JetsSelection(df);
-    df = AK8JetsSelection(df);
-    df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
-            .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
-
-    Cutflow::Add(df_, "All events");
-    df = TriggerSelections(df, channel, TriggerMap);
-    Cutflow::Add(df, "C1: Trigger selection");
-
-    if (channel == "all_events"){
-        df = df.Filter(
-            "nMuon_Loose > -1", // Probably there is a better way to write a pass through
-            "C2: all_events"
-        );
-    }
-    else if (channel == "0lep_0FJ"){
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 0)",
-            "C2: 0lep_0FJ"
-        );
-    }
-    else if (channel == "0lep_1FJ"){
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 1)",
-            "C2: 0lep_1FJ"
-        );
-    }
-    else if (channel == "0lep_2FJ"){
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 2)",
-            "C2: 0lep_2FJ"
-        );
-    }
-    else if (channel == "0lep_3FJ"){
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 3)",
-            "C2: 0lep_3FJ"
-        );
-    }
-    else if (channel == "1lep_1FJ"){
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-                       "(lepton_pt[0] > 40)");
-        Cutflow::Add(df, "C2: 1-lepton selection");
-        df = df.Filter("nfatjet == 1");
-        Cutflow::Add(df, "C3: exactly 1 fat jet");
-        df = df.Filter("njet >= 4");
-        Cutflow::Add(df, "C4: at-least 4 jets");
-    }
-    else if (channel == "1lep_2FJ"){
-    	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
-                       "(lepton_pt[0] > 40)");
-        Cutflow::Add(df, "C2: 1-lepton selection");
-        df = df.Filter("nfatjet >= 2");
-        Cutflow::Add(df, "C3: at-least 2 fat jets");
-        df = df.Filter("njet >= 2");
-        Cutflow::Add(df, "C4: at-least 2 jets");
-    }
-    else if (channel == "2lep_1FJ"){
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
-            "(nFatJets == 1)",
-            "C2: 2lep_1FJ"
-        );
-    }
-    else if (channel == "2lep_2FJ"){
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
-            "(nFatJets == 2)",
-            "C2: 2lep_2FJ"
-        );
-    }
-    //else if (channel == "2lepSS"){
-    //    df = df.Filter(
-    //        "((nMuon_Loose + nElectron_Loose) == 2) &&"
-    //        //same sign requirement
-    //        "C2: 2lepSS"
-    //    );
-    //}
-    else if (channel == "3lep"){
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 3)",
-            "C2: 3lep"
-        );
-    }
-    else if (channel == "4lep"){
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 4)",
-            "C2: 4lep"
-        );
-    }
     return df;
 }
