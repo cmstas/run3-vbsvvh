@@ -49,23 +49,16 @@ int main(int argc, char** argv) {
         ROOT::RDF::Experimental::AddProgressBar(df_);
     }
 
-    // Get sample category from config file
-    std::string kind = getCategoryFromConfig(input_spec);
-    std::cout << " -> Sample kind from config: " << kind << std::endl;
-
     // Set output file name and input type based on kind
     bool isData = true;
     if (output_file.empty()) {
         output_file = "data";
     }
 
-    // Define metadata
-    auto df = defineMetadata(df_, isData);
-
     // Run analysis
     std::cout << " -> Running data analysis" << std::endl;
 
-    saveSnapshot(df, output_dir, output_file, args.dumpInput);
+    saveSnapshot(df_, output_dir, output_file, args.dumpInput);
 
     return 0;
 }
