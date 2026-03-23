@@ -314,6 +314,8 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
+    final_variables.push_back("run");
+    final_variables.push_back("luminosityBlock");
     final_variables.push_back("event");
 
     // do not store branches that start with "_" nor raw NanoAOD collections
