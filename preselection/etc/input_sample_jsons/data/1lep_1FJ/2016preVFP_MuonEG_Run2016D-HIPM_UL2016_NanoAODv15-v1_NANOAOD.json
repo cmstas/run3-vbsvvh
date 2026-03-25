@@ -15,7 +15,7 @@
                 "year": "2016preVFP",
                 "xsec": 1.0,
                 "lumi": 19.52,
-                "shortname": "data",
+                "shortname": "MuonEG",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
                 "sumw": 0.0
