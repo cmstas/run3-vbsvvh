@@ -5,41 +5,41 @@ DS_DICT = {
         "ds_prio_lst" : ["DoubleMuon", "MuonEG", "DoubleEG", "SingleMuon", "SingleElectron"],
         "ds_trg_dict" : {
             "DoubleMuon" : [
-                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
-                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL",
-                "Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL",
-                "Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
-                "TripleMu_12_10_5",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL",
+                "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL",
+                "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
+                "HLT_TripleMu_12_10_5",
             ],
             "MuonEG" : [
-                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL",
-                "Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL",
-                "Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu8_DiEle12_CaloIdL_TrackIdL",
-                "DiMu9_Ele9_CaloIdL_TrackIdL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL",
             ],
             "DoubleEG" : [
-                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
             ],
             "SingleMuon" : [
-                "IsoMu24",
-                "IsoTkMu24",
-                "IsoMu22_eta2p1",
-                "IsoTkMu22_eta2p1",
-                "IsoMu22",
-                "IsoTkMu22",
-                "IsoMu27",
+                "HLT_IsoMu24",
+                "HLT_IsoTkMu24",
+                "HLT_IsoMu22_eta2p1",
+                "HLT_IsoTkMu22_eta2p1",
+                "HLT_IsoMu22",
+                "HLT_IsoTkMu22",
+                "HLT_IsoMu27",
             ],
             "SingleElectron" : [
-                'Ele27_WPTight_Gsf',
-                "Ele25_eta2p1_WPTight_Gsf",
-                "Ele27_eta2p1_WPLoose_Gsf",
+                'HLT_Ele27_WPTight_Gsf',
+                "HLT_Ele25_eta2p1_WPTight_Gsf",
+                "HLT_Ele27_eta2p1_WPLoose_Gsf",
             ],
         },
     },
@@ -48,31 +48,31 @@ DS_DICT = {
         "ds_prio_lst" : ["DoubleMuon", "MuonEG", "DoubleEG", "SingleMuon", "SingleElectron"],
         "ds_trg_dict" : {
             "DoubleMuon" : [
-                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
-                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
-                "TripleMu_12_10_5",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+                "HLT_TripleMu_12_10_5",
             ],
             "MuonEG" : [
-                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu8_DiEle12_CaloIdL_TrackIdL",
-                "Mu8_DiEle12_CaloIdL_TrackIdL_DZ", # Note: Listed in Andrew's thesis, but not TOP-19-001 AN
-                "DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ", # Note: Listed in Andrew's thesis, but not TOP-19-001 AN
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
             ],
             "DoubleEG" : [
-                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
             ],
             "SingleMuon" : [
-                "IsoMu24",
-                "IsoMu27",
+                "HLT_IsoMu24",
+                "HLT_IsoMu27",
             ],
             "SingleElectron" : [
-                "Ele32_WPTight_Gsf",
-                "Ele35_WPTight_Gsf",
+                "HLT_Ele32_WPTight_Gsf",
+                "HLT_Ele35_WPTight_Gsf",
             ],
         },
     },
@@ -81,29 +81,29 @@ DS_DICT = {
         "ds_prio_lst" : ["DoubleMuon", "MuonEG", "SingleMuon", "EGamma"],
         "ds_trg_dict" : {
             "DoubleMuon" : [
-                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
-                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
-                "TripleMu_12_10_5",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+                "HLT_TripleMu_12_10_5",
             ],
             "MuonEG" : [
-                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Mu8_DiEle12_CaloIdL_TrackIdL",
-                "Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
-                "DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
             ],
             "SingleMuon" : [
-                "IsoMu24",
-                "IsoMu27",
+                "HLT_IsoMu24",
+                "HLT_IsoMu27",
             ],
             "EGamma" : [
-                "Ele32_WPTight_Gsf",
-                "Ele35_WPTight_Gsf",
-                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
+                "HLT_Ele32_WPTight_Gsf",
+                "HLT_Ele35_WPTight_Gsf",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
             ],
         },
     },
@@ -158,7 +158,7 @@ def main():
     out_str = ""
 
     # Loop over the years
-    for year in DS_DICT:
+    for i,year in enumerate(DS_DICT):
 
         # Check for self-consistency in the DS_DICT
         ds_names_prio_lst = DS_DICT[year]["ds_prio_lst"]
@@ -183,9 +183,12 @@ def main():
             trg_overlaps = get_or_of_trgs(trgs_for_higher_priority_ds)
 
             # Append this to the string for this year (note short dataset name e.g. "MuonEG" is called shortname in the RDF)
-            passs_no_overlap = passes_no_overlap + f"( (((shortname=={ds_name}) || !isData) & {trg_passes}) & !({trg_overlaps} & isData) )"
+            passs_no_overlap = passes_no_overlap + f"( (((shortname==\\\"{ds_name}\\\") || !isData) && {trg_passes}) && !({trg_overlaps} && isData) )"
 
-        out_str = out_str + f"(is{year} && {passs_no_overlap})"
+        if i < len(DS_DICT)-1:
+            out_str = out_str + f"(is{year} && {passs_no_overlap}) || "
+        else:
+            out_str = out_str + f"(is{year} && {passs_no_overlap})"
 
     print(out_str)
 
