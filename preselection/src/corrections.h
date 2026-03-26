@@ -29,31 +29,35 @@ RVec<bool> isbTagTight(std::string year, RVec<float> btag_score);
 
 
 const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrections = {
+    {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2016preVFP-UL-NanoAODv15/add_btagging_wps/btagging.json.gz")},
+    {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2016postVFP-UL-NanoAODv15/add_b_tagging_WPs/btagging.json.gz")},
+    {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2017-UL-NanoAODv15/add_b_tagging_WPs/btagging.json.gz")},
+    {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2018-UL-NanoAODv15/add_b_tagging_WPs/btagging.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
 
 // 2. Map of Numbers: Put the actual numeric thresholds here
 static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
-    {"2016preVFP",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}, 
-    {"2016postVFP", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
-    {"2017",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
-    {"2018",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2016preVFP",  btaggingCorrections.at("2016preVFP").at("UParTAK4_wp_values")->evaluate({"L"})}, 
+    {"2016postVFP", btaggingCorrections.at("2016postVFP").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2017",        btaggingCorrections.at("2017").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2018",        btaggingCorrections.at("2018").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
-    {"2016preVFP",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})},
-    {"2016postVFP", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})},
-    {"2017",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})},
-    {"2018",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2016preVFP",  btaggingCorrections.at("2016preVFP").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2016postVFP", btaggingCorrections.at("2016postVFP").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2017",        btaggingCorrections.at("2017").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2018",        btaggingCorrections.at("2018").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
-    {"2016preVFP",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})},
-    {"2016postVFP", btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})},
-    {"2017",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})},
-    {"2018",        btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2016preVFP",  btaggingCorrections.at("2016preVFP").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2016postVFP", btaggingCorrections.at("2016postVFP").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2017",        btaggingCorrections.at("2017").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2018",        btaggingCorrections.at("2018").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
 };
 
