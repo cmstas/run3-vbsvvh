@@ -198,7 +198,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
 
     # Get the xsec name and value for this dataset
     if kind == "data":
-        dataset_name_short, xsec_val  = dataset_name, 1.0
+        dataset_name_short, xsec_val = dataset_name, 1.0
     else:
         dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
 
@@ -215,7 +215,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
     if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = 1
 
     # What name to include for the metadata
-    if kind == "data": name_for_metadata = "data"
+    if kind == "data": name_for_metadata = dataset_name_short.split("_")[0] # For data just keep e.g. "DoubleEG"
     else: name_for_metadata = dataset_name_short
 
     # Get the sum of weights for all of the files in this dataset and build metadata dict
