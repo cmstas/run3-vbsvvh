@@ -118,8 +118,11 @@ def get_or_of_trgs(trg_lst):
             out_str = out_str + f"({trg} == true) || "
         else:
             out_str = out_str + f"({trg} == true)"
-    out_str = f"({out_str})"
-    return out_str
+
+    if out_str == "":
+        return None
+    else:
+        return f"({out_str})"
 
 
 # Given a ds name and a priority ordered list of ds names, return all ds with higher priority
@@ -170,7 +173,7 @@ def main():
         passes_no_overlap = ""
 
         # Loop over datasets in this year
-        for ds_name in DS_DICT[year]["ds_trg_dict"]:
+        for j, ds_name in enumerate(DS_DICT[year]["ds_trg_dict"]):
 
             # Grab the list of triggers for this ds
             trgs_for_this_ds = DS_DICT[year]["ds_trg_dict"][ds_name]
@@ -183,12 +186,23 @@ def main():
             trg_overlaps = get_or_of_trgs(trgs_for_higher_priority_ds)
 
             # Append this to the string for this year (note short dataset name e.g. "MuonEG" is called shortname in the RDF)
-            passs_no_overlap = passes_no_overlap + f"( (((shortname==\\\"{ds_name}\\\") || !isData) && {trg_passes}) && !({trg_overlaps} && isData) )"
+            if trg_overlaps is not None:
+                passes_no_overlap = passes_no_overlap + f"( (((shortname==\\\"{ds_name}\\\") || !isData) && {trg_passes}) && !({trg_overlaps} && isData) )"
+            else:
+                passes_no_overlap = passes_no_overlap + f"( (((shortname==\\\"{ds_name}\\\") || !isData) && {trg_passes})  )"
 
+            # Append and OR if this is not the last one
+            if j < (len(DS_DICT[year]["ds_trg_dict"]) - 1):
+                passes_no_overlap = passes_no_overlap + " || "
+
+        # Append to the final out string
+        out_str = out_str + f"(is{year} && {passes_no_overlap})"
+
+        # Append the OR if this is not the last one
         if i < len(DS_DICT)-1:
-            out_str = out_str + f"(is{year} && {passs_no_overlap}) || "
-        else:
-            out_str = out_str + f"(is{year} && {passs_no_overlap})"
+            out_str = out_str + " || "
+
+
 
     print(out_str)
 
