@@ -33,11 +33,11 @@ struct MyArgs : public argparse::Args {
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
 };
 
-RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference &spanet_inference, SPANetRun2::SPANetInference &spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
+RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, bool isData, SPANet::SPANetInference &spanet_inference, SPANetRun2::SPANetInference &spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
-    df = runPreselection(df, ana, makeSpanetTrainingdata);
+    df = runPreselection(df, ana, isData, makeSpanetTrainingdata);
     
     if (isSignal) {
         df = GenSelections(df);
@@ -173,13 +173,13 @@ int main(int argc, char** argv) {
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference);
+        df = runAnalysis(df, args.ana, args.run_number, isSignal, isData, spanet_inference, spanet_inference_run2, args.runSPANetInference);
         df = applyDataWeights(df);
         df = applyDataCorrections(df);
-        df = removeDuplicates(df);
+        //df = removeDuplicates(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
+        df = runAnalysis(df, args.ana, args.run_number, isSignal, isData, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
         df = applyMCWeights(df);
         df = applyMCCorrections(df);
     }
