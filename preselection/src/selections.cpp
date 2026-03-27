@@ -138,6 +138,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
 
     Cutflow::Add(df_, "All events");
+    
+    if (noCut) return df;
+
     df = TriggerSelections(df, channel, TriggerMap);
     Cutflow::Add(df, "C1: Trigger selection");
 
