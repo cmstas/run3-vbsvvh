@@ -1,0 +1,63 @@
+{
+    "samples": {
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8": {
+            "trees": [
+                "Events"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2024Prompt",
+                "xsec": 0.01392,
+                "lumi": 109.08,
+                "sumw": 1186629.5307990606,
+                "shortname": "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
+                "do_ewk_corr": 0,
+                "local_prefix": "/ceph/cms/"
+            },
+            "files": [
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/1359b365-b017-4541-bba0-9fe303eb9745.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/242e7389-5712-465a-81cd-a0e969485e9c.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/247d7fa2-4f39-4a29-87b4-9c15769d4cae.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/373ba2a1-88a8-408b-8cfa-5e8e20a18dd6.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/39882bac-e31c-40d8-963b-e8ce304c942a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/3ecbc0e7-9649-4bec-9d6c-b4f3b1c91ee3.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/3f1f9ac5-0b42-48bf-9bab-3319ebd5ada3.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/418deb42-c659-4603-81c0-7ab7c9f371f8.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/42992f08-f719-4c8f-8d98-7f9588942ca8.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/45ff7280-ad5b-43c6-adce-1722fdca14b9.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/4cd761ae-10c0-463d-8e6c-814ef79807ce.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/4f95f733-5149-4602-9e4a-e88cb6b6ea42.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5b0af4a1-ace2-463a-b3fe-9c7363a07a7f.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/5b7ce119-fcbe-40e4-861e-de9b09ce5cac.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/6661ebc1-89a6-4160-a2ec-7dfdf740f5d9.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/666e5e3e-8d49-4f8d-8fef-c76438eb040a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/68e28bfe-1ba0-429f-9cdb-1aeca4a302e6.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/6cdffebc-e4e3-4223-b2a5-c3c3641d6f50.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/7601f1f3-b84d-4561-b485-c7dd894a325e.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/7740e56d-5b6d-40de-9b87-9e7e5cd0744d.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/7bde953f-055c-4c64-b693-63e0e006c4a6.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/7c09480e-6781-449e-ab1f-f36df3a352a5.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/83a6b02e-b3af-46ba-b05b-2621371c5e9c.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/8953c690-45ed-42b5-91b0-531e736f956a.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/8e732505-eeea-45fa-b946-4147fdd1cc35.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/92c025bd-0fbe-400c-8f3c-6c4862750b94.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/92c70157-481c-48de-8c3e-b4be688e0379.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/9c8ed561-e209-4d2f-9827-f4c2d3ec3b9b.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/a3ab4074-6da1-4af8-be82-1a72c5ce32a6.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/a8754419-05d4-4601-bd11-f0477a6726fc.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/ad3cf788-c304-4942-87ec-82417e397b23.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/df2e4420-e57d-490e-b8a9-58793d5ff0bc.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/dfb97730-92f9-4d7c-9549-47c1362eb59f.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/e799576f-c8b4-4a43-8af0-09031a2ca637.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/efd7fbfb-25bb-4fb2-b9e6-f684b0087f4d.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f01a185c-8d42-4ba7-a57f-7cc750e83d53.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f2c074a8-266f-4ffc-b958-219b11746eaf.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f344f689-16c3-49a5-860b-0fb90cb2332e.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f536be4e-ad36-4b45-92c4-4961c4ee4c4f.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/f6ef9a8d-b5c5-465e-97b8-53d8f4474722.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/fdfe3a33-38e7-49d9-9310-ddd966a52537.root",
+                "store/user/aaarora/skims_v3/bkg/RunIII2024Summer24NanoAODv15/DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/ff2213f8-b651-4af2-b72b-a9d6263a6cf4.root"
+            ]
+        }
+    }
+}
