@@ -126,7 +126,7 @@ RNode AK8JetsSelection(RNode df_)
     return df;
 }
 
-RNode runPreselection(RNode df_, std::string channel, bool isData, bool noCut)
+RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
     auto df = LeptonSelections(df_);
     df = AK4JetsSelection(df);
