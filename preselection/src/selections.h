@@ -13,28 +13,18 @@
 
 using RNode = ROOT::RDF::RNode;
 
-const std::unordered_map<std::string, std::string> TriggerMap = {
-	{"1lep_2FJ", 
-        "(is2016 && (HLT_Ele27_eta2p1_WPTight_Gsf == true || HLT_IsoMu24 == true || HLT_IsoTkMu24 == true)) || "
-        "(is2017 && (HLT_Ele32_WPTight_Gsf_L1DoubleEG == true || HLT_IsoMu27 == true)) || "
-        "(is2018 && (HLT_Ele32_WPTight_Gsf == true || HLT_IsoMu24 == true)) || "
-        "(isRun3 && (HLT_Ele30_WPTight_Gsf == true || HLT_IsoMu24 == true))"
-    },
-    {"1lep_1FJ", 
-        "(is2016 && (HLT_Ele27_eta2p1_WPTight_Gsf == true || HLT_IsoMu24 == true || HLT_IsoTkMu24 == true)) || "
-        "(is2017 && (HLT_Ele32_WPTight_Gsf_L1DoubleEG == true || HLT_IsoMu27 == true)) || "
-        "(is2018 && (HLT_Ele32_WPTight_Gsf == true || HLT_IsoMu24 == true)) || "
-        "(isRun3 && (HLT_Ele30_WPTight_Gsf == true || HLT_IsoMu24 == true))"
-    },
-    {"0lep_3FJ", "HLT_PFHT1050"},
-};
-
-RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map);
 RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
 RNode AK8JetsSelection(RNode df);
 RNode AK4JetsSelection(RNode df);
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut);
+
+// Trigger selections
+RNode TriggerSelections(RNode df_, std::string trigger_logic_string);
+// Trigger logic sringr, paste this in from the output of the script for building this logic
+const std::string trigger_pass_no_overlap_string = "(is2016 && (( ((shortname==\"DoubleMuon\") || !isData)  && ((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ == true) || (HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ == true)) ) || ( (((shortname==\"MuonEG\") || !isData) && ((HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ == true) || (HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ == true)) && isData) ) || ( (((shortname==\"DoubleEG\") || !isData) && ((HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ == true) || (HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ == true)) && isData) ) || ( (((shortname==\"SingleMuon\") || !isData) && ((HLT_IsoMu24 == true) || (HLT_IsoTkMu24 == true) || (HLT_IsoMu22_eta2p1 == true) || (HLT_IsoTkMu22_eta2p1 == true) || (HLT_IsoMu22 == true) || (HLT_IsoTkMu22 == true) || (HLT_IsoMu27 == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ == true) || (HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true)) && isData) ) || ( (((shortname==\"SingleElectron\") || !isData) && ((HLT_Ele27_WPTight_Gsf == true) || (HLT_Ele25_eta2p1_WPTight_Gsf == true) || (HLT_Ele27_eta2p1_WPLoose_Gsf == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ == true) || (HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL == true) || (HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL == true) || (HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_IsoMu24 == true) || (HLT_IsoTkMu24 == true) || (HLT_IsoMu22_eta2p1 == true) || (HLT_IsoTkMu22_eta2p1 == true) || (HLT_IsoMu22 == true) || (HLT_IsoTkMu22 == true) || (HLT_IsoMu27 == true)) && isData) ))) || (is2017 && (( ((shortname==\"DoubleMuon\") || !isData)  && ((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8 == true)) ) || ( (((shortname==\"MuonEG\") || !isData) && ((HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8 == true)) && isData) ) || ( (((shortname==\"DoubleEG\") || !isData) && ((HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8 == true) || (HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true)) && isData) ) || ( (((shortname==\"SingleMuon\") || !isData) && ((HLT_IsoMu24 == true) || (HLT_IsoMu27 == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8 == true) || (HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL == true)) && isData) ) || ( (((shortname==\"SingleElectron\") || !isData) && ((HLT_Ele32_WPTight_Gsf == true) || (HLT_Ele35_WPTight_Gsf == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8 == true) || (HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL == true) || (HLT_IsoMu24 == true) || (HLT_IsoMu27 == true)) && isData) ))) || (is2018 && (( ((shortname==\"DoubleMuon\") || !isData)  && ((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8 == true)) ) || ( (((shortname==\"MuonEG\") || !isData) && ((HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8 == true)) && isData) ) || ( (((shortname==\"SingleMuon\") || !isData) && ((HLT_IsoMu24 == true) || (HLT_IsoMu27 == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8 == true) || (HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true)) && isData) ) || ( (((shortname==\"EGamma\") || !isData) && ((HLT_Ele32_WPTight_Gsf == true) || (HLT_Ele35_WPTight_Gsf == true) || (HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL == true))) && !(((HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8 == true) || (HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ == true) || (HLT_IsoMu24 == true) || (HLT_IsoMu27 == true)) && isData) )))";
+
+
 
 #endif // SELECTIONS_H

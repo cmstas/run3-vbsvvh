@@ -1,19 +1,15 @@
 #include "selections.h"
 #include "cutflow.h"
 
-RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map<std::string, std::string> &trigger_map)
-{
-    if (trigger_map.empty())
-    {
-        std::cerr << "    Warning: No trigger map provided. Skipping trigger selection." << std::endl;
-        return df_;
-    }
-    if (trigger_map.find(channel) == trigger_map.end())
-    {
-        std::cerr << "    Warning: Channel '" << channel << "' not found in trigger map. Skipping trigger selection." << std::endl;
-        return df_;
-    }
-    std::string trigger_condition = trigger_map.at(channel);
+RNode TriggerPassNoOverlap(RNode df_, std::string channel, std::string trigger_logic_string){
+    std::cout << "trigger_logic_string: " << trigger_logic_string << std::endl;
+    return df_;
+}
+
+RNode TriggerSelections(RNode df_, std::string trigger_logic_string) {
+
+    // Add default values to the df for all triggers that show up in the trigger_logic_string
+    std::string trigger_condition = trigger_logic_string;
     std::regex hlt_regex("HLT_[a-zA-Z0-9_]+");
     auto hlt_begin = std::sregex_iterator(trigger_condition.begin(), trigger_condition.end(), hlt_regex);
     auto hlt_end = std::sregex_iterator();
@@ -28,6 +24,7 @@ RNode TriggerSelections(RNode df_, std::string channel, const std::unordered_map
         df_ = df_.DefaultValueFor(hlt_name, (bool)false);
     }
 
+    // Filter based on this the trigger logic
     return df_.Filter(trigger_condition, "C1: Trigger Selection");
 }
 
@@ -138,7 +135,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
 
     Cutflow::Add(df_, "All events");
-    df = TriggerSelections(df, channel, TriggerMap);
+    df = TriggerSelections(df, trigger_pass_no_overlap_string);
     Cutflow::Add(df, "C1: Trigger selection");
 
     if (channel == "all_events"){
