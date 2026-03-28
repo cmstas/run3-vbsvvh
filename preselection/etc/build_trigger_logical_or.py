@@ -9,23 +9,15 @@ DS_DICT = {
                 "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL",
                 "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL",
                 "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
-                "HLT_TripleMu_12_10_5",
             ],
             "MuonEG" : [
-                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
-                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL",
             ],
             "DoubleEG" : [
-                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
             ],
             "SingleMuon" : [
                 "HLT_IsoMu24",
@@ -37,7 +29,7 @@ DS_DICT = {
                 "HLT_IsoMu27",
             ],
             "SingleElectron" : [
-                'HLT_Ele27_WPTight_Gsf',
+                "HLT_Ele27_WPTight_Gsf",
                 "HLT_Ele25_eta2p1_WPTight_Gsf",
                 "HLT_Ele27_eta2p1_WPLoose_Gsf",
             ],
@@ -48,23 +40,14 @@ DS_DICT = {
         "ds_prio_lst" : ["DoubleMuon", "MuonEG", "DoubleEG", "SingleMuon", "SingleElectron"],
         "ds_trg_dict" : {
             "DoubleMuon" : [
-                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
-                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
-                "HLT_TripleMu_12_10_5",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8",
             ],
             "MuonEG" : [
-                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ", # Note: Listed in Andrew's thesis, but not TOP-19-001 AN
-                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
             ],
             "DoubleEG" : [
                 "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
             ],
             "SingleMuon" : [
                 "HLT_IsoMu24",
@@ -81,18 +64,11 @@ DS_DICT = {
         "ds_prio_lst" : ["DoubleMuon", "MuonEG", "SingleMuon", "EGamma"],
         "ds_trg_dict" : {
             "DoubleMuon" : [
-                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
                 "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
-                "HLT_TripleMu_12_10_5",
             ],
             "MuonEG" : [
-                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
-                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
             ],
             "SingleMuon" : [
                 "HLT_IsoMu24",
@@ -101,9 +77,7 @@ DS_DICT = {
             "EGamma" : [
                 "HLT_Ele32_WPTight_Gsf",
                 "HLT_Ele35_WPTight_Gsf",
-                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
-                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-                "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
             ],
         },
     },
