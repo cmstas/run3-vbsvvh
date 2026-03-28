@@ -144,14 +144,6 @@ def get_higher_priority_ds_trgs(my_ds, year):
     return out_lst
 
 
-# Takes a year and a list of ds names, finds the triggers for these from DS_DICT
-def get_trg_lst(lst_of_ds, year):
-    out_lst = []
-    for ds_name in lst_of_ds:
-        out_lst.append(DS_DICT[year]["ds_trg_dict"])
-    return out_lst
-
-
 
 ############# Main function #############
 
@@ -189,11 +181,14 @@ def main():
             if trg_overlaps is not None:
                 passes_no_overlap = passes_no_overlap + f"( (((shortname==\\\"{ds_name}\\\") || !isData) && {trg_passes}) && !({trg_overlaps} && isData) )"
             else:
-                passes_no_overlap = passes_no_overlap + f"( (((shortname==\\\"{ds_name}\\\") || !isData) && {trg_passes})  )"
+                passes_no_overlap = passes_no_overlap + f"( ((shortname==\\\"{ds_name}\\\") || !isData)  && {trg_passes} )"
 
             # Append and OR if this is not the last one
             if j < (len(DS_DICT[year]["ds_trg_dict"]) - 1):
                 passes_no_overlap = passes_no_overlap + " || "
+            # Otherwise if we're done, wrap the whole thing in parentheses
+            else:
+                passes_no_overlap = f"({passes_no_overlap})"
 
         # Append to the final out string
         out_str = out_str + f"(is{year} && {passes_no_overlap})"
