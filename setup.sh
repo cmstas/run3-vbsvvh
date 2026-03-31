@@ -7,6 +7,9 @@ if [[ $PLATFORM_ID == *"el9"* ]]; then
     cd /cvmfs/cms.cern.ch/el9_amd64_gcc13/cms/cmssw/$CMSSW_VERSION
 elif [[ $PLATFORM_ID == *"el8"* ]]; then
     cd /cvmfs/cms.cern.ch/el8_amd64_gcc13/cms/cmssw/$CMSSW_VERSION
+else
+    echo "Unrecognized architecture, unable to set cmssw version"
+    exit 1
 fi
 eval `scramv1 runtime -sh`
 cd -
