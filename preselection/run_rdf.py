@@ -4,19 +4,22 @@ import os
 from datetime import datetime
 import subprocess
 
-SKIM_CHANNELS = [
-    "all_events",
-    "0lep_0FJ",
-    "0lep_1FJ",
-    "0lep_2FJ",
-    "0lep_3FJ",
-    "1lep_1FJ",
-    "1lep_2FJ",
-    "2lep_1FJ",
-    "2lep_2FJ",
-    "2lepSS",
-    "3lep",
-    "4lep",
+# The known analysis channels
+ANA_CHANNELS = [
+        "all_events",
+        "0lep_0FJ",
+        "0lep_1FJ",
+        "0lep_1FJ_met",
+        "0lep_2FJ",
+        "0lep_2FJ_met",
+        "0lep_3FJ",
+        "1lep_1FJ",
+        "1lep_2FJ",
+        "2lep_1FJ", # Currently shared between SF and OF
+        "2lepSS",
+        "2lep_2FJ",
+        "3lep",
+        "4lep",
 ]
 
 # Merge the input jsons into one dictionary
@@ -74,7 +77,7 @@ def main():
     # Set up the command line parser
     parser = argparse.ArgumentParser()
     parser.add_argument('jsons', nargs='+',    help = 'Input json file(s) containing files and metadata')
-    parser.add_argument('-a', '--channel',     help = 'Which analysis selection channel to run', choices=SKIM_CHANNELS)
+    parser.add_argument('-a', '--channel',     help = 'Which analysis selection channel to run', choices=ANA_CHANNELS)
     parser.add_argument('-m', '--mode',        help = 'Which mode to run in (local or condor)', choices=['local','condor'])
     parser.add_argument('-o', '--outpath',     help = 'Output directory', default=".")
     parser.add_argument('-n', '--outname',     help = 'Output name', default="rdf_output")

@@ -130,44 +130,99 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
 
     Cutflow::Add(df_, "All events");
-    df = TriggerSelections(df, trigger_pass_no_overlap_string);
-    Cutflow::Add(df, "C1: Trigger selection");
 
+    // Passthrough
     if (channel == "all_events"){
         df = df.Filter(
             "nMuon_Loose > -1", // Probably there is a better way to write a pass through
             "C2: all_events"
         );
     }
+
+    // 0lep_0FJ
     else if (channel == "0lep_0FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_ht);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
             "(nFatJets == 0)",
             "C2: 0lep_0FJ"
         );
     }
+
+    // 0lep_1FJ
     else if (channel == "0lep_1FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_ht);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
             "(nFatJets == 1)",
             "C2: 0lep_1FJ"
         );
     }
+
+    // 0lep_1FJ_met
+    else if (channel == "0lep_1FJ_met"){
+
+        df = TriggerSelections(df,trigger_logic_string_met);
+        Cutflow::Add(df, "C1: Trigger selection");
+
+        df = df.Filter(
+            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
+            "(nFatJets == 1)",
+            "C2: 0lep_1FJ"
+        );
+    }
+
+    // 0lep_2FJ
     else if (channel == "0lep_2FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_ht);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
             "(nFatJets == 2)",
             "C2: 0lep_2FJ"
         );
     }
+
+    // 0lep_2FJ_met
+    else if (channel == "0lep_2FJ_met"){
+
+        df = TriggerSelections(df,trigger_logic_string_met);
+        Cutflow::Add(df, "C1: Trigger selection");
+
+        df = df.Filter(
+            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
+            "(nFatJets == 2)",
+            "C2: 0lep_2FJ"
+        );
+    }
+
+    // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_ht);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
             "(nFatJets == 3)",
             "C2: 0lep_3FJ"
         );
     }
+
+    // 1lep_1FJ
     else if (channel == "1lep_1FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
@@ -177,7 +232,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = df.Filter("njet >= 4");
         Cutflow::Add(df, "C4: at-least 4 jets");
     }
+
+    // 1lep_2FJ
     else if (channel == "1lep_2FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
     	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
@@ -187,38 +248,70 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = df.Filter("njet >= 2");
         Cutflow::Add(df, "C4: at-least 2 jets");
     }
+
+    // 2lepSS
+    else if (channel == "2lepSS"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
+        df = df.Filter(
+            "((nMuon_Loose + nElectron_Loose) == 2)",
+            //TODO implement a same sign requirement
+            "C2: 2lepSS"
+        );
+    }
+
+    // 2lep_1FJ (currently shared between OF and SF)
     else if (channel == "2lep_1FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2) &&"
             "(nFatJets == 1)",
             "C2: 2lep_1FJ"
         );
     }
+
+    // 2lep_2FJ
     else if (channel == "2lep_2FJ"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2) &&"
             "(nFatJets == 2)",
             "C2: 2lep_2FJ"
         );
     }
-    //else if (channel == "2lepSS"){
-    //    df = df.Filter(
-    //        "((nMuon_Loose + nElectron_Loose) == 2) &&"
-    //        //same sign requirement
-    //        "C2: 2lepSS"
-    //    );
-    //}
+
+
+    // 3lep
     else if (channel == "3lep"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 3)",
             "C2: 3lep"
         );
     }
+
+    // 4lep
     else if (channel == "4lep"){
+
+        df = TriggerSelections(df,trigger_logic_string_lep);
+        Cutflow::Add(df, "C1: Trigger selection");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 4)",
             "C2: 4lep"
         );
     }
+
     return df;
 }
