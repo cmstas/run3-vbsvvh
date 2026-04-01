@@ -76,7 +76,7 @@ def check_inputs(merged_json_dict,mode):
         kind_lst = []
         for ds in merged_json_dict["samples"].keys():
             kind_lst.append(merged_json_dict["samples"][ds]["metadata"]["kind"])
-        if len(kind_lst) != len(set(kind_lst)):
+        if len(set(kind_lst)) != 1:
             raise Exception("Error, more than one kind of input is specified, not able to run runAnalysis over multiple kinds")
 
 
