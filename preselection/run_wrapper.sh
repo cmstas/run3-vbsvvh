@@ -1,36 +1,28 @@
 # Wrapper script for running the full analysis
 
 # Specify a local prefix or xrd prefix to reach the files
-PREFIX="/cmsuf/data/" # Local HPG
+#PREFIX="/cmsuf/data/" # Local HPG
 #PREFIX="/ceph/cms/" # Local UAF
-#PREFIX="root://cmsio2.rc.ufl.edu//" # Redirector HPG
+PREFIX="root://cmsio2.rc.ufl.edu//" # Redirector HPG
 #PREFIX="root://redirector.t2.ucsd.edu:1095//" # Redirector UAF
 
 # Define an output dir
-OUT_DIR="/cmsuf/data/store/user/t2/users/$USER/vbs_vvh_rdf/test" # Example for HPG
-#OUT_DIR="/data/userdata/$USER/vbs_vvh_rdf/test" # Example for UAF
+#OUT_DIR="/cmsuf/data/store/user/t2/users/$USER/vbs_vvh_rdf/test" # Example for HPG
+OUT_DIR="/data/userdata/$USER/vbs_vvh_rdf/test" # Example for UAF
 mkdir $OUT_DIR
 
-# Run over a single file locally (for testing sig, bkg, data)
-#python3 run_rdf.py etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix $PREFIX -o $OUT_DIR -n test_small -a all_events -m local -r 2 -j 1
-#python3 run_rdf.py etc/input_sample_jsons/bkg/1lep_1FJ/2018_WZTo1L1Nu2Q_4f_TuneCP5_13TeV.json --prefix $PREFIX -o $OUT_DIR -n test_small -a 1lep_1FJ -m local -r 2 -j 1
-#python3 run_rdf.py etc/input_sample_jsons/data/0lep_2FJ/2016postVFP_JetHT_Run2016G-UL2016_NanoAODv15-v1_NANOAOD.json --prefix $PREFIX -o $OUT_DIR -n test_small -a 0lep_2FJ -m local -r 2 -j 1
+# Examples of running single datase locally for testing
+#python3 run_rdf.py -i etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix $PREFIX -o $OUT_DIR -n test_small -c all_events -m local -r 2 -j 16
+#python3 run_rdf.py -i etc/input_sample_jsons/bkg/3lep/2018_WZTo1L1Nu2Q_4f_TuneCP5_13TeV.json --prefix $PREFIX -o $OUT_DIR -n test_small -c 3lep -m local -r 2 -j 16
+#python3 run_rdf.py -i etc/input_sample_jsons/data/2lep_1FJ/2016postVFP_MuonEG_Run2016H-UL2016_NanoAODv15-v1_NANOAOD.json --prefix $PREFIX -o $OUT_DIR -n test_small -c 2lep_1FJ -m local -r 2 -j 16
 
-# Run at scale over signal
-python3 run_rdf.py etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/  -p $PREFIX -o $OUT_DIR -n sig_sm  -a all_events -m local -r 2 -j 32
-python3 run_rdf.py etc/input_sample_jsons/sig_c2v1p5_c3_1p0/all_events/  -p $PREFIX -o $OUT_DIR -n sig_c2v -a all_events -m local -r 2 -j 32
-python3 run_rdf.py etc/input_sample_jsons/sig_c2v1p0_c3_10p0/all_events/ -p $PREFIX -o $OUT_DIR -n sig_kl  -a all_events -m local -r 2 -j 32
+# Examples of running at scale locally (appropriate for signal, and appropriate for data/bkg in channels that are small enough)
+#python3 run_rdf.py -i etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/ --prefix $PREFIX -o $OUT_DIR -n r2sigSM -c 3lep 2lep_1FJ -m local -r 2 -j 16
+#python3 run_rdf.py -i etc/input_sample_jsons/data/2lep_1FJ/                --prefix $PREFIX -o $OUT_DIR -n r2data  -c 2lep_1FJ      -m local -r 2 -j 16
 
-# Run at scale over the 10 sets of data/bkg skims
-python3 run_rdf.py etc/input_sample_jsons/bkg/0lep_0FJ etc/input_sample_jsons/data/0lep_0FJ -p $PREFIX -o $OUT_DIR -n r2_0lep_0FJ -a 0lep_0FJ -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/0lep_1FJ etc/input_sample_jsons/data/0lep_1FJ -p $PREFIX -o $OUT_DIR -n r2_0lep_1FJ -a 0lep_1FJ -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/0lep_2FJ etc/input_sample_jsons/data/0lep_2FJ -p $PREFIX -o $OUT_DIR -n r2_0lep_2FJ -a 0lep_2FJ -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/0lep_3FJ etc/input_sample_jsons/data/0lep_3FJ -p $PREFIX -o $OUT_DIR -n r2_0lep_3FJ -a 0lep_3FJ -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/1lep_1FJ etc/input_sample_jsons/data/1lep_1FJ -p $PREFIX -o $OUT_DIR -n r2_1lep_1FJ -a 1lep_1FJ -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/2lep_1FJ etc/input_sample_jsons/data/2lep_1FJ -p $PREFIX -o $OUT_DIR -n r2_2lep_1FJ -a 2lep_1FJ -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/2lep_2FJ etc/input_sample_jsons/data/2lep_2FJ -p $PREFIX -o $OUT_DIR -n r2_2lep_2FJ -a 2lep_2FJ -m condor -r 2
-#python3 run_rdf.py etc/input_sample_jsons/bkg/2lepSS   etc/input_sample_jsons/data/2lepSS   -p $PREFIX -o $OUT_DIR -n r2_2lepSS   -a 2lepSS   -m condor -r 2 # DNE yet
-python3 run_rdf.py etc/input_sample_jsons/bkg/3lep     etc/input_sample_jsons/data/3lep     -p $PREFIX -o $OUT_DIR -n r2_3lep     -a 3lep     -m condor -r 2
-python3 run_rdf.py etc/input_sample_jsons/bkg/4lep     etc/input_sample_jsons/data/4lep     -p $PREFIX -o $OUT_DIR -n r2_4lep     -a 4lep     -m condor -r 2
+
+# Run at scale over all channels with condor
+python3 run_rdf.py --channels all -p $PREFIX -o $OUT_DIR -m condor -n r2_test -r 2
+
 
 
