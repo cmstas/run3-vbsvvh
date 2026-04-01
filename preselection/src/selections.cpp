@@ -1,11 +1,6 @@
 #include "selections.h"
 #include "cutflow.h"
 
-RNode TriggerPassNoOverlap(RNode df_, std::string channel, std::string trigger_logic_string){
-    std::cout << "trigger_logic_string: " << trigger_logic_string << std::endl;
-    return df_;
-}
-
 RNode TriggerSelections(RNode df_, std::string trigger_logic_string) {
 
     // Add default values to the df for all triggers that show up in the trigger_logic_string
