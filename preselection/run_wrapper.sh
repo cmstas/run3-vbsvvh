@@ -21,7 +21,7 @@ mkdir $OUT_DIR
 #python3 run_rdf.py -i etc/input_sample_jsons/data/2lep_1FJ/                --prefix $PREFIX -o $OUT_DIR -n r2data  -c 2lep_1FJ      -m local -r 2 -j 16
 
 
-# Run at scale over all channels with condor
+# Example of running at scale with condor (to process all channels pass "all", for specific channel(s) pass the names of the channels)
 python3 run_rdf.py --channels all -p $PREFIX -o $OUT_DIR -m condor -n r2_test -r 2
 
 
