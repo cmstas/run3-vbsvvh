@@ -117,8 +117,8 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         return std::make_pair(pt_corr, phi_corr);
     };
     return df.Define("_MET_phicorr", eval_correction, {"year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
-            .Redefine("PuppiMET_pt", "_MET_phicorr.first")
-            .Redefine("PuppiMET_phi", "_MET_phicorr.second");
+            .Redefine("met_pt", "_MET_phicorr.first")            
+            .Redefine("met_phi", "_MET_phicorr.second");
 }
 
 /*
@@ -217,7 +217,7 @@ RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::Corr
         return (float)TMath::Sqrt(px * px + py * py);
     };
 
-    return df_jetcorr.Redefine("PuppiMET_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "PuppiMET_pt", "PuppiMET_phi"});
+    return df_jetcorr.Redefine("met_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "PuppiMET_pt", "PuppiMET_phi"});
 }
 
 /*
@@ -331,6 +331,102 @@ RNode applyJetVetoMaps(RNode df) {
 
 /*
 ############################################
+ELECTRON SCALE AND SMEARING CORRECTIONS
+############################################
+*/
+
+RNode applyElectronScaleAndSmearing(RNode df, bool isData) {
+    auto eval_data_scale = [](std::string year, RVec<float> pt, RVec<float> eta, RVec<float> deltaEtaSC, RVec<float> r9, RVec<unsigned char> seedGain, unsigned int run) {
+        RVec<float> scales(pt.size(), 1.0);
+        if (electronSSCorrections.find(year) == electronSSCorrections.end()) {
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Electron SS correction set for year " << year << " not found. Skipping scale corrections." << std::endl;
+                warned_years.insert(year);
+            }
+            return scales;
+        }
+
+        for (size_t i = 0; i < pt.size(); i++) {
+            float scEta = eta[i] + deltaEtaSC[i];
+            scales[i] = electronSSCorrections.at(year).compound().at("Scale")->evaluate({"scale", static_cast<double>(run), scEta, r9[i], pt[i], static_cast<double>(seedGain[i])}); 
+        }
+        return scales;
+    };
+
+    auto eval_data_smearWidth = [](std::string year, RVec<float> pt, RVec<float> eta, RVec<float> deltaEtaSC, RVec<float> r9, RVec<float> scales) {
+        RVec<float> widths(pt.size(), 0.0);
+        if (electronSSCorrections.find(year) == electronSSCorrections.end()) {
+            return widths;
+        }
+
+        for (size_t i = 0; i < pt.size(); i++) {
+            float scEta = eta[i] + deltaEtaSC[i];
+            float pt_corr = pt[i] * scales[i];
+            widths[i] = electronSSCorrections.at(year).at("SmearAndSyst")->evaluate({"smear", pt_corr, r9[i], scEta});
+        }
+        return widths;
+    };
+
+    auto eval_mc_smear_factor = [](std::string year, RVec<float> pt, RVec<float> eta, RVec<float> deltaEtaSC, RVec<float> r9, unsigned long long event) {
+        RVec<float> smear_factors(pt.size(), 1.0);
+        if (electronSSCorrections.find(year) == electronSSCorrections.end()) {
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Electron SS correction set for year " << year << " not found. Skipping smearing corrections." << std::endl;
+                warned_years.insert(year);
+            }
+            return smear_factors;
+        }
+
+        TRandom3 rng(event);
+        for (size_t i = 0; i < pt.size(); i++) {
+            float scEta = eta[i] + deltaEtaSC[i];
+            float smear = electronSSCorrections.at(year).at("SmearAndSyst")->evaluate({"smear", pt[i], r9[i], scEta});
+            smear_factors[i] = 1.0 + smear * rng.Gaus(0.0, 1.0);
+        }
+        return smear_factors;
+    };
+
+    auto eval_mc_smearWidth = [](std::string year, RVec<float> pt, RVec<float> eta, RVec<float> deltaEtaSC, RVec<float> r9) {
+        RVec<float> widths(pt.size(), 0.0);
+        if (electronSSCorrections.find(year) == electronSSCorrections.end()) {
+            return widths;
+        }
+
+        for (size_t i = 0; i < pt.size(); i++) {
+            float scEta = eta[i] + deltaEtaSC[i];
+            widths[i] = electronSSCorrections.at(year).at("SmearAndSyst")->evaluate({"smear", pt[i], r9[i], scEta});
+        }
+        return widths;
+    };
+
+    auto calc_energyErr = [](RVec<float> pt, RVec<float> eta, RVec<float> energyErr, RVec<float> widths, RVec<float> factors) {
+        RVec<float> new_energyErr(pt.size(), 0.0);
+        for (size_t i = 0; i < pt.size(); i++) {
+            float energy = pt[i] * TMath::CosH(eta[i]);
+            new_energyErr[i] = TMath::Sqrt(energyErr[i] * energyErr[i] + (energy * widths[i]) * (energy * widths[i])) * factors[i];
+        }
+        return new_energyErr;
+    };
+
+    if (isData) {
+        return df.Define("_ele_scale", eval_data_scale, {"year", "Electron_pt", "Electron_eta", "Electron_deltaEtaSC", "Electron_r9", "Electron_seedGain", "run"})
+                 .Define("_ele_smearWidth", eval_data_smearWidth, {"year", "Electron_pt", "Electron_eta", "Electron_deltaEtaSC", "Electron_r9", "_ele_scale"})
+                 .Redefine("Electron_energyErr", calc_energyErr, {"Electron_pt", "Electron_eta", "Electron_energyErr", "_ele_smearWidth", "_ele_scale"})
+                 .Redefine("Electron_pt", "Electron_pt * _ele_scale")
+                 .Redefine("Electron_mass", "Electron_mass * _ele_scale");
+    } else {
+        return df.Define("_ele_smearFactor", eval_mc_smear_factor, {"year", "Electron_pt", "Electron_eta", "Electron_deltaEtaSC", "Electron_r9", "event"})
+                 .Define("_ele_smearWidth", eval_mc_smearWidth, {"year", "Electron_pt", "Electron_eta", "Electron_deltaEtaSC", "Electron_r9"})
+                 .Redefine("Electron_energyErr", calc_energyErr, {"Electron_pt", "Electron_eta", "Electron_energyErr", "_ele_smearWidth", "_ele_smearFactor"})
+                 .Redefine("Electron_pt", "Electron_pt * _ele_smearFactor")
+                 .Redefine("Electron_mass", "Electron_mass * _ele_smearFactor");
+    }
+}
+
+/*
+############################################
 GENERAL CORRECTIONS
 ############################################
 */
@@ -338,11 +434,13 @@ GENERAL CORRECTIONS
 RNode applyDataCorrections(RNode df_) {
     auto df = applyMETPhiCorrections(df_, true);
     df = HEMCorrection(df, true);
+    df = applyElectronScaleAndSmearing(df, true);
     return df;
 }
 
 RNode applyMCCorrections(RNode df_) {
     auto df = applyMETPhiCorrections(df_, false);
     df = HEMCorrection(df, false);
+    df = applyElectronScaleAndSmearing(df, false);
     return df;
 }
