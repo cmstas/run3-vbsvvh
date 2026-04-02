@@ -156,6 +156,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "(nFatJets == 0)",
             "C2: 0lep_0FJ"
         );
+        df = df.Define("met_significance", "PuppiMET_significance")
+                .Define("met_uncorrPt", "PuppiMET_pt")
+                .Define("met_uncorrPhi", "PuppiMET_phi");
     }
     else if (channel == "0lep_1FJ"){
         df = df.Filter(
@@ -163,6 +166,10 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "(nFatJets == 1)",
             "C2: 0lep_1FJ"
         );
+        df = df.Define("met_significance", "PuppiMET_significance")
+                .Define("met_uncorrPt", "PuppiMET_pt")
+                .Define("met_uncorrPhi", "PuppiMET_phi");
+        
     }
     else if (channel == "0lep_2FJ"){
         df = df.Filter(

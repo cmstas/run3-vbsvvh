@@ -117,8 +117,8 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         return std::make_pair(pt_corr, phi_corr);
     };
     return df.Define("_MET_phicorr", eval_correction, {"year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
-            .Redefine("PuppiMET_pt", "_MET_phicorr.first")
-            .Redefine("PuppiMET_phi", "_MET_phicorr.second");
+            .Redefine("met_pt", "_MET_phicorr.first")            
+            .Redefine("met_phi", "_MET_phicorr.second");
 }
 
 /*
@@ -217,7 +217,7 @@ RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::Corr
         return (float)TMath::Sqrt(px * px + py * py);
     };
 
-    return df_jetcorr.Redefine("PuppiMET_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "PuppiMET_pt", "PuppiMET_phi"});
+    return df_jetcorr.Redefine("met_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "PuppiMET_pt", "PuppiMET_phi"});
 }
 
 /*
