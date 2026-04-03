@@ -6,68 +6,58 @@ import numpy as np
 import xsec_ref
 import dataset_names_ref
 
-# Which skims serve which analysis channels 
-#    0lep_0FJ : 0lep_0FJ_6j,
-#    0lep_1FJ : 0lep_1FJ_met, 0lep_1FJ_4j,
-#    0lep_2FJ : 0lep_2FJ_met, 0lep_2FJ_2j,
-#    0lep_3FJ : 0lep_3FJ,
-#    1lep_1FJ : 1lep_1FJ,1lep_2FJ,
-#    2lep_1FJ : 2lepOSOF_1FJ, 2lepOSSF_1FJ,
-#    2lep_2FJ : 2lepOSSF_2FJ,
-#    2lepSS   : 2lepSS
-#    3lep     : 3lep,
-#    4lep     : 4lep,
-
 
 # Dictionary of the paths to the skim sets
 SKIM_PATH_DICT = {
     "all_events" : {
-        ("run2", "sig_c2v1p0_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Sig_v15_v22_Sig/",
-        ("run2", "sig_c2v1p5_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Sig_v15_v22_Sig/",
-        ("run2", "sig_c2v1p0_c3_10p0") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Sig_v15_v22_Sig/",
-        #("run3", "sig_sm")  : "",
+        ("run2", "sig_c2v1p0_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Sig_v15_v26_Sig/",
+        ("run2", "sig_c2v1p5_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Sig_v15_v26_Sig/",
+        ("run2", "sig_c2v1p0_c3_10p0") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Sig_v15_v26_Sig/",
+        ("run3", "sig_c2v1p0_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Sig_v15_v26_Sig",
+        ("run3", "sig_c2v1p5_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Sig_v15_v26_Sig",
+        ("run3", "sig_c2v1p0_c3_10p0") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Sig_v15_v26_Sig",
     },
     "0lep_0FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep0FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep0FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_0Lep0FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_0Lep0FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_0Lep0FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_0Lep0FJ",
     },
     "0lep_1FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep1FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep1FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_0Lep1FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_0Lep1FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_0Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_0Lep1FJ",
     },
     "0lep_2FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep2FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep2FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_0Lep2FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_0Lep2FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_0Lep2FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_0Lep2FJ",
     },
     "0lep_3FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep3FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep3FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_0Lep3FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_0Lep3FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_0Lep3FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_0Lep3FJ",
     },
     "1lep_1FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_1Lep1FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_1Lep1FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_1Lep1FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_1Lep1FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_1Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_1Lep1FJ",
     },
     "2lep_1FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_2Lep1FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep1FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_2Lep1FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_2Lep1FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_2Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_2Lep1FJ",
     },
     "2lep_2FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_2Lep2FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep2FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_2Lep2FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_2Lep2FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_2Lep2FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_2Lep2FJ",
     },
     "2lep_SS" : {
         #("run2", "bkg")  : "",
@@ -76,16 +66,16 @@ SKIM_PATH_DICT = {
         #("run3", "data") : "",
     },
     "3lep"    : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_3Lep",
-        ("run2", "data")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_3Lep",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_3Lep",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_3Lep",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_3Lep",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_3Lep",
     },
     "4lep"    : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_4Lep",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_4Lep",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Bkg_v15_v26_4Lep",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run2_Data_v15_v26_4Lep",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Bkg_v15_v26_4Lep",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v26/Run3_Data_v15_v26_4Lep",
     },
 }
 
@@ -94,6 +84,7 @@ LUMI_DICT = {
     "2016postVFP": 16.81,
     "2017": 41.48,
     "2018": 59.83,
+    "2024Prompt": 109.08,
 }
 
 
@@ -198,7 +189,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
 
     # Get the xsec name and value for this dataset
     if kind == "data":
-        dataset_name_short, xsec_val  = dataset_name, 1.0
+        dataset_name_short, xsec_val = dataset_name, 1.0
     else:
         dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
 
@@ -215,7 +206,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
     if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = 1
 
     # What name to include for the metadata
-    if kind == "data": name_for_metadata = "data"
+    if kind == "data": name_for_metadata = dataset_name_short.split("_")[0] # For data just keep e.g. "DoubleEG"
     else: name_for_metadata = dataset_name_short
 
     # Get the sum of weights for all of the files in this dataset and build metadata dict
@@ -261,7 +252,7 @@ def main():
 
             # Get the known superset of datasets and the xsecs for this kind (sig, data, bkg) of sample
             known_datasets_lst = dataset_names_ref.datasets[(run_tag,kind)]
-            xsec_dict = xsec_ref.xsec_dict[kind]
+            xsec_dict = xsec_ref.xsec_dict[run_tag][kind]
 
             # Get the list of datasets we actaully have at this path
             path = SKIM_PATH_DICT[skim_set_name][(run_tag,kind)]
