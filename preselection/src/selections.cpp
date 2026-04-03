@@ -229,7 +229,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 1lep_1FJ
     else if (channel == "1lep_1FJ"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
@@ -245,7 +245,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 1lep_2FJ
     else if (channel == "1lep_2FJ"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
     	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
@@ -261,7 +261,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 2lepSS
     else if (channel == "2lepSS"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(
@@ -274,7 +274,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 2lep_1FJ (currently shared between OF and SF)
     else if (channel == "2lep_1FJ"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(
@@ -287,7 +287,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 2lep_2FJ
     else if (channel == "2lep_2FJ"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(
@@ -301,7 +301,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 3lep
     else if (channel == "3lep"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(
@@ -313,7 +313,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 4lep
     else if (channel == "4lep"){
 
-        df = TriggerSelections(df,trigger_logic_string_lep);
+        df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(

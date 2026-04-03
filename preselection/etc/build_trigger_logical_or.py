@@ -56,8 +56,57 @@ DS_DICT_MET = {
     },
 }
 
+DS_DICT_SINGLELEP = {
+    "2016" : {
+        "ds_prio_lst" : ["SingleMuon", "SingleElectron"],
+        "ds_trg_dict" : {
+            "SingleMuon" : [
+                "HLT_IsoMu24",
+                "HLT_IsoTkMu24",
+            ],
+            "SingleElectron" : [
+                "HLT_Ele27_eta2p1_WPTight_Gsf",
+            ],
+        },
+    },
+    "2017" : {
+        "ds_prio_lst" : ["SingleMuon", "SingleElectron"],
+        "ds_trg_dict" : {
+            "SingleMuon" : [
+                "HLT_IsoMu27",
+            ],
+            "SingleElectron" : [
+                "HLT_Ele32_WPTight_Gsf_L1DoubleEG"
+            ],
+        },
+    },
+    "2018" : {
+        "ds_prio_lst" : ["SingleMuon", "EGamma"],
+        "ds_trg_dict" : {
+            "SingleMuon" : [
+                "HLT_IsoMu24",
+            ],
+            "EGamma" : [
+                "HLT_Ele32_WPTight_Gsf",
+            ],
+        },
+    },
+    "2024" : {
+        "ds_prio_lst" : ["SingleMuon", "EGamma"],
+        "ds_trg_dict" : {
+            "SingleMuon" : [
+                "HLT_IsoMu24",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
+            ],
+        },
+    },
 
-DS_DICT_LEP = {
+}
+
+
+DS_DICT_MULTILEP = {
     "2016" : {
         "ds_prio_lst" : ["DoubleMuon", "MuonEG", "DoubleEG", "SingleMuon", "SingleElectron"],
         "ds_trg_dict" : {
@@ -248,7 +297,8 @@ def main():
 
     dump_logical_or_string(DS_DICT_HT,do_overlap_remoal=False)
     dump_logical_or_string(DS_DICT_MET,do_overlap_remoal=False)
-    dump_logical_or_string(DS_DICT_LEP,do_overlap_remoal=True)
+    dump_logical_or_string(DS_DICT_SINGLELEP,do_overlap_remoal=True)
+    dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_remoal=True)
 
 main()
 
