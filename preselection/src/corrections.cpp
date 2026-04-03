@@ -117,8 +117,8 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         return std::make_pair(pt_corr, phi_corr);
     };
     return df.Define("_MET_phicorr", eval_correction, {"year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
-            .Redefine("met_pt", "_MET_phicorr.first")            
-            .Redefine("met_phi", "_MET_phicorr.second");
+            .Define("met_pt", "_MET_phicorr.first")            
+            .Define("met_phi", "_MET_phicorr.second");
 }
 
 /*
@@ -129,14 +129,14 @@ MET UNCLUSTERED CORRECTIONS
 
 RNode applyMETUnclusteredCorrections(RNode df, std::string variation) {
     if (variation == "up") {
-        return df.Define("_MET_uncert_dx", "PuppiMET_pt * TMath::Cos(PuppiMET_phi) + MET_MetUnclustEnUpDeltaX")
-                .Define("_MET_uncert_dy", "PuppiMET_pt * TMath::Sin(PuppiMET_phi) + MET_MetUnclustEnUpDeltaY")
-                .Redefine("PuppiMET_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
+        return df.Define("_MET_uncert_dx", "met_pt * TMath::Cos(met_phi) + MET_MetUnclustEnUpDeltaX")
+                .Define("_MET_uncert_dy", "met_pt * TMath::Sin(met_phi) + MET_MetUnclustEnUpDeltaY")
+                .Redefine("met_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
     }
     else if (variation == "down") {
-        return df.Define("_MET_uncert_dx", "PuppiMET_pt * TMath::Cos(PuppiMET_phi) - MET_MetUnclustEnUpDeltaX")
-                .Define("_MET_uncert_dy", "PuppiMET_pt * TMath::Sin(PuppiMET_phi) - MET_MetUnclustEnUpDeltaY")
-                .Redefine("PuppiMET_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
+        return df.Define("_MET_uncert_dx", "met_pt * TMath::Cos(met_phi) - MET_MetUnclustEnUpDeltaX")
+                .Define("_MET_uncert_dy", "met_pt * TMath::Sin(met_phi) - MET_MetUnclustEnUpDeltaY")
+                .Redefine("met_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
     }
     return df;
 }
@@ -204,12 +204,12 @@ RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::Corr
                         .Redefine("FatJet_pt", eval_correction, {"year", "FatJet_pt", "FatJet_eta", "FatJet_pt"})
                         .Redefine("FatJet_mass", eval_correction, {"year", "FatJet_pt", "FatJet_eta", "FatJet_mass"});
 
-    auto correctmet = [JEC_type](std::string year, RVec<float> Jet_pt, RVec<float> jet_phi, RVec<float> jet_pt, float PuppiMET_pt, float PuppiMET_phi) {
+    auto correctmet = [JEC_type](std::string year, RVec<float> Jet_pt, RVec<float> jet_phi, RVec<float> jet_pt, float met_pt, float met_phi) {
         if (Jet_pt.empty()) {
-            return PuppiMET_pt;
+            return met_pt;
         }
-        float px = PuppiMET_pt * TMath::Cos(PuppiMET_phi);
-        float py = PuppiMET_pt * TMath::Sin(PuppiMET_phi);
+        float px = met_pt * TMath::Cos(met_phi);
+        float py = met_pt * TMath::Sin(met_phi);
         for (size_t i = 0; i < Jet_pt.size(); i++) {
             px += (Jet_pt[i] - jet_pt[i]) * TMath::Cos(jet_phi[i]);
             py += (Jet_pt[i] - jet_pt[i]) * TMath::Sin(jet_phi[i]);
@@ -217,7 +217,7 @@ RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::Corr
         return (float)TMath::Sqrt(px * px + py * py);
     };
 
-    return df_jetcorr.Redefine("met_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "PuppiMET_pt", "PuppiMET_phi"});
+    return df_jetcorr.Redefine("met_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "met_pt", "met_phi"});
 }
 
 /*
