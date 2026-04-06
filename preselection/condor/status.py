@@ -130,13 +130,22 @@ def check_job_log(job_dir: str) -> Optional[dict]:
         else:
             info["terminated"] = False
 
+        # Check for aborted (e.g. SYSTEM_PERIODIC_REMOVE due to walltime)
+        if "Job was aborted" in content:
+            info["aborted"] = True
+
         # Check for eviction
         if "Job was evicted" in content:
             info["evicted"] = True
 
         # Check if currently running
-        if "Job executing" in content and not info.get("terminated"):
-            info["running"] = True
+        # A job is running if "Job executing" appears after any eviction/abort/termination.
+        # Use position of last occurrence to handle multiple execution cycles.
+        if "Job executing" in content and not info.get("terminated") and not info.get("aborted"):
+            last_exec = content.rfind("Job executing")
+            last_evict = content.rfind("Job was evicted")
+            if last_evict < last_exec:
+                info["running"] = True
 
         return info
     except IOError:
@@ -240,6 +249,10 @@ def determine_job_status(
     # Check history
     if cluster_id in condor_history:
         hist = condor_history[cluster_id]
+        if hist.get("ExitBySignal", False):
+            return "failed"
+        if hist.get("JobStatus") == 3:  # Removed
+            return "failed"
         exit_code = hist.get("ExitCode", -1)
         if exit_code == 0:
             return "completed"
@@ -251,6 +264,8 @@ def determine_job_status(
     if job_dir:
         log_info = check_job_log(job_dir)
         if log_info:
+            if log_info.get("aborted"):
+                return "failed"
             if log_info.get("terminated"):
                 if log_info.get("exit_code", -1) == 0:
                     return "completed"

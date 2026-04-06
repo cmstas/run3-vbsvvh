@@ -33,7 +33,7 @@ struct MyArgs : public argparse::Args {
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
 };
 
-RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference &spanet_inference, SPANetRun2::SPANetInference &spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
+RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference *spanet_inference, SPANetRun2::SPANetInference *spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
@@ -46,12 +46,12 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
     if (!makeSpanetTrainingdata && runSPANetInference) {
         std::cout << "Running spanet" << std::endl;
         if (run_number == "2"){
-    	    df = spanet_inference_run2.RunSPANetInference(df);
-            df = spanet_inference_run2.ParseSpanetInference(df);
+            df = spanet_inference_run2->RunSPANetInference(df);
+            df = spanet_inference_run2->ParseSpanetInference(df);
         }
         else {
-            df = spanet_inference.RunSPANetInference(df);
-            df = spanet_inference.ParseSpanetInference(df);
+            df = spanet_inference->RunSPANetInference(df);
+            df = spanet_inference->ParseSpanetInference(df);
         }
     }
     return df;
@@ -72,13 +72,15 @@ int main(int argc, char** argv) {
         "all_events",
         "0lep_0FJ",
         "0lep_1FJ",
+        "0lep_1FJ_met",
         "0lep_2FJ",
+        "0lep_2FJ_met",
         "0lep_3FJ",
         "1lep_1FJ",
         "1lep_2FJ",
-        "2lep_1FJ",
+        "2lep_1FJ", // Currently shared between SF and OF
+        "2lepSS",
         "2lep_2FJ",
-        //"2lepSS",
         "3lep",
         "4lep",
     };
@@ -97,18 +99,22 @@ int main(int argc, char** argv) {
     }
     std::cout << " -> Running analysis for Run " << args.run_number << std::endl;
     
-    // Instantiate SPANet inference for run 2 and run 3
-    std::string  model_path;
+    std::unique_ptr<SPANet::SPANetInference> spanet_inference;
+    std::unique_ptr<SPANetRun2::SPANetInference> spanet_inference_run2;
 
-    model_path = "spanet/run2/v31/model.onnx";
-    SPANetRun2::SPANetInference spanet_inference_run2(model_path, args.batch_size);
-    std::cout << " -> Loading Run 2 ONNX model from: " << model_path << std::endl;
-    std::cout << "    ONNX session loaded successfully." << std::endl;
-    
-    model_path = "spanet/v2/model.onnx";
-    std::cout << " -> Loading Run 3 ONNX model from: " << model_path << std::endl;
-    SPANet::SPANetInference spanet_inference(model_path, args.batch_size);
-    std::cout << "    ONNX session loaded successfully." << std::endl;
+    if (args.runSPANetInference) {
+        std::string  model_path;
+
+        model_path = "spanet/run2/v31/model.onnx";
+        std::cout << " -> Loading Run 2 ONNX model from: " << model_path << std::endl;
+        spanet_inference_run2 = std::make_unique<SPANetRun2::SPANetInference>(model_path, args.batch_size);
+        std::cout << "    ONNX session loaded successfully." << std::endl;
+        
+        model_path = "spanet/v2/model.onnx";
+        std::cout << " -> Loading Run 3 ONNX model from: " << model_path << std::endl;
+        spanet_inference = std::make_unique<SPANet::SPANetInference>(model_path, args.batch_size);
+        std::cout << "    ONNX session loaded successfully." << std::endl;
+    }
 
     if (args.runSPANetInference && args.nthread > 1) {
         std::cout << " -> SPANet inference requires single-threaded execution, setting nthread=1" << std::endl;
@@ -173,15 +179,15 @@ int main(int argc, char** argv) {
     // Run analysis
     if (isData) {
         std::cout << " -> Running data analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference);
-        df = applyDataWeights(df);
         df = applyDataCorrections(df);
-        df = removeDuplicates(df);
+        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference);
+        df = applyDataWeights(df);
+        //df = removeDuplicates(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
-        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference, spanet_inference_run2, args.runSPANetInference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
         df = applyMCCorrections(df);
+        df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
+        df = applyMCWeights(df);
     }
 
     Cutflow::Add(df, "After SFs and corrections");

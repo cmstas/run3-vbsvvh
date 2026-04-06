@@ -32,7 +32,7 @@
                 "year": "2016postVFP",
                 "xsec": 1.0,
                 "lumi": 16.81,
-                "shortname": "data",
+                "shortname": "SingleElectron",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
                 "sumw": 0.0
