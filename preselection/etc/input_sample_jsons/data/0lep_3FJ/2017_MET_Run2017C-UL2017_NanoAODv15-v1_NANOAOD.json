@@ -29,7 +29,7 @@
                 "year": "2017",
                 "xsec": 1.0,
                 "lumi": 41.48,
-                "shortname": "data",
+                "shortname": "MET",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
                 "sumw": 0.0

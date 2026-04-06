@@ -72,13 +72,15 @@ int main(int argc, char** argv) {
         "all_events",
         "0lep_0FJ",
         "0lep_1FJ",
+        "0lep_1FJ_met",
         "0lep_2FJ",
+        "0lep_2FJ_met",
         "0lep_3FJ",
         "1lep_1FJ",
         "1lep_2FJ",
-        "2lep_1FJ",
+        "2lep_1FJ", // Currently shared between SF and OF
+        "2lepSS",
         "2lep_2FJ",
-        //"2lepSS",
         "3lep",
         "4lep",
     };
@@ -180,7 +182,7 @@ int main(int argc, char** argv) {
         df = applyDataCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference);
         df = applyDataWeights(df);
-        df = removeDuplicates(df);
+        //df = removeDuplicates(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);
