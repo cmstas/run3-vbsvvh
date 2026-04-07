@@ -79,9 +79,9 @@ xsec_dict = {
             "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
             "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
-            "TTto2L2Nu_TuneCP5_13p6TeV" : 762.1, # Weird
-            "TTto4Q_TuneCP5_13p6TeV" : 762.1, # Weird
-            "TTtoLNu2Q_TuneCP5_13p6TeV" : 762.1, # Weird
+            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.1,  # 762.1, # Weird, all numbers from XSDB are same, so currently using 1.1xR2 number
+            "TTto4Q_TuneCP5_13p6TeV"    : 401.9, # 762.1, # Weird, all numbers from XSDB are same, so currently using 1.1xR2 number
+            "TTtoLNu2Q_TuneCP5_13p6TeV" : 415.8, # 762.1, # Weird, all numbers from XSDB are same, so currently using 1.1xR2 number
             "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV" : 0.4678,
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
             "TTWZ_TuneCP5_13p6TeV" : 0.002715,
@@ -272,7 +272,7 @@ xsec_dict = {
             "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
             "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 49.997,
             "ZZTo4Q_5f_TuneCP5_13TeV"                                  : 3.451,
-            "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, # TODO FIXME This is from an old sample
+            "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, # TODO Find a number for this (this number is from an old sample)
             "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
             "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 3.28,
             "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 1.256,
