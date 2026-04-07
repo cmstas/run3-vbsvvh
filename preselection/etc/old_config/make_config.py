@@ -294,6 +294,7 @@ class ConfigGenerator:
 
         try:
             xsec_name, xsec = self.match_xsec(dataset_name)
+            print(f"  -> Matched xsec: {xsec_name} = {xsec}")
         except ValueError as e:
             print(f"  ❌ Skipping {dataset_name}: {e}")
             return {}, []
