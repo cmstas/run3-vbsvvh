@@ -215,6 +215,51 @@ RVec<float> VTransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_ph
     return mt;
 }
 
+RVec<float> VVInvariantPt(const RVec<float>& pt1, const RVec<float>& eta1, const RVec<float>& phi1, const RVec<float>& m1,
+                         const RVec<float>& pt2, const RVec<float>& eta2, const RVec<float>& phi2, const RVec<float>& m2) {
+    RVec<float> ptjj;
+    for (size_t i = 0; i < pt1.size(); ++i) {
+        if (pt1[i] < 0 || pt2[i] < 0) {
+            ptjj.push_back(-999.0f);
+            continue;
+        }
+        auto vec1 = ROOT::Math::PtEtaPhiMVector(pt1[i], eta1[i], phi1[i], m1[i]);
+        auto vec2 = ROOT::Math::PtEtaPhiMVector(pt2[i], eta2[i], phi2[i], m2[i]);
+        ptjj.push_back((vec1 + vec2).Pt());
+    }
+    return ptjj;
+}
+
+RVec<float> VVInvariantMass(const RVec<float>& pt1, const RVec<float>& eta1, const RVec<float>& phi1, const RVec<float>& m1,
+                                   const RVec<float>& pt2, const RVec<float>& eta2, const RVec<float>& phi2, const RVec<float>& m2) {
+    RVec<float> invariant_mass;
+    for (size_t i = 0; i < pt1.size(); ++i) {
+        if (pt1[i] < 0 || pt2[i] < 0) {
+            invariant_mass.push_back(-999.0f);
+            continue;
+        }
+        auto vec1 = ROOT::Math::PtEtaPhiMVector(pt1[i], eta1[i], phi1[i], m1[i]);
+        auto vec2 = ROOT::Math::PtEtaPhiMVector(pt2[i], eta2[i], phi2[i], m2[i]);
+        invariant_mass.push_back((vec1 + vec2).M());
+    }
+    return invariant_mass;
+}
+
+RVec<float> VVDeltaR(const RVec<float>& eta1, const RVec<float>& phi1, const RVec<float>& eta2, const RVec<float>& phi2) {
+    RVec<float> dR;
+    for (size_t i = 0; i < eta1.size(); ++i) {
+        if (eta1[i] < -900 || eta2[i] < -900) {
+            dR.push_back(999.0f);
+            continue;
+        }
+        float dphi = std::abs(phi1[i] - phi2[i]);
+        if (dphi > M_PI) dphi = 2 * M_PI - dphi;
+        float deta = eta1[i] - eta2[i];
+        dR.push_back(std::sqrt(deta * deta + dphi * dphi));
+    }
+    return dR;
+}
+
 // Return for each ak4 jet, the dR from the closest ak8 jet
 RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_phi, const RVec<float>& ak8_eta, const RVec<float>& ak8_phi) {
     RVec<float> vec_minDR = {};
@@ -233,20 +278,18 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
     return vec_minDR;
 }
 
-RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jet_var) {
-    if (Sum(goodJets) >= 2) {
-        return ROOT::VecOps::Combinations(jet_var, 2);
+RVec<RVec<int>> getJetPairs(const RVec<float>& goodJets) {
+    if (goodJets.size() >= 2) {
+        return ROOT::VecOps::Combinations(goodJets, 2);
     } else {
-    // Create properly matched return type: vector of vector
         RVec<RVec<int>> result;
-        // Add two empty vectors
-        result.emplace_back(RVec<int>{-999});
-        result.emplace_back(RVec<int>{-999});
+        result.emplace_back(RVec<int>{999});
+        result.emplace_back(RVec<int>{999});
         return result;
     }
 }
 
-RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass) {
+RVec<int> findJetPairWithMaxDeltaEta(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass) {
     // find pair of jets with max delta eta
     RVec<int> good_jet_idx = {};
     RVec<float> Jet_Pt = {};
@@ -278,6 +321,59 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
     }
     return good_jet_idx;
 }
+
+RVec<int> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2) {
+    if (Jet_pt.size() < 2) {
+        return RVec<int>{-1, -1};
+    }
+    auto combination_idxs = ROOT::VecOps::Combinations(Jet_pt, 2);
+
+    auto jet1_pt = ROOT::VecOps::Take(Jet_pt, combination_idxs[0]);
+    auto jet1_eta = ROOT::VecOps::Take(Jet_eta, combination_idxs[0]);
+    auto jet1_phi = ROOT::VecOps::Take(Jet_phi, combination_idxs[0]);
+    auto jet1_mass = ROOT::VecOps::Take(Jet_mass, combination_idxs[0]);
+    auto jet2_pt = ROOT::VecOps::Take(Jet_pt, combination_idxs[1]);
+    auto jet2_eta = ROOT::VecOps::Take(Jet_eta, combination_idxs[1]);
+    auto jet2_phi = ROOT::VecOps::Take(Jet_phi, combination_idxs[1]);
+    auto jet2_mass = ROOT::VecOps::Take(Jet_mass, combination_idxs[1]);
+    auto detajj = ROOT::VecOps::abs(jet1_eta - jet2_eta);
+
+    auto pt_m_jj = [](const RVec<float>& jet1_pt, const RVec<float>& jet1_eta, const RVec<float>& jet1_phi, const RVec<float>& jet1_mass, 
+                        const RVec<float>& jet2_pt, const RVec<float>& jet2_eta, const RVec<float>& jet2_phi, const RVec<float>& jet2_mass) {
+        RVec<float> pt_jj;
+        RVec<float> m_jj;
+        for (size_t i = 0; i < jet1_pt.size(); ++i) {
+            auto v_jj = ROOT::Math::PtEtaPhiMVector(jet1_pt[i], jet1_eta[i], jet1_phi[i], jet1_mass[i]) + ROOT::Math::PtEtaPhiMVector(jet2_pt[i], jet2_eta[i], jet2_phi[i], jet2_mass[i]);
+            pt_jj.push_back(v_jj.Pt());
+            m_jj.push_back(v_jj.M());
+        }
+        return std::make_pair(pt_jj, m_jj);
+    };
+
+    auto [ptjj, mjj] = pt_m_jj(jet1_pt, jet1_eta, jet1_phi, jet1_mass, jet2_pt, jet2_eta, jet2_phi, jet2_mass);
+    auto dphijj = ROOT::VecOps::DeltaPhi(jet1_phi, jet2_phi);
+
+    RVec<float> scores;
+    float score;
+    for (size_t i = 0; i < mjj.size(); i++) {
+        score = bdt.Compute({
+                    jet1_pt[i], jet2_pt[i],
+                    jet1_eta[i], jet2_eta[i],
+                    jet1_phi[i], jet2_phi[i],
+                    jet1_mass[i], jet2_mass[i],
+                    ptjj[i], detajj[i], 
+                    dphijj[i], mjj[i]
+                })[0];
+        scores.push_back(score);
+    }
+    auto max_score_idx = std::distance(scores.begin(), std::max_element(scores.begin(), scores.end()));
+    if (scores.size() > 0) {
+        return RVec<int>{static_cast<int>(combination_idxs[0][max_score_idx]), 
+                         static_cast<int>(combination_idxs[1][max_score_idx])};
+    }
+    return RVec<int>{-1, -1};
+}
+
 /*
 ############################################
 SNAPSHOT

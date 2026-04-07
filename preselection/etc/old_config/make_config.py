@@ -34,7 +34,7 @@ LUMI = {
     "2022Re-recoE+PromptFG": 26.6717,
     "2023PromptC": 18.063,
     "2023PromptD": 9.693,
-    "2024Prompt": 109.08
+    "2024Prompt": 109.08 + 7.9804 + 26.6717 + 18.063 + 9.693,  # sum of all 2022+2023 runs
 }
 
 SAMPLE_TYPE_MAPPING = {
@@ -153,12 +153,12 @@ class ConfigGenerator:
     @staticmethod
     def extract_data_sample_type(sample_name: str) -> str:
         """Extract data sample type from sample name."""
-        if "Muon" in sample_name or "SingleMuon" in sample_name:
+        if "MuonEG" in sample_name or "DoubleMuon" in sample_name or "DoubleEG" in sample_name:
+            return "DiLepton"
+        elif "Muon" in sample_name or "SingleMuon" in sample_name:
             return "Muon"
         elif "EGamma" in sample_name or "SingleElectron" in sample_name:
             return "Electron"
-        elif "MuonEG" in sample_name or "DoubleMuon" in sample_name or "DoubleEG" in sample_name:
-            return "DiLepton"
         elif "JetMET" in sample_name or "JetHT" in sample_name or "MET" in sample_name:
             return "JetMET"
         else:
@@ -166,15 +166,20 @@ class ConfigGenerator:
 
     def get_sample_name(self, sample_path: str) -> str:
         """Extract clean sample name from path."""
+        # Get the dataset directory name (last part of the path)
+        dataset_name = os.path.basename(sample_path.rstrip('/'))
+        
         if self.is_data:
-            match = re.search(r"Run(\d{4}[A-Z])/(.+)/([A-Za-z]+)", sample_path)
+            # Example: DoubleEG_Run2017E-UL2017_NanoAODv15-v1_NANOAOD
+            match = re.match(r"([A-Za-z0-9]+)_Run(\d{4}[A-Za-z]+)", dataset_name)
             if not match:
-                raise ValueError(f"Could not extract data sample name from: {sample_path}")
-            return f"Run{match.group(1)}-{match.group(3)}"
+                raise ValueError(f"Could not extract data sample name from: {dataset_name}")
+            return match.group(1)
         else:
-            match = re.search(r"/([^/]+)_TuneCP5", sample_path)
+            # Example: ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_...
+            match = re.search(r"(.+?)_TuneCP5", dataset_name)
             if not match:
-                raise ValueError(f"Could not extract MC sample name from: {sample_path}")
+                raise ValueError(f"Could not extract MC sample name from: {dataset_name}")
             return match.group(1)
 
     def match_xsec(self, dataset_name: str) -> Tuple[str, float]:
@@ -259,34 +264,39 @@ class ConfigGenerator:
         return results
 
     def generate(self) -> Dict:
-        """Generate the config dictionary."""
+        """Generate the config dictionary, using multiprocessing to read files in parallel."""
         for sample_dir in self.sample_dirs:
             try:
-                self._process_sample(sample_dir)
+                sample_config, corrupt_list = self._process_sample(sample_dir)
+                if sample_config:
+                    self.config["samples"].update(sample_config)
+                    self.corrupt_files.extend(corrupt_list)
             except Exception as e:
-                print(f"  Skipping {sample_dir}: {e}")
+                print(f"  ❌ Skipping {sample_dir}: {e}")
 
         return self.config
 
-    def _process_sample(self, sample_dir: str):
-        """Process a single sample directory."""
+    def _process_sample(self, sample_dir: str) -> Tuple[Dict, List[str]]:
+        """
+        Process a single sample directory.
+        
+        Returns (sample_config_dict, corrupt_files_list)
+        """
         dataset_name = os.path.basename(sample_dir.rstrip('/'))
-
-        # Skip PT-binned QCD samples (use HT-binned instead)
-        if dataset_name.startswith("QCD_Bin-PT"):
-            print(f"Skipping PT-binned QCD sample: {dataset_name}")
-            return
-
         print(f"Processing: {dataset_name}")
 
         # Extract metadata
-        sample_name = self.get_sample_name(sample_dir)
+        try:
+            sample_name = self.get_sample_name(sample_dir)
+        except ValueError as e:
+            print(f"  ❌ Skipping {dataset_name}: {e}")
+            return {}, []
 
         try:
             xsec_name, xsec = self.match_xsec(dataset_name)
         except ValueError as e:
-            print(f"  -> Skipping {dataset_name}: {e}")
-            return
+            print(f"  ❌ Skipping {dataset_name}: {e}")
+            return {}, []
 
         year = self.extract_year(sample_dir)
 
@@ -295,6 +305,10 @@ class ConfigGenerator:
         else:
             sample_type = self.extract_mc_sample_type(sample_name)
 
+        if self.is_data and sample_type not in ["Muon", "Electron"]:
+            print(f"  ❌ Skipping Sample type: {sample_type}")
+            return {}, []
+
         # Get files - strip trailing slash to avoid double slashes in pattern
         sample_dir_clean = sample_dir.rstrip('/')
         files_pattern = f"{sample_dir_clean}/*.root"
@@ -302,14 +316,14 @@ class ConfigGenerator:
 
         if not files:
             print(f"  -> No files found")
-            return
+            return {}, []
 
         # Compute nevents
+        corrupt = []
         if self.is_data:
             nevents = 1.0
         else:
             nevents, corrupt = self.compute_nevents(files, self.nthreads)
-            self.corrupt_files.extend(corrupt)
             if corrupt:
                 print(f"  -> {len(corrupt)} corrupt files")
 
@@ -317,24 +331,27 @@ class ConfigGenerator:
         lumi = LUMI.get(year, 1.0) if not self.is_data else 1.0
 
         # Build sample entry
-        # Use glob pattern for files (as expected by RDataFrame FromSpec)
-        sample_key = f"{sample_name}_{year}"
-        self.config["samples"][sample_key] = {
-            "trees": ["Events"],
-            "files": [f"{sample_dir_clean}/*.root"],
-            "metadata": {
-                "kind": self.category,
-                "year": year,
-                "type": sample_type,
-                "xsec": float(xsec),
-                "lumi": lumi,
-                "sumw": nevents,
-                "shortname": sample_name,
-                "do_ewk_corr": 0,
-                "local_prefix": "/ceph/cms/store/user/"
+        # Use full dataset name as key to distinguish different versions/runs within the same year
+        sample_key = dataset_name
+        sample_config = {
+            sample_key: {
+                "trees": ["Events"],
+                "files": files, # [f"{sample_dir_clean}/*.root"],
+                "metadata": {
+                    "kind": self.category,
+                    "year": year,
+                    "type": sample_type,
+                    "xsec": float(xsec),
+                    "lumi": lumi,
+                    "sumw": nevents,
+                    "shortname": sample_name,
+                    "do_ewk_corr": int(sample_type == "EWK"),
+                }
             }
         }
         print(f"  -> {sample_key}: {len(files)} files, {nevents:.0f} events")
+        
+        return sample_config, corrupt
 
     def write(self, output_file: str):
         """Write config to file."""
@@ -377,7 +394,7 @@ def main():
                         help="Paths config file (default: paths.json)")
     parser.add_argument("--xsecs", default=None,
                         help="Cross-sections file (default: auto-select based on run)")
-    parser.add_argument("-n", "--nthreads", type=int, default=8,
+    parser.add_argument("-n", "--nthreads", type=int, default=64,
                         help="Number of threads for nevents computation")
     parser.add_argument("-o", "--output", default=None,
                         help="Output file (default: {channel}-{category}.json)")
