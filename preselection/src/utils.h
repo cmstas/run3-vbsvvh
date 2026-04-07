@@ -123,7 +123,7 @@ RVec<RVec<int>> getJetPairs(const RVec<float>& goodJets);
 RVec<int> findJetPairWithMaxDeltaEta(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
 RVec<int> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2);
 
-const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights_Run3.root");
+const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights.root");
 
 /*
 ############################################
