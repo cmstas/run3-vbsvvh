@@ -183,6 +183,8 @@ Examples:
                         help="Only make training data for SPANet (--spanet_training flag)")
     parser.add_argument("--spanet-infer", action="store_true",
                         help="Run SPANet inference (--spanet_infer flag)")
+    parser.add_argument("--cutflow", action="store_true",
+                        help="Generate cutflow histograms")
     return parser.parse_args()
 
 
@@ -375,10 +377,11 @@ def create_tarball(preselection_dir: Path) -> Path:
 
     spanet_run2_dir = "spanet/run2/v31/"
     spanet_run3_dir = "spanet/v2/"
+    bdt_dir = "bdt/"
     # Items to include in tarball (from preselection dir)
     preselection_items = [
         "Makefile", "src", "include", "corrections",
-        "etc/goldenJson", spanet_run2_dir, spanet_run3_dir
+        "etc/goldenJson", spanet_run2_dir, spanet_run3_dir, bdt_dir
     ]
 
     # Build tar command
@@ -406,6 +409,8 @@ def generate_submit_file(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_training"
     if args.spanet_infer:
         extra_flags += " --spanet_infer"
+    if args.cutflow:
+        extra_flags += " --cutflow"
 
     # Arguments passed to executable:
     # USER N_CPUS CONFIG_FILE OUTPUT_NAME ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]
