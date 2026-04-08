@@ -49,7 +49,7 @@
             "metadata": {
                 "kind": "bkg",
                 "year": "2024Prompt",
-                "xsec": 415.8,
+                "xsec": 403.25,
                 "lumi": 109.08,
                 "shortname": "TTtoLNu2Q_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
