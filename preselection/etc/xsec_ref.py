@@ -79,9 +79,9 @@ xsec_dict = {
             "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
             "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
-            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.1,  # 762.1, # Weird, all numbers from XSDB are same, so currently using 1.1xR2 number
-            "TTto4Q_TuneCP5_13p6TeV"    : 401.9, # 762.1, # Weird, all numbers from XSDB are same, so currently using 1.1xR2 number
-            "TTtoLNu2Q_TuneCP5_13p6TeV" : 415.8, # 762.1, # Weird, all numbers from XSDB are same, so currently using 1.1xR2 number
+            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.45,  # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+            "TTto4Q_TuneCP5_13p6TeV"    : 431.5, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+            "TTtoLNu2Q_TuneCP5_13p6TeV" : 403.25, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
             "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV" : 0.4678,
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
             "TTWZ_TuneCP5_13p6TeV" : 0.002715,
