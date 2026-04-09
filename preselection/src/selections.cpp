@@ -144,8 +144,9 @@ RNode AK8JetsSelection(RNode df_)
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
-    Cutflow::Add(df_, "All events");
 
+    Cutflow::Add(df_, "All events");
+    
     auto df = METFilters(df_);
     df = LeptonSelections(df);
     df = AK4JetsSelection(df);
