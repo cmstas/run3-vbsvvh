@@ -1,6 +1,27 @@
 #include "selections.h"
 #include "cutflow.h"
 
+RNode METFilters(RNode df_) {
+    return df_.Filter("(isRun3 && (Flag_goodVertices && "
+            "Flag_globalSuperTightHalo2016Filter && "
+            "Flag_EcalDeadCellTriggerPrimitiveFilter && "
+            "Flag_BadPFMuonFilter && "
+            "Flag_BadPFMuonDzFilter && "
+            "Flag_hfNoisyHitsFilter &&"
+            "Flag_eeBadScFilter && "
+            "Flag_ecalBadCalibFilter)) || "
+        "(isRun2 && (Flag_goodVertices && "
+            "(!isData || Flag_globalSuperTightHalo2016Filter) && "
+            "Flag_HBHENoiseFilter && "
+            "Flag_HBHENoiseIsoFilter && "
+            "Flag_EcalDeadCellTriggerPrimitiveFilter && "
+            "Flag_BadPFMuonFilter &&"
+            "Flag_BadPFMuonDzFilter && "
+            "Flag_eeBadScFilter && "
+            "(!(is2017 || is2018) || Flag_ecalBadCalibFilter)))"
+        );
+}
+
 RNode TriggerSelections(RNode df_, std::string trigger_logic_string) {
 
     // Add default values to the df for all triggers that show up in the trigger_logic_string
@@ -123,7 +144,8 @@ RNode AK8JetsSelection(RNode df_)
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
-    auto df = LeptonSelections(df_);
+    auto df = METFilters(df_);
+    df = LeptonSelections(df_);
     df = AK4JetsSelection(df);
     df = AK8JetsSelection(df);
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})

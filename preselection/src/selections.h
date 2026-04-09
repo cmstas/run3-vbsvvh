@@ -20,6 +20,8 @@ RNode AK4JetsSelection(RNode df);
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut);
 
+RNode METFilters(RNode df_);
+
 // Trigger selections
 RNode TriggerSelections(RNode df_, std::string trigger_logic_string);
 // Trigger logic sring, paste this in from the output of the script for building this logic
