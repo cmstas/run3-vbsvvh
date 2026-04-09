@@ -144,14 +144,17 @@ RNode AK8JetsSelection(RNode df_)
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
+
+    Cutflow::Add(df_, "All events");
+    
     auto df = METFilters(df_);
-    df = LeptonSelections(df_);
+    df = LeptonSelections(df);
     df = AK4JetsSelection(df);
     df = AK8JetsSelection(df);
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
 
-    Cutflow::Add(df_, "All events");
+    Cutflow::Add(df, "C0: MET filters");
 
     if (noCut) return df;
 
