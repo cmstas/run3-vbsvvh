@@ -144,14 +144,16 @@ RNode AK8JetsSelection(RNode df_)
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
+    Cutflow::Add(df_, "All events");
+
     auto df = METFilters(df_);
-    df = LeptonSelections(df_);
+    df = LeptonSelections(df);
     df = AK4JetsSelection(df);
     df = AK8JetsSelection(df);
     df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
             .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
 
-    Cutflow::Add(df_, "All events");
+    Cutflow::Add(df, "C0: MET filters");
 
     if (noCut) return df;
 
@@ -290,7 +292,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
                 "_fatjet_vbs1_dR >= 0.8 && "
                 "_fatjet_vbs2_dR >= 0.8")
             .Define("fatjet_HvsQCD", "fatjet_globalParT3_Xbb / (fatjet_globalParT3_Xbb + fatjet_globalParT3_QCD)")
-            .Define("fatjet_VvsQCD", "(fatjet_globalParT3_Xcs + 0.33 * fatjet_globalParT3_Xqq) / ((0.33 * fatjet_globalParT3_Xqq) + fatjet_globalParT3_Xcs + fatjet_globalParT3_QCD)")
+            .Define("fatjet_VvsQCD", "(fatjet_globalParT3_Xcs + (fatjet_globalParT3_Xqq / 3)) / ((fatjet_globalParT3_Xqq / 3) + fatjet_globalParT3_Xcs + fatjet_globalParT3_QCD)")
             .Define("fatjet_is_h", "Sum(_boosted_candidate_jets) > 0 && (fatjet_HvsQCD[_boosted_candidate_jets][0] > fatjet_VvsQCD[_boosted_candidate_jets][0])")
             .Define("fatjet_is_v", "!fatjet_is_h")
             .Define("boosted_h_candidate_eta", "fatjet_is_h ? fatjet_eta[0] : -999.0f")
@@ -400,7 +402,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
                 "_fatjet_vbs1_dR >= 0.8 && "
                 "_fatjet_vbs2_dR >= 0.8")
             .Define("fatjet_HvsQCD", "fatjet_globalParT3_Xbb / (fatjet_globalParT3_Xbb + fatjet_globalParT3_QCD)")
-            .Define("fatjet_VvsQCD", "(fatjet_globalParT3_Xcs + 0.33 * fatjet_globalParT3_Xqq) / ((0.33 * fatjet_globalParT3_Xqq) + fatjet_globalParT3_Xcs + fatjet_globalParT3_QCD)")
+            .Define("fatjet_VvsQCD", "(fatjet_globalParT3_Xcs + (fatjet_globalParT3_Xqq / 3)) / ((fatjet_globalParT3_Xqq / 3) + fatjet_globalParT3_Xcs + fatjet_globalParT3_QCD)")
             .Define("_best_h_idx", "fatjet_HvsQCD.size() != 0 ? ArgMax(fatjet_HvsQCD[_boosted_h_candidate_jets]) : 999.0")
             .Define("boosted_h_candidate_score", "_best_h_idx != 999.0 ? fatjet_HvsQCD[_boosted_h_candidate_jets][_best_h_idx] : -999.0f")
             .Define("boosted_h_candidate_v_score", "_best_h_idx != 999.0 ? fatjet_VvsQCD[_boosted_h_candidate_jets][_best_h_idx] : -999.0f")
