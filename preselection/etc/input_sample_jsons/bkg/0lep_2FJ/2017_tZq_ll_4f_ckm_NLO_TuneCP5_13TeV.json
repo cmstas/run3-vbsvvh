@@ -5,8 +5,7 @@
                 "Events"
             ],
             "files": [
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep2FJ/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_1.root",
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep2FJ/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_2.root"
+                "store/user/phchang/skim/VBSVVH_skim_v27/Run2_Bkg_v15_v27_0Lep2FJ/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_1.root"
             ],
             "metadata": {
                 "kind": "bkg",
@@ -16,7 +15,7 @@
                 "shortname": "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
-                "sumw": 737624.2674496002
+                "sumw": 737624.2674496003
             }
         }
     }
