@@ -33,6 +33,10 @@ const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrec
     {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2016postVFP-UL-NanoAODv15/add_b_tagging_WPs/btagging.json.gz")},
     {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2017-UL-NanoAODv15/add_b_tagging_WPs/btagging.json.gz")},
     {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2018-UL-NanoAODv15/add_b_tagging_WPs/btagging.json.gz")},
+    {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
+    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
+    {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
+    {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
 
@@ -42,6 +46,10 @@ static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
     {"2016postVFP", btaggingCorrections.at("2016postVFP").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2017",        btaggingCorrections.at("2017").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2018",        btaggingCorrections.at("2018").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2022Re-recoBCD", btaggingCorrections.at("2022Re-recoBCD").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2022Re-recoE+PromptFG", btaggingCorrections.at("2022Re-recoE+PromptFG").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
 };
 
@@ -50,6 +58,10 @@ static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
     {"2016postVFP", btaggingCorrections.at("2016postVFP").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2017",        btaggingCorrections.at("2017").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2018",        btaggingCorrections.at("2018").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2022Re-recoBCD", btaggingCorrections.at("2022Re-recoBCD").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2022Re-recoE+PromptFG", btaggingCorrections.at("2022Re-recoE+PromptFG").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
 };
 
@@ -58,6 +70,10 @@ static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
     {"2016postVFP", btaggingCorrections.at("2016postVFP").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2017",        btaggingCorrections.at("2017").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2018",        btaggingCorrections.at("2018").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2022Re-recoBCD", btaggingCorrections.at("2022Re-recoBCD").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2022Re-recoE+PromptFG", btaggingCorrections.at("2022Re-recoE+PromptFG").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
 };
 
@@ -71,10 +87,10 @@ const std::unordered_map<std::string, correction::CorrectionSet> metCorrections 
     {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv9/latest/met.json.gz")},
     {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2017-UL-NanoAODv9/latest/met.json.gz")},
     {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2018-UL-NanoAODv9/latest/met.json.gz")},
-    {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/met_xyCorrections_2022_2022.json.gz")},
-    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/met_xyCorrections_2022_2022EE.json.gz")},
-    {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/met_xyCorrections_2023_2023.json.gz")},
-    {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/met_xyCorrections_2023_2023BPix.json.gz")}
+    // {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/met_xyCorrections_2022_2022.json.gz")},
+    // {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/met_xyCorrections_2022_2022EE.json.gz")},
+    // {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/met_xyCorrections_2023_2023.json.gz")},
+    // {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/met_xyCorrections_2023_2023BPix.json.gz")}
 };
 RNode applyMETPhiCorrections(RNode df, bool isData);
 RNode applyMETUnclusteredCorrections(RNode df, std::string variation);
