@@ -41,7 +41,7 @@
             "metadata": {
                 "kind": "bkg",
                 "year": "2024Prompt",
-                "xsec": 16120,
+                "xsec": 16120.0,
                 "lumi": 109.08,
                 "shortname": "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,

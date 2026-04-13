@@ -98,7 +98,7 @@ xsec_dict = {
             "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
             "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
             "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3,
-            "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 16120,
+            "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 16120.0,
             "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 1.825,
             "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV" : 0.1158,
             "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 356.9,
