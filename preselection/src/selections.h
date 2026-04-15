@@ -32,5 +32,4 @@ const std::string trigger_logic_string_met = "true";
 const std::string trigger_logic_string_ht  = "true";
 
 
-
 #endif // SELECTIONS_H

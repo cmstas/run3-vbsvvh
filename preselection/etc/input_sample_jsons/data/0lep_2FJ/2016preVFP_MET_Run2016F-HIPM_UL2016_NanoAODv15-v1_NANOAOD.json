@@ -5,8 +5,7 @@
                 "Events"
             ],
             "files": [
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep2FJ/MET_Run2016F-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_1.root",
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep2FJ/MET_Run2016F-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_2.root"
+                "store/user/phchang/skim/VBSVVH_skim_v27/Run2_Data_v15_v27_0Lep2FJ/MET_Run2016F-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_1.root"
             ],
             "metadata": {
                 "kind": "data",

@@ -5,9 +5,8 @@
                 "Events"
             ],
             "files": [
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep1FJ/MuonEG_Run2018B-UL2018_NanoAODv15-v2_NANOAOD/output_1.root",
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep1FJ/MuonEG_Run2018B-UL2018_NanoAODv15-v2_NANOAOD/output_2.root",
-                "store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep1FJ/MuonEG_Run2018B-UL2018_NanoAODv15-v2_NANOAOD/output_3.root"
+                "store/user/phchang/skim/VBSVVH_skim_v27/Run2_Data_v15_v27_2Lep1FJ/MuonEG_Run2018B-UL2018_NanoAODv15-v2_NANOAOD/output_1.root",
+                "store/user/phchang/skim/VBSVVH_skim_v27/Run2_Data_v15_v27_2Lep1FJ/MuonEG_Run2018B-UL2018_NanoAODv15-v2_NANOAOD/output_2.root"
             ],
             "metadata": {
                 "kind": "data",

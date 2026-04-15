@@ -187,6 +187,28 @@ DS_DICT_MULTILEP = {
             ],
         },
     },
+    "2024" : {
+        "ds_prio_lst" : ["Muon", "MuonEG", "EGamma"],
+        "ds_trg_dict" : {
+            "Muon" : [
+                "HLT_IsoMu24",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+            ],
+            "MuonEG" : [
+                # From ZZ Run 3 CMS AN-25-159
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
+            ],
+        },
+    },
 
 }
 
