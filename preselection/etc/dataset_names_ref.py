@@ -740,6 +740,7 @@ datasets = {
         {"year": "2018", "dataset_name": "MET_Run2018C-UL2018_NanoAODv15-v1_NANOAOD"},
         {"year": "2018", "dataset_name": "MET_Run2018C-UL2018_NanoAODv15-v2_NANOAOD"},
         {"year": "2018", "dataset_name": "MET_Run2018D-UL2018_NanoAODv15-v1_NANOAOD"},
+        {"year": "2018", "dataset_name": "MET_Run2018D-UL2018_NanoAODv15-v2_NANOAOD"},
         {"year": "2018", "dataset_name": "MuonEG_Run2018A-UL2018_NanoAODv15-v1_NANOAOD"},
         {"year": "2018", "dataset_name": "MuonEG_Run2018A-UL2018_NanoAODv15-v2_NANOAOD"},
         {"year": "2018", "dataset_name": "MuonEG_Run2018B-UL2018_NanoAODv15-v1_NANOAOD"},

@@ -97,6 +97,10 @@ def main():
     parser.add_argument('-f', '--files-per-job',help = 'Number of input files per job (default: 10)', default=10, type=int)
     parser.add_argument('-d', '--dry-run',             help = 'Do not actually execute the run command', action='store_true')
     parser.add_argument('--store-hlt',                 help = 'Store HLT trigger branches in output', action='store_true')
+    parser.add_argument('--memory',                    help = 'Memory per job for slurm submission (default: 8gb)', default=None)
+    parser.add_argument('--time',                      help = 'Time limit per job for slurm submission (default: 04:00:00)', default=None)
+    parser.add_argument('--ncpus',                     help = 'CPUs per job for slurm submission (default: 4)', type=int, default=None)
+    parser.add_argument('--sample',                    help = 'Regex to filter which samples to submit (slurm/condor only)', default=None)
     args = parser.parse_args()
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
@@ -117,12 +121,13 @@ def main():
         else:
             # If no input jsons specified, look them up based on analysis channel
             # Assume we want signal, data, and bkg
+            run_base = f"etc/input_sample_jsons/run{args.run}"
             jsons = [
-                "etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/",
-                "etc/input_sample_jsons/sig_c2v1p5_c3_1p0/all_events/",
-                "etc/input_sample_jsons/sig_c2v1p0_c3_10p0/all_events/",
-                f"etc/input_sample_jsons/bkg/{ANA_CHANNELS[chan_name]}",
-                f"etc/input_sample_jsons/data/{ANA_CHANNELS[chan_name]}"
+                f"{run_base}/sig_c2v1p0_c3_1p0/all_events/",
+                f"{run_base}/sig_c2v1p5_c3_1p0/all_events/",
+                f"{run_base}/sig_c2v1p0_c3_10p0/all_events/",
+                f"{run_base}/bkg/{ANA_CHANNELS[chan_name]}",
+                f"{run_base}/data/{ANA_CHANNELS[chan_name]}",
             ]
             merged_json_dict = merge_jsons(jsons)
 
@@ -162,7 +167,11 @@ def main():
             os.system(command)
         elif args.mode == "slurm":
             dry_run_flag = " --dry-run" if args.dry_run else ""
-            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{dry_run_flag}"
+            memory_flag = f" --memory {args.memory}" if args.memory else ""
+            time_flag = f" --time {args.time}" if args.time else ""
+            ncpus_flag = f" --ncpus {args.ncpus}" if args.ncpus else ""
+            sample_flag = f" --sample '{args.sample}'" if args.sample else ""
+            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{dry_run_flag}{memory_flag}{time_flag}{ncpus_flag}{sample_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             os.system(command)
 
