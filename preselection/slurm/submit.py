@@ -142,6 +142,8 @@ Examples:
                         help="Generate SPANet training data (--spanet_training flag)")
     parser.add_argument("--spanet-infer", action="store_true",
                         help="Run SPANet inference (--spanet_infer flag)")
+    parser.add_argument("--store_hlt", action="store_true",
+                        help="Store HLT trigger branches in output")
     return parser.parse_args()
 
 
@@ -206,6 +208,8 @@ def generate_slurm_script(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_training"
     if args.spanet_infer:
         extra_flags += " --spanet_infer"
+    if args.store_hlt:
+        extra_flags += " --store_hlt"
 
     # Arguments for executable.sh:
     # TASK_DIR N_CPUS CONFIG_PATH OUTPUT_DIR ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]
@@ -253,6 +257,8 @@ def generate_array_sbatch(task_dir: Path, job_entries: List[dict],
         extra_flags += " --spanet_training"
     if args.spanet_infer:
         extra_flags += " --spanet_infer"
+    if args.store_hlt:
+        extra_flags += " --store_hlt"
 
     script_path = task_dir / "array.sbatch"
     script_content = f"""#!/bin/bash

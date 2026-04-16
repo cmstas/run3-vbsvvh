@@ -311,7 +311,7 @@ std::string setOutputDirectory(const std::string &outdir, bool spanet_training) 
     return directory_path;
 }
 
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput)
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput, bool storeHLT)
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
@@ -328,14 +328,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         final_variables.push_back(ColName);
     }
 
-    // Store HLT branches from input NanoAOD, providing default values
+    // Optionally store HLT branches from input NanoAOD, providing default values
     // for branches that may not exist in all files of a multi-file chain
-    auto allColNames = df.GetColumnNames();
-    for (auto &&colName : allColNames) {
-        if (colName.starts_with("HLT_") &&
-            std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
-            df = df.DefaultValueFor(colName, (bool)false);
-            final_variables.push_back(colName);
+    if (storeHLT) {
+        auto allColNames = df.GetColumnNames();
+        for (auto &&colName : allColNames) {
+            if (colName.starts_with("HLT_") &&
+                std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
+                df = df.DefaultValueFor(colName, (bool)false);
+                final_variables.push_back(colName);
+            }
         }
     }
 
