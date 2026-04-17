@@ -379,8 +379,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         Cutflow::Add(df, "C4: at-least 2 jets");
 
         df = df.Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {"jet_pt", "jet_eta", "jet_phi", "jet_mass", "isRun2"})
-            .Define("vbs_jet1_idx", "_vbs_candidate_jet_pairs[0]")
-            .Define("vbs_jet2_idx", "_vbs_candidate_jet_pairs[1]")
+            .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])")
+            .Define("vbs_jet2_idx", "static_cast<int>(_vbs_candidate_jet_pairs[1])")
+            .Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
             .Define("vbs_jet1_pt", "vbs_jet1_idx != -1 ? jet_pt[vbs_jet1_idx] : -999.0f")
             .Define("vbs_jet1_eta", "vbs_jet1_idx != -1 ? jet_eta[vbs_jet1_idx] : -999.0f")
             .Define("vbs_jet1_phi", "vbs_jet1_idx != -1 ? jet_phi[vbs_jet1_idx] : -999.0f")

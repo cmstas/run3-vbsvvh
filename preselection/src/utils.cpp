@@ -322,9 +322,9 @@ RVec<int> findJetPairWithMaxDeltaEta(RVec<float> Jet_pt, RVec<float> Jet_eta, RV
     return good_jet_idx;
 }
 
-RVec<int> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2) {
+RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2) {
     if (Jet_pt.size() < 2) {
-        return RVec<int>{-1, -1};
+        return RVec<float>{-1, -1, -1};
     }
     auto combination_idxs = ROOT::VecOps::Combinations(Jet_pt, 2);
 
@@ -368,10 +368,11 @@ RVec<int> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_p
     }
     auto max_score_idx = std::distance(scores.begin(), std::max_element(scores.begin(), scores.end()));
     if (scores.size() > 0) {
-        return RVec<int>{static_cast<int>(combination_idxs[0][max_score_idx]), 
-                         static_cast<int>(combination_idxs[1][max_score_idx])};
+        return RVec<float>{static_cast<float>(combination_idxs[0][max_score_idx]), 
+                         static_cast<float>(combination_idxs[1][max_score_idx]),
+                         scores[max_score_idx]};
     }
-    return RVec<int>{-1, -1};
+    return RVec<float>{-1, -1, -1};
 }
 
 /*
