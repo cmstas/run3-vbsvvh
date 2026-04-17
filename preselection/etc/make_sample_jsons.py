@@ -257,7 +257,7 @@ def main():
     # Loop over the skim sets (e.g., 3lep)
     for skim_set_name in SKIM_PATH_DICT:
         print(f"\nSkim set: {skim_set_name}")
-        if skim_set_name not in ["0lep_1FJ", "0lep_2FJ"]: continue
+        #if skim_set_name not in ["0lep_1FJ", "0lep_2FJ"]: continue
 
         # Loop over the kinds of samples for each skim (e.g., bkg)
         for run_tag,kind in SKIM_PATH_DICT[skim_set_name]:
