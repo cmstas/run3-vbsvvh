@@ -88,13 +88,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--jsons', nargs='+',    help = 'Input json file(s) containing files and metadata')
     parser.add_argument('-c', '--channels', nargs='+', help = 'Which analysis selection channels to run')
-    parser.add_argument('-m', '--mode',                help = 'Which mode to run in (local or condor)', choices=['local','condor'])
+    parser.add_argument('-m', '--mode',                help = 'Which mode to run in (local, condor, or slurm)', choices=['local','condor','slurm'])
     parser.add_argument('-o', '--outpath',             help = 'Output directory', default=".")
     parser.add_argument('-n', '--outname',             help = 'Output name', default="rdf_output")
     parser.add_argument('-r', '--run',                 help = 'Which run (2 or 3)', choices=['2','3'])
     parser.add_argument('-p', '--prefix',              help = 'Prefix to append to the file paths', default="/ceph/cms/")
     parser.add_argument('-j', '--n-cores',             help = 'Number of cores to use for local execution', default=64)
+    parser.add_argument('-f', '--files-per-job',help = 'Number of input files per job (default: 10)', default=10, type=int)
     parser.add_argument('-d', '--dry-run',             help = 'Do not actually execute the run command', action='store_true')
+    parser.add_argument('--store-hlt',                 help = 'Store HLT trigger branches in output', action='store_true')
     args = parser.parse_args()
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
@@ -144,19 +146,25 @@ def main():
 
         # Make an output directory out of outpath/outname
         outdir = os.path.join(args.outpath,outname)
-        if not os.path.isdir(outdir): os.mkdir(outdir)
+        if not os.path.isdir(outdir): os.makedirs(outdir)
         print(f"  -> RDF output will be located in: {outdir}")
 
         # Construct the bash run command
+        hlt_flag = " --store_hlt" if args.store_hlt else ""
         if args.mode == "local":
-            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores} --run_number {args.run} --progress"
+            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores} --run_number {args.run} --progress{hlt_flag}"
             print(f"  -> Now running command \"{command}\"...\n")
             if not args.dry_run: os.system(command)
         elif args.mode == "condor":
-            # TODO how to pass output dir to the condor run script
-            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run}"
+            dry_run_flag = " --dry-run" if args.dry_run else ""
+            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{hlt_flag}{dry_run_flag}"
             print(f"  -> Running command \"{command}\"...\n")
-            if not args.dry_run: os.system(command)
+            os.system(command)
+        elif args.mode == "slurm":
+            dry_run_flag = " --dry-run" if args.dry_run else ""
+            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{dry_run_flag}"
+            print(f"  -> Running command \"{command}\"...\n")
+            os.system(command)
 
         print("Done!")
 
