@@ -93,13 +93,12 @@ def main():
     parser.add_argument('-n', '--outname',             help = 'Output name', default="rdf_output")
     parser.add_argument('-r', '--run',                 help = 'Which run (2 or 3)', choices=['2','3'])
     parser.add_argument('-p', '--prefix',              help = 'Prefix to append to the file paths', default="/ceph/cms/")
-    parser.add_argument('-j', '--n-cores',             help = 'Number of cores to use for local execution', default=64)
+    parser.add_argument('-j', '--n-cores',             help = 'Number of cores (local) or CPUs per job (slurm/condor)', type=int, default=None)
     parser.add_argument('-f', '--files-per-job',help = 'Number of input files per job (default: 10)', default=10, type=int)
     parser.add_argument('-d', '--dry-run',             help = 'Do not actually execute the run command', action='store_true')
     parser.add_argument('--store-hlt',                 help = 'Store HLT trigger branches in output', action='store_true')
     parser.add_argument('--memory',                    help = 'Memory per job for slurm submission (default: 8gb)', default=None)
     parser.add_argument('--time',                      help = 'Time limit per job for slurm submission (default: 04:00:00)', default=None)
-    parser.add_argument('--ncpus',                     help = 'CPUs per job for slurm submission (default: 4)', type=int, default=None)
     parser.add_argument('--sample',                    help = 'Regex to filter which samples to submit (slurm/condor only)', default=None)
     args = parser.parse_args()
 
@@ -157,21 +156,22 @@ def main():
         # Construct the bash run command
         hlt_flag = " --store_hlt" if args.store_hlt else ""
         if args.mode == "local":
-            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores} --run_number {args.run} --progress{hlt_flag}"
+            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}"
             print(f"  -> Now running command \"{command}\"...\n")
             if not args.dry_run: os.system(command)
         elif args.mode == "condor":
             dry_run_flag = " --dry-run" if args.dry_run else ""
-            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{hlt_flag}{dry_run_flag}"
+            ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
+            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{dry_run_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             os.system(command)
         elif args.mode == "slurm":
             dry_run_flag = " --dry-run" if args.dry_run else ""
             memory_flag = f" --memory {args.memory}" if args.memory else ""
             time_flag = f" --time {args.time}" if args.time else ""
-            ncpus_flag = f" --ncpus {args.ncpus}" if args.ncpus else ""
+            ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
             sample_flag = f" --sample '{args.sample}'" if args.sample else ""
-            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{dry_run_flag}{memory_flag}{time_flag}{ncpus_flag}{sample_flag}"
+            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             os.system(command)
 

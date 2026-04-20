@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "VBSZZH_c2v1p0_c3_1p0_UL16": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Sig_v15_v28_Sig/VBSZZH_c2v1p0_c3_1p0_UL16/output_1.root"
+            ],
+            "metadata": {
+                "kind": "sig_c2v1p0_c3_1p0",
+                "year": "2016postVFP",
+                "xsec": 0.000108,
+                "lumi": 16.81,
+                "shortname": "VBSZZH_c2v1p0_c3_1p0",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 100000.0
+            }
+        }
+    }
+}
