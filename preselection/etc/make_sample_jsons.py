@@ -311,7 +311,7 @@ def main():
                 print(f"{i+1}/{len(datasets_lst)}: {dataset_info['dataset_name']}")
 
                 # Make the output json
-                make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, run_tag)
+                make_json_for_dataset(dataset_info, path_to_skims, kind, xsec_dict, skim_set_name, run_tag)
 
 
 
