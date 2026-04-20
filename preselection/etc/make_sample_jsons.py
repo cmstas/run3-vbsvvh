@@ -282,7 +282,7 @@ def main():
             haveref_ds_set  = set(d["dataset_name"] for d in known_datasets_lst)
 
             # Do some checks of the list of skims we have against what we expect
-            print(f"\nChecking datasets for {kind}...")
+            print(f"\nChecking datasets for {run_tag} {kind}...")
             have_skim_but_not_ref  = haveskim_ds_set.difference(haveref_ds_set)
             have_json_but_not_skim = havejson_ds_set.difference(haveskim_ds_set)
             if len(have_skim_but_not_ref)>0:
@@ -298,6 +298,11 @@ def main():
             datasets_lst = []
             for ds_dict in known_datasets_lst:
                 if ds_dict["dataset_name"] in ds_names_to_make_jsons_for:
+                    # Hardcoded skipping of double lepton datasets for single lep channel (since we make skims for them but don't want to use them)
+                    if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("MuonEG"): continue
+                    if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("DoubleMuon"): continue
+                    if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("DoubleEG"): continue
+                    # Otherwise append to the list we want to make jsons for
                     datasets_lst.append(ds_dict)
 
             # Loop over all of the datasets and build up a dict we will dump to json
