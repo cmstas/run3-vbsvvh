@@ -1,0 +1,25 @@
+{
+    "samples": {
+        "QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ/QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_1.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ/QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_2.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ/QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_3.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ/QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM/output_4.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2017",
+                "xsec": 351302.0,
+                "lumi": 41.48,
+                "shortname": "QCD_HT300to500_TuneCP5_PSWeights_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 42560630.0
+            }
+        }
+    }
+}
