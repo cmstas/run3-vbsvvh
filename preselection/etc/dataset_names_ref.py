@@ -5,43 +5,8 @@
 datasets = {
 
     ##################### Run 2 signal #####################
-    ("run2", "sig_c2v1p0_c3_10p0") : [
-        {"year": "2016preVFP",  "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL16APV"},
-        {"year": "2016preVFP",  "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL16APV"},
-        {"year": "2016preVFP",  "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL16APV"},
-        {"year": "2016preVFP",  "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL16APV"},
-        {"year": "2016postVFP", "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL16"},
-        {"year": "2016postVFP", "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL16"},
-        {"year": "2016postVFP", "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL16"},
-        {"year": "2016postVFP", "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL16"},
-        {"year": "2017",        "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL17"},
-        {"year": "2017",        "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL17"},
-        {"year": "2017",        "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL17"},
-        {"year": "2017",        "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL17"},
-        {"year": "2018",        "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL18"},
-        {"year": "2018",        "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL18"},
-        {"year": "2018",        "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL18"},
-        {"year": "2018",        "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL18"},
-    ],
-    ("run2", "sig_c2v1p5_c3_1p0") : [
-        {"year": "2016preVFP",  "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL16APV"},
-        {"year": "2016preVFP",  "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL16APV"},
-        {"year": "2016preVFP",  "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL16APV"},
-        {"year": "2016preVFP",  "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL16APV"},
-        {"year": "2016postVFP", "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL16"},
-        {"year": "2016postVFP", "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL16"},
-        {"year": "2016postVFP", "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL16"},
-        {"year": "2016postVFP", "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL16"},
-        {"year": "2017",        "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL17"},
-        {"year": "2017",        "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL17"},
-        {"year": "2017",        "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL17"},
-        {"year": "2017",        "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL17"},
-        {"year": "2018",        "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL18"},
-        {"year": "2018",        "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL18"},
-        {"year": "2018",        "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL18"},
-        {"year": "2018",        "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL18"},
-    ],
-    ("run2", "sig_c2v1p0_c3_1p0") : [
+    ("run2", "sig") : [
+        # SM
         {"year": "2016preVFP",  "dataset_name": "VBSWWH_OS_c2v1p0_c3_1p0_UL16APV"},
         {"year": "2016preVFP",  "dataset_name": "VBSWWH_SS_c2v1p0_c3_1p0_UL16APV"},
         {"year": "2016preVFP",  "dataset_name": "VBSWZH_c2v1p0_c3_1p0_UL16APV"},
@@ -58,26 +23,66 @@ datasets = {
         {"year": "2018",        "dataset_name": "VBSWWH_SS_c2v1p0_c3_1p0_UL18"},
         {"year": "2018",        "dataset_name": "VBSWZH_c2v1p0_c3_1p0_UL18"},
         {"year": "2018",        "dataset_name": "VBSZZH_c2v1p0_c3_1p0_UL18"},
+
+        # c2V 1p5
+        {"year": "2016preVFP",  "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL16APV"},
+        {"year": "2016preVFP",  "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL16APV"},
+        {"year": "2016preVFP",  "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL16APV"},
+        {"year": "2016preVFP",  "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL16APV"},
+        {"year": "2016postVFP", "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL16"},
+        {"year": "2016postVFP", "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL16"},
+        {"year": "2016postVFP", "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL16"},
+        {"year": "2016postVFP", "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL16"},
+        {"year": "2017",        "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL17"},
+        {"year": "2017",        "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL17"},
+        {"year": "2017",        "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL17"},
+        {"year": "2017",        "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL17"},
+        {"year": "2018",        "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_UL18"},
+        {"year": "2018",        "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_UL18"},
+        {"year": "2018",        "dataset_name": "VBSWZH_c2v1p5_c3_1p0_UL18"},
+        {"year": "2018",        "dataset_name": "VBSZZH_c2v1p5_c3_1p0_UL18"},
+
+        # c3 10
+        {"year": "2016preVFP",  "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL16APV"},
+        {"year": "2016preVFP",  "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL16APV"},
+        {"year": "2016preVFP",  "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL16APV"},
+        {"year": "2016preVFP",  "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL16APV"},
+        {"year": "2016postVFP", "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL16"},
+        {"year": "2016postVFP", "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL16"},
+        {"year": "2016postVFP", "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL16"},
+        {"year": "2016postVFP", "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL16"},
+        {"year": "2017",        "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL17"},
+        {"year": "2017",        "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL17"},
+        {"year": "2017",        "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL17"},
+        {"year": "2017",        "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL17"},
+        {"year": "2018",        "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_UL18"},
+        {"year": "2018",        "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_UL18"},
+        {"year": "2018",        "dataset_name": "VBSWZH_c2v1p0_c3_10p0_UL18"},
+        {"year": "2018",        "dataset_name": "VBSZZH_c2v1p0_c3_10p0_UL18"},
+
     ],
 
     ##################### Run 3 signal #####################
-    ("run3", "sig_c2v1p0_c3_10p0") : [
-        {"year": "2024Prompt", "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_Run3Summer24"},
-        {"year": "2024Prompt", "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_Run3Summer24"},
-        {"year": "2024Prompt", "dataset_name": "VBSWZH_c2v1p0_c3_10p0_Run3Summer24"},
-        {"year": "2024Prompt", "dataset_name": "VBSZZH_c2v1p0_c3_10p0_Run3Summer24"},
-    ],
-    ("run3", "sig_c2v1p0_c3_1p0") : [
+    ("run3", "sig") : [
+        # SM
         {"year": "2024Prompt", "dataset_name": "VBSWWH_OS_c2v1p0_c3_1p0_Run3Summer24"},
         {"year": "2024Prompt", "dataset_name": "VBSWWH_SS_c2v1p0_c3_1p0_Run3Summer24"},
         {"year": "2024Prompt", "dataset_name": "VBSWZH_c2v1p0_c3_1p0_Run3Summer24"},
         {"year": "2024Prompt", "dataset_name": "VBSZZH_c2v1p0_c3_1p0_Run3Summer24"},
-    ],
-    ("run3", "sig_c2v1p5_c3_1p0") : [
+
+        # c2V 1p5
         {"year": "2024Prompt", "dataset_name": "VBSWWH_OS_c2v1p5_c3_1p0_Run3Summer24"},
         {"year": "2024Prompt", "dataset_name": "VBSWWH_SS_c2v1p5_c3_1p0_Run3Summer24"},
         {"year": "2024Prompt", "dataset_name": "VBSWZH_c2v1p5_c3_1p0_Run3Summer24"},
         {"year": "2024Prompt", "dataset_name": "VBSZZH_c2v1p5_c3_1p0_Run3Summer24"},
+
+        # c3 10
+        {"year": "2024Prompt", "dataset_name": "VBSWWH_OS_c2v1p0_c3_10p0_Run3Summer24"},
+        {"year": "2024Prompt", "dataset_name": "VBSWWH_SS_c2v1p0_c3_10p0_Run3Summer24"},
+        {"year": "2024Prompt", "dataset_name": "VBSWZH_c2v1p0_c3_10p0_Run3Summer24"},
+        {"year": "2024Prompt", "dataset_name": "VBSZZH_c2v1p0_c3_10p0_Run3Summer24"},
+
+
     ],
 
     ##################### Run 2 backgrounds #####################
