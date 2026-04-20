@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "WZTo1L3Nu_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep2FJ/WZTo1L3Nu_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2018",
+                "xsec": 3.05402,
+                "lumi": 59.83,
+                "shortname": "WZTo1L3Nu_4f_TuneCP5_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 14066954.673564006
+            }
+        }
+    }
+}

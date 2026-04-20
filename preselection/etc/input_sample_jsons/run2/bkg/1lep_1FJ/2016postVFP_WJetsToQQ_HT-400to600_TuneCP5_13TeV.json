@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "WJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_1Lep1FJ/WJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2016postVFP",
+                "xsec": 276.5,
+                "lumi": 16.81,
+                "shortname": "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 4455853.0
+            }
+        }
+    }
+}
