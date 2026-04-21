@@ -1,7 +1,7 @@
 # Wrapper script for running the full analysis.
 # Auto-picks slurm (if sbatch is available) or condor for batch submission.
 
-set -e
+#set -e
 
 # ---- Site paths: uncomment the set that matches your machine ----
 
@@ -39,8 +39,9 @@ fi
 echo "Batch mode: $MODE"
 
 # ---- Examples of local runs for testing (uncomment one; skip the batch block below) ----
-#python3 run_rdf.py -i etc/input_sample_jsons/run2/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json -p $PREFIX -o $OUT_DIR -n test -c 3lep      -m local -r 2 -j 16
-#python3 run_rdf.py -i etc/input_sample_jsons/run2/sig_c2v1p0_c3_1p0/all_events/                              -p $PREFIX -o $OUT_DIR -n r2sigSM -c 2lep_1FJ -m local -r 2 -j 16
+#python3 run_rdf.py -i etc/input_sample_jsons/run2/sig/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json -p $PREFIX -o $OUT_DIR -n test -c 3lep      -m local -r 2 -j 16
+#python3 run_rdf.py -i etc/input_sample_jsons/run2/sig/all_events/                              -p $PREFIX -o $OUT_DIR -n r2sigSM -c 2lep_1FJ -m local -r 2 -j 16
+#exit 0
 
 # ---- Batch submission: signal + per-channel bkg/data, for Run 2 and Run 3 ----
 
@@ -54,9 +55,7 @@ for RUN in 2 3; do
     RUN_BASE="etc/input_sample_jsons/run${RUN}"
 
     # Signal (three variants under the all_events pass-through channel)
-    # python3 run_rdf.py -i ${RUN_BASE}/sig_c2v1p0_c3_1p0/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
-    # python3 run_rdf.py -i ${RUN_BASE}/sig_c2v1p5_c3_1p0/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_c2v -c all_events -m $MODE -r $RUN -f 1
-    # python3 run_rdf.py -i ${RUN_BASE}/sig_c2v1p0_c3_10p0/all_events/ -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_kl  -c all_events -m $MODE -r $RUN -f 1
+     python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
 
     # Sig + bkg + data per channel
     python3 run_rdf.py -p $PREFIX -o $OUT_DIR -n r${RUN} -c "${CHANNELS[@]}" -m $MODE -r $RUN -f 1
