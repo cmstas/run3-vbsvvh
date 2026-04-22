@@ -13,6 +13,8 @@
 
 using RNode = ROOT::RDF::RNode;
 
+RNode ElectronSelectionsR2(RNode df);
+RNode MuonSelectionsR2(RNode df);
 RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
 RNode AK8JetsSelection(RNode df);

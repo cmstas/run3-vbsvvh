@@ -91,10 +91,62 @@ RNode MuonSelections(RNode df_)
     return applyObjectMaskNewAffix(df, "_tightMuons", "Muon", "muon");
 }
 
+
+// Run 2 muon selection
+RNode ElectronSelectionsR2(RNode df_)
+{
+    auto df = df_.Define("Electron_SC_eta", "Electron_eta + Electron_deltaEtaSC");
+
+    df = df.Define(
+        "_looseElectrons",
+        "Electron_pt > 10 &&"
+        "abs(Electron_SC_eta) < 2.5 && "
+        "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || ((abs(Electron_SC_eta) > 1.479) && abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
+        "Electron_cutBased >= 1"
+    );
+    df = df.Define(
+        "_tightElectrons",
+        "_looseElectrons &&"
+        "Electron_cutBased >= 3"
+    );
+    df = df.Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)");
+    df = df.Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)");
+    df = df.Define("vvhTightLepMaskElectron", "_tightElectrons");
+    return applyObjectMaskNewAffix(df, "_tightElectrons", "Electron", "electron");
+}
+
+// Run 2 muon selections
+RNode MuonSelectionsR2(RNode df_)
+{
+    auto df = df_.Define(
+        "_looseMuons",
+        "Muon_pt > 10 && "
+        "Muon_pfIsoId >= 2 && "
+        "abs(Muon_eta) < 2.4 && "
+        "abs(Muon_dxy) < 0.2 && "
+        "abs(Muon_dz) < 0.5 && "
+        "abs(Muon_sip3d) < 8 && "
+        "Muon_looseId"
+    );
+    df = df.Define(
+        "_tightMuons",
+        "_looseMuons && "
+        "Muon_pt > 10 && "
+        "Muon_pfIsoId > 4 && "
+        "Muon_mediumId"
+    );
+    df = df.Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)");
+    df = df.Define("nMuon_Tight", "nMuon_Loose == 0 ? 0 : Sum(_tightMuons)");
+    df = df.Define("vvhTightLepMaskMuon", "_tightMuons");
+    return applyObjectMaskNewAffix(df, "_tightMuons", "Muon", "muon");
+}
+
 RNode LeptonSelections(RNode df_)
 {
-    auto df = ElectronSelections(df_);
-    df = MuonSelections(df);
+    auto df = ElectronSelectionsR2(df_);
+    df = MuonSelectionsR2(df);
+    //auto df = ElectronSelections(df_);
+    //df = MuonSelections(df);
     return df.Define("lepton_pt", "Concatenate(electron_pt, muon_pt)")
             .Define("_leptonSorted", "Argsort(-lepton_pt)")
             .Redefine("lepton_pt", "Take(lepton_pt, _leptonSorted)")
