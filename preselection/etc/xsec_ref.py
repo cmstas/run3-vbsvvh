@@ -67,7 +67,7 @@ xsec_dict = {
         "ZJetsToQQ_HT-400to600_TuneCP5_13TeV"                      : 114.2,
         "ZJetsToQQ_HT-600to800_TuneCP5_13TeV"                      : 25.34,
         "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 12.99,
-
+        "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 4.58725,
         #-----------------------------------------------------------------------------
         #AN v15 2023 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
         "TTTo2L2Nu_TuneCP5_13TeV"                                  : 88.29,
@@ -93,7 +93,18 @@ xsec_dict = {
         "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
         "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 1.256,
         "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                     : 0.0024614,
+        "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, 
+        # for numbers below we use averages
+        "WJetsToLNu_HT-70To100_TuneCP5_13TeV"                      : 1308.9025,
+        "WJetsToLNu_HT-100To200_TuneCP5_13TeV"                     : 1324.85,
+        "WJetsToLNu_HT-200To400_TuneCP5_13TeV"                     : 347.935075,
+        "WJetsToLNu_HT-400To600_TuneCP5_13TeV"                     : 46.62084375,
+        "WJetsToLNu_HT-600To800_TuneCP5_13TeV"                     : 11.23292175,
+        "WJetsToLNu_HT-800To1200_TuneCP5_13TeV"                    : 5.07420335,
+        "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV"                   : 1.177367725,
+        "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV"                    : 0.02426248275,
         #-----------------------------------------------------------------------------
+        
         #AN v12 2022 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV"                    : 187700000.0,
         "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV"               : 3.74,
@@ -112,37 +123,42 @@ xsec_dict = {
         "WW_TuneCP5_13TeV"                                         : 75.95,
         "ZZ_TuneCP5_13TeV"                                         : 12.17,
         #-----------------------------------------------------------------------------
-        #-----------XSDB--------------------------------------------------------------
-        "WJetsToLNu_TuneCP5_13TeV"                                 : 66680.0,
 
-        #-----------------------------------------------------------------------------
-        "WJetsToLNu_HT-70To100_TuneCP5_13TeV"                      : 1308.9025,
-        "WJetsToLNu_HT-100To200_TuneCP5_13TeV"                     : 1324.85,
-        "WJetsToLNu_HT-200To400_TuneCP5_13TeV"                     : 347.935075,
-        "WJetsToLNu_HT-400To600_TuneCP5_13TeV"                     : 46.62084375,
-        "WJetsToLNu_HT-600To800_TuneCP5_13TeV"                     : 11.23292175,
-        "WJetsToLNu_HT-800To1200_TuneCP5_13TeV"                    : 5.07420335,
-        "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV"                   : 1.177367725,
-        "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV"                    : 0.02426248275,
-        "WJetsToQQ_HT-400to600_TuneCP5_13TeV"                      : 276.5,
-        "WWTo4Q_4f_TuneCP5_13TeV"                                  : 51.79,
-        "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 49.997,
-        "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, # TODO FIXME This is from an old sample
-
+        #AN-19-004(https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/004) (k factor of 1.7 used)
         "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV" : 0.005423,
         "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV" : 0.005423,
         "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV" : 0.005423,
         "GluGluToContinToZZTo4e_TuneCP5_13TeV" : 0.002703,
         "GluGluToContinToZZTo4mu_TuneCP5_13TeV" : 0.002703,
         "GluGluToContinToZZTo4tau_TuneCP5_13TeV" : 0.002703,
+        #-----------------------------------------------------------------------------
+
+        # from https://github.com/TopEFT/topcoffea/blob/main/topcoffea/params/xsec.yml
         "GluGluZH_HToWWTo2L2Nu_TuneCP5_13TeV": 0.00282,
         "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV": 0.00282,
         "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV": 0.00177,
-        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV": 0.0015,
+        #--------------------------------------------------------------------------
+        
+        #----------------------------------------------------------------------------
+        #AN-19-004 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/156)
         "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV": 0.0758,
+        #----------------------------------------------------------------------------
+        
+        #from https://github.com/cmstas/VVVNanoLooper/blob/master/weights/xsec.txt
+        "SSWW": 0.02794,
+        #----------------------------------------------------------------------------
+        
+        #from TOP-22-008
+        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV": 0.0015,
+        #----------------------------------------------------------------------------
+        
+        #-----------XSDB--------------------------------------------------------------
+        "WJetsToLNu_TuneCP5_13TeV"                                 : 66680.0,
+        "WWTo4Q_4f_TuneCP5_13TeV"                                  : 51.03,
+        #-----------------------------------------------------------------------------
 
-        "GluGluHToZZTo4L": 0.0082323,
-        "SSWW": 0.02794
+        # From AN-19-144 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/144)
+        "GluGluHToZZTo4L": 0.011814
 
     }
 }
