@@ -132,8 +132,8 @@ xsec_dict = {
         "GluGluToContinToZZTo4mu_TuneCP5_13TeV" : 0.002703,
         "GluGluToContinToZZTo4tau_TuneCP5_13TeV" : 0.002703,
         #-----------------------------------------------------------------------------
-
-        # from https://github.com/TopEFT/topcoffea/blob/main/topcoffea/params/xsec.yml
+        #https://twiki.cern.ch/twiki/bin/view/LHCPhysics/HiggsXSBR#Production_cross_sections_an_AN1
+        #Apply branching fractions to production cross sections found above
         "GluGluZH_HToWWTo2L2Nu_TuneCP5_13TeV": 0.00282,
         "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV": 0.00282,
         "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV": 0.00177,
