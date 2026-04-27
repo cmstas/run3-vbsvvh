@@ -26,7 +26,7 @@ xsec_dict = {
     },
 
     "bkg": {
-        #AN v9 2024 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
+        #AN-24-183 v9 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
         "QCD_HT100to200_TuneCP5_PSWeights_13TeV"                             : 27849880.0,
         "QCD_HT200to300_TuneCP5_PSWeights_13TeV"                             : 1716997.0,
         "QCD_HT300to500_TuneCP5_PSWeights_13TeV"                             : 351302.0,
@@ -69,7 +69,8 @@ xsec_dict = {
         "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 12.99,
         "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 4.58725,
         #-----------------------------------------------------------------------------
-        #AN v15 2023 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
+        
+        #AN-23-016 v15 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
         "TTTo2L2Nu_TuneCP5_13TeV"                                  : 88.29,
         "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV"    : 80.95,
         "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV"        : 136.02,
@@ -105,7 +106,7 @@ xsec_dict = {
         "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV"                    : 0.02426248275,
         #-----------------------------------------------------------------------------
         
-        #AN v12 2022 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
+        #AN-22-136 v12 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV"                    : 187700000.0,
         "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV"               : 3.74,
         "TTbb_4f_TTToHadronic"                                     : 5.5,
@@ -132,6 +133,7 @@ xsec_dict = {
         "GluGluToContinToZZTo4mu_TuneCP5_13TeV" : 0.002703,
         "GluGluToContinToZZTo4tau_TuneCP5_13TeV" : 0.002703,
         #-----------------------------------------------------------------------------
+
         #https://twiki.cern.ch/twiki/bin/view/LHCPhysics/HiggsXSBR#Production_cross_sections_an_AN1
         #Apply branching fractions to production cross sections found above
         "GluGluZH_HToWWTo2L2Nu_TuneCP5_13TeV": 0.00282,
@@ -139,7 +141,6 @@ xsec_dict = {
         "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV": 0.00177,
         #--------------------------------------------------------------------------
         
-        #----------------------------------------------------------------------------
         #AN-19-004 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/156)
         "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV": 0.0758,
         #----------------------------------------------------------------------------
@@ -152,7 +153,7 @@ xsec_dict = {
         "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV": 0.0015,
         #----------------------------------------------------------------------------
         
-        #-----------XSDB--------------------------------------------------------------
+        #XSDB
         "WJetsToLNu_TuneCP5_13TeV"                                 : 66680.0,
         "WWTo4Q_4f_TuneCP5_13TeV"                                  : 51.03,
         #-----------------------------------------------------------------------------
