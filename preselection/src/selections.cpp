@@ -107,7 +107,7 @@ RNode ElectronSelectionsR2(RNode df_)
     df = df.Define(
         "_tightElectrons",
         "_looseElectrons &&"
-        "Electron_cutBased >= 3"
+        "Electron_cutBased >= 2"
     );
     df = df.Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)");
     df = df.Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)");
@@ -132,7 +132,7 @@ RNode MuonSelectionsR2(RNode df_)
         "_tightMuons",
         "_looseMuons && "
         "Muon_pt > 10 && "
-        "Muon_pfIsoId > 4 && "
+        "Muon_pfIsoId >= 3 && "
         "Muon_mediumId"
     );
     df = df.Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)");
