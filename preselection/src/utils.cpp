@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <algorithm>
 #include "TFile.h"
 #include "TTree.h"
 
@@ -310,7 +311,7 @@ std::string setOutputDirectory(const std::string &outdir, bool spanet_training) 
     return directory_path;
 }
 
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput)
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput, bool storeHLT)
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
@@ -320,11 +321,24 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
     // do not store branches that start with "_" nor raw NanoAOD collections
     for (auto &&ColName : ColNames) {
-        if ((ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") || ColName.starts_with("Muon_")) || ColName.starts_with("HLT"))
+        if (ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") || ColName.starts_with("Muon_"))
         {
             continue;
         }
         final_variables.push_back(ColName);
+    }
+
+    // Optionally store HLT branches from input NanoAOD, providing default values
+    // for branches that may not exist in all files of a multi-file chain
+    if (storeHLT) {
+        auto allColNames = df.GetColumnNames();
+        for (auto &&colName : allColNames) {
+            if (colName.starts_with("HLT_") &&
+                std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
+                df = df.DefaultValueFor(colName, (bool)false);
+                final_variables.push_back(colName);
+            }
+        }
     }
 
     if (isSig) {

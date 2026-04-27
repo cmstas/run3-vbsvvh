@@ -1,0 +1,26 @@
+{
+    "samples": {
+        "JetMET0_Run2023D-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_1.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_2.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_3.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_4.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023",
+                "xsec": 1.0,
+                "lumi": 27.245,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 0.0
+            }
+        }
+    }
+}

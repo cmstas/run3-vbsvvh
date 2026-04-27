@@ -1,0 +1,23 @@
+{
+    "samples": {
+        "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep2FJ/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_1.root",
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep2FJ/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM/output_2.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2016postVFP",
+                "xsec": 0.4611,
+                "lumi": 16.81,
+                "shortname": "ttWJets_TuneCP5_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 14396003.0
+            }
+        }
+    }
+}

@@ -26,7 +26,7 @@ cd preselection/
 make -j8
 
 # Run examples in `run_wrapper.sh`, e.g., for running over locally over one signal sample on UAF:
-python run_rdf.py etc/input_sample_jsons/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix /ceph/cms/ -o some_dir -n test_small -a all_events -m local -r 2
+python run_rdf.py etc/input_sample_jsons/run2/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix /ceph/cms/ -o some_dir -n test_small -a all_events -m local -r 2
 ```
 
 ## Prerequisites

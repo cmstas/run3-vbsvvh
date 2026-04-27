@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep1FJ/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1_ext1-v1_NANOAODSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2016postVFP",
+                "xsec": 0.2086,
+                "lumi": 16.81,
+                "shortname": "WWW_4F_TuneCP5_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 911752.00641396
+            }
+        }
+    }
+}

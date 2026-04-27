@@ -30,6 +30,7 @@ struct MyArgs : public argparse::Args {
     bool &dumpInput              = flag("dump_input", "Dump all input branches to output ROOT file").set_default(false);
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
     bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
+    bool &storeHLT = flag("store_hlt", "Store HLT trigger branches in output").set_default(false);
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
 };
 
@@ -72,13 +73,15 @@ int main(int argc, char** argv) {
         "all_events",
         "0lep_0FJ",
         "0lep_1FJ",
+        "0lep_1FJ_met",
         "0lep_2FJ",
+        "0lep_2FJ_met",
         "0lep_3FJ",
         "1lep_1FJ",
         "1lep_2FJ",
-        "2lep_1FJ",
+        "2lep_1FJ", // Currently shared between SF and OF
+        "2lepSS",
         "2lep_2FJ",
-        //"2lepSS",
         "3lep",
         "4lep",
     };
@@ -180,7 +183,7 @@ int main(int argc, char** argv) {
         df = applyDataCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference);
         df = applyDataWeights(df);
-        df = removeDuplicates(df);
+        //df = removeDuplicates(df);
     } else {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);
@@ -197,7 +200,7 @@ int main(int argc, char** argv) {
         return 0; // Exit after saving training data
     }
 
-    saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput);
+    saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput, args.storeHLT);
     Cutflow::Print();
 
     return 0;

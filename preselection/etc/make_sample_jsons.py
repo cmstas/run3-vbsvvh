@@ -6,68 +6,54 @@ import numpy as np
 import xsec_ref
 import dataset_names_ref
 
-# Which skims serve which analysis channels 
-#    0lep_0FJ : 0lep_0FJ_6j,
-#    0lep_1FJ : 0lep_1FJ_met, 0lep_1FJ_4j,
-#    0lep_2FJ : 0lep_2FJ_met, 0lep_2FJ_2j,
-#    0lep_3FJ : 0lep_3FJ,
-#    1lep_1FJ : 1lep_1FJ,1lep_2FJ,
-#    2lep_1FJ : 2lepOSOF_1FJ, 2lepOSSF_1FJ,
-#    2lep_2FJ : 2lepOSSF_2FJ,
-#    2lepSS   : 2lepSS
-#    3lep     : 3lep,
-#    4lep     : 4lep,
-
 
 # Dictionary of the paths to the skim sets
 SKIM_PATH_DICT = {
     "all_events" : {
-        ("run2", "sig_c2v1p0_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Sig_v15_v22_Sig/",
-        ("run2", "sig_c2v1p5_c3_1p0")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Sig_v15_v22_Sig/",
-        ("run2", "sig_c2v1p0_c3_10p0") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Sig_v15_v22_Sig/",
-        #("run3", "sig_sm")  : "",
+        ("run2", "sig")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Sig_v15_v28_Sig",
+        ("run3", "sig")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Sig_v15_v28_Sig",
     },
     "0lep_0FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep0FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep0FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep0FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep0FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep0FJ",
     },
     "0lep_1FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep1FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep1FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep1FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep1FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep1FJ",
     },
     "0lep_2FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep2FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep2FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep2FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep2FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep2FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep2FJ",
     },
     "0lep_3FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_0Lep3FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_0Lep3FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep3FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep3FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep3FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ",
     },
     "1lep_1FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_1Lep1FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_1Lep1FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_1Lep1FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_1Lep1FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_1Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_1Lep1FJ",
     },
     "2lep_1FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_2Lep1FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep1FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_2Lep1FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep1FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_2Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_2Lep1FJ",
     },
     "2lep_2FJ" : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_2Lep2FJ",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_2Lep2FJ",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_2Lep2FJ",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep2FJ",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_2Lep2FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_2Lep2FJ",
     },
     "2lep_SS" : {
         #("run2", "bkg")  : "",
@@ -76,16 +62,16 @@ SKIM_PATH_DICT = {
         #("run3", "data") : "",
     },
     "3lep"    : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_3Lep",
-        ("run2", "data")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_3Lep",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_3Lep",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_3Lep",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_3Lep",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_3Lep",
     },
     "4lep"    : {
-        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Bkg_v15_v22_4Lep",
-        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v22/Run2_Data_v15_v22_4Lep",
-        #("run3", "bkg")  : "",
-        #("run3", "data") : "",
+        ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_4Lep",
+        ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_4Lep",
+        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_4Lep",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_4Lep",
     },
 }
 
@@ -94,6 +80,9 @@ LUMI_DICT = {
     "2016postVFP": 16.81,
     "2017": 41.48,
     "2018": 59.83,
+    "2022": 34.6521,
+    "2023": 27.245,
+    "2024Prompt": 109.08,
 }
 
 
@@ -158,7 +147,11 @@ def strip_prefixes(fullpaths_lst,split_on="store"):
 def sum_runs_summaries(lst_of_file_metadata_jsons,dataset_fullpath):
     out_dict = {}
     for file_metadata_json in lst_of_file_metadata_jsons:
-        with open(os.path.join(dataset_fullpath,file_metadata_json)) as jf:
+        fpath = os.path.join(dataset_fullpath,file_metadata_json)
+        if not os.access(fpath, os.R_OK):
+            print(f"  WARNING: skipping unreadable file {fpath}")
+            continue
+        with open(fpath) as jf:
             file_metadata_dict = json.load(jf)
             # Sum the values in the dict
             # Assumes all keys are the same
@@ -177,6 +170,18 @@ def sum_runs_summaries(lst_of_file_metadata_jsons,dataset_fullpath):
     return out_dict
 
 
+# Given a path to dir of jsons, pull all the ds names from all jsons in the dir and put them into a list
+def get_ds_names_from_jsons(path_to_jsons):
+    ds_names_lst = []
+    json_names = os.listdir(path_to_jsons)
+    for json_name in json_names:
+        with open(os.path.join(path_to_jsons,json_name)) as jf:
+            file_metadata_dict = json.load(jf)
+            ds_names_lst.append(list(file_metadata_dict["samples"].keys())[0])
+    return(ds_names_lst)
+
+
+
 ################# Main wrapper for producing json #################
 
 # Create the dict to dump to the json for a given sample
@@ -184,7 +189,7 @@ def sum_runs_summaries(lst_of_file_metadata_jsons,dataset_fullpath):
 #     - path should be absolute
 #     - kind should be e.g. "bkg"
 #     - xsec_dict should be from the xsec ref file for this kind
-def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
+def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, run_tag):
     out_dict = {}
 
     # Get year for this dataset
@@ -198,7 +203,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
 
     # Get the xsec name and value for this dataset
     if kind == "data":
-        dataset_name_short, xsec_val  = dataset_name, 1.0
+        dataset_name_short, xsec_val = dataset_name, 1.0
     else:
         dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
 
@@ -215,7 +220,11 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
     if dataset_name in dataset_names_ref.datasets_for_ewk_corr: do_ewk_corr = 1
 
     # What name to include for the metadata
-    if kind == "data": name_for_metadata = "data"
+    if kind == "data":
+        name_for_metadata = dataset_name_short.split("_")[0] # For data just keep e.g. "DoubleEG"
+        if name_for_metadata.endswith("0") or name_for_metadata.endswith("1"):
+            # Run 3 dataset names include e.g. Muon, Muon0, Muon1
+            name_for_metadata = name_for_metadata[:-1]
     else: name_for_metadata = dataset_name_short
 
     # Get the sum of weights for all of the files in this dataset and build metadata dict
@@ -240,8 +249,10 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name):
     out_dict["files"] = file_fullpath_lst
     out_dict["metadata"] = metadata_dict
 
-    # Dump the dict to an output json
-    with open(f"input_sample_jsons/{kind}/{skim_set_name}/{year}_{dataset_name_short}.json", "w") as fp:
+    # Dump the dict to an output json (split by run so Run 2 and Run 3 JSONs never co-locate)
+    out_dir = f"input_sample_jsons/{run_tag}/{kind}/{skim_set_name}"
+    os.makedirs(out_dir, exist_ok=True)
+    with open(f"{out_dir}/{year}_{dataset_name_short}.json", "w") as fp:
         json.dump({"samples": {dataset_name: out_dict}}, fp, indent=4)
 
 
@@ -253,21 +264,45 @@ def main():
 
     # Loop over the skim sets (e.g., 3lep)
     for skim_set_name in SKIM_PATH_DICT:
-        print(f"\nSkim set: {skim_set_name}")
-        #if skim_set_name!= "all_events": continue
+        print(f"\n################## Skim set: {skim_set_name} ##################")
+        #if skim_set_name not in ["0lep_1FJ", "0lep_2FJ"]: continue
 
         # Loop over the kinds of samples for each skim (e.g., bkg)
         for run_tag,kind in SKIM_PATH_DICT[skim_set_name]:
 
-            # Get the known superset of datasets and the xsecs for this kind (sig, data, bkg) of sample
+            # Get the known xsecs for this kind (sig, data, bkg) of sample
             known_datasets_lst = dataset_names_ref.datasets[(run_tag,kind)]
-            xsec_dict = xsec_ref.xsec_dict[kind]
+            xsec_dict = xsec_ref.xsec_dict[run_tag][kind]
 
-            # Get the list of datasets we actaully have at this path
-            path = SKIM_PATH_DICT[skim_set_name][(run_tag,kind)]
+            # Get the list of datasets we actaully have at this skim path, and list we expect
+            path_to_skims = SKIM_PATH_DICT[skim_set_name][(run_tag,kind)]
+            paths_to_current_jsons = f"input_sample_jsons/{run_tag}/{kind}/{skim_set_name}"
+            havejson_ds_set = set(get_ds_names_from_jsons(paths_to_current_jsons))
+            haveskim_ds_set = set(os.listdir(path_to_skims))
+            haveref_ds_set  = set(d["dataset_name"] for d in known_datasets_lst)
+
+            # Do some checks of the list of skims we have against what we expect
+            print(f"\nChecking datasets for {run_tag} {kind}...")
+            have_skim_but_not_ref  = haveskim_ds_set.difference(haveref_ds_set)
+            have_json_but_not_skim = havejson_ds_set.difference(haveskim_ds_set)
+            if len(have_skim_but_not_ref)>0:
+                print("WARNING: Skim includes these samples, but reference info is not in the dataset_names_ref.py, so cannot make a json.")
+                for ds in have_skim_but_not_ref: print(f"\t{ds}")
+            if len(have_json_but_not_skim)>0:
+                print("WARNING: We already have jsons for these samples, but this skim does not seem to include them. Is that expected?")
+                for ds in have_json_but_not_skim: print(f"\t{ds}")
+
+
+            # Form the list of datasets we will actually make jsons for
+            ds_names_to_make_jsons_for = list(haveskim_ds_set.intersection(haveref_ds_set))
             datasets_lst = []
             for ds_dict in known_datasets_lst:
-                if ds_dict["dataset_name"] in os.listdir(path):
+                if ds_dict["dataset_name"] in ds_names_to_make_jsons_for:
+                    # Hardcoded skipping of double lepton datasets for single lep channel (since we make skims for them but don't want to use them)
+                    if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("MuonEG"): continue
+                    if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("DoubleMuon"): continue
+                    if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("DoubleEG"): continue
+                    # Otherwise append to the list we want to make jsons for
                     datasets_lst.append(ds_dict)
 
             # Loop over all of the datasets and build up a dict we will dump to json
@@ -276,7 +311,7 @@ def main():
                 print(f"{i+1}/{len(datasets_lst)}: {dataset_info['dataset_name']}")
 
                 # Make the output json
-                make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name)
+                make_json_for_dataset(dataset_info, path_to_skims, kind, xsec_dict, skim_set_name, run_tag)
 
 
 

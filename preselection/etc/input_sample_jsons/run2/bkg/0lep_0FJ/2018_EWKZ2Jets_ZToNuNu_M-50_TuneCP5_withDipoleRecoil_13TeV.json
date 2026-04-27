@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ/EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2018",
+                "xsec": 10.72,
+                "lumi": 59.83,
+                "shortname": "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+                "do_ewk_corr": 1,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 2969000.0
+            }
+        }
+    }
+}
