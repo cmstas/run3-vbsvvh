@@ -38,15 +38,24 @@ xsec_dict = {
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
-            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 23.16,
             "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 6.115,
             "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 3.06,
             "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 3.042,
             "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 3.042,
             "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 3.042,
-            "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
-            "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
-            "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
+            
+            # QCD-HT (obtained by Cristina manually with genXsecAnalyzer) - Cristina Mantilla Suarez at Virginia (see comment from Lara in issue #45)
+            "QCD-4Jets_Bin-HT-40to70_TuneCP5_13p6TeV": 311600000.0,
+            "QCD-4Jets_Bin-HT-70to100_TuneCP5_13p6TeV": 58520000.0,
+            "QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV": 25220000.0,
+            "QCD-4Jets_Bin-HT-200to400_TuneCP5_13p6TeV": 1963000.0,
+            "QCD-4Jets_Bin-HT-400to600_TuneCP5_13p6TeV": 94870.0,
+            "QCD-4Jets_Bin-HT-600to800_TuneCP5_13p6TeV": 13420.0,
+            "QCD-4Jets_Bin-HT-800to1000_TuneCP5_13p6TeV": 2992.0,
+            "QCD-4Jets_Bin-HT-1000to1200_TuneCP5_13p6TeV": 879.1,
+            "QCD-4Jets_Bin-HT-1200to1500_TuneCP5_13p6TeV": 384.5,
+            "QCD-4Jets_Bin-HT-1500to2000_TuneCP5_13p6TeV": 125.5,
+            "QCD-4Jets_Bin-HT-2000_TuneCP5_13p6TeV": 25.78,
 
             "QCD_Bin-PT-50to80_TuneCP5_13p6TeV": 16730000.0,
             "QCD_Bin-PT-80to120_TuneCP5_13p6TeV": 2506000.0,
@@ -62,47 +71,57 @@ xsec_dict = {
             "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV": 0.004454,
             "QCD_Bin-PT-3000_TuneCP5_13p6TeV": 0.0005539,
 
-            "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 46.73,
-            "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 23.34,
-            "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 3.825,
-            "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 36.05, # Weird
-            "TbarWplusto4Q_TuneCP5_13p6TeV": 36.05, # Weird
-            "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 36.05, # Weird
-            "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 77.26,
-            "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 38.6,
-            "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 6.098,
+            # see Lara's comment on issue #45
+            "TbarBto2Q-s-channel_TuneCP5_13p6TeV": 3.038,
+            "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 1.496,
+            "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.496,
+            
+            "TBbarto2Q-s-channel_TuneCP5_13p6TeV": 4.853,
+            "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 2.391,
+            "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV": 2.391, 
+
+            "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 28.776,
+            "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 58.424,
+            
+            "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 97.15,
+            "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 47.85,
+
+            # see Lara's commend on issue #45
+            # inclusive xsec tW = 87.2
+            "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 4.786, # Weird
+            "TbarWplusto4Q_TuneCP5_13p6TeV": 19.729, # Weird
+            "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 19.435, # Weird
+
+            "TWminusto2L2Nu_TuneCP5_13p6TeV" : 4.786,
+            "TWminusto4Q_TuneCP5_13p6TeV" : 19.729,
+            "TWminustoLNu2Q_TuneCP5_13p6TeV" : 19.435,
+          
             #"TTBBto2L2Nu_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBto4Q_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBtoLNu2Q_TuneCP5_13p6TeV" : , # No xsdb number
-            "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
-            "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
             "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
             "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
-            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.45,  # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
-            "TTto4Q_TuneCP5_13p6TeV"    : 431.5, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
-            "TTtoLNu2Q_TuneCP5_13p6TeV" : 403.25, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+
+            # See Lara's comment on issue #45
+            "TTto2L2Nu_TuneCP5_13p6TeV" : 100.58, # 923.6 * 0.33 * 0.33 # 97.45, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+            "TTto4Q_TuneCP5_13p6TeV"    : 414.60, # 923.6 * 0.67 * 0.67 # 431.5, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+            "TTtoLNu2Q_TuneCP5_13p6TeV" : 408.42, # 923.6 * 0.33 * 0.67 * 2 # 403.25, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+            
             "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV" : 0.4678,
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
             "TTWZ_TuneCP5_13p6TeV" : 0.002715,
-            "TWminusto2L2Nu_TuneCP5_13p6TeV" : 35.99,
-            "TWminusto4Q_TuneCP5_13p6TeV" : 35.99,
-            "TWminustoLNu2Q_TuneCP5_13p6TeV" : 35.99,
             "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV" : 0.07968,
             "VBS-SSWW-LL_TuneCP5_13p6TeV" : 0.002179,
             "VBS-SSWW-TL_TuneCP5_13p6TeV" : 0.01151,
             #"VBS-SSWW-TT_TuneCP5_13p6TeV" : , # No xsdb number
-            "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.6409,
-            "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3918,
-            "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.1887,
-            "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
-            "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
-            "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3,
+
             "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 16120.0,
             "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 1.825,
             "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV" : 0.1158,
             "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 356.9,
             "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 29.52,
+
             "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV" : 342.3,
             "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV" : 21.84,
             "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV" : 0.6845,
@@ -131,10 +150,32 @@ xsec_dict = {
             "WZtoLNu2Q_TuneCP5_13p6TeV" : 15.87,
             "WZ_TuneCP5_13p6TeV" : 29.1,
             "WZZ-5F_TuneCP5_13p6TeV" : 0.06206,
+            
+            ###### H Decays ######
+
+            "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.6409,
+            "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3918,
+            "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.1887,
+
+            "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
+            "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
+            "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3,
+
             "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.9014,
             "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.08545,
             "ZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.168,
             "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5958,
+
+            "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
+            "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
+
+            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.02316, # this needs to be checked again.
+            "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
+            "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
+            "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
+
+            ##############
+
             "Zto2Q-4Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 6328.0,
             "Zto2Q-4Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 145.1,
             "Zto2Q-4Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 12.9,
