@@ -256,6 +256,7 @@ xsec_dict = {
             "WWTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 49.997,
             "WWTo2L2Nu_TuneCP5_13TeV"                                  : 12.178,
             "WZTo1L3Nu_4f_TuneCP5_13TeV"                               : 3.05402,
+            "WZTo3LNu_TuneCP5_13TeV"                                   : 4.42965,
             "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV"                 : 0.0490124,
             "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV"                  : 0.084876,
             "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                       : 0.0262749,
