@@ -9,21 +9,17 @@ xsec_dict = {
         },
 
         # Sig 4f
-        "sig_c2v1p0_c3_1p0" : {
+        "sig": {
             "VBSWWH_OS_c2v1p0_c3_1p0": 7.233e-04,
             "VBSWWH_SS_c2v1p0_c3_1p0": 3.590e-04,
             "VBSWZH_c2v1p0_c3_1p0"   : 4.740e-04,
             "VBSZZH_c2v1p0_c3_1p0"   : 1.250e-04,
-        },
-        # Sig 4f
-        "sig_c2v1p5_c3_1p0" : {
+
             "VBSWWH_OS_c2v1p5_c3_1p0": 1.277e-03,
             "VBSWWH_SS_c2v1p5_c3_1p0": 7.359e-04,
             "VBSWZH_c2v1p5_c3_1p0"   : 8.252e-04,
             "VBSZZH_c2v1p5_c3_1p0"   : 4.378e-04,
-        },
-        # Sig 4f
-        "sig_c2v1p0_c3_10p0" : {
+
             "VBSWWH_OS_c2v1p0_c3_10p0": 1.789e-03,
             "VBSWWH_SS_c2v1p0_c3_10p0": 5.075e-04,
             "VBSWZH_c2v1p0_c3_10p0"   : 7.107e-04,
@@ -37,6 +33,10 @@ xsec_dict = {
             "DYto2E_Bin-MLL-10to50_TuneCP5_13p6TeV": 6744.0,
             "DYto2Mu_Bin-MLL-10to50_TuneCP5_13p6TeV": 6744.0,
             "DYto2Tau_Bin-MLL-10to50_TuneCP5_13p6TeV": 6744.0,
+
+            "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2240.0,
+            "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
+            "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
             "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 23.16,
             "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 6.115,
@@ -153,17 +153,18 @@ xsec_dict = {
             "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 6.115, # From XSDB, also quotes 6.242
             "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 6.115, # From XSDB, also quotes 6.242
 
-            # From the old xsecs_13p6TeV.json in the repo (where did thse numbers come from?)
-            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100": 475.3,
-            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200": 45.42,
-            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400": 3.382,
-            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600": 0.1162,
-            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600": 0.01392,
-            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100": 179.3,
-            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200": 51.68,
-            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
-            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
-            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
+            # No longer using these samples, using inclusive instead
+            # From the old xsecs_13p6TeV.json in the repo (from XSDB?)
+            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100": 475.3,
+            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200": 45.42,
+            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400": 3.382,
+            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600": 0.1162,
+            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600": 0.01392,
+            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100": 179.3,
+            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200": 51.68,
+            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
+            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
+            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
 
         },
 
@@ -175,24 +176,21 @@ xsec_dict = {
         "data" : {
         },
 
-        "sig_c2v1p0_c3_1p0" : {
+        "sig" : {
             "VBSWWH_OS_c2v1p0_c3_1p0": 0.000643,
             "VBSWWH_SS_c2v1p0_c3_1p0": 0.000316,
             "VBSWZH_c2v1p0_c3_1p0"   : 0.000418,
-            "VBSZZH_c2v1p0_c3_1p0"   : 0.000108
-        },
-        "sig_c2v1p5_c3_1p0" : {
+            "VBSZZH_c2v1p0_c3_1p0"   : 0.000108,
+
             "VBSWWH_OS_c2v1p5_c3_1p0": 0.001091,
             "VBSWWH_SS_c2v1p5_c3_1p0": 0.000620,
             "VBSWZH_c2v1p5_c3_1p0"   : 0.000707,
-            "VBSZZH_c2v1p5_c3_1p0"   : 0.000368 
-        },
+            "VBSZZH_c2v1p5_c3_1p0"   : 0.000368,
 
-        "sig_c2v1p0_c3_10p0" : {
             "VBSWWH_OS_c2v1p0_c3_10p0": 0.001587,
             "VBSWWH_SS_c2v1p0_c3_10p0": 0.000445,
             "VBSWZH_c2v1p0_c3_10p0"   : 0.000624,
-            "VBSZZH_c2v1p0_c3_10p0"   : 0.000416
+            "VBSZZH_c2v1p0_c3_10p0"   : 0.000416,
         },
 
         "bkg": {

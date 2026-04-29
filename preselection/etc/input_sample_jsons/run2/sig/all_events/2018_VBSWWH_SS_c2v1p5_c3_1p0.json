@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "VBSWWH_SS_c2v1p5_c3_1p0_UL18": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Sig_v15_v28_Sig/VBSWWH_SS_c2v1p5_c3_1p0_UL18/output_1.root"
+            ],
+            "metadata": {
+                "kind": "sig",
+                "year": "2018",
+                "xsec": 0.00062,
+                "lumi": 59.83,
+                "shortname": "VBSWWH_SS_c2v1p5_c3_1p0",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/",
+                "sumw": 99900.0
+            }
+        }
+    }
+}
