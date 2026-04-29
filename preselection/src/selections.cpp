@@ -269,8 +269,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         Cutflow::Add(df, "C4: at-least 4 jets");
 
         df = df.Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {"jet_pt", "jet_eta", "jet_phi", "jet_mass", "isRun2"})
-            .Define("vbs_jet1_idx", "_vbs_candidate_jet_pairs[0]")
-            .Define("vbs_jet2_idx", "_vbs_candidate_jet_pairs[1]")
+            .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])")
+            .Define("vbs_jet2_idx", "static_cast<int>(_vbs_candidate_jet_pairs[1])")
+            .Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
             .Define("vbs_jet1_pt", "vbs_jet1_idx != -1 ? jet_pt[vbs_jet1_idx] : -999.0f")
             .Define("vbs_jet1_eta", "vbs_jet1_idx != -1 ? jet_eta[vbs_jet1_idx] : -999.0f")
             .Define("vbs_jet1_phi", "vbs_jet1_idx != -1 ? jet_phi[vbs_jet1_idx] : -999.0f")
@@ -302,12 +303,14 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             .Define("boosted_h_candidate_pt", "fatjet_is_h ? fatjet_pt[0] : -999.0f")
             .Define("boosted_h_candidate_tau21", "fatjet_is_h ? fatjet_tau2[0] / fatjet_tau1[0] : -999.0f")
             .Define("boosted_h_candidate_score", "fatjet_is_h ? fatjet_HvsQCD[0] : -999.0f")
+            .Define("boosted_h_candidate_v_score", "fatjet_is_h ? fatjet_VvsQCD[0] : -999.0f")
             .Define("boosted_v_candidate_eta", "fatjet_is_v ? fatjet_eta[0] : -999.0f")
             .Define("boosted_v_candidate_phi", "fatjet_is_v ? fatjet_phi[0] : -999.0f")
             .Define("boosted_v_candidate_mass", "fatjet_is_v ? fatjet_mass[0] : -999.0f")
             .Define("boosted_v_candidate_pt", "fatjet_is_v ? fatjet_pt[0] : -999.0f")
             .Define("boosted_v_candidate_tau21", "fatjet_is_v ? fatjet_tau2[0] / fatjet_tau1[0] : -999.0f")
             .Define("boosted_v_candidate_score", "fatjet_is_v ? fatjet_VvsQCD[0] : -999.0f")
+            .Define("boosted_v_candidate_h_score", "fatjet_is_v ? fatjet_HvsQCD[0] : -999.0f")
             .Filter("Sum(_boosted_candidate_jets) > 0");
 
         Cutflow::Add(df, "C6: Boosted candidate selection");
