@@ -72,29 +72,30 @@ xsec_dict = {
             "QCD_Bin-PT-3000_TuneCP5_13p6TeV": 0.0005539,
 
             # see Lara's comment on issue #45
-            "TbarBto2Q-s-channel_TuneCP5_13p6TeV": 3.038,
-            "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 1.496,
-            "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.496,
+            "TbarBto2Q-s-channel_TuneCP5_13p6TeV": 3.057, #4.534*(1-3*0.108535)
+            "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
+            "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
             
-            "TBbarto2Q-s-channel_TuneCP5_13p6TeV": 4.853,
-            "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 2.391,
-            "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV": 2.391, 
+            "TBbarto2Q-s-channel_TuneCP5_13p6TeV": 4.8853, # 7.244*(1-3*0.108535)
+            "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 2.359, # 7.244*3*0.108535
+            "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV": 2.359, # 7.244*3*0.108535
 
-            "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 28.776,
-            "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 58.424,
+            "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 28.392, # 87.2*3*0.108535
+            "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 58.807, # 87.2*(1-3*0.108535)
             
-            "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 97.15,
-            "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 47.85,
+            "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 97.7872,  # 145*(1-3*0.108535)
+            "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 47.2127, # 145*3*0.108535
+
 
             # see Lara's commend on issue #45
-            # inclusive xsec tW = 87.2
-            "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 4.786, # Weird
-            "TbarWplusto4Q_TuneCP5_13p6TeV": 19.729, # Weird
-            "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 19.435, # Weird
+            # inclusive xsec tW = 87.9
+            "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 4.6595, # 87.9*0.5*(3*0.108535)*(3*0.108535)
+            "TbarWplusto4Q_TuneCP5_13p6TeV": 19.9888, # 87.9*0.5*(1-3*0.108535)*(1-3*0.108535)
+            "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 19.3016, # 87.9*0.5*(3*0.108535)*(1-3*0.108535)*2
 
-            "TWminusto2L2Nu_TuneCP5_13p6TeV" : 4.786,
-            "TWminusto4Q_TuneCP5_13p6TeV" : 19.729,
-            "TWminustoLNu2Q_TuneCP5_13p6TeV" : 19.435,
+            "TWminusto2L2Nu_TuneCP5_13p6TeV" : 4.6595, # 87.9*0.5*(3*0.108535)*(3*0.108535)
+            "TWminusto4Q_TuneCP5_13p6TeV" : 19.9888, # 87.9*0.5*(1-3*0.108535)*(1-3*0.108535)
+            "TWminustoLNu2Q_TuneCP5_13p6TeV" : 19.3016, # 87.9*0.5*(3*0.108535)*(1-3*0.108535)*2
           
             #"TTBBto2L2Nu_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBto4Q_TuneCP5_13p6TeV" : , # No xsdb number
@@ -104,9 +105,9 @@ xsec_dict = {
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
 
             # See Lara's comment on issue #45
-            "TTto2L2Nu_TuneCP5_13p6TeV" : 100.58, # 923.6 * 0.33 * 0.33 # 97.45, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
-            "TTto4Q_TuneCP5_13p6TeV"    : 414.60, # 923.6 * 0.67 * 0.67 # 431.5, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
-            "TTtoLNu2Q_TuneCP5_13p6TeV" : 408.42, # 923.6 * 0.33 * 0.67 * 2 # 403.25, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+            "TTto2L2Nu_TuneCP5_13p6TeV" : 420.0612, # 923.6*(3*0.108535)*(3*0.108535)
+            "TTto4Q_TuneCP5_13p6TeV"    : 405.6199, # 923.6*(1-3*0.108535)*(1-3*0.108535)
+            "TTtoLNu2Q_TuneCP5_13p6TeV" : 97.9188, # 923.6*(3*0.108535)*(1-3*0.108535)*2 
             
             "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV" : 0.4678,
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
