@@ -72,6 +72,7 @@ xsec_dict = {
             "QCD_Bin-PT-3000_TuneCP5_13p6TeV": 0.0005539,
 
             # see Lara's comment on issue #45
+            # (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_t_channel_cross)
             "TbarBto2Q-s-channel_TuneCP5_13p6TeV": 3.057, #4.534*(1-3*0.108535)
             "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
             "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
@@ -88,7 +89,7 @@ xsec_dict = {
 
 
             # see Lara's commend on issue #45
-            # inclusive xsec tW = 87.9
+            # inclusive xsec tW = 87.9 (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_tW_channel_cros)
             "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 4.6595, # 87.9*0.5*(3*0.108535)*(3*0.108535)
             "TbarWplusto4Q_TuneCP5_13p6TeV": 19.9888, # 87.9*0.5*(1-3*0.108535)*(1-3*0.108535)
             "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 19.3016, # 87.9*0.5*(3*0.108535)*(1-3*0.108535)*2
@@ -104,10 +105,10 @@ xsec_dict = {
             "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
 
-            # See Lara's comment on issue #45
-            "TTto2L2Nu_TuneCP5_13p6TeV" : 420.0612, # 923.6*(3*0.108535)*(3*0.108535)
-            "TTto4Q_TuneCP5_13p6TeV"    : 405.6199, # 923.6*(1-3*0.108535)*(1-3*0.108535)
-            "TTtoLNu2Q_TuneCP5_13p6TeV" : 97.9188, # 923.6*(3*0.108535)*(1-3*0.108535)*2 
+            # See Lara's comment on issue #45 (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO)
+            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.9188, # 923.6*(3*0.108535)*(3*0.108535)
+            "TTto4Q_TuneCP5_13p6TeV"    : 420.0612, # 923.6*(1-3*0.108535)*(1-3*0.108535)
+            "TTtoLNu2Q_TuneCP5_13p6TeV" : 405.6199, # 923.6*(3*0.108535)*(1-3*0.108535)*2 
             
             "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV" : 0.4678,
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
