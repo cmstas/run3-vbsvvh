@@ -10,7 +10,7 @@
             "metadata": {
                 "kind": "bkg",
                 "year": "2018",
-                "xsec": 0.0082323,
+                "xsec": 0.011814,
                 "lumi": 59.83,
                 "shortname": "GluGluHToZZTo4L",
                 "do_ewk_corr": 0,
