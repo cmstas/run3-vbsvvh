@@ -113,6 +113,9 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
 
+RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2);
+const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights.root");
+
 /*
 ############################################
 SNAPSHOT
