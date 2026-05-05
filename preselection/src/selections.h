@@ -29,7 +29,7 @@ const std::string trigger_logic_string_multilep = "(is2016 && (( ((shortname==\"
 const std::string trigger_logic_string_singlelep = "(is2016 && ((((isData && (shortname == \"SingleMuon\")) || !isData) && (HLT_IsoMu24 == true || HLT_IsoTkMu24 == true)) || (((isData && (shortname == \"SingleElectron\")) || !isData) && (HLT_Ele27_eta2p1_WPTight_Gsf == true) && !(HLT_IsoMu24 == true || HLT_IsoTkMu24 == true)))) ||(is2017 && ((((isData && (shortname == \"SingleMuon\")) || !isData) && (HLT_IsoMu27 == true)) || (((isData && (shortname == \"SingleElectron\")) || !isData) && (HLT_Ele32_WPTight_Gsf_L1DoubleEG == true) && !(HLT_IsoMu27 == true)))) ||(is2018 && ((((isData && (shortname == \"SingleMuon\")) || !isData) && (HLT_IsoMu24 == true)) || (((isData && (shortname == \"EGamma\")) || !isData) && (HLT_Ele32_WPTight_Gsf == true) && !(HLT_IsoMu24 == true)))) ||((is2022 || is2023 || is2024) && ((((isData && (shortname == \"Muon\" || shortname == \"Muon0\" || shortname == \"Muon1\")) || !isData) && (HLT_IsoMu24 == true)) || (((isData && (shortname == \"EGamma\" || shortname == \"EGamma0\" || shortname == \"EGamma1\")) || !isData) && (HLT_Ele30_WPTight_Gsf == true) && !(HLT_IsoMu24 == true))))";
 
 const std::string trigger_logic_string_met = "true";
-const std::string trigger_logic_string_ht  = "true";
+const std::string trigger_logic_string_ht  = "(is2016 && HLT_PFHT800||HLT_PFHT900 ) || (!is2016 && HLT_PFHT1050)";
 
 
 #endif // SELECTIONS_H
