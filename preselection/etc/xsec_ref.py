@@ -38,15 +38,24 @@ xsec_dict = {
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
-            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 23.16,
             "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 6.115,
             "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 3.06,
             "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 3.042,
             "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 3.042,
             "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 3.042,
-            "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
-            "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
-            "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
+            
+            # QCD-HT (obtained by Cristina manually with genXsecAnalyzer) - Cristina Mantilla Suarez at Virginia (see comment from Lara in issue #45)
+            "QCD-4Jets_Bin-HT-40to70_TuneCP5_13p6TeV": 311600000.0,
+            "QCD-4Jets_Bin-HT-70to100_TuneCP5_13p6TeV": 58520000.0,
+            "QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV": 25220000.0,
+            "QCD-4Jets_Bin-HT-200to400_TuneCP5_13p6TeV": 1963000.0,
+            "QCD-4Jets_Bin-HT-400to600_TuneCP5_13p6TeV": 94870.0,
+            "QCD-4Jets_Bin-HT-600to800_TuneCP5_13p6TeV": 13420.0,
+            "QCD-4Jets_Bin-HT-800to1000_TuneCP5_13p6TeV": 2992.0,
+            "QCD-4Jets_Bin-HT-1000to1200_TuneCP5_13p6TeV": 879.1,
+            "QCD-4Jets_Bin-HT-1200to1500_TuneCP5_13p6TeV": 384.5,
+            "QCD-4Jets_Bin-HT-1500to2000_TuneCP5_13p6TeV": 125.5,
+            "QCD-4Jets_Bin-HT-2000_TuneCP5_13p6TeV": 25.78,
 
             "QCD_Bin-PT-50to80_TuneCP5_13p6TeV": 16730000.0,
             "QCD_Bin-PT-80to120_TuneCP5_13p6TeV": 2506000.0,
@@ -62,47 +71,59 @@ xsec_dict = {
             "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV": 0.004454,
             "QCD_Bin-PT-3000_TuneCP5_13p6TeV": 0.0005539,
 
-            "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 46.73,
-            "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 23.34,
-            "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 3.825,
-            "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 36.05, # Weird
-            "TbarWplusto4Q_TuneCP5_13p6TeV": 36.05, # Weird
-            "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 36.05, # Weird
-            "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 77.26,
-            "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 38.6,
-            "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 6.098,
+            # see Lara's comment on issue #45
+            # (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_t_channel_cross)
+            "TbarBto2Q-s-channel_TuneCP5_13p6TeV": 3.057, #4.534*(1-3*0.108535)
+            "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
+            "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
+            
+            "TBbarto2Q-s-channel_TuneCP5_13p6TeV": 4.8853, # 7.244*(1-3*0.108535)
+            "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 2.359, # 7.244*3*0.108535
+            "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV": 2.359, # 7.244*3*0.108535
+
+            "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 28.392, # 87.2*3*0.108535
+            "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 58.807, # 87.2*(1-3*0.108535)
+            
+            "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV": 97.7872,  # 145*(1-3*0.108535)
+            "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 47.2127, # 145*3*0.108535
+
+
+            # see Lara's commend on issue #45
+            # inclusive xsec tW = 87.9 (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_tW_channel_cros)
+            "TbarWplusto2L2Nu_TuneCP5_13p6TeV": 4.6595, # 87.9*0.5*(3*0.108535)*(3*0.108535)
+            "TbarWplusto4Q_TuneCP5_13p6TeV": 19.9888, # 87.9*0.5*(1-3*0.108535)*(1-3*0.108535)
+            "TbarWplustoLNu2Q_TuneCP5_13p6TeV": 19.3016, # 87.9*0.5*(3*0.108535)*(1-3*0.108535)*2
+
+            "TWminusto2L2Nu_TuneCP5_13p6TeV" : 4.6595, # 87.9*0.5*(3*0.108535)*(3*0.108535)
+            "TWminusto4Q_TuneCP5_13p6TeV" : 19.9888, # 87.9*0.5*(1-3*0.108535)*(1-3*0.108535)
+            "TWminustoLNu2Q_TuneCP5_13p6TeV" : 19.3016, # 87.9*0.5*(3*0.108535)*(1-3*0.108535)*2
+          
             #"TTBBto2L2Nu_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBto4Q_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBtoLNu2Q_TuneCP5_13p6TeV" : , # No xsdb number
-            "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
-            "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
             "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
             "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
-            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.45,  # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
-            "TTto4Q_TuneCP5_13p6TeV"    : 431.5, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
-            "TTtoLNu2Q_TuneCP5_13p6TeV" : 403.25, # 762.1, # Weird, all numbers from XSDB are same, so BR calculated by Aashay applied on top of that
+
+            # See Lara's comment on issue #45 (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO)
+            "TTto2L2Nu_TuneCP5_13p6TeV" : 97.9188, # 923.6*(3*0.108535)*(3*0.108535)
+            "TTto4Q_TuneCP5_13p6TeV"    : 420.0612, # 923.6*(1-3*0.108535)*(1-3*0.108535)
+            "TTtoLNu2Q_TuneCP5_13p6TeV" : 405.6199, # 923.6*(3*0.108535)*(1-3*0.108535)*2 
+            
             "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV" : 0.4678,
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
             "TTWZ_TuneCP5_13p6TeV" : 0.002715,
-            "TWminusto2L2Nu_TuneCP5_13p6TeV" : 35.99,
-            "TWminusto4Q_TuneCP5_13p6TeV" : 35.99,
-            "TWminustoLNu2Q_TuneCP5_13p6TeV" : 35.99,
             "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV" : 0.07968,
             "VBS-SSWW-LL_TuneCP5_13p6TeV" : 0.002179,
             "VBS-SSWW-TL_TuneCP5_13p6TeV" : 0.01151,
             #"VBS-SSWW-TT_TuneCP5_13p6TeV" : , # No xsdb number
-            "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.6409,
-            "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3918,
-            "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.1887,
-            "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
-            "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
-            "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3,
+
             "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 16120.0,
             "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 1.825,
             "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV" : 0.1158,
             "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 356.9,
             "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 29.52,
+
             "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV" : 342.3,
             "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV" : 21.84,
             "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV" : 0.6845,
@@ -131,10 +152,32 @@ xsec_dict = {
             "WZtoLNu2Q_TuneCP5_13p6TeV" : 15.87,
             "WZ_TuneCP5_13p6TeV" : 29.1,
             "WZZ-5F_TuneCP5_13p6TeV" : 0.06206,
+            
+            ###### H Decays ######
+
+            "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.6409,
+            "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3918,
+            "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.1887,
+
+            "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
+            "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
+            "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3,
+
             "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.9014,
             "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.08545,
             "ZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.168,
             "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5958,
+
+            "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
+            "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
+
+            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.02316, # this needs to be checked again.
+            "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
+            "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
+            "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
+
+            ##############
+
             "Zto2Q-4Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 6328.0,
             "Zto2Q-4Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 145.1,
             "Zto2Q-4Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 12.9,
@@ -193,24 +236,79 @@ xsec_dict = {
             "VBSZZH_c2v1p0_c3_10p0"   : 0.000416,
         },
 
+                
         "bkg": {
-            "QCD_HT50to100_TuneCP5_PSWeights_13TeV"                    : 187700000.0,
-            "QCD_HT100to200_TuneCP5_PSWeights_13TeV"                   : 27849880.0,
-            "QCD_HT200to300_TuneCP5_PSWeights_13TeV"                   : 1716997.0,
-            "QCD_HT300to500_TuneCP5_PSWeights_13TeV"                   : 351302.0,
-            "QCD_HT500to700_TuneCP5_PSWeights_13TeV"                   : 31630.0,
-            "QCD_HT700to1000_TuneCP5_PSWeights_13TeV"                  : 6802.0,
-            "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV"                 : 1206.0,
-            "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV"                 : 98.71,
-            "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV"                  : 20.2,
-            "TTTo2L2Nu_TuneCP5_13TeV"                                  : 88.29,
+            #AN-24-183 v9 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
+            "QCD_HT100to200_TuneCP5_PSWeights_13TeV"                             : 27849880.0,
+            "QCD_HT200to300_TuneCP5_PSWeights_13TeV"                             : 1716997.0,
+            "QCD_HT300to500_TuneCP5_PSWeights_13TeV"                             : 351302.0,
+            "QCD_HT500to700_TuneCP5_PSWeights_13TeV"                             : 31630.0,
+            "QCD_HT700to1000_TuneCP5_PSWeights_13TeV"                            : 6802.0,
+            "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV"                           : 1206.0,
+            "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV"                           : 98.71,
+            "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV"                            : 20.2,
             "TTToSemiLeptonic_TuneCP5_13TeV"                           : 365.34,
             "TTToHadronic_TuneCP5_13TeV"                               : 377.96,
-            "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV"    : 80.95,
-            "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV"        : 136.02,
             "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV"           : 19.559,
             "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV"               : 19.559,
-            "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV"               : 3.74,
+            "WJetsToQQ_HT-200to400_TuneCP5_13TeV"                      : 2549.0,
+            "WJetsToQQ_HT-400to600_TuneCP5_13TeV"                      : 276.5,
+            "WJetsToQQ_HT-600to800_TuneCP5_13TeV"                      : 59.25,
+            "WJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 28.75,
+            "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV"        : 10.67,
+            "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV"         : 10.67,
+            "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV"      : 6.22,
+            "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV"    : 10.72,
+            "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV"             : 10.67,
+            "TTWJetsToQQ_TuneCP5_13TeV"                                : 0.4377,
+            "TTWW_TuneCP5_13TeV"                                       : 0.0115,
+            "TTWZ_TuneCP5_13TeV"                                       : 0.003884,
+            "ttHToNonbb_M125_TuneCP5_13TeV"                            : 0.215,
+            "ttHTobb_M125_TuneCP5_13TeV"                               : 0.1279,
+            "VHToNonbb_M125_TuneCP5_13TeV"                             : 2.207,
+            "WWW_4F_TuneCP5_13TeV"                                     : 0.2086,
+            "WWZ_4F_TuneCP5_13TeV"                                     : 0.1651,
+            "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV"             : 0.01701,
+            "WZTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 49.997,
+            "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 5.6,
+            "WZZ_TuneCP5_13TeV"                                        : 0.05565,
+            "ZZTo4Q_5f_TuneCP5_13TeV"                                  : 3.451,
+            "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 3.28,
+            "ZZZ_TuneCP5_13TeV"                                        : 0.01398,
+            "ZJetsToQQ_HT-200to400_TuneCP5_13TeV"                      : 1012.0,
+            "ZJetsToQQ_HT-400to600_TuneCP5_13TeV"                      : 114.2,
+            "ZJetsToQQ_HT-600to800_TuneCP5_13TeV"                      : 25.34,
+            "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 12.99,
+            "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 4.58725,
+            #-----------------------------------------------------------------------------
+        
+            #AN-23-016 v15 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
+            "TTTo2L2Nu_TuneCP5_13TeV"                                  : 88.29,
+            "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV"    : 80.95,
+            "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV"        : 136.02,
+            "DYJetsToLL_M-10to50_TuneCP5_13TeV"                        : 20657.0,
+            "DYJetsToLL_M-50_TuneCP5_13TeV"                            : 6198.0,
+            "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV": 32.26,
+            "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV" : 39.33,
+            "TTWJetsToLNu_TuneCP5_13TeV"                               : 0.2043,
+            "TTZToLLNuNu_M-10_TuneCP5_13TeV"                           : 0.2529,
+            "TTbb_4f_TTTo2L2Nu"                                        : 0.04,
+            "TTbb_4f_TTToSemiLeptonic"                                 : 0.62,
+            "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV"    : 0.02656,
+            "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV"                     : 0.284,
+            "WWTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 49.997,
+            "WWTo2L2Nu_TuneCP5_13TeV"                                  : 12.178,
+            "WZTo1L3Nu_4f_TuneCP5_13TeV"                               : 3.05402,
+            "WZTo3LNu_TuneCP5_13TeV"                                   : 4.42965,
+            "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV"                 : 0.0490124,
+            "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV"                  : 0.084876,
+            "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                       : 0.0262749,
+            "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
+            "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
+            "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 1.256,
+            "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                     : 0.0024614,
+            "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, 
+            # for numbers below we use averages
             "WJetsToLNu_HT-70To100_TuneCP5_13TeV"                      : 1308.9025,
             "WJetsToLNu_HT-100To200_TuneCP5_13TeV"                     : 1324.85,
             "WJetsToLNu_HT-200To400_TuneCP5_13TeV"                     : 347.935075,
@@ -219,89 +317,64 @@ xsec_dict = {
             "WJetsToLNu_HT-800To1200_TuneCP5_13TeV"                    : 5.07420335,
             "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV"                   : 1.177367725,
             "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV"                    : 0.02426248275,
-            "WJetsToLNu_TuneCP5_13TeV"                                 : 66680.0,
-            "WJetsToQQ_HT-200to400_TuneCP5_13TeV"                      : 2549.0,
-            "WJetsToQQ_HT-400to600_TuneCP5_13TeV"                      : 276.5,
-            "WJetsToQQ_HT-600to800_TuneCP5_13TeV"                      : 59.25,
-            "WJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 28.75,
-            "DYJetsToLL_M-10to50_TuneCP5_13TeV"                        : 20657.0,
-            "DYJetsToLL_M-50_TuneCP5_13TeV"                            : 6198.0,
-            "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV": 32.26,
-            "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV" : 39.33,
-            "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV"        : 10.67,
-            "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV"         : 10.67,
-            "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV"      : 6.22,
-            "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV"    : 10.72,
-            "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV"             : 10.67,
-            "TTWJetsToLNu_TuneCP5_13TeV"                               : 0.2043,
-            "TTWJetsToQQ_TuneCP5_13TeV"                                : 0.4377,
-            "TTWW_TuneCP5_13TeV"                                       : 0.0115,
-            "TTWZ_TuneCP5_13TeV"                                       : 0.003884,
-            "TTZToLLNuNu_M-10_TuneCP5_13TeV"                           : 0.2529,
-            "TTbb_4f_TTTo2L2Nu"                                        : 0.04,
-            "TTbb_4f_TTToSemiLeptonic"                                 : 0.62,
+            #-----------------------------------------------------------------------------
+        
+            #AN-22-136 v12 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
+            "QCD_HT50to100_TuneCP5_PSWeights_13TeV"                    : 187700000.0,
+            "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV"               : 3.74,
             "TTbb_4f_TTToHadronic"                                     : 5.5,
-            "ttHToNonbb_M125_TuneCP5_13TeV"                            : 0.215,
-            "ttHTobb_M125_TuneCP5_13TeV"                               : 0.1279,
             "ttWJets_TuneCP5_13TeV"                                    : 0.4611,
             "ttZJets_TuneCP5_13TeV"                                    : 0.5407,
-            "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV"    : 0.02656,
-            "VHToNonbb_M125_TuneCP5_13TeV"                             : 2.207,
-            "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV"                     : 0.284,
-            "WWTo4Q_4f_TuneCP5_13TeV"                                  : 51.79,
-            "WWTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 49.997,
-            "WWTo2L2Nu_TuneCP5_13TeV"                                  : 12.178,
-            "WWW_4F_TuneCP5_13TeV"                                     : 0.2086,
-            "WWZ_4F_TuneCP5_13TeV"                                     : 0.1651,
-            "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV"             : 0.01701,
-            "WZTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 49.997,
-            "WZTo1L3Nu_4f_TuneCP5_13TeV"                               : 3.05402,
-            "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 5.6,
-            "WZTo3LNu_TuneCP5_13TeV"                                   : 4.42965,
-            "WZZ_TuneCP5_13TeV"                                        : 0.05565,
-            "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV"                 : 0.0490124,
             "WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV"                  : 0.3675,
-            "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV"                  : 0.084876,
             "WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV"                   : 0.589,
-            "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                       : 0.0262749,
             "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV"                       : 0.5612,
             "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV"                     : 0.1573,
             "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV"                       : 0.5612,
-            "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
-            "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 49.997,
-            "ZZTo4Q_5f_TuneCP5_13TeV"                                  : 3.451,
-            "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, # TODO Find a number for this (this number is from an old sample)
-            "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
-            "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 3.28,
-            "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 1.256,
-            "ZZZ_TuneCP5_13TeV"                                        : 0.01398,
-            "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                     : 0.0024614,
             "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV"                     : 0.04319,
             "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV"                   : 0.01222,
             "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV"                     : 0.04319,
             "WZ_TuneCP5_13TeV"                                         : 27.59,
             "WW_TuneCP5_13TeV"                                         : 75.95,
             "ZZ_TuneCP5_13TeV"                                         : 12.17,
-            "ZJetsToQQ_HT-200to400_TuneCP5_13TeV"                      : 1012.0,
-            "ZJetsToQQ_HT-400to600_TuneCP5_13TeV"                      : 114.2,
-            "ZJetsToQQ_HT-600to800_TuneCP5_13TeV"                      : 25.34,
-            "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 12.99,
+            #-----------------------------------------------------------------------------
 
+            #AN-19-004(https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/004) (k factor of 1.7 used)
             "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV" : 0.005423,
             "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV" : 0.005423,
             "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV" : 0.005423,
             "GluGluToContinToZZTo4e_TuneCP5_13TeV" : 0.002703,
             "GluGluToContinToZZTo4mu_TuneCP5_13TeV" : 0.002703,
             "GluGluToContinToZZTo4tau_TuneCP5_13TeV" : 0.002703,
+            #-----------------------------------------------------------------------------
+
+            #https://twiki.cern.ch/twiki/bin/view/LHCPhysics/HiggsXSBR#Production_cross_sections_an_AN1
+            #Apply branching fractions to production cross sections found above
             "GluGluZH_HToWWTo2L2Nu_TuneCP5_13TeV": 0.00282,
             "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV": 0.00282,
             "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV": 0.00177,
-            "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV": 0.0015,
+            #--------------------------------------------------------------------------
+        
+            #AN-19-004 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/156)
             "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV": 0.0758,
+            #----------------------------------------------------------------------------
+        
+            #from https://github.com/cmstas/VVVNanoLooper/blob/master/weights/xsec.txt
+            "SSWW": 0.02794,
+            #----------------------------------------------------------------------------
+        
+            #from TOP-22-008
+            "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV": 0.0015,
+            #----------------------------------------------------------------------------
+        
+            #XSDB
+            "WJetsToLNu_TuneCP5_13TeV"                                 : 66680.0,
+            "WWTo4Q_4f_TuneCP5_13TeV"                                  : 51.03,
+            #-----------------------------------------------------------------------------
 
-            "GluGluHToZZTo4L": 0.0082323,
-            "SSWW": 0.02794
+            # From AN-19-144 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/144)
+            "GluGluHToZZTo4L": 0.011814
 
         }
     },
+
 }
