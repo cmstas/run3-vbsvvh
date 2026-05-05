@@ -170,6 +170,24 @@ RNode AK8JetsSelection(RNode df_)
 
     return df;
 }
+RNode diLeptonMass(RNode df_)
+{
+  auto df = df_.Define(
+		       "dilepton_mass",
+		       [](const RVec<float>& pt,
+			  const RVec<float>& eta,
+			  const RVec<float>& phi,
+			  const RVec<float>& mass) {
+			 // assume at least two leptons in the event
+			 ROOT::Math::PtEtaPhiMVector l1(pt[0], eta[0], phi[0], mass[0]);
+			 ROOT::Math::PtEtaPhiMVector l2(pt[1], eta[1], phi[1], mass[1]);
+			 
+			 return (l1 + l2).M();
+		       },
+		       {"lepton_pt", "lepton_eta", "lepton_phi", "lepton_mass"}
+		       );
+  return df;
+}
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
@@ -326,18 +344,35 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     }
 
     // 2lep_1FJ (currently shared between OF and SF)
-    else if (channel == "2lep_1FJ"){
+    else if (channel == "2lep_1FJ_onZ"){
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
+        df = df.Filter( //Require exactly 2 electrons or 2 muons
+            "(!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) &&" 
+	    "((nMuon_Loose + nElectron_Loose) == 2) &&"
             "(nFatJets == 1)",
-            "C2: 2lep_1FJ"
-        );
+            "C2: 2lep_1FJ_onZ");
+	df = diLeptonMass(df);
+	df = df.Filter("(dilepton_mass > 81) && (dilepton_mass < 101) ", "C3: invariant mass selection");
     }
 
+    else if (channel == "2lep_1FJ_offZ"){
+
+      df = TriggerSelections(df,trigger_logic_string_multilep);
+      Cutflow::Add(df, "C1: Trigger selection");
+      df = diLeptonMass(df);
+      df = df.Filter( //Require either e+mu or 2mu/2e
+	   "((nMuon_Loose == 1) && (nElectron_Loose == 1)) ||"
+	   "(((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)))",
+	   "C2: 2lep_1FJ_offZ");
+      df = df.Filter(//Apply dilepton mass cut only to 2mu/2e channels
+	   "((nMuon_Loose == 1) && (nElectron_Loose == 1)) ||"
+           "(((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((dilepton_mass < 81) || (dilepton_mass > 101)))",
+           "C3: invariant mass selection");
+
+    }
     // 2lep_2FJ
     else if (channel == "2lep_2FJ"){
 

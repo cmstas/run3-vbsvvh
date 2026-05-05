@@ -15,7 +15,8 @@ ANA_CHANNELS = {
         "1lep_1FJ"     : "1lep_1FJ",
         "1lep_2FJ"     : "1lep_1FJ",
         #"2lepSS"       : "2lepSS", # DNE yet
-        "2lep_1FJ"     : "2lep_1FJ", # Analysis channel shared between SF and OF
+        "2lep_1FJ_onZ" : "2lep_1FJ",
+        "2lep_FJ_offZ" : "2lep_1FJ",
         "2lep_2FJ"     : "2lep_2FJ",
         "3lep"         : "3lep",
         "4lep"         : "4lep",
