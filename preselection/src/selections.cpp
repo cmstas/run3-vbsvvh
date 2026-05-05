@@ -50,27 +50,42 @@ RNode ElectronSelections(RNode df_)
 {
     auto df = df_.Define("Electron_SC_eta", "Electron_eta + Electron_deltaEtaSC");
 
+    // Veto selection
     df = df.Define(
-        "_looseElectrons",
+        "_vetoElectrons",
         "Electron_pt > 10 &&"
         "abs(Electron_SC_eta) < 2.5 && "
         "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || ((abs(Electron_SC_eta) > 1.479) && abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
         "Electron_cutBased >= 1"
     );
+
+    // Loose selection
     df = df.Define(
-        "_tightElectrons",
-        "_looseElectrons &&"
+        "_looseElectrons",
+        "_vetoElectrons &&"
         "Electron_cutBased >= 2"
     );
-    df = df.Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)");
-    df = df.Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)");
-    df = df.Define("vvhTightLepMaskElectron", "_tightElectrons");
-    return applyObjectMaskNewAffix(df, "_tightElectrons", "Electron", "electron");
+
+    // Define the counts of each
+    df = df.Define("nElectron_Veto", "nElectron == 0 ? 0 : Sum(_vetoElectrons)");
+    df = df.Define("nElectron_Loose", "nElectron_Veto == 0 ? 0 : Sum(_looseElectrons)");
+
+    // We will write out the electron object
+    df = applyObjectMaskNewAffix(df, "_vetoElectrons", "Electron", "electron");
+
+    // Append the masks to electron object
+    df = df.Define("electron_isLoose",  "electron_cutBased >=2");
+    df = df.Define("electron_isMedium", "electron_cutBased >=3");
+    df = df.Define("electron_isTight",  "electron_cutBased >=4");
+
+    return df;
 }
 
 // Muon selections
 RNode MuonSelections(RNode df_)
 {
+
+    // Loose selection
     auto df = df_.Define(
         "_looseMuons",
         "Muon_pt > 10 && "
@@ -81,17 +96,28 @@ RNode MuonSelections(RNode df_)
         "abs(Muon_sip3d) < 8 && "
         "Muon_looseId"
     );
+
+    // Medium selection
     df = df.Define(
-        "_tightMuons",
+        "_mediumMuons",
         "_looseMuons && "
-        "Muon_pt > 10 && "
         "Muon_pfIsoId >= 3 && "
         "Muon_mediumId"
     );
+
+    // Define the counts of each
     df = df.Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)");
-    df = df.Define("nMuon_Tight", "nMuon_Loose == 0 ? 0 : Sum(_tightMuons)");
-    df = df.Define("vvhTightLepMaskMuon", "_tightMuons");
-    return applyObjectMaskNewAffix(df, "_tightMuons", "Muon", "muon");
+    df = df.Define("nMuon_Medium", "nMuon_Loose == 0 ? 0 : Sum(_mediumMuons)");
+
+    // We will write out the muon object
+    df = applyObjectMaskNewAffix(df, "_looseMuons", "Muon", "muon");
+
+    // Append the masks to electron object
+    df = df.Define("muon_isMedium",    "Muon_mediumId && (Muon_pfIsoId >=3)");
+    df = df.Define("muon_isTight",     "Muon_mediumId && (Muon_pfIsoId >=4)");
+    df = df.Define("muon_isVeryTight", "Muon_mediumId && (Muon_pfIsoId >=5)");
+
+    return df;
 }
 
 RNode LeptonSelections(RNode df_)
