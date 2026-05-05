@@ -321,14 +321,12 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "(nFatJets == 2)",
             "C2: 0lep_2FJ"
         );
-        Cutflow::Add(df, "C2: 0lep_3FJ");
-        df = ZeroLepAnalysisVBSfirstBDT(df);
     }
 
     // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
-
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        
+	df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(
@@ -336,6 +334,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "(nFatJets == 3)",
             "C2: 0lep_3FJ"
         );
+
+	Cutflow::Add(df, "C2: 0lep_3FJ");
+        df = ZeroLepAnalysisVBSfirstBDT(df);
     }
 
     // 1lep_1FJ
