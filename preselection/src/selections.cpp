@@ -113,9 +113,9 @@ RNode MuonSelections(RNode df_)
     df = applyObjectMaskNewAffix(df, "_looseMuons", "Muon", "muon");
 
     // Append the masks to electron object
-    df = df.Define("muon_isMedium",    "Muon_mediumId && (Muon_pfIsoId >=3)");
-    df = df.Define("muon_isTight",     "Muon_mediumId && (Muon_pfIsoId >=4)");
-    df = df.Define("muon_isVeryTight", "Muon_mediumId && (Muon_pfIsoId >=5)");
+    df = df.Define("muon_isMedium",    "muon_mediumId && (muon_pfIsoId >=3)");
+    df = df.Define("muon_isTight",     "muon_mediumId && (muon_pfIsoId >=4)");
+    df = df.Define("muon_isVeryTight", "muon_mediumId && (muon_pfIsoId >=5)");
 
     return df;
 }
