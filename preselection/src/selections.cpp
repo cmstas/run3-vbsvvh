@@ -341,6 +341,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             //TODO implement a same sign requirement
             "C2: 2lepSS"
         );
+	df = df.Filter("lepton_charge[0] * lepton_charge[1] > 0", "C4: Same Sign");
     }
 
     // 2lep_1FJ (currently shared between OF and SF)
@@ -356,6 +357,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "C2: 2lep_1FJ_onZ");
 	df = diLeptonMass(df);
 	df = df.Filter("(dilepton_mass > 81) && (dilepton_mass < 101) ", "C3: invariant mass selection");
+	df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
     }
 
     else if (channel == "2lep_1FJ_offZ"){
@@ -371,6 +373,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 	   "((nMuon_Loose == 1) && (nElectron_Loose == 1)) ||"
            "(((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((dilepton_mass < 81) || (dilepton_mass > 101)))",
            "C3: invariant mass selection");
+      df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
 
     }
     // 2lep_2FJ
