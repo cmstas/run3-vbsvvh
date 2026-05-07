@@ -41,7 +41,7 @@ Optional keys:
 ## Run
 
 ```bash
-python3 main.py --config config_boosted_run3.yaml
+python3 main.py --config config_boosted_run3.yaml --flavor single
 ```
 
 Then monitor logs with TensorBoard from the configured output directory. For example:
@@ -50,3 +50,15 @@ Then monitor logs with TensorBoard from the configured output directory. For exa
 tensorboard --logdir <output_dir>
 ```
 (Replace `<output_dir>` with the `output` directory specified in your config, and access `http://localhost:6006` in your browser.)
+
+To skip training and run only the inference step (possibly with a --checkpoint definition)
+
+```bash
+python3 main.py --config single/config_boosted_run3.yaml --flavor single --infer --checkpoint <path>
+```
+
+To run inference on data after training
+
+```bash
+python3 main.py --config single/config_boosted_run3.yaml --flavor single --infer --checkpoint <path> --data
+```
