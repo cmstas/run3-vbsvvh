@@ -80,9 +80,11 @@ LUMI_DICT = {
     "2016postVFP": 16.81,
     "2017": 41.48,
     "2018": 59.83,
-    "2022": 34.6521,
-    "2023": 27.245,
-    "2024Prompt": 109.08,
+
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
+    "2022": 34.76,
+    "2023": 28.28,
+    "2024Prompt": 109.95,
 }
 
 
