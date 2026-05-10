@@ -335,14 +335,14 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
         df = df.Filter( //Require exactly 2 electrons or 2 muons
             "(!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) &&" 
-	    "((nMuon_Loose + nElectron_Loose) == 2) &&"
+	        "((nMuon_Loose + nElectron_Loose) == 2) &&"
             "(nFatJets == 1)",
             "C2: 2lep_1FJ_onZ");
-	df = df.Filter("(ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0] > 81 ) && (ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0]  < 101) ", "C3: invariant mass selection");
-	df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
+	    df = df.Filter("(ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0] > 81 ) && (ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0]  < 101) ", "C3: invariant mass selection");
+	    df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
     }
 
-    else if (channel == "2lep_1FJ_offZ"){
+     else if (channel == "2lep_1FJ_offZ"){
 
       df = TriggerSelections(df,trigger_logic_string_multilep);
       Cutflow::Add(df, "C1: Trigger selection");
@@ -352,8 +352,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 	   "C2: 2lep_1FJ_offZ");
       df = df.Filter(//Apply dilepton mass cut only to 2mu/2e channels
 	   "((nMuon_Loose == 1) && (nElectron_Loose == 1)) ||"
-           "(((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0] < 81) || (ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0] > 101)))",
-           "C3: invariant mass selection");
+        "(((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0] < 81) || (ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)[0] > 101)))",
+        "C3: invariant mass selection");
       df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
 
     }
