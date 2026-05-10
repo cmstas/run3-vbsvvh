@@ -38,11 +38,10 @@ xsec_dict = {
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
-            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 6.115,
-            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 3.06,
-            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 3.042,
-            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 3.042,
-            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 3.042,
+            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01384,
+            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00346,
+            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00406,
+            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00347,
             
             # QCD-HT (obtained by Cristina manually with genXsecAnalyzer) - Cristina Mantilla Suarez at Virginia (see comment from Lara in issue #45)
             "QCD-4Jets_Bin-HT-40to70_TuneCP5_13p6TeV": 311600000.0,
@@ -157,21 +156,23 @@ xsec_dict = {
 
             "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.6409,
             "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3918,
-            "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.1887,
 
             "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
             "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
-            "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3,
 
             "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.9014,
-            "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.08545,
             "ZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.168,
             "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5958,
+            
+            # from twiki (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap)
+            "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3334,
+            "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.2412,
+            "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.0638,
+            "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.09896,
+            "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.03174,
+            #---------------------------------------------------
 
-            "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
-            "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.5742,
-
-            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.02316, # this needs to be checked again.
+            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.02316, # this needs to be checked again, in xsdb is 23.16 same in genxsec
             "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
             "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
             "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
@@ -193,8 +194,8 @@ xsec_dict = {
             "ZZ_TuneCP5_13p6TeV" : 12.75, # XSDB Also quotes 12.85
             "ZZZ-5F_TuneCP5_13p6TeV" : 0.01591,
 
-            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 6.115, # From XSDB, also quotes 6.242
-            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 6.115, # From XSDB, also quotes 6.242
+            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.01386, # From XSDB, also quotes 6.242
+            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.01387, # From XSDB, also quotes 6.242
 
             # No longer using these samples, using inclusive instead
             # From the old xsecs_13p6TeV.json in the repo (from XSDB?)
@@ -269,7 +270,6 @@ xsec_dict = {
             "WWW_4F_TuneCP5_13TeV"                                     : 0.2086,
             "WWZ_4F_TuneCP5_13TeV"                                     : 0.1651,
             "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV"             : 0.01701,
-            "WZTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 49.997,
             "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV"                         : 5.6,
             "WZZ_TuneCP5_13TeV"                                        : 0.05565,
             "ZZTo4Q_5f_TuneCP5_13TeV"                                  : 3.451,
@@ -369,10 +369,11 @@ xsec_dict = {
             #XSDB
             "WJetsToLNu_TuneCP5_13TeV"                                 : 66680.0,
             "WWTo4Q_4f_TuneCP5_13TeV"                                  : 51.03,
+            "WZTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 9.119,
             #-----------------------------------------------------------------------------
 
             # From AN-19-144 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/144)
-            "GluGluHToZZTo4L": 0.011814
+            "GluGluHToZZTo4L": 0.011814 #gives a different number in xsecgen is around 28
 
         }
     },
