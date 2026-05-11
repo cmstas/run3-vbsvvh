@@ -17,7 +17,7 @@
                 "kind": "bkg",
                 "year": "2024Prompt",
                 "xsec": 53.59,
-                "lumi": 109.08,
+                "lumi": 109.95,
                 "shortname": "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",

@@ -11,7 +11,7 @@
                 "kind": "data",
                 "year": "2022",
                 "xsec": 1.0,
-                "lumi": 34.6521,
+                "lumi": 34.76,
                 "shortname": "MuonEG",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",

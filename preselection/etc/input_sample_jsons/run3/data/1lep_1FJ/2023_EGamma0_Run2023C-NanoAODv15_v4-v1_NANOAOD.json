@@ -23,7 +23,7 @@
                 "kind": "data",
                 "year": "2023",
                 "xsec": 1.0,
-                "lumi": 27.245,
+                "lumi": 28.28,
                 "shortname": "EGamma",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",

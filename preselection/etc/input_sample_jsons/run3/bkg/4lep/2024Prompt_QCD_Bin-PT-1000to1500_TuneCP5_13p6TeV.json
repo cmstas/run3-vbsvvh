@@ -17,7 +17,7 @@
                 "kind": "bkg",
                 "year": "2024Prompt",
                 "xsec": 9.306,
-                "lumi": 109.08,
+                "lumi": 109.95,
                 "shortname": "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
