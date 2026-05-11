@@ -420,12 +420,17 @@ RNode applyEWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
 }
 
 RNode applyL1PreFiringReweighting(RNode df){
+    // L1PreFiringWeight_* branches are only present in Run 2 NanoAOD; the
+    // correction does not apply to Run 3, so emit a unit weight there.
+    auto colNames = df.GetColumnNames();
+    bool hasL1Prefire = std::find(colNames.begin(), colNames.end(), std::string("L1PreFiringWeight_Nom")) != colNames.end();
+    if (!hasL1Prefire) {
+        return df.Define("weight_l1prefiring", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+    }
     auto eval_correction = [] (float L1prefire, float L1prefireup, float L1prefiredown) {
         return RVec<float>{L1prefire, L1prefireup, L1prefiredown};
     };
-    // TODO: check what this is in v15
-    // return df.Define("weight_l1prefiring", eval_correction, {"L1PreFiringWeight_Nom", "L1PreFiringWeight_Up", "L1PreFiringWeight_Dn"});
-    return df;
+    return df.Define("weight_l1prefiring", eval_correction, {"L1PreFiringWeight_Nom", "L1PreFiringWeight_Up", "L1PreFiringWeight_Dn"});
 }
 
 RNode applyPSWeight_FSR(RNode df) {
@@ -510,7 +515,7 @@ RNode applyMCWeights(RNode df_) {
         // "weight_btagging_sf_HF[0] * "
         // "weight_btagging_sf_LF[0] * "
         "weight_ewk * "
-        // "weight_l1prefiring[0] * "
+        "weight_l1prefiring[0] * "
         "weight_PSISR[0] * "
         "weight_PSFSR[0] * "
         "weight_muF[0] * "
