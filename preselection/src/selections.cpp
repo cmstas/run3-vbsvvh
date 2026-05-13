@@ -322,13 +322,12 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2)",
-            //TODO implement a same sign requirement
             "C2: 2lepSS"
         );
-	df = df.Filter("lepton_charge[0] * lepton_charge[1] > 0", "C4: Same Sign");
+	    df = df.Filter("lepton_charge[0] * lepton_charge[1] > 0", "C4: Same Sign");
     }
 
-    // 2lep_1FJ (currently shared between OF and SF)
+    // 2lep_1FJ_onZ
     else if (channel == "2lep_1FJ_onZ"){
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
@@ -342,20 +341,21 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 	    df = df.Filter("(lepton_invMass > 81) && (lepton_invMass < 101) ", "C3: invariant mass selection");
 	    df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
     }
-
+    // 2lep_1FJ_offZ
     else if (channel == "2lep_1FJ_offZ"){
 
-      df = TriggerSelections(df,trigger_logic_string_multilep);
-      Cutflow::Add(df, "C1: Trigger selection");
-      df = df.Filter( //Require either e+mu or 2mu/2e
-	   "((nMuon_Loose == 1) && (nElectron_Loose == 1)) || "
-	   "((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)))",
-	   "C2: 2lep_1FJ_offZ");
-      df = df.Filter(//Apply dilepton mass cut only to 2mu/2e channels
-	   "((nMuon_Loose == 1) && (nElectron_Loose == 1)) || "
-	   "((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((lepton_invMass < 81) || (lepton_invMass > 101)))",
-	   "C3: invariant mass selection");
-      df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
+        df = TriggerSelections(df,trigger_logic_string_multilep);
+        Cutflow::Add(df, "C1: Trigger selection");
+        df = df.Filter( //Require either e+mu or 2mu/2e
+	        "((nMuon_Loose == 1) && (nElectron_Loose == 1)) || "
+	        "((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)))",
+	        "C2: 2lep_1FJ_offZ");
+      
+        df = df.Filter(//Apply dilepton mass cut only to 2mu/2e channels
+            "((nMuon_Loose == 1) && (nElectron_Loose == 1)) || "
+	        "((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((lepton_invMass < 81) || (lepton_invMass > 101)))",
+	        "C3: invariant mass selection");
+        df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
 
     }
     // 2lep_2FJ
