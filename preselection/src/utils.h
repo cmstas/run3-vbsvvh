@@ -13,6 +13,10 @@
 
 #include "TLorentzVector.h"
 
+#include "TMVA/RInferenceUtils.hxx"
+#include "TMVA/RReader.hxx"
+#include "TMVA/RBDT.hxx"
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "TString.h"
