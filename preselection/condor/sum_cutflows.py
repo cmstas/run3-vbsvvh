@@ -3,18 +3,20 @@
 Script to extract and sum cutflow tables from job stdout files.
 """
 
-import os
 import re
-import glob
 from collections import defaultdict
 from pathlib import Path
 from argparse import ArgumentParser
+from multiprocessing import Pool, cpu_count
+
+# Pre-compile the regex pattern for performance
+CUTFLOW_PATTERN = re.compile(r'\|\s+(\d+)\s+\|\s+(.+?)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|')
 
 
 def extract_cutflow_table(file_path):
     """
     Extract cutflow table from a job stdout file.
-    Returns a list of tuples: [(cut_number, cut_name, sum_w, rel_eff, abs_eff), ...]
+    Returns a list of tuples for dictionaries representing cutflow rows.
     """
     cutflow_data = []
     
@@ -22,25 +24,15 @@ def extract_cutflow_table(file_path):
         with open(file_path, 'r') as f:
             content = f.read()
             
-        # Find the cutflow section - look for the pattern between the table headers
-        # Match lines like: | 0 | All events                                   | 1221175.000 |     1.000 |     1.000 |
-        pattern = r'\|\s+(\d+)\s+\|\s+(.+?)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|'
-        
-        matches = re.findall(pattern, content)
+        matches = CUTFLOW_PATTERN.findall(content)
         
         for match in matches:
-            cut_num = int(match[0])
-            cut_name = match[1].strip()
-            sum_w = float(match[2])
-            rel_eff = float(match[3])
-            abs_eff = float(match[4])
-            
             cutflow_data.append({
-                'cut_num': cut_num,
-                'cut_name': cut_name,
-                'sum_w': sum_w,
-                'rel_eff': rel_eff,
-                'abs_eff': abs_eff,
+                'cut_num': int(match[0]),
+                'cut_name': match[1].strip(),
+                'sum_w': float(match[2]),
+                'rel_eff': float(match[3]),
+                'abs_eff': float(match[4]),
             })
     
     except (FileNotFoundError, IOError) as e:
@@ -51,7 +43,7 @@ def extract_cutflow_table(file_path):
 
 def aggregate_cutflows(job_stdout_files):
     """
-    Aggregate cutflow data from multiple job files.
+    Aggregate cutflow data from multiple job files using multiprocessing.
     Returns a dictionary with cut numbers as keys and aggregated data as values.
     """
     aggregated = defaultdict(lambda: {
@@ -63,8 +55,13 @@ def aggregate_cutflows(job_stdout_files):
     })
     
     file_count = 0
-    for file_path in job_stdout_files:
-        cutflow = extract_cutflow_table(file_path)
+    
+    # Process files in parallel to speed up extraction
+    num_processes = min(cpu_count(), len(job_stdout_files)) if job_stdout_files else 1
+    with Pool(processes=num_processes) as pool:
+        results = pool.map(extract_cutflow_table, job_stdout_files)
+        
+    for cutflow in results:
         if cutflow:
             file_count += 1
             for entry in cutflow:
@@ -108,13 +105,22 @@ def print_cutflow_table(aggregated, file_count):
 
 def main():
     parser = ArgumentParser(description="Aggregate cutflow tables from multiple job files")
-    parser.add_argument("-p", "--path", default="/home/users/aaarora/phys/run3/cmstas-run3-vbsvvh/preselection/condor/jobs/1Lep2FJ_run2-data_1lep_2FJ_r2_2fj_data/", help="Base path to job stdout files")
+    parser.add_argument("-p", "--paths", nargs="+", default=["/home/users/aaarora/phys/run3/cmstas-run3-vbsvvh/preselection/condor/jobs/1Lep2FJ_run2-data_1lep_2FJ_r2_2fj_data/"], help="Base paths or list of files/directories to job stdout files")
     args = parser.parse_args()
 
     # Find all job stdout files
-    base_path = args.path
-    job_files = glob.glob(f"{base_path}/**/job.*.stdout", recursive=True)
-    
+    job_files = []
+    for path_str in args.paths:
+        p = Path(path_str)
+        if p.is_file():
+            job_files.append(str(p))
+        elif p.is_dir():
+            files = list(p.rglob("*.stdout"))
+            job_files.extend([str(f) for f in files])
+
+    # remove duplicates
+    job_files = list(set(job_files))
+
     print(f"Found {len(job_files)} job stdout files")
     
     if not job_files:
