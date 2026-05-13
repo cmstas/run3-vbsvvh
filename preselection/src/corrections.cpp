@@ -111,16 +111,12 @@ HEM Corrections
 
 RNode HEMCorrection(RNode df, bool isData) {
     auto HEMCorrections = [isData](unsigned int run, unsigned long long event, std::string sample_year, RVec<float> pt, RVec<float> eta, RVec<float> phi, RVec<float> jet_id) {
-        RVec<bool> jet_mask;
-        if (sample_year.find("2016") != std::string::npos) {
-            jet_mask = (jet_id >= 1 && pt > 15.0);
-        } else {
-            jet_mask = (jet_id >= 2 && pt > 15.0);
-        }
-        // Need to check if there is dependence on jet ID in v15
-        auto eta_ = eta[jet_mask];
-        auto phi_ = phi[jet_mask];
+        RVec<bool> jet_mask;   
         if (sample_year == "2018" && ((isData && run >= 319077) || (!isData && event % 100 < 64))) {
+            jet_mask = (jet_id >= 2 && pt > 15.0); // NanoAOD jetID convention https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets
+                                                    // should still work for current skimmer, which sets jetId==3 : "pass tight ID, fail tightLepVeto", jetId==7 : "pass tight and tightLepVeto ID"
+            auto eta_ = eta[jet_mask];
+            auto phi_ = phi[jet_mask];
             for (size_t i = 0; i < eta_.size(); i++) {
                 if (eta_[i] > -3.2 && eta_[i] < -1.3 && phi_[i] > -1.57 && phi_[i] < -0.87) {
                     return false;

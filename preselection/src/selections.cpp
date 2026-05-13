@@ -140,7 +140,8 @@ RNode AK4JetsSelection(RNode df_)
                                         "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
                                         "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
                                         "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
-                                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+                                        "(Jet_jetId >= 2)"); // NanoAOD jetID convention https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets
+                                                            // should still work for current skimmer, which sets jetId==3 : "pass tight ID, fail tightLepVeto", jetId==7 : "pass tight and tightLepVeto ID"
     
     df = applyJetVetoMaps(df);
     df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
