@@ -28,6 +28,7 @@ RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score);
 RVec<bool> isbTagTight(std::string year, RVec<float> btag_score);
 
 
+// Note: Re-using 2024 WPs for 2022-2023
 const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrections = {
     {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2016preVFP-UL-NanoAODv15/latest/btagging.json.gz")},
     {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run2-2016postVFP-UL-NanoAODv15/latest/btagging.json.gz")},
@@ -87,6 +88,7 @@ static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
 MET CORRECTIONS
 ############################################
 */
+// FIXME: met corrections missing for v15
 const std::unordered_map<std::string, correction::CorrectionSet> metCorrections = {
     {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016preVFP-UL-NanoAODv9/latest/met.json.gz")},
     {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv9/latest/met.json.gz")},
@@ -102,17 +104,50 @@ RNode applyMETUnclusteredCorrections(RNode df, std::string variation);
 
 /*
 ############################################
-JET MASS SCALE AND RESOLUTION CORRECTIONS
+JET MASS SCALE (JMS) AND RESOLUTION (JMR)
 ############################################
+
+Convention:
+  - JMS  : *additive* shift on FatJet_msoftdrop, in GeV. ±1σ variation = jmsr_scale.
+           Central = 0.0 GeV (no shift).
+  - JMR  : *multiplicative* width factor wrt the gen mass. ±1σ variation =
+           jmsr_smear. Central = 1.0 (no widening).
+
+We currently store only central values (= identity) since no calibration has been
+derived yet. Replace these with per-era values from the calibration fit when
+available; the up/down systematic variants can then be added by passing
+variation = "up"/"down" with the derived ±1σ shift/scale.
 */
-const std::unordered_map<std::string, correction::CorrectionSet> jetMassCorrections = {
-    {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016preVFP-UL-NanoAODv9/latest/jmar.json.gz")},
-    {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv9/latest/jmar.json.gz")},
-    {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2017-UL-NanoAODv9/latest/jmar.json.gz")},
-    {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2018-UL-NanoAODv9/latest/jmar.json.gz")}
+
+const std::unordered_map<std::string, float> jetMassScale_central = {
+    {"2016preVFP", 0.0f}, {"2016postVFP", 0.0f}, {"2017", 0.0f}, {"2018", 0.0f},
+    {"2022Re-recoBCD", 0.0f}, {"2022Re-recoE+PromptFG", 0.0f},
+    {"2023PromptC", 0.0f}, {"2023PromptD", 0.0f},
+    {"2024Prompt", 0.0f}
 };
-RNode applyJMSCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jms, RNode df, std::string variation);
-RNode applyJMRCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jmr, RNode df, std::string variation);
+
+const std::unordered_map<std::string, float> jetMassResolution_central = {
+    {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
+    {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
+    {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
+    {"2024Prompt", 1.0f}
+};
+
+// Relative msoftdrop resolution sigma(msd)/msd. Used by the unmatched stochastic branch
+// of applyJetMassResolution. Placeholder 1.0 — replace with the per-era value from the same
+// calibration fit that derives jetMassResolution_central. With factor f = 1.0 (placeholder)
+// the branch is unreachable, so this value has no effect until both maps are updated together.
+const std::unordered_map<std::string, float> jetMassResolution_sigmaRel_central = {
+    {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
+    {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
+    {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
+    {"2024Prompt", 1.0f}
+};
+
+RNode applyJetMassScale(const std::unordered_map<std::string, float>& jms_shift, RNode df);
+RNode applyJetMassResolution(const std::unordered_map<std::string, float>& jmr_factor,
+                             const std::unordered_map<std::string, float>& jmr_sigma_rel,
+                             RNode df);
 
 /*
 ############################################
@@ -120,10 +155,10 @@ JET ENERGY CORRECTIONS
 ############################################
 */
 const std::unordered_map<std::string, correction::CorrectionSet> jetEnergyCorrections = {
-    {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016preVFP-UL-NanoAODv9/latest/jet_jerc.json.gz")},
-    {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv9/latest/jet_jerc.json.gz")},
-    {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2017-UL-NanoAODv9/latest/jet_jerc.json.gz")},
-    {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2018-UL-NanoAODv9/latest/jet_jerc.json.gz")},
+    {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016preVFP-UL-NanoAODv15/latest/jet_jerc.json.gz")},
+    {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv15/latest/jet_jerc.json.gz")},
+    {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2017-UL-NanoAODv15/latest/jet_jerc.json.gz")},
+    {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2018-UL-NanoAODv15/latest/jet_jerc.json.gz")},
     {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/jet_jerc.json.gz")},
     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/jet_jerc.json.gz")},
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/jet_jerc.json.gz")},
@@ -131,27 +166,42 @@ const std::unordered_map<std::string, correction::CorrectionSet> jetEnergyCorrec
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jet_jerc.json.gz")}
 };
 
+// AK8 fat-jet JEC/JER lives in fatJet_jerc.json.gz under the same era directories.
+const std::unordered_map<std::string, correction::CorrectionSet> fatJetEnergyCorrections = {
+    {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016preVFP-UL-NanoAODv15/latest/fatJet_jerc.json.gz")},
+    {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv15/latest/fatJet_jerc.json.gz")},
+    {"2017", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2017-UL-NanoAODv15/latest/fatJet_jerc.json.gz")},
+    {"2018", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2018-UL-NanoAODv15/latest/fatJet_jerc.json.gz")},
+    {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/fatJet_jerc.json.gz")},
+    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/fatJet_jerc.json.gz")},
+    {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/fatJet_jerc.json.gz")},
+    {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/fatJet_jerc.json.gz")},
+    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/fatJet_jerc.json.gz")}
+};
+
 const std::unordered_map<std::string, correction::CorrectionSet> jetEnergyResolution_smear = {
     {"jer_smear", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/JER-Smearing/latest/jer_smear.json.gz")}
 };
 
+// JEC tag base — `<TAG>_MC` and `<TAG>_DATA` compounds (`_L1L2L3Res_<algo>`) live in jet_jerc.json.gz.
+// The trailing `_MC` here is stripped and replaced with `_DATA` at runtime when running on data.
 const std::unordered_map<std::string, std::string> jetEnergyCorrections_JEC_prefix = {
-    {"2016preVFP", "Summer19UL16APV_V7_MC"},
-    {"2016postVFP", "Summer19UL16_V7_MC"},
-    {"2017", "Summer19UL17_V5_MC"},
-    {"2018", "Summer19UL18_V5_MC"},
-    {"2022Re-recoBCD", "Summer22_22Sep2023_V2_MC"},
-    {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_V2_MC"},
-    {"2023PromptC", "Summer23Prompt23_V1_MC"},
-    {"2023PromptD", "Summer23BPixPrompt23_V1_MC"},
-    {"2024Prompt", "Summer24Prompt24_V1_MC"}
+    {"2016preVFP", "Summer20UL16APVNanoV15_V1_MC"},
+    {"2016postVFP", "Summer20UL16NanoV15_V1_MC"},
+    {"2017", "Summer20UL17NanoV15_V1_MC"},
+    {"2018", "Summer20UL18NanoV15_V1_MC"},
+    {"2022Re-recoBCD", "Summer22_22Sep2023_V3_MC"},
+    {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_V3_MC"},
+    {"2023PromptC", "Summer23Prompt23_V3_MC"},
+    {"2023PromptD", "Summer23BPixPrompt23_V3_MC"},
+    {"2024Prompt", "Summer24Prompt24_V2_MC"}
 };
 
 const std::unordered_map<std::string, std::string> jetEnergyCorrections_JEC_suffix = {
-    {"2016preVFP", "AK4PFchs"},
-    {"2016postVFP", "AK4PFchs"},
-    {"2017", "AK4PFchs"},
-    {"2018", "AK4PFchs"},
+    {"2016preVFP", "AK4PFPuppi"},
+    {"2016postVFP", "AK4PFPuppi"},
+    {"2017", "AK4PFPuppi"},
+    {"2018", "AK4PFPuppi"},
     {"2022Re-recoBCD", "AK4PFPuppi"},
     {"2022Re-recoE+PromptFG", "AK4PFPuppi"},
     {"2023PromptC", "AK4PFPuppi"},
@@ -159,38 +209,123 @@ const std::unordered_map<std::string, std::string> jetEnergyCorrections_JEC_suff
     {"2024Prompt", "AK4PFPuppi"}
 };
 
+// AK8 fat-jet variants — same year keys, AK8PFPuppi algo across all eras.
+const std::unordered_map<std::string, std::string> fatJetEnergyCorrections_JEC_prefix = {
+    {"2016preVFP", "Summer20UL16APVNanoV15_V1_MC"},
+    {"2016postVFP", "Summer20UL16NanoV15_V1_MC"},
+    {"2017", "Summer20UL17NanoV15_V1_MC"},
+    {"2018", "Summer20UL18NanoV15_V1_MC"},
+    {"2022Re-recoBCD", "Summer22_22Sep2023_V3_MC"},
+    {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_V3_MC"},
+    {"2023PromptC", "Summer23Prompt23_V3_MC"},
+    {"2023PromptD", "Summer23BPixPrompt23_V3_MC"},
+    {"2024Prompt", "Summer24Prompt24_V2_MC"}
+};
+
+const std::unordered_map<std::string, std::string> fatJetEnergyCorrections_JEC_suffix = {
+    {"2016preVFP", "AK8PFPuppi"},
+    {"2016postVFP", "AK8PFPuppi"},
+    {"2017", "AK8PFPuppi"},
+    {"2018", "AK8PFPuppi"},
+    {"2022Re-recoBCD", "AK8PFPuppi"},
+    {"2022Re-recoE+PromptFG", "AK8PFPuppi"},
+    {"2023PromptC", "AK8PFPuppi"},
+    {"2023PromptD", "AK8PFPuppi"},
+    {"2024Prompt", "AK8PFPuppi"}
+};
+
+// JER tag names 
+// FIXME: 2024 re-uses the 2023BPix JR until a dedicated 2024 release lands
 const std::unordered_map<std::string, std::string> jetEnergyResolution_JER_res_name = {
-    {"2016preVFP", "Summer20UL16APV_JRV3_MC_PtResolution_AK4PFchs"},
-    {"2016postVFP", "Summer20UL16_JRV3_MC_PtResolution_AK4PFchs"},
-    {"2017", "Summer19UL17_JRV2_MC_PtResolution_AK4PFchs"},
-    {"2018", "Summer19UL18_JRV2_MC_PtResolution_AK4PFchs"},
+    {"2016preVFP", "Summer20UL16APV_JRV3_MC_PtResolution_AK4PFPuppi"},
+    {"2016postVFP", "Summer20UL16_JRV3_MC_PtResolution_AK4PFPuppi"},
+    {"2017", "Summer19UL17_JRV3_MC_PtResolution_AK4PFPuppi"},
+    {"2018", "Summer19UL18_JRV2_MC_PtResolution_AK4PFPuppi"},
     {"2022Re-recoBCD", "Summer22_22Sep2023_JRV1_MC_PtResolution_AK4PFPuppi"},
     {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_JRV1_MC_PtResolution_AK4PFPuppi"},
-    {"2023PromptC", "Summer23Prompt23_JRV1_MC_PtResolution_AK4PFPuppi"},
-    {"2023PromptD", "Summer23BPixPrompt23_JRV1_MC_PtResolution_AK4PFPuppi"},
-    {"2024Prompt", "Summer24Prompt24_JRV1_MC_PtResolution_AK4PFPuppi"}
+    {"2023PromptC", "Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFPuppi"},
+    {"2023PromptD", "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK4PFPuppi"},
+    {"2024Prompt", "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK4PFPuppi"}
 };
 
 const std::unordered_map<std::string, std::string> jetEnergyResolution_JER_sf_name = {
-    {"2016preVFP", "Summer20UL16APV_JRV3_MC_ScaleFactor_AK4PFchs"},
-    {"2016postVFP", "Summer20UL16_JRV3_MC_ScaleFactor_AK4PFchs"},
-    {"2017", "Summer19UL17_JRV2_MC_ScaleFactor_AK4PFchs"},
-    {"2018", "Summer19UL18_JRV2_MC_ScaleFactor_AK4PFchs"},
+    {"2016preVFP", "Summer20UL16APV_JRV3_MC_ScaleFactor_AK4PFPuppi"},
+    {"2016postVFP", "Summer20UL16_JRV3_MC_ScaleFactor_AK4PFPuppi"},
+    {"2017", "Summer19UL17_JRV3_MC_ScaleFactor_AK4PFPuppi"},
+    {"2018", "Summer19UL18_JRV2_MC_ScaleFactor_AK4PFPuppi"},
     {"2022Re-recoBCD", "Summer22_22Sep2023_JRV1_MC_ScaleFactor_AK4PFPuppi"},
     {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_JRV1_MC_ScaleFactor_AK4PFPuppi"},
-    {"2023PromptC", "Summer23Prompt23_JRV1_MC_ScaleFactor_AK4PFPuppi"},
-    {"2023PromptD", "Summer23BPixPrompt23_JRV1_MC_ScaleFactor_AK4PFPuppi"},
-    {"2024Prompt", "Summer24Prompt24_JRV1_MC_ScaleFactor_AK4PFPuppi"}
+    {"2023PromptC", "Summer23Prompt23_RunCv1234_JRV1_MC_ScaleFactor_AK4PFPuppi"},
+    {"2023PromptD", "Summer23BPixPrompt23_RunD_JRV1_MC_ScaleFactor_AK4PFPuppi"},
+    {"2024Prompt", "Summer23BPixPrompt23_RunD_JRV1_MC_ScaleFactor_AK4PFPuppi"}
 };
 
-RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jerc, std::unordered_map<std::string, std::string> jec_prefix_map, std::unordered_map<std::string, std::string> jec_suffix_map, RNode df, std::string JEC_type, std::string variation);
-RNode applyJetEnergyResolution(std::unordered_map<std::string, correction::CorrectionSet> cset_jerc, std::unordered_map<std::string, correction::CorrectionSet> cset_jer_smear, std::unordered_map<std::string, std::string> jer_res_map, std::unordered_map<std::string, std::string> jer_sf_map, RNode df, std::string variation);
+// AK8 JER tags — same JR releases as AK4 but with AK8PFPuppi algo.
+const std::unordered_map<std::string, std::string> fatJetEnergyResolution_JER_res_name = {
+    {"2016preVFP", "Summer20UL16APV_JRV3_MC_PtResolution_AK8PFPuppi"},
+    {"2016postVFP", "Summer20UL16_JRV3_MC_PtResolution_AK8PFPuppi"},
+    {"2017", "Summer19UL17_JRV3_MC_PtResolution_AK8PFPuppi"},
+    {"2018", "Summer19UL18_JRV2_MC_PtResolution_AK8PFPuppi"},
+    {"2022Re-recoBCD", "Summer22_22Sep2023_JRV1_MC_PtResolution_AK8PFPuppi"},
+    {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_JRV1_MC_PtResolution_AK8PFPuppi"},
+    {"2023PromptC", "Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK8PFPuppi"},
+    {"2023PromptD", "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK8PFPuppi"},
+    {"2024Prompt", "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK8PFPuppi"}
+};
+
+const std::unordered_map<std::string, std::string> fatJetEnergyResolution_JER_sf_name = {
+    {"2016preVFP", "Summer20UL16APV_JRV3_MC_ScaleFactor_AK8PFPuppi"},
+    {"2016postVFP", "Summer20UL16_JRV3_MC_ScaleFactor_AK8PFPuppi"},
+    {"2017", "Summer19UL17_JRV3_MC_ScaleFactor_AK8PFPuppi"},
+    {"2018", "Summer19UL18_JRV2_MC_ScaleFactor_AK8PFPuppi"},
+    {"2022Re-recoBCD", "Summer22_22Sep2023_JRV1_MC_ScaleFactor_AK8PFPuppi"},
+    {"2022Re-recoE+PromptFG", "Summer22EE_22Sep2023_JRV1_MC_ScaleFactor_AK8PFPuppi"},
+    {"2023PromptC", "Summer23Prompt23_RunCv1234_JRV1_MC_ScaleFactor_AK8PFPuppi"},
+    {"2023PromptD", "Summer23BPixPrompt23_RunD_JRV1_MC_ScaleFactor_AK8PFPuppi"},
+    {"2024Prompt", "Summer23BPixPrompt23_RunD_JRV1_MC_ScaleFactor_AK8PFPuppi"}
+};
+
+// Nominal JEC: removes the JEC stored in NanoAOD (via Jet_rawFactor) and re-applies the
+// latest L1FastJet * L2Relative * L3Absolute (* L2L3Residual for data) compound from
+// jet_jerc.json.gz. Propagates the change to met_pt / met_phi (Type-I).
+RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                RNode df, bool isData);
+
+// JES uncertainty (nominal/up/down). Must run after applyJetEnergyCorrections so the
+// per-source uncertainty is applied on top of the corrected baseline.
+RNode applyJetEnergyScaleVariation(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                   RNode df, std::string JEC_source, std::string variation);
+
+// JER smearing (MC only). Propagates to met_pt / met_phi as well.
+RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                               const std::unordered_map<std::string, correction::CorrectionSet>& cset_jer_smear,
+                               const std::unordered_map<std::string, std::string>& jer_res_map,
+                               const std::unordered_map<std::string, std::string>& jer_sf_map,
+                               RNode df, std::string variation);
+
+// AK8 (FatJet_*) variants — same recipe as AK4 but reading FatJet_* / GenJetAK8_* branches
+// and the AK8PFPuppi compound from fatJet_jerc.json.gz. 
+RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                   RNode df, bool isData);
+
+RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                  const std::unordered_map<std::string, correction::CorrectionSet>& cset_jer_smear,
+                                  const std::unordered_map<std::string, std::string>& jer_res_map,
+                                  const std::unordered_map<std::string, std::string>& jer_sf_map,
+                                  RNode df, std::string variation);
 
 /*
 ############################################
 JET VETO MAPS
 ############################################
 */
+// Run 2 recommendations: https://cms-jerc.web.cern.ch/Recommendations/#run-2_1
 const std::unordered_map<std::string, correction::CorrectionSet> jetVetoMaps = {
     {"2016preVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016preVFP-UL-NanoAODv9/latest/jetvetomaps.json.gz")},
     {"2016postVFP", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run2-2016postVFP-UL-NanoAODv9/latest/jetvetomaps.json.gz")},
