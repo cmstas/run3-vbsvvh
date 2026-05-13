@@ -21,7 +21,7 @@
                 "kind": "data",
                 "year": "2024Prompt",
                 "xsec": 1.0,
-                "lumi": 109.08,
+                "lumi": 109.95,
                 "shortname": "JetMET",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
