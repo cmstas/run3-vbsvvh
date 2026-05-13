@@ -18,42 +18,90 @@ RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
     return btag_score > btaggingWPMap_Tight.at(year);
 }
 
-// /*
-// ############################################
-// JET MASS SCALE CORRECTIONS
-// ############################################
-// */
+/*
+############################################
+JET MASS SCALE (JMS) AND RESOLUTION (JMR)
+############################################
 
-// RNode applyJMSCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jms, RNode df, std::string variation) { 
-//     auto eval_correction = [cset_jms, variation] (std::string year, float mass) {
-//         if (cset_jms.find(year) == cset_jms.end()) {
-//             return mass;
-//         }
-//         double scaleVal = 1. + 0.05 * cset_jms.at(year).at("JMS")->evaluate({year, variation});
-//         // https://docs.google.com/presentation/d/1C7CqO3Wv3-lYd7vw4IQXq69wmULesTsSniFXXM__ReU
-//         return mass * scaleVal;
-//     };
-//     return df.Redefine("Hbbmass", eval_correction, {"year", "GHiggs_mass"})
-//              .Redefine("Wjetmass", eval_correction, {"year", "GW_mass"});
-// }
+Parametrization is applied on `FatJet_msoftdrop`:
 
-// /*
-// ############################################
-// JET MASS RESOLUTION CORRECTIONS
-// ############################################
-// */
+  JMS  : msd' = max(0, msd + Δshift[year])               // additive shift in GeV
+  JMR  : matched   →  msd' = max(0, m_gen + f * (msd - m_gen))   
+         unmatched →  msd' = max(0, msd * (1 + √max(f²-1,0) * σrel * N(0,1)))
+                      // σrel = 1.0 is a placeholder; replace with the per-era msd
+                      // resolution when JMR is derived. Branch is dead while f == 1.0.
 
-// RNode applyJMRCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jmr, RNode df, std::string variation) {
-//     auto eval_correction = [cset_jmr, variation] (std::string year, float mass, unsigned int lumi, unsigned long long event) {
-//         if (cset_jmr.find(year) == cset_jmr.end()) {
-//             return mass;
-//         }
-//         TRandom3 rnd((lumi << 10) + event);
-//         return rnd.Gaus(1, 0.1 * cset_jmr.at(year).at("JMR")->evaluate({year, variation})) * mass;
-//     };
-//     return df.Redefine("Hbbmass", eval_correction, {"year", "GHiggs_mass", "luminosityBlock", "event"})
-//              .Redefine("Wjetmass", eval_correction, {"year", "GW_mass", "luminosityBlock", "event"});
-// }
+Current factors are placeholders (Δshift = 0 GeV and f = 1.0), both reduce to the identity.
+Replace with the calibration outputs once derived. 
+TO DO: add systematic up/down, add a `variation` argument and pass ±1σ shift/scale instead of the central.
+
+*/
+
+RNode applyJetMassScale(const std::unordered_map<std::string, float>& jms_shift, RNode df) {
+    auto eval = [jms_shift](std::string year, RVec<float> msd) {
+        auto it = jms_shift.find(year);
+        if (it == jms_shift.end()) {
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.insert(year).second) {
+                std::cout << "Warning: JMS shift not defined for year " << year
+                          << ". Skipping." << std::endl;
+            }
+            return msd;
+        }
+        const float shift = it->second;
+        if (shift == 0.0f || msd.empty()) return msd;
+        // apply jet mass cale shift to every fat jet's soft-drop mass in the event
+        for (auto& m : msd) m = std::max(0.0f, m + shift);
+        return msd;
+    };
+    return df.Redefine("FatJet_msoftdrop", eval, {"year", "FatJet_msoftdrop"});
+}
+
+RNode applyJetMassResolution(const std::unordered_map<std::string, float>& jmr_factor,
+                             const std::unordered_map<std::string, float>& jmr_sigma_rel,
+                             RNode df) {
+    auto eval = [jmr_factor, jmr_sigma_rel](std::string year,
+                             RVec<float> msd,
+                             RVec<int> genJet_idx, RVec<float> genJet_mass,
+                             unsigned int lumi, unsigned long long event) {
+        auto it = jmr_factor.find(year);
+        if (it == jmr_factor.end()) {
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.insert(year).second) {
+                std::cout << "Warning: JMR factor not defined for year " << year
+                          << ". Skipping." << std::endl;
+            }
+            return msd;
+        }
+        const float f = it->second;
+        if (f == 1.0f || msd.empty()) return msd;
+
+        const float widen = std::sqrt(std::max(f * f - 1.0f, 0.0f));
+        // sigma_rel = relative msoftdrop resolution σ(msd)/msd, used by the unmatched
+        // stochastic branch. Per-era placeholder maps jetMassResolution_sigmaRel_central
+        // in corrections.h; replace with the value from the same calibration fit as
+        // jmr_factor. Falls back to 1.0 if the year is missing from the map.
+        auto sr_it = jmr_sigma_rel.find(year);
+        const float sigma_rel = (sr_it != jmr_sigma_rel.end()) ? sr_it->second : 1.0f;
+        TRandom3 rng((static_cast<unsigned long long>(lumi) << 10) ^ event);
+        for (size_t i = 0; i < msd.size(); ++i) {
+            const bool matched = (genJet_idx[i] >= 0
+                                  && genJet_idx[i] < static_cast<int>(genJet_mass.size()));
+            if (matched) {
+                const float m_gen = genJet_mass[genJet_idx[i]];
+                msd[i] = std::max(0.0f, m_gen + f * (msd[i] - m_gen));
+            } else {
+                const float kick = static_cast<float>(rng.Gaus(0.0, 1.0));
+                msd[i] = std::max(0.0f, msd[i] * (1.0f + widen * sigma_rel * kick));
+            }
+        }
+        return msd;
+    };
+    return df.Redefine("FatJet_msoftdrop", eval,
+                       {"year", "FatJet_msoftdrop",
+                        "FatJet_genJetAK8Idx", "GenJetAK8_mass",
+                        "luminosityBlock", "event"});
+}
 
 /*
 ############################################
@@ -133,6 +181,7 @@ RNode applyMETUnclusteredCorrections(RNode df, std::string variation) {
                 .Define("_MET_uncert_dy", "met_pt * TMath::Sin(met_phi) + MET_MetUnclustEnUpDeltaY")
                 .Redefine("met_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
     }
+    
     else if (variation == "down") {
         return df.Define("_MET_uncert_dx", "met_pt * TMath::Cos(met_phi) - MET_MetUnclustEnUpDeltaX")
                 .Define("_MET_uncert_dy", "met_pt * TMath::Sin(met_phi) - MET_MetUnclustEnUpDeltaY")
@@ -143,149 +192,493 @@ RNode applyMETUnclusteredCorrections(RNode df, std::string variation) {
 
 /*
 ############################################
-JET ENERGY CORRECTIONS
+JET ENERGY CORRECTIONS — nominal 
 ############################################
+
+Recipe (per AK4 jet, year-aware):
+  pt_raw   = (1 - Jet_rawFactor) * Jet_pt     // undo NanoAOD JEC
+  mass_raw = (1 - Jet_rawFactor) * Jet_mass
+
+  factor   = compound(Jet_area, Jet_eta, pt_raw, rho [, run])
+             // compound = L1FastJet * L2Relative * L3Absolute (* L2L3Residual for DATA),
+             // with `inputs_update=[JetPt]` so each stage feeds the next its updated pt.
+  pt_new   = pt_raw   * factor
+  mass_new = mass_raw * factor
+
+Type-I MET is rebuilt on top of the NanoAOD baseline:
+  met_x_new = met_x_old + sum_jets (pt_NanoAOD - pt_new) * cos(phi)
+  met_y_new = met_y_old + sum_jets (pt_NanoAOD - pt_new) * sin(phi)
+where the sum runs over jets with pt_new > 15 GeV and (neEmEF + chEmEF) < 0.9.
+FIXME: this needs to be updated to the new recommendation: https://indico.cern.ch/event/1644923/contributions/6916115/attachments/3211593/5720863/260202_JMEGeneral_Type1METWithNano_Nurfikri.pdf
+
+NanoAOD branches consumed:
+  Jet_pt, Jet_mass, Jet_eta, Jet_phi, Jet_area, Jet_rawFactor, Jet_neEmEF, Jet_chEmEF,
+  fixedGridRhoFastjetAll, run, year
 */
 
-RNode applyJetEnergyCorrections(std::unordered_map<std::string, correction::CorrectionSet> cset_jerc, std::unordered_map<std::string, std::string> jec_prefix_map, std::unordered_map<std::string, std::string> jec_suffix_map, RNode df, std::string JEC_type, std::string variation) {
-    auto eval_correction = [cset_jerc, jec_prefix_map, jec_suffix_map, JEC_type, variation] (std::string year, RVec<float> pt, RVec<float> eta, RVec<float> var) {
-        RVec<float> jec_factors;
+namespace {
+    inline std::string makeCompoundJECName(const std::string& mc_prefix,
+                                           const std::string& algo,
+                                           bool isData) {
+        // jec_prefix_map values end in "_MC" by convention; replace with "_DATA" for data.
+        std::string base = mc_prefix;
+        const std::string mc_tag = "_MC";
+        // check base ends with "_MC" and chop those last 3 characters off
+        if (base.size() >= mc_tag.size() &&
+            base.compare(base.size() - mc_tag.size(), mc_tag.size(), mc_tag) == 0) {
+            base.resize(base.size() - mc_tag.size());
+        }
+        return base + (isData ? "_DATA" : "_MC") + "_L1L2L3Res_" + algo;
+    }
+}
 
-        if (var.size() == 0) {
-            return var;
-        }
-        
-        if (cset_jerc.find(year) == cset_jerc.end()) {
+RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                RNode df, bool isData) {
+
+    auto compute_factor = [cset_jerc, jec_prefix_map, jec_suffix_map, isData](
+            std::string year,
+            RVec<float> pt, RVec<float> eta, RVec<float> area, RVec<float> rawFactor,
+            float rho, unsigned int run) {
+
+        RVec<float> factor(pt.size(), 1.0f);
+        if (pt.empty()) return factor;
+
+        auto cs_it = cset_jerc.find(year);
+        auto pf_it = jec_prefix_map.find(year);
+        auto sf_it = jec_suffix_map.find(year);
+        if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
             static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: JEC correction set for year " << year << " not found. Skipping JEC corrections." << std::endl;
-                warned_years.insert(year);
+            if (warned_years.insert(year).second) {
+                std::cout << "Warning: JEC inputs missing for year " << year
+                          << ". Skipping nominal JEC re-application." << std::endl;
             }
-            return var;
-        }
-        
-        if (jec_prefix_map.find(year) == jec_prefix_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: JEC prefix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
-                warned_years.insert(year);
-            }
-            return var;
-        }
-        
-        if (jec_suffix_map.find(year) == jec_suffix_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: JEC suffix map for year " << year << " not found. Skipping JEC corrections." << std::endl;
-                warned_years.insert(year);
-            }
-            return var;
+            return factor;
         }
 
-        // Construct JEC correction name based on year
-        std::string JEC_name = jec_prefix_map.at(year) + "_" + JEC_type + "_" + jec_suffix_map.at(year);
-
-        for (size_t i = 0; i < var.size(); i++) {
-            if (variation == "up") {
-                jec_factors.push_back(var[i] * (1 + cset_jerc.at(year).at(JEC_name)->evaluate({eta[i], pt[i]})));
+        const std::string compound_name = makeCompoundJECName(pf_it->second, sf_it->second, isData);
+        std::shared_ptr<const correction::CompoundCorrection> compound;
+        try {
+            compound = cs_it->second.compound().at(compound_name);
+        } catch (const std::out_of_range&) {
+            static std::unordered_set<std::string> warned_keys;
+            if (warned_keys.insert(year + "/" + compound_name).second) {
+                std::cout << "Warning: compound JEC '" << compound_name
+                          << "' not found for year " << year
+                          << ". Skipping nominal JEC re-application." << std::endl;
             }
-            else if (variation == "down") {
-                jec_factors.push_back(var[i] * (1 - cset_jerc.at(year).at(JEC_name)->evaluate({eta[i], pt[i]})));
-            }
-            else {
-                return var;
-            }
+            return factor;
         }
-        return jec_factors;
+
+        for (size_t i = 0; i < pt.size(); ++i) {
+            float pt_raw = (1.0f - rawFactor[i]) * pt[i];
+            double sf = 1.0;
+            try {
+                if (isData) {
+                    sf = compound->evaluate({(double)area[i], (double)eta[i],
+                                             (double)pt_raw,  (double)rho,
+                                             (double)run});
+                } else {
+                    sf = compound->evaluate({(double)area[i], (double)eta[i],
+                                             (double)pt_raw,  (double)rho});
+                }
+            } catch (const std::exception& e) {
+                sf = 1.0;
+            }
+            // Multiplicative factor on the *NanoAOD* pt: Jet_pt_new = Jet_pt * factor
+            //   = Jet_pt * (pt_raw / Jet_pt) * sf = (1 - rawFactor) * sf
+            factor[i] = (1.0f - rawFactor[i]) * static_cast<float>(sf);
+        }
+        return factor;
     };
-    
-    auto df_jetcorr = df.Redefine("Jet_pt", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_pt"})
-                        .Redefine("Jet_mass", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_mass"})
-                        .Redefine("FatJet_pt", eval_correction, {"year", "FatJet_pt", "FatJet_eta", "FatJet_pt"})
-                        .Redefine("FatJet_mass", eval_correction, {"year", "FatJet_pt", "FatJet_eta", "FatJet_mass"});
 
-    auto correctmet = [JEC_type](std::string year, RVec<float> Jet_pt, RVec<float> jet_phi, RVec<float> jet_pt, float met_pt, float met_phi) {
-        if (Jet_pt.empty()) {
-            return met_pt;
+    auto met_propagate = [](RVec<float> pt_old, RVec<float> phi,
+                            RVec<float> factor, RVec<float> neEmEF, RVec<float> chEmEF,
+                            float met_pt, float met_phi) {
+        // Type-I MET propagation: replace the contribution of NanoAOD-corrected jets
+        // (pt_old) with re-corrected jets (pt_new = pt_old * factor) in the MET sum.
+        double px = met_pt * std::cos(met_phi);
+        double py = met_pt * std::sin(met_phi);
+        for (size_t i = 0; i < pt_old.size(); ++i) {
+            const float pt_new = pt_old[i] * factor[i];
+            if (pt_new <= 15.0f) continue;                       // Type-I threshold
+            if ((neEmEF[i] + chEmEF[i]) > 0.9f) continue;        // EM-fraction veto
+            const double dpt = static_cast<double>(pt_old[i] - pt_new);
+            px += dpt * std::cos(phi[i]);
+            py += dpt * std::sin(phi[i]);
         }
-        float px = met_pt * TMath::Cos(met_phi);
-        float py = met_pt * TMath::Sin(met_phi);
-        for (size_t i = 0; i < Jet_pt.size(); i++) {
-            px += (Jet_pt[i] - jet_pt[i]) * TMath::Cos(jet_phi[i]);
-            py += (Jet_pt[i] - jet_pt[i]) * TMath::Sin(jet_phi[i]);
-        }
-        return (float)TMath::Sqrt(px * px + py * py);
+        return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
+                              static_cast<float>(std::atan2(py, px)));
     };
 
-    return df_jetcorr.Redefine("met_pt", correctmet, {"year", "Jet_pt", "Jet_phi", "Jet_pt", "met_pt", "met_phi"});
+    return df
+        .Define("Jet_jecFactor", compute_factor,
+                {"year", "Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor",
+                 "fixedGridRhoFastjetAll", "run"})
+        .Define("_jec_metProp", met_propagate,
+                {"Jet_pt", "Jet_phi", "Jet_jecFactor",
+                 "Jet_neEmEF", "Jet_chEmEF", "met_pt", "met_phi"})
+        .Redefine("met_pt",   "_jec_metProp.first")
+        .Redefine("met_phi",  "_jec_metProp.second")
+        .Redefine("Jet_pt",   "Jet_pt   * Jet_jecFactor")
+        .Redefine("Jet_mass", "Jet_mass * Jet_jecFactor")
+        // Reset rawFactor so downstream callers see a self-consistent (pt, mass, rawFactor) triple.
+        // pt_new * (1 - rawFactor_new) == pt_raw  =>  rawFactor_new = 1 - (1-rawFactor_old)/Jet_jecFactor
+        .Redefine("Jet_rawFactor",
+                  [](RVec<float> rawFactor, RVec<float> factor) {
+                      RVec<float> out(rawFactor.size());
+                      for (size_t i = 0; i < rawFactor.size(); ++i) {
+                          out[i] = (factor[i] > 0.f)
+                                       ? 1.0f - (1.0f - rawFactor[i]) / factor[i]
+                                       : rawFactor[i];
+                      }
+                      return out;
+                  },
+                  {"Jet_rawFactor", "Jet_jecFactor"});
 }
 
 /*
 ############################################
-JET ENERGY RESOLUTION
+FAT JET (AK8) ENERGY CORRECTIONS — nominal 
 ############################################
+
+Same recipe as AK4 (raw recovery + L1L2L3Res compound from fatJet_jerc.json.gz, with the
+AK8PFPuppi algo). Operates on FatJet_* branches. Does NOT propagate to MET — PuppiMET is
+built from AK4 jets only.
 */
 
-RNode applyJetEnergyResolution(std::unordered_map<std::string, correction::CorrectionSet> cset_jerc, std::unordered_map<std::string, correction::CorrectionSet> cset_jer_smear, std::unordered_map<std::string, std::string> jer_res_map, std::unordered_map<std::string, std::string> jer_sf_map, RNode df, std::string variation) {
-    auto eval_correction = [cset_jerc, cset_jer_smear, jer_res_map, jer_sf_map, variation] (std::string year, RVec<float> pt, RVec<float> eta, RVec<int> genJet_idx, RVec<float> genJet_pt, float rho, unsigned long long event, RVec<float> var) {
-        RVec<float> jer_factors;
-        std::string vary = (variation == "nominal") ? "nom" : variation;
-        
-        if (var.size() == 0) {
-            return var;
-        }
-        
-        if (cset_jerc.find(year) == cset_jerc.end()) {
+RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                   RNode df, bool isData) {
+
+    auto compute_factor = [cset_jerc, jec_prefix_map, jec_suffix_map, isData](
+            std::string year,
+            RVec<float> pt, RVec<float> eta, RVec<float> area, RVec<float> rawFactor,
+            float rho, unsigned int run) {
+
+        RVec<float> factor(pt.size(), 1.0f);
+        if (pt.empty()) return factor;
+
+        auto cs_it = cset_jerc.find(year);
+        auto pf_it = jec_prefix_map.find(year);
+        auto sf_it = jec_suffix_map.find(year);
+        if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
             static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: JER correction set for year " << year << " not found. Skipping JER corrections." << std::endl;
-                warned_years.insert(year);
+            if (warned_years.insert(year).second) {
+                std::cout << "Warning: AK8 JEC inputs missing for year " << year
+                          << ". Skipping nominal AK8 JEC re-application." << std::endl;
             }
-            return var;
-        }
-        
-        if (cset_jer_smear.find("jer_smear") == cset_jer_smear.end()) {
-            static bool warned = false;
-            if (!warned) {
-                std::cout << "Warning: JER smear correction set not found. Skipping JER corrections." << std::endl;
-                warned = true;
-            }
-            return var;
-        }
-        
-        if (jer_res_map.find(year) == jer_res_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: JER resolution map for year " << year << " not found. Skipping JER corrections." << std::endl;
-                warned_years.insert(year);
-            }
-            return var;
-        }
-        
-        if (jer_sf_map.find(year) == jer_sf_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: JER scale factor map for year " << year << " not found. Skipping JER corrections." << std::endl;
-                warned_years.insert(year);
-            }
-            return var;
+            return factor;
         }
 
-        std::string jer_res_name = jer_res_map.at(year);
-        std::string jer_sf_name = jer_sf_map.at(year);
-
-        for (size_t i = 0; i < var.size(); i++) {
-            float genjetpt = genJet_idx[i] >= 0 ? genJet_pt[genJet_idx[i]] : -1;
-            float jer = cset_jerc.at(year).at(jer_res_name)->evaluate({eta[i], pt[i], rho});
-            float jer_sf = cset_jerc.at(year).at(jer_sf_name)->evaluate({eta[i], vary});
-            jer_factors.push_back(var[i] * cset_jer_smear.at("jer_smear").at("JERSmear")->evaluate({pt[i], eta[i], genjetpt, rho, (int)event, jer, jer_sf}));
+        const std::string compound_name = makeCompoundJECName(pf_it->second, sf_it->second, isData);
+        std::shared_ptr<const correction::CompoundCorrection> compound;
+        try {
+            compound = cs_it->second.compound().at(compound_name);
+        } catch (const std::out_of_range&) {
+            static std::unordered_set<std::string> warned_keys;
+            if (warned_keys.insert(year + "/" + compound_name).second) {
+                std::cout << "Warning: AK8 compound JEC '" << compound_name
+                          << "' not found for year " << year
+                          << ". Skipping nominal AK8 JEC re-application." << std::endl;
+            }
+            return factor;
         }
-        
-        return jer_factors;
+
+        for (size_t i = 0; i < pt.size(); ++i) {
+            float pt_raw = (1.0f - rawFactor[i]) * pt[i];
+            double sf = 1.0;
+            try {
+                if (isData) {
+                    sf = compound->evaluate({(double)area[i], (double)eta[i],
+                                             (double)pt_raw,  (double)rho,
+                                             (double)run});
+                } else {
+                    sf = compound->evaluate({(double)area[i], (double)eta[i],
+                                             (double)pt_raw,  (double)rho});
+                }
+            } catch (const std::exception&) {
+                sf = 1.0;
+            }
+            factor[i] = (1.0f - rawFactor[i]) * static_cast<float>(sf);
+        }
+        return factor;
     };
-    
-    return df.Redefine("Jet_pt", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_pt"})
-            .Redefine("Jet_mass", eval_correction, {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt", "fixedGridRhoFastjetAll", "event", "Jet_mass"});
+
+    return df
+        .Define("FatJet_jecFactor", compute_factor,
+                {"year", "FatJet_pt", "FatJet_eta", "FatJet_area", "FatJet_rawFactor",
+                 "fixedGridRhoFastjetAll", "run"})
+        .Redefine("FatJet_pt",   "FatJet_pt   * FatJet_jecFactor")
+        .Redefine("FatJet_mass", "FatJet_mass * FatJet_jecFactor")
+        // Keep FatJet_rawFactor self-consistent against the new pt/mass.
+        .Redefine("FatJet_rawFactor",
+                  [](RVec<float> rawFactor, RVec<float> factor) {
+                      RVec<float> out(rawFactor.size());
+                      for (size_t i = 0; i < rawFactor.size(); ++i) {
+                          out[i] = (factor[i] > 0.f)
+                                       ? 1.0f - (1.0f - rawFactor[i]) / factor[i]
+                                       : rawFactor[i];
+                      }
+                      return out;
+                  },
+                  {"FatJet_rawFactor", "FatJet_jecFactor"});
+}
+
+/*
+############################################
+JET ENERGY SCALE — uncertainty (up/down)
+############################################
+
+Applies a per-source JES uncertainty as a multiplicative shift on top of the nominal
+JEC. Run *after* applyJetEnergyCorrections. `JEC_source` is e.g. "Total",
+"Regrouped_Total", "Regrouped_FlavorQCD", etc. — see jet_jerc.json.gz for available keys.
+*/
+
+RNode applyJetEnergyScaleVariation(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                   RNode df, std::string JEC_source, std::string variation) {
+    if (variation != "up" && variation != "down") return df;
+
+    const float sign = (variation == "up") ? +1.0f : -1.0f;
+
+    auto eval_unc = [cset_jerc, jec_prefix_map, jec_suffix_map, JEC_source, sign](
+            std::string year, RVec<float> pt, RVec<float> eta, RVec<float> var) {
+        if (var.empty()) return var;
+        auto cs_it = cset_jerc.find(year);
+        auto pf_it = jec_prefix_map.find(year);
+        auto sf_it = jec_suffix_map.find(year);
+        if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
+            return var;
+        }
+        const std::string unc_name = pf_it->second + "_" + JEC_source + "_" + sf_it->second;
+        std::shared_ptr<const correction::Correction> unc;
+        try {
+            unc = cs_it->second.at(unc_name);
+        } catch (const std::out_of_range&) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(year + "/" + unc_name).second) {
+                std::cout << "Warning: JEC uncertainty source '" << unc_name
+                          << "' not found for year " << year << "." << std::endl;
+            }
+            return var;
+        }
+        RVec<float> out(var.size());
+        for (size_t i = 0; i < var.size(); ++i) {
+            float u = unc->evaluate({(double)eta[i], (double)pt[i]});
+            out[i] = var[i] * (1.0f + sign * u);
+        }
+        return out;
+    };
+
+    auto met_propagate_var = [](RVec<float> pt_old, RVec<float> pt_new, RVec<float> phi,
+                                RVec<float> neEmEF, RVec<float> chEmEF,
+                                float met_pt, float met_phi) {
+        double px = met_pt * std::cos(met_phi);
+        double py = met_pt * std::sin(met_phi);
+        for (size_t i = 0; i < pt_old.size(); ++i) {
+            if (pt_new[i] <= 15.0f) continue;
+            if ((neEmEF[i] + chEmEF[i]) > 0.9f) continue;
+            const double dpt = static_cast<double>(pt_old[i] - pt_new[i]);
+            px += dpt * std::cos(phi[i]);
+            py += dpt * std::sin(phi[i]);
+        }
+        return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
+                              static_cast<float>(std::atan2(py, px)));
+    };
+
+    return df
+        .Define("_Jet_pt_preJES", "Jet_pt")
+        .Redefine("Jet_pt",   eval_unc, {"year", "Jet_pt", "Jet_eta", "Jet_pt"})
+        .Redefine("Jet_mass", eval_unc, {"year", "Jet_pt", "Jet_eta", "Jet_mass"})
+        .Define("_jes_metProp", met_propagate_var,
+                {"_Jet_pt_preJES", "Jet_pt", "Jet_phi", "Jet_neEmEF", "Jet_chEmEF",
+                 "met_pt", "met_phi"})
+        .Redefine("met_pt",  "_jes_metProp.first")
+        .Redefine("met_phi", "_jes_metProp.second");
+}
+
+/*
+############################################
+JET ENERGY RESOLUTION — hybrid smearing (MC only)
+############################################
+
+Per AK4 jet (using the JEC-corrected pt that this function consumes):
+  res = PtResolution(eta, pt, rho)                        // relative resolution
+  sf  = ScaleFactor(eta, "nom"|"up"|"down")               // data/MC width ratio
+  pt_smear = JERSmear(pt, eta, gen_pt_or_-1, rho, event, res, sf)
+               // hybrid: scaling when |pt - pt_gen| < 3*res*pt and gen-matched (genJetIdx>=0),
+               // stochastic Gaussian otherwise. Always >= 0.
+  pt_new   = pt * pt_smear ; mass_new = mass * pt_smear
+
+Propagates the smearing to met_pt / met_phi via Type-I-style recipe.
+*/
+
+RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                               const std::unordered_map<std::string, correction::CorrectionSet>& cset_jer_smear,
+                               const std::unordered_map<std::string, std::string>& jer_res_map,
+                               const std::unordered_map<std::string, std::string>& jer_sf_map,
+                               RNode df, std::string variation) {
+
+    const std::string vary = (variation == "nominal") ? "nom" : variation;
+
+    auto compute_smear = [cset_jerc, cset_jer_smear, jer_res_map, jer_sf_map, vary](
+            std::string year,
+            RVec<float> pt, RVec<float> eta,
+            RVec<int> genJet_idx, RVec<float> genJet_pt,
+            float rho, unsigned long long event) {
+
+        RVec<float> factor(pt.size(), 1.0f);
+        if (pt.empty()) return factor;
+
+        auto cs_it = cset_jerc.find(year);
+        auto sm_it = cset_jer_smear.find("jer_smear");
+        auto rn_it = jer_res_map.find(year);
+        auto sn_it = jer_sf_map.find(year);
+        if (cs_it == cset_jerc.end() || sm_it == cset_jer_smear.end()
+            || rn_it == jer_res_map.end() || sn_it == jer_sf_map.end()) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(year).second) {
+                std::cout << "Warning: JER inputs missing for year " << year
+                          << ". Skipping JER smearing." << std::endl;
+            }
+            return factor;
+        }
+
+        std::shared_ptr<const correction::Correction> res, sf, smear;
+        try {
+            res   = cs_it->second.at(rn_it->second);
+            sf    = cs_it->second.at(sn_it->second);
+            smear = sm_it->second.at("JERSmear");
+        } catch (const std::out_of_range&) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(year).second) {
+                std::cout << "Warning: JER res/sf/smear key missing for year " << year
+                          << " (res=" << rn_it->second << " sf=" << sn_it->second
+                          << "). Skipping JER smearing." << std::endl;
+            }
+            return factor;
+        }
+
+        for (size_t i = 0; i < pt.size(); ++i) {
+            const float gen_pt = (genJet_idx[i] >= 0 && genJet_idx[i] < (int)genJet_pt.size())
+                                     ? genJet_pt[genJet_idx[i]] : -1.0f;
+            double r  = res->evaluate({(double)eta[i], (double)pt[i], (double)rho});
+            double s  = sf ->evaluate({(double)eta[i], vary});
+            double sm = smear->evaluate({(double)pt[i], (double)eta[i], (double)gen_pt,
+                                         (double)rho, (double)((int)event), r, s});
+            factor[i] = static_cast<float>(sm);
+        }
+        return factor;
+    };
+
+    auto met_propagate_jer = [](RVec<float> pt_pre, RVec<float> factor, RVec<float> phi,
+                                RVec<float> neEmEF, RVec<float> chEmEF,
+                                float met_pt, float met_phi) {
+        double px = met_pt * std::cos(met_phi);
+        double py = met_pt * std::sin(met_phi);
+        for (size_t i = 0; i < pt_pre.size(); ++i) {
+            const float pt_new = pt_pre[i] * factor[i];
+            if (pt_new <= 15.0f) continue;
+            if ((neEmEF[i] + chEmEF[i]) > 0.9f) continue;
+            const double dpt = static_cast<double>(pt_pre[i] - pt_new);
+            px += dpt * std::cos(phi[i]);
+            py += dpt * std::sin(phi[i]);
+        }
+        return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
+                              static_cast<float>(std::atan2(py, px)));
+    };
+
+    return df
+        .Define("Jet_jerFactor", compute_smear,
+                {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt",
+                 "fixedGridRhoFastjetAll", "event"})
+        .Define("_Jet_pt_preJER", "Jet_pt")
+        .Define("_jer_metProp", met_propagate_jer,
+                {"_Jet_pt_preJER", "Jet_jerFactor", "Jet_phi",
+                 "Jet_neEmEF", "Jet_chEmEF", "met_pt", "met_phi"})
+        .Redefine("met_pt",   "_jer_metProp.first")
+        .Redefine("met_phi",  "_jer_metProp.second")
+        .Redefine("Jet_pt",   "Jet_pt   * Jet_jerFactor")
+        .Redefine("Jet_mass", "Jet_mass * Jet_jerFactor");
+}
+
+/*
+############################################
+FAT JET (AK8) ENERGY RESOLUTION — hybrid smearing (MC only)
+############################################
+
+Same recipe as AK4 but reading FatJet_* + GenJetAK8_* and the AK8PFPuppi resolution/SF
+keys. Does NOT propagate to MET.
+*/
+
+RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                  const std::unordered_map<std::string, correction::CorrectionSet>& cset_jer_smear,
+                                  const std::unordered_map<std::string, std::string>& jer_res_map,
+                                  const std::unordered_map<std::string, std::string>& jer_sf_map,
+                                  RNode df, std::string variation) {
+
+    const std::string vary = (variation == "nominal") ? "nom" : variation;
+
+    auto compute_smear = [cset_jerc, cset_jer_smear, jer_res_map, jer_sf_map, vary](
+            std::string year,
+            RVec<float> pt, RVec<float> eta,
+            RVec<int> genJet_idx, RVec<float> genJet_pt,
+            float rho, unsigned long long event) {
+
+        RVec<float> factor(pt.size(), 1.0f);
+        if (pt.empty()) return factor;
+
+        auto cs_it = cset_jerc.find(year);
+        auto sm_it = cset_jer_smear.find("jer_smear");
+        auto rn_it = jer_res_map.find(year);
+        auto sn_it = jer_sf_map.find(year);
+        if (cs_it == cset_jerc.end() || sm_it == cset_jer_smear.end()
+            || rn_it == jer_res_map.end() || sn_it == jer_sf_map.end()) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(year).second) {
+                std::cout << "Warning: AK8 JER inputs missing for year " << year
+                          << ". Skipping AK8 JER smearing." << std::endl;
+            }
+            return factor;
+        }
+
+        std::shared_ptr<const correction::Correction> res, sf, smear;
+        try {
+            res   = cs_it->second.at(rn_it->second);
+            sf    = cs_it->second.at(sn_it->second);
+            smear = sm_it->second.at("JERSmear");
+        } catch (const std::out_of_range&) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(year).second) {
+                std::cout << "Warning: AK8 JER res/sf/smear key missing for year " << year
+                          << " (res=" << rn_it->second << " sf=" << sn_it->second
+                          << "). Skipping AK8 JER smearing." << std::endl;
+            }
+            return factor;
+        }
+
+        for (size_t i = 0; i < pt.size(); ++i) {
+            const float gen_pt = (genJet_idx[i] >= 0 && genJet_idx[i] < (int)genJet_pt.size())
+                                     ? genJet_pt[genJet_idx[i]] : -1.0f;
+            double r  = res->evaluate({(double)eta[i], (double)pt[i], (double)rho});
+            double s  = sf ->evaluate({(double)eta[i], vary});
+            double sm = smear->evaluate({(double)pt[i], (double)eta[i], (double)gen_pt,
+                                         (double)rho, (double)((int)event), r, s});
+            factor[i] = static_cast<float>(sm);
+        }
+        return factor;
+    };
+
+    return df
+        .Define("FatJet_jerFactor", compute_smear,
+                {"year", "FatJet_pt", "FatJet_eta", "FatJet_genJetAK8Idx", "GenJetAK8_pt",
+                 "fixedGridRhoFastjetAll", "event"})
+        .Redefine("FatJet_pt",   "FatJet_pt   * FatJet_jerFactor")
+        .Redefine("FatJet_mass", "FatJet_mass * FatJet_jerFactor");
 }
 
 /*
@@ -433,6 +826,16 @@ GENERAL CORRECTIONS
 
 RNode applyDataCorrections(RNode df_) {
     auto df = applyMETPhiCorrections(df_, true);
+    // Re-apply the latest JEC stack (raw recovery + L1*L2*L3*Residual compound).
+    // AK4 propagates to MET; AK8 does not (PuppiMET only includes AK4 Type-I).
+    df = applyJetEnergyCorrections(jetEnergyCorrections,
+                                   jetEnergyCorrections_JEC_prefix,
+                                   jetEnergyCorrections_JEC_suffix,
+                                   df, /*isData=*/true);
+    df = applyFatJetEnergyCorrections(fatJetEnergyCorrections,
+                                      fatJetEnergyCorrections_JEC_prefix,
+                                      fatJetEnergyCorrections_JEC_suffix,
+                                      df, /*isData=*/true);
     df = HEMCorrection(df, true);
     df = applyElectronScaleAndSmearing(df, true);
     return df;
@@ -440,6 +843,31 @@ RNode applyDataCorrections(RNode df_) {
 
 RNode applyMCCorrections(RNode df_) {
     auto df = applyMETPhiCorrections(df_, false);
+    // Nominal JEC for AK4 and AK8.
+    df = applyJetEnergyCorrections(jetEnergyCorrections,
+                                   jetEnergyCorrections_JEC_prefix,
+                                   jetEnergyCorrections_JEC_suffix,
+                                   df, /*isData=*/false);
+    df = applyFatJetEnergyCorrections(fatJetEnergyCorrections,
+                                      fatJetEnergyCorrections_JEC_prefix,
+                                      fatJetEnergyCorrections_JEC_suffix,
+                                      df, /*isData=*/false);
+    // JER smearing on top of JEC-corrected jets.
+    df = applyJetEnergyResolution(jetEnergyCorrections,
+                                  jetEnergyResolution_smear,
+                                  jetEnergyResolution_JER_res_name,
+                                  jetEnergyResolution_JER_sf_name,
+                                  df, /*variation=*/"nominal");
+    df = applyFatJetEnergyResolution(fatJetEnergyCorrections,
+                                     jetEnergyResolution_smear,
+                                     fatJetEnergyResolution_JER_res_name,
+                                     fatJetEnergyResolution_JER_sf_name,
+                                     df, /*variation=*/"nominal");
+    // JMS / JMR on FatJet_msoftdrop. Currently no-op: centrals are placeholders
+    // (shift = 0 GeV, factor = 1.0). Replace jetMassScale_central / jetMassResolution_central
+    // in corrections.h with the values derived from the per-analysis calibration fit.
+    df = applyJetMassScale(jetMassScale_central, df);
+    df = applyJetMassResolution(jetMassResolution_central, jetMassResolution_sigmaRel_central, df);
     df = HEMCorrection(df, false);
     df = applyElectronScaleAndSmearing(df, false);
     return df;
