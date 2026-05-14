@@ -425,32 +425,52 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
 
 /*
 ############################################
-JET ENERGY SCALE — uncertainty (up/down)
+JET ENERGY SCALE — per-source uncertainties (up/down) into suffixed columns
 ############################################
 
-Applies a per-source JES uncertainty as a multiplicative shift on top of the nominal
-JEC. Run *after* applyJetEnergyCorrections. `JEC_source` is e.g. "Total",
-"Regrouped_Total", "Regrouped_FlavorQCD", etc. — see jet_jerc.json.gz for available keys.
+Per-source JES uncertainty applied as a multiplicative shift on top of the nominal JEC.
+Run *after* applyJetEnergyCorrections / applyFatJetEnergyCorrections. Each call writes
+one set of suffixed columns; the driver applyJESVariations loops over the 11 Regrouped V2
+sources × {Up, Dn} = 22 variations.
+
+  AK4: Jet_pt_<sfx>, Jet_mass_<sfx>, met_pt_<sfx>, met_phi_<sfx>   (Type-I MET propagated)
+  AK8: FatJet_pt_<sfx>, FatJet_mass_<sfx>                          (no MET propagation;
+                                                                    FatJet_msoftdrop has
+                                                                    its own JEC recipe)
+  <sfx> = "jes" + column_label + direction   e.g. "jesAbsoluteUp", "jesAbsoluteYearDn"
+
+Source list lives in kJESRegroupedSources below. Lookup keys in jet_jerc.json.gz are
+  <prefix>_<base_source>[_<year_token>]_<suffix>
+where year_token comes from jetEnergyCorrections_yearToken when the source is year-
+decorrelated (e.g. Regrouped_Absolute_2018 vs the year-correlated Regrouped_Absolute).
 */
 
-RNode applyJetEnergyScaleVariation(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
-                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
-                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
-                                   RNode df, std::string JEC_source, std::string variation) {
-    if (variation != "up" && variation != "down") return df;
-
-    const float sign = (variation == "up") ? +1.0f : -1.0f;
-
-    auto eval_unc = [cset_jerc, jec_prefix_map, jec_suffix_map, JEC_source, sign](
-            std::string year, RVec<float> pt, RVec<float> eta, RVec<float> var) {
-        if (var.empty()) return var;
+namespace {
+// Returns a closure giving per-jet shift factors (1 + sign*u) for use with RDF::Define.
+auto makeJESShiftEvaluator(
+        const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+        const std::unordered_map<std::string, std::string>& jec_prefix_map,
+        const std::unordered_map<std::string, std::string>& jec_suffix_map,
+        const std::unordered_map<std::string, std::string>& year_token_map,
+        std::string base_source, bool yearDecorrelated, float sign) {
+    return [cset_jerc, jec_prefix_map, jec_suffix_map, year_token_map,
+            base_source, yearDecorrelated, sign](
+            std::string year, RVec<float> pt, RVec<float> eta) {
+        RVec<float> out(pt.size(), 1.0f);
+        if (pt.empty()) return out;
         auto cs_it = cset_jerc.find(year);
         auto pf_it = jec_prefix_map.find(year);
         auto sf_it = jec_suffix_map.find(year);
         if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
-            return var;
+            return out;
         }
-        const std::string unc_name = pf_it->second + "_" + JEC_source + "_" + sf_it->second;
+        std::string src = base_source;
+        if (yearDecorrelated) {
+            auto yt_it = year_token_map.find(year);
+            if (yt_it == year_token_map.end()) return out;
+            src += "_" + yt_it->second;
+        }
+        const std::string unc_name = pf_it->second + "_" + src + "_" + sf_it->second;
         std::shared_ptr<const correction::Correction> unc;
         try {
             unc = cs_it->second.at(unc_name);
@@ -460,19 +480,22 @@ RNode applyJetEnergyScaleVariation(const std::unordered_map<std::string, correct
                 std::cout << "Warning: JEC uncertainty source '" << unc_name
                           << "' not found for year " << year << "." << std::endl;
             }
-            return var;
+            return out;
         }
-        RVec<float> out(var.size());
-        for (size_t i = 0; i < var.size(); ++i) {
+        for (size_t i = 0; i < pt.size(); ++i) {
             float u = unc->evaluate({(double)eta[i], (double)pt[i]});
-            out[i] = var[i] * (1.0f + sign * u);
+            out[i] = 1.0f + sign * u;
         }
         return out;
     };
+}
 
-    auto met_propagate_var = [](RVec<float> pt_old, RVec<float> pt_new, RVec<float> phi,
-                                RVec<float> neEmEF, RVec<float> chEmEF,
-                                float met_pt, float met_phi) {
+// Type-I-style MET shift: rebuilds (met_pt, met_phi) from (pt_old - pt_new) per AK4 jet,
+// applying the standard >15 GeV / emf<0.9 filter.
+auto jesMetPropagator() {
+    return [](RVec<float> pt_old, RVec<float> pt_new, RVec<float> phi,
+              RVec<float> neEmEF, RVec<float> chEmEF,
+              float met_pt, float met_phi) {
         double px = met_pt * std::cos(met_phi);
         double py = met_pt * std::sin(met_phi);
         for (size_t i = 0; i < pt_old.size(); ++i) {
@@ -485,16 +508,113 @@ RNode applyJetEnergyScaleVariation(const std::unordered_map<std::string, correct
         return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
                               static_cast<float>(std::atan2(py, px)));
     };
+}
+} // anonymous namespace
+
+RNode defineAK4JESVariation(
+        const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+        const std::unordered_map<std::string, std::string>& jec_prefix_map,
+        const std::unordered_map<std::string, std::string>& jec_suffix_map,
+        const std::unordered_map<std::string, std::string>& year_token_map,
+        RNode df, const std::string& column_label, const std::string& base_source,
+        bool yearDecorrelated, const std::string& direction) {
+    if (direction != "Up" && direction != "Dn") return df;
+    const float sign = (direction == "Up") ? +1.0f : -1.0f;
+    const std::string sfx = "jes" + column_label + direction;
+    const std::string shiftCol = "_Jet_shift_" + sfx;
+    const std::string metPropCol = "_metProp_" + sfx;
+
+    auto eval_factor = makeJESShiftEvaluator(cset_jerc, jec_prefix_map, jec_suffix_map,
+                                             year_token_map, base_source, yearDecorrelated, sign);
+    auto met_prop = jesMetPropagator();
 
     return df
-        .Define("_Jet_pt_preJES", "Jet_pt")
-        .Redefine("Jet_pt",   eval_unc, {"year", "Jet_pt", "Jet_eta", "Jet_pt"})
-        .Redefine("Jet_mass", eval_unc, {"year", "Jet_pt", "Jet_eta", "Jet_mass"})
-        .Define("_jes_metProp", met_propagate_var,
-                {"_Jet_pt_preJES", "Jet_pt", "Jet_phi", "Jet_neEmEF", "Jet_chEmEF",
+        .Define(shiftCol, eval_factor, {"year", "Jet_pt", "Jet_eta"})
+        .Define("Jet_pt_"   + sfx, "Jet_pt   * " + shiftCol)
+        .Define("Jet_mass_" + sfx, "Jet_mass * " + shiftCol)
+        .Define(metPropCol, met_prop,
+                {"Jet_pt", "Jet_pt_" + sfx, "Jet_phi", "Jet_neEmEF", "Jet_chEmEF",
                  "met_pt", "met_phi"})
-        .Redefine("met_pt",  "_jes_metProp.first")
-        .Redefine("met_phi", "_jes_metProp.second");
+        .Define("met_pt_"  + sfx, [](std::pair<float,float> p){ return p.first;  }, {metPropCol})
+        .Define("met_phi_" + sfx, [](std::pair<float,float> p){ return p.second; }, {metPropCol});
+}
+
+RNode defineFatJetJESVariation(
+        const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+        const std::unordered_map<std::string, std::string>& jec_prefix_map,
+        const std::unordered_map<std::string, std::string>& jec_suffix_map,
+        const std::unordered_map<std::string, std::string>& year_token_map,
+        RNode df, const std::string& column_label, const std::string& base_source,
+        bool yearDecorrelated, const std::string& direction) {
+    if (direction != "Up" && direction != "Dn") return df;
+    const float sign = (direction == "Up") ? +1.0f : -1.0f;
+    const std::string sfx = "jes" + column_label + direction;
+    const std::string shiftCol = "_FatJet_shift_" + sfx;
+
+    auto eval_factor = makeJESShiftEvaluator(cset_jerc, jec_prefix_map, jec_suffix_map,
+                                             year_token_map, base_source, yearDecorrelated, sign);
+
+    return df
+        .Define(shiftCol, eval_factor, {"year", "FatJet_pt", "FatJet_eta"})
+        .Define("FatJet_pt_"   + sfx, "FatJet_pt   * " + shiftCol)
+        .Define("FatJet_mass_" + sfx, "FatJet_mass * " + shiftCol);
+}
+
+namespace {
+struct JESSourceSpec {
+    const char* label;          // column-name suffix, e.g. "Absolute" or "AbsoluteYear"
+    const char* base_source;    // JEC source key root, e.g. "Regrouped_Absolute"
+    bool yearDecorrelated;      // append _<year_token> at lookup time?
+};
+
+// 11 Regrouped V2 sources — confirmed against jet_jerc.json.gz / fatJet_jerc.json.gz
+// for all 9 campaigns on 2026-05-14. JME-POG standard set; combine treats the *_Year
+// entries as uncorrelated across years (handled downstream via the `year` hist axis).
+static const std::vector<JESSourceSpec> kJESRegroupedSources = {
+    {"Absolute",            "Regrouped_Absolute",       false},
+    {"BBEC1",               "Regrouped_BBEC1",          false},
+    {"EC2",                 "Regrouped_EC2",            false},
+    {"HF",                  "Regrouped_HF",             false},
+    {"RelativeBal",         "Regrouped_RelativeBal",    false},
+    {"FlavorQCD",           "Regrouped_FlavorQCD",      false},
+    {"AbsoluteYear",        "Regrouped_Absolute",       true},
+    {"BBEC1Year",           "Regrouped_BBEC1",          true},
+    {"EC2Year",             "Regrouped_EC2",            true},
+    {"HFYear",              "Regrouped_HF",             true},
+    {"RelativeSampleYear",  "Regrouped_RelativeSample", true},
+};
+static const std::array<const char*, 2> kJESDirections = {"Up", "Dn"};
+} // anonymous namespace
+
+RNode applyJESVariations(RNode df) {
+    for (const auto& src : kJESRegroupedSources) {
+        for (const char* dir : kJESDirections) {
+            df = defineAK4JESVariation(
+                jetEnergyCorrections,
+                jetEnergyCorrections_JEC_prefix,
+                jetEnergyCorrections_JEC_suffix,
+                jetEnergyCorrections_yearToken,
+                df, src.label, src.base_source, src.yearDecorrelated, dir);
+            df = defineFatJetJESVariation(
+                fatJetEnergyCorrections,
+                fatJetEnergyCorrections_JEC_prefix,
+                fatJetEnergyCorrections_JEC_suffix,
+                jetEnergyCorrections_yearToken,
+                df, src.label, src.base_source, src.yearDecorrelated, dir);
+        }
+    }
+    return df;
+}
+
+std::vector<std::string> jesVariationSuffixes() {
+    std::vector<std::string> out;
+    out.reserve(kJESRegroupedSources.size() * kJESDirections.size());
+    for (const auto& src : kJESRegroupedSources) {
+        for (const char* dir : kJESDirections) {
+            out.push_back(std::string("jes") + src.label + dir);
+        }
+    }
+    return out;
 }
 
 /*
@@ -863,6 +983,9 @@ RNode applyMCCorrections(RNode df_) {
                                      fatJetEnergyResolution_JER_res_name,
                                      fatJetEnergyResolution_JER_sf_name,
                                      df, /*variation=*/"nominal");
+    // JES uncertainties — 11 Regrouped V2 sources × {Up, Dn} as suffixed branches.
+    // Must run after the nominal JEC+JER so the shift sits on top of the corrected baseline.
+    df = applyJESVariations(df);
     // JMS / JMR on FatJet_msoftdrop. Currently no-op: centrals are placeholders
     // (shift = 0 GeV, factor = 1.0). Replace jetMassScale_central / jetMassResolution_central
     // in corrections.h with the values derived from the per-analysis calibration fit.
