@@ -22,6 +22,31 @@ inline std::string ak8GoodJetSelectionExpr(const std::string& ptCol) {
            "FatJet_msoftdrop > 40 && "
            "FatJet_jetId > 0";
 }
+
+// Per-variation channel-pass-flag generation. Each channel filter that depends on a
+// jet-multiplicity cut emits a boolean per event for each variation v ∈ {nom} ∪
+// jesVariationSuffixes() — passes_<channel>_<v> — then the channel filter is OR over
+// those flags. This keeps events that pass the channel under ANY variation, which is
+// the only way a single output file can carry per-variation histograms downstream.
+//
+// `expr_for(sfx)` returns the full pass condition for variation `sfx`. sfx == "" means
+// nominal; the lambda should return the nominal condition string in that case.
+template <typename F>
+RNode definePerVariationPassFlags(RNode df, const std::string& channel, F&& expr_for) {
+    df = df.Define("passes_" + channel + "_nom", expr_for(std::string{}));
+    for (const auto& sfx : jesVariationSuffixes()) {
+        df = df.Define("passes_" + channel + "_" + sfx, expr_for(sfx));
+    }
+    return df;
+}
+
+inline std::string orPassExpr(const std::string& channel) {
+    std::string out = "passes_" + channel + "_nom";
+    for (const auto& sfx : jesVariationSuffixes()) {
+        out += " || passes_" + channel + "_" + sfx;
+    }
+    return out;
+}
 } // anonymous namespace
 
 // MET filters
@@ -195,10 +220,15 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
     // attributes (eta, phi, btag, ...) plus per-variation Jet_pt_<sfx> / Jet_mass_<sfx> +
     // Jet_isGood_<sfx>. Defined AFTER applyObjectMaskNewAffix so they don't get
     // nominal-masked into lowercase aliases.
+    //
+    // njet_<sfx> = Sum(Jet_isGood_<sfx>) parallels the nominal `njet` (defined inside
+    // applyObjectMaskNewAffix) and feeds the per-variation channel-pass flags built in
+    // runPreselection.
     if (affix == "jet") {
         for (const auto& sfx : jesVariationSuffixes()) {
             df = df.Define("Jet_isGood_" + sfx,
                            ak4GoodJetSelectionExpr("Jet_pt_" + sfx) + " && !Jet_vetoMap");
+            df = df.Define("njet_" + sfx, "Sum(Jet_isGood_" + sfx + ")");
         }
     }
     return df;
@@ -227,8 +257,16 @@ RNode AK8JetsSelection(RNode df_)
     // Per-variation good-fatjet masks. JES affects FatJet_pt only; FatJet_msoftdrop is
     // unchanged (its own JEC recipe lives in [[softdrop_mass_jec_recipe]]). Defined AFTER
     // applyObjectMaskNewAffix for the same reason as the AK4 case.
+    //
+    // Two parallel count names per variation, mirroring the nominal pair:
+    //   nFatJets (defined above)  ↔  nFatJets_<sfx>   — used by 0lep / 2lep channel filters
+    //   nfatjet  (from applyObjectMaskNewAffix) ↔ nfatjet_<sfx> — used by 1lep channels
+    // Both equal Sum(FatJet_isGood_<sfx>). Defined together to keep the per-variation
+    // pass-flag expressions parallel to the nominal channel-filter expressions.
     for (const auto& sfx : jesVariationSuffixes()) {
         df = df.Define("FatJet_isGood_" + sfx, ak8GoodJetSelectionExpr("FatJet_pt_" + sfx));
+        df = df.Define("nfatjet_"  + sfx, "Sum(FatJet_isGood_" + sfx + ")");
+        df = df.Define("nFatJets_" + sfx, "Sum(FatJet_isGood_" + sfx + ")");
     }
     return df;
 }
@@ -298,11 +336,12 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_0lep0FJ);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 0)",
-            "C2: 0lep_0FJ"
-        );
+        df = definePerVariationPassFlags(df, "0lep_0FJ", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 0)";
+        });
+        df = df.Filter(orPassExpr("0lep_0FJ"), "C2: 0lep_0FJ");
+
         df = df.Define("met_significance", "PuppiMET_significance")
                 .Define("met_uncorrPt", "PuppiMET_pt")
                 .Define("met_uncorrPhi", "PuppiMET_phi");
@@ -317,11 +356,12 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_0lep1FJ);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 1)",
-            "C2: 0lep_1FJ"
-        );
+        df = definePerVariationPassFlags(df, "0lep_1FJ", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 1)";
+        });
+        df = df.Filter(orPassExpr("0lep_1FJ"), "C2: 0lep_1FJ");
+
         df = df.Define("met_significance", "PuppiMET_significance")
                 .Define("met_uncorrPt", "PuppiMET_pt")
                 .Define("met_uncorrPhi", "PuppiMET_phi");
@@ -337,11 +377,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_met);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 1)",
-            "C2: 0lep_1FJ"
-        );
+        df = definePerVariationPassFlags(df, "0lep_1FJ_met", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 1)";
+        });
+        df = df.Filter(orPassExpr("0lep_1FJ_met"), "C2: 0lep_1FJ");
     }
 
     // 0lep_2FJ
@@ -353,11 +393,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 2)",
-            "C2: 0lep_2FJ"
-        );
+        df = definePerVariationPassFlags(df, "0lep_2FJ", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 2)";
+        });
+        df = df.Filter(orPassExpr("0lep_2FJ"), "C2: 0lep_2FJ");
     }
 
     // 0lep_2FJ_met
@@ -369,11 +409,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_met);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 2)",
-            "C2: 0lep_2FJ"
-        );
+        df = definePerVariationPassFlags(df, "0lep_2FJ_met", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 2)";
+        });
+        df = df.Filter(orPassExpr("0lep_2FJ_met"), "C2: 0lep_2FJ");
     }
 
     // 0lep_3FJ
@@ -385,14 +425,17 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 3)",
-            "C2: 0lep_3FJ"
-        );
+        df = definePerVariationPassFlags(df, "0lep_3FJ", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 3)";
+        });
+        df = df.Filter(orPassExpr("0lep_3FJ"), "C2: 0lep_3FJ");
     }
 
-    // 1lep_1FJ
+    // 1lep_1FJ — fatjet + njet cuts must combine inside a single per-variation pass flag,
+    // because OR-ing over two consecutive jet-count filters would mix variations across
+    // different cuts. Cutflow C3 + C4 (separate fatjet/njet steps) collapse into a single
+    // "any-variation jet selection" entry.
     else if (channel == "1lep_1FJ"){
 
         df = VBSTagging(df);
@@ -405,13 +448,16 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
         Cutflow::Add(df, "C2: 1-lepton selection");
-        df = df.Filter("nfatjet == 1");
-        Cutflow::Add(df, "C3: exactly 1 fat jet");
-        df = df.Filter("njet >= 4");
-        Cutflow::Add(df, "C4: at-least 4 jets");
+
+        df = definePerVariationPassFlags(df, "1lep_1FJ", [](const std::string& sfx){
+            const std::string fj = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
+            const std::string j  = sfx.empty() ? "njet"    : "njet_"    + sfx;
+            return "(" + fj + " == 1) && (" + j + " >= 4)";
+        });
+        df = df.Filter(orPassExpr("1lep_1FJ"), "C3: jet selection (any variation)");
     }
 
-    // 1lep_2FJ
+    // 1lep_2FJ — same caveat as 1lep_1FJ (C3 + C4 collapsed).
     else if (channel == "1lep_2FJ"){
 
         df = VBSTagging(df, "jetNoFJClean");
@@ -428,9 +474,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
                        "(lepton_pt[0] > 40)");
                        
         Cutflow::Add(df, "C2: 1-lepton selection");
-        df = df.Filter("nfatjet >= 2");
-        Cutflow::Add(df, "C3: at-least 2 fat jets");
 
+        df = definePerVariationPassFlags(df, "1lep_2FJ", [](const std::string& sfx){
+            const std::string fj = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
+            const std::string j  = sfx.empty() ? "njet"    : "njet_"    + sfx;
+            return "(" + fj + " >= 2) && (" + j + " >= 2)";
+        });
+        df = df.Filter(orPassExpr("1lep_2FJ"), "C3: jet selection (any variation)");
     }
 
     // 2lepSS
@@ -458,11 +508,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
-            "(nFatJets == 1)",
-            "C2: 2lep_1FJ"
-        );
+        df = definePerVariationPassFlags(df, "2lep_1FJ", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose + nElectron_Loose) == 2) && (" + n + " == 1)";
+        });
+        df = df.Filter(orPassExpr("2lep_1FJ"), "C2: 2lep_1FJ");
     }
 
     // 2lep_2FJ
@@ -474,11 +524,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
-            "(nFatJets == 2)",
-            "C2: 2lep_2FJ"
-        );
+        df = definePerVariationPassFlags(df, "2lep_2FJ", [](const std::string& sfx){
+            const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
+            return "((nMuon_Loose + nElectron_Loose) == 2) && (" + n + " == 2)";
+        });
+        df = df.Filter(orPassExpr("2lep_2FJ"), "C2: 2lep_2FJ");
     }
 
 
