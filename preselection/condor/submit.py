@@ -375,10 +375,12 @@ def create_tarball(preselection_dir: Path) -> Path:
 
     spanet_run2_dir = "spanet/run2/v31/"
     spanet_run3_dir = "spanet/v2/"
+    bdt_dir = "bdt/"
     # Items to include in tarball (from preselection dir)
     preselection_items = [
         "Makefile", "src", "include", "corrections",
-        "etc/goldenJson", spanet_run2_dir, spanet_run3_dir
+        "etc/goldenJson", spanet_run2_dir, spanet_run3_dir,
+        bdt_dir
     ]
 
     # Build tar command
