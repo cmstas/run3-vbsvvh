@@ -62,7 +62,7 @@ RNode applyJetMassResolution(const std::unordered_map<std::string, float>& jmr_f
                              RNode df) {
     auto eval = [jmr_factor, jmr_sigma_rel](std::string year,
                              RVec<float> msd,
-                             RVec<int> genJet_idx, RVec<float> genJet_mass,
+                             RVec<short> genJet_idx, RVec<float> genJet_mass,
                              unsigned int lumi, unsigned long long event) {
         auto it = jmr_factor.find(year);
         if (it == jmr_factor.end()) {
@@ -146,9 +146,9 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
                 std::cout << "Warning: MET correction set for year " << year << " not found. Skipping MET phi corrections." << std::endl;
                 warned_years.insert(year);
             }
-            return std::make_pair(pt_corr, phi_corr);
+            return std::make_pair(static_cast<float>(pt_corr), static_cast<float>(phi_corr));
         }
-        
+
         std::string pt_corr_name = isData ? "pt_metphicorr_puppimet_data" : "pt_metphicorr_puppimet_mc";
         std::string phi_corr_name = isData ? "phi_metphicorr_puppimet_data" : "phi_metphicorr_puppimet_mc";
 
@@ -158,7 +158,7 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         pt_corr = metCorrections.at(year).at(pt_corr_name)->evaluate({pt_to_pass, phi, static_cast<double>(npvs), static_cast<double>(run)});
         phi_corr = metCorrections.at(year).at(phi_corr_name)->evaluate({pt_to_pass, phi, static_cast<double>(npvs), static_cast<double>(run)});
         
-        return std::make_pair(pt_corr, phi_corr);
+        return std::make_pair(static_cast<float>(pt_corr), static_cast<float>(phi_corr));
     };
     return df.Define("_MET_phicorr", eval_correction, {"year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
             .Define("met_pt", "_MET_phicorr.first")            
@@ -175,13 +175,13 @@ RNode applyMETUnclusteredCorrections(RNode df, std::string variation) {
     if (variation == "up") {
         return df.Define("_MET_uncert_dx", "met_pt * TMath::Cos(met_phi) + MET_MetUnclustEnUpDeltaX")
                 .Define("_MET_uncert_dy", "met_pt * TMath::Sin(met_phi) + MET_MetUnclustEnUpDeltaY")
-                .Redefine("met_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
+                .Redefine("met_pt", "(float)TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
     }
-    
+
     else if (variation == "down") {
         return df.Define("_MET_uncert_dx", "met_pt * TMath::Cos(met_phi) - MET_MetUnclustEnUpDeltaX")
                 .Define("_MET_uncert_dy", "met_pt * TMath::Sin(met_phi) - MET_MetUnclustEnUpDeltaY")
-                .Redefine("met_pt", "TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
+                .Redefine("met_pt", "(float)TMath::Sqrt(_MET_uncert_dx * _MET_uncert_dx + _MET_uncert_dy * _MET_uncert_dy)");
     }
     return df;
 }
@@ -209,7 +209,7 @@ FIXME: this needs to be updated to the new recommendation: https://indico.cern.c
 
 NanoAOD branches consumed:
   Jet_pt, Jet_mass, Jet_eta, Jet_phi, Jet_area, Jet_rawFactor, Jet_neEmEF, Jet_chEmEF,
-  fixedGridRhoFastjetAll, run, year
+  Rho_fixedGridRhoFastjetAll, run, year
 */
 
 namespace {
@@ -311,7 +311,7 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
     return df
         .Define("Jet_jecFactor", compute_factor,
                 {"year", "Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor",
-                 "fixedGridRhoFastjetAll", "run"})
+                 "Rho_fixedGridRhoFastjetAll", "run"})
         .Define("_jec_metProp", met_propagate,
                 {"Jet_pt", "Jet_phi", "Jet_jecFactor",
                  "Jet_neEmEF", "Jet_chEmEF", "met_pt", "met_phi"})
@@ -406,7 +406,7 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
     return df
         .Define("FatJet_jecFactor", compute_factor,
                 {"year", "FatJet_pt", "FatJet_eta", "FatJet_area", "FatJet_rawFactor",
-                 "fixedGridRhoFastjetAll", "run"})
+                 "Rho_fixedGridRhoFastjetAll", "run"})
         .Redefine("FatJet_pt",   "FatJet_pt   * FatJet_jecFactor")
         .Redefine("FatJet_mass", "FatJet_mass * FatJet_jecFactor")
         // Keep FatJet_rawFactor self-consistent against the new pt/mass.
@@ -524,7 +524,7 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
     auto compute_smear = [cset_jerc, cset_jer_smear, jer_res_map, jer_sf_map, vary](
             std::string year,
             RVec<float> pt, RVec<float> eta,
-            RVec<int> genJet_idx, RVec<float> genJet_pt,
+            RVec<short> genJet_idx, RVec<float> genJet_pt,
             float rho, unsigned long long event) {
 
         RVec<float> factor(pt.size(), 1.0f);
@@ -559,13 +559,15 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
             return factor;
         }
 
+        const bool sf_has_pt = (sf->inputs().size() >= 3);
         for (size_t i = 0; i < pt.size(); ++i) {
             const float gen_pt = (genJet_idx[i] >= 0 && genJet_idx[i] < (int)genJet_pt.size())
                                      ? genJet_pt[genJet_idx[i]] : -1.0f;
             double r  = res->evaluate({(double)eta[i], (double)pt[i], (double)rho});
-            double s  = sf ->evaluate({(double)eta[i], vary});
+            double s  = sf_has_pt ? sf->evaluate({(double)eta[i], (double)pt[i], vary})
+                                  : sf->evaluate({(double)eta[i], vary});
             double sm = smear->evaluate({(double)pt[i], (double)eta[i], (double)gen_pt,
-                                         (double)rho, (double)((int)event), r, s});
+                                         (double)rho, (int)event, r, s});
             factor[i] = static_cast<float>(sm);
         }
         return factor;
@@ -591,7 +593,7 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
     return df
         .Define("Jet_jerFactor", compute_smear,
                 {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt",
-                 "fixedGridRhoFastjetAll", "event"})
+                 "Rho_fixedGridRhoFastjetAll", "event"})
         .Define("_Jet_pt_preJER", "Jet_pt")
         .Define("_jer_metProp", met_propagate_jer,
                 {"_Jet_pt_preJER", "Jet_jerFactor", "Jet_phi",
@@ -622,7 +624,7 @@ RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correcti
     auto compute_smear = [cset_jerc, cset_jer_smear, jer_res_map, jer_sf_map, vary](
             std::string year,
             RVec<float> pt, RVec<float> eta,
-            RVec<int> genJet_idx, RVec<float> genJet_pt,
+            RVec<short> genJet_idx, RVec<float> genJet_pt,
             float rho, unsigned long long event) {
 
         RVec<float> factor(pt.size(), 1.0f);
@@ -657,13 +659,15 @@ RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correcti
             return factor;
         }
 
+        const bool sf_has_pt = (sf->inputs().size() >= 3);
         for (size_t i = 0; i < pt.size(); ++i) {
             const float gen_pt = (genJet_idx[i] >= 0 && genJet_idx[i] < (int)genJet_pt.size())
                                      ? genJet_pt[genJet_idx[i]] : -1.0f;
             double r  = res->evaluate({(double)eta[i], (double)pt[i], (double)rho});
-            double s  = sf ->evaluate({(double)eta[i], vary});
+            double s  = sf_has_pt ? sf->evaluate({(double)eta[i], (double)pt[i], vary})
+                                  : sf->evaluate({(double)eta[i], vary});
             double sm = smear->evaluate({(double)pt[i], (double)eta[i], (double)gen_pt,
-                                         (double)rho, (double)((int)event), r, s});
+                                         (double)rho, (int)event, r, s});
             factor[i] = static_cast<float>(sm);
         }
         return factor;
@@ -672,7 +676,7 @@ RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correcti
     return df
         .Define("FatJet_jerFactor", compute_smear,
                 {"year", "FatJet_pt", "FatJet_eta", "FatJet_genJetAK8Idx", "GenJetAK8_pt",
-                 "fixedGridRhoFastjetAll", "event"})
+                 "Rho_fixedGridRhoFastjetAll", "event"})
         .Redefine("FatJet_pt",   "FatJet_pt   * FatJet_jerFactor")
         .Redefine("FatJet_mass", "FatJet_mass * FatJet_jerFactor");
 }
