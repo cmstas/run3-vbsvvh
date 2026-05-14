@@ -338,9 +338,13 @@ RNode defineFatJetJESVariation(const std::unordered_map<std::string, correction:
 // Driver: emits all 11 Regrouped V2 sources × {Up, Dn} = 22 variations on AK4 + AK8.
 RNode applyJESVariations(RNode df);
 
+// When called with false before any analysis, disables all JES/JER variation branches
+// (jesVariationSuffixes() returns empty, applyJESVariations becomes a no-op). Use
+// --no_systs to activate nominal-only mode.
+void setStoreSysts(bool v);
+
 // Public accessor for the 22 variation suffixes (e.g. "jesAbsoluteUp",
-// "jesRelativeSampleYearDn"). Single source of truth shared with selections.cpp,
-// which uses it to emit per-variation good-jet masks (Jet_isGood_<sfx>).
+// "jesRelativeSampleYearDn"). Returns empty when setStoreSysts(false) has been called.
 std::vector<std::string> jesVariationSuffixes();
 
 // JER smearing (MC only). Propagates to met_pt / met_phi as well.

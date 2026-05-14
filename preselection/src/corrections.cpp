@@ -606,7 +606,11 @@ RNode applyJESVariations(RNode df) {
     return df;
 }
 
+static bool g_storeSysts = true;
+void setStoreSysts(bool v) { g_storeSysts = v; }
+
 std::vector<std::string> jesVariationSuffixes() {
+    if (!g_storeSysts) return {};
     std::vector<std::string> out;
     out.reserve(kJESRegroupedSources.size() * kJESDirections.size());
     for (const auto& src : kJESRegroupedSources) {
@@ -985,7 +989,7 @@ RNode applyMCCorrections(RNode df_) {
                                      df, /*variation=*/"nominal");
     // JES uncertainties — 11 Regrouped V2 sources × {Up, Dn} as suffixed branches.
     // Must run after the nominal JEC+JER so the shift sits on top of the corrected baseline.
-    df = applyJESVariations(df);
+    if (g_storeSysts) df = applyJESVariations(df);
     // JMS / JMR on FatJet_msoftdrop. Currently no-op: centrals are placeholders
     // (shift = 0 GeV, factor = 1.0). Replace jetMassScale_central / jetMassResolution_central
     // in corrections.h with the values derived from the per-analysis calibration fit.
