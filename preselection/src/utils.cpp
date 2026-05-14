@@ -72,6 +72,16 @@ RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::
         if (colName.starts_with(objectName + "_"))
         {
             std::string suffix = colName.substr(objectName.size() + 1);
+            // Skip per-source systematic-variation columns. Those carry their own per-
+            // variation good-jet masks (Jet_isGood_jes*) and downstream coffea reads them
+            // at the all-jet level, so they must NOT be aliased through the nominal mask.
+            if (suffix.find("_jes") != std::string::npos
+                || suffix.find("_jer") != std::string::npos
+                || suffix.find("_jms") != std::string::npos
+                || suffix.find("_jmr") != std::string::npos
+                || suffix.find("_unclust") != std::string::npos) {
+                continue;
+            }
             std::string newCol = newAffix + "_" + suffix;
             df = df.Define(newCol, colName + "[" + maskName + "]");
         }
@@ -374,13 +384,27 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     final_variables.push_back("luminosityBlock");
     final_variables.push_back("event");
 
-    // do not store branches that start with "_" nor raw NanoAOD collections
+    // Drop internal RDF helpers ("_*") and the raw lepton collections (Electron_, Muon_)
+    // — leptons live under the lowercase aliases (electron_, muon_) defined by the
+    // selection step. Capital Jet_* / FatJet_* are kept in full so downstream coffea can
+    // construct per-variation jet collections from the all-jet-level attributes plus the
+    // per-variation good-jet booleans (Jet_isGood_jes*, FatJet_isGood_jes*) defined in
+    // selections.cpp. The lowercase jet_* / fatjet_* nominal-good-jets aliases are also
+    // kept (existing analysis code reads through them).
     for (auto &&ColName : ColNames) {
-        if (ColName.starts_with("_") || ColName.starts_with("Jet") || ColName.starts_with("FatJet_") || ColName.starts_with("Electron_") || ColName.starts_with("Muon_"))
-        {
-            continue;
-        }
+        if (ColName.starts_with("_")) continue;
+        if (ColName.starts_with("Electron_") || ColName.starts_with("Muon_")) continue;
         final_variables.push_back(ColName);
+    }
+
+    // Pull in the raw NanoAOD capital Jet_* / FatJet_* attributes (which are not in the
+    // Defined-columns list above). Keep all of them — option-A storage layout.
+    auto allColNames = df.GetColumnNames();
+    for (auto &&col : allColNames) {
+        if ((col.starts_with("Jet_") || col.starts_with("FatJet_")) &&
+            std::find(final_variables.begin(), final_variables.end(), col) == final_variables.end()) {
+            final_variables.push_back(col);
+        }
     }
 
     // Optionally store HLT branches from input NanoAOD, providing default values
@@ -399,6 +423,8 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     if (isSig) {
         final_variables.push_back("LHEReweightingWeight");
         final_variables.push_back("nLHEReweightingWeight");
+        final_variables.push_back("LHEPdfWeight");
+        final_variables.push_back("nLHEPdfWeight");
     }
 
     // store all columns from input nanoAOD tree

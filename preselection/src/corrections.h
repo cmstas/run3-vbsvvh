@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <array>
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RDFHelpers.hxx"
@@ -234,6 +236,21 @@ const std::unordered_map<std::string, std::string> fatJetEnergyCorrections_JEC_s
     {"2024Prompt", "AK8PFPuppi"}
 };
 
+// Year token embedded in the year-decorrelated Regrouped JEC source names
+// (e.g. "Summer20UL18NanoV15_V1_MC_Regrouped_Absolute_2018_AK4PFPuppi"). Confirmed
+// against jet_jerc.json.gz / fatJet_jerc.json.gz for every campaign on 2026-05-14.
+const std::unordered_map<std::string, std::string> jetEnergyCorrections_yearToken = {
+    {"2016preVFP", "2016APV"},
+    {"2016postVFP", "2016"},
+    {"2017", "2017"},
+    {"2018", "2018"},
+    {"2022Re-recoBCD", "2022"},
+    {"2022Re-recoE+PromptFG", "2022EE"},
+    {"2023PromptC", "2023"},
+    {"2023PromptD", "2023BPix"},
+    {"2024Prompt", "2024"}
+};
+
 // JER tag names 
 // FIXME: 2024 re-uses the 2023BPix JR until a dedicated 2024 release lands
 const std::unordered_map<std::string, std::string> jetEnergyResolution_JER_res_name = {
@@ -293,12 +310,38 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
                                 const std::unordered_map<std::string, std::string>& jec_suffix_map,
                                 RNode df, bool isData);
 
-// JES uncertainty (nominal/up/down). Must run after applyJetEnergyCorrections so the
-// per-source uncertainty is applied on top of the corrected baseline.
-RNode applyJetEnergyScaleVariation(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
-                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
-                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
-                                   RNode df, std::string JEC_source, std::string variation);
+// JES uncertainty — per-source, suffixed-branch output. Must run after the nominal
+// applyJetEnergyCorrections / applyFatJetEnergyCorrections so the shift is applied on top
+// of the corrected baseline. Each call writes one set of suffixed columns; the driver
+// applyJESVariations loops over the 11 Regrouped V2 sources × {Up, Dn}.
+//
+// AK4 helper writes Jet_pt_<suffix>, Jet_mass_<suffix>, met_pt_<suffix>, met_phi_<suffix>
+// (Type-I MET propagated). AK8 helper writes FatJet_pt_<suffix>, FatJet_mass_<suffix>
+// (NOT FatJet_msoftdrop — that has its own JEC recipe) and does NOT propagate to MET
+// because Type-I MET is built from AK4 only.
+//
+// <suffix> = "jes" + column_label + direction, e.g. "jesAbsoluteUp", "jesAbsoluteYearDn".
+RNode defineAK4JESVariation(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                            const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                            const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                            const std::unordered_map<std::string, std::string>& year_token_map,
+                            RNode df, const std::string& column_label, const std::string& base_source,
+                            bool yearDecorrelated, const std::string& direction);
+
+RNode defineFatJetJESVariation(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                               const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                               const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                               const std::unordered_map<std::string, std::string>& year_token_map,
+                               RNode df, const std::string& column_label, const std::string& base_source,
+                               bool yearDecorrelated, const std::string& direction);
+
+// Driver: emits all 11 Regrouped V2 sources × {Up, Dn} = 22 variations on AK4 + AK8.
+RNode applyJESVariations(RNode df);
+
+// Public accessor for the 22 variation suffixes (e.g. "jesAbsoluteUp",
+// "jesRelativeSampleYearDn"). Single source of truth shared with selections.cpp,
+// which uses it to emit per-variation good-jet masks (Jet_isGood_<sfx>).
+std::vector<std::string> jesVariationSuffixes();
 
 // JER smearing (MC only). Propagates to met_pt / met_phi as well.
 RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,

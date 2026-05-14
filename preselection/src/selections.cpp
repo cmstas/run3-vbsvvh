@@ -1,6 +1,29 @@
 #include "selections.h"
 #include "cutflow.h"
 
+namespace {
+// AK4 good-jet selection as a string template, parametrised by the pt-column name.
+// Used for both the nominal mask (Jet_pt) and the per-source JES variations
+// (Jet_pt_jesAbsoluteUp, ...). Must be combined with `&& !Jet_vetoMap` after the veto
+// map has been applied (the nominal path does this via Redefine; the variation loop
+// appends it explicitly).
+inline std::string ak4GoodJetSelectionExpr(const std::string& ptCol) {
+    return "_dR_ak4_lep > 0.4 &&"
+           "((isRun3 && ((" + ptCol + " > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
+                        "(" + ptCol + " > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||"
+           "(isRun2 && " + ptCol + " > 20 && abs(Jet_eta) < 5.0)) &&  "
+           "(Jet_jetId >= 2)";
+}
+
+inline std::string ak8GoodJetSelectionExpr(const std::string& ptCol) {
+    return "_dR_ak8_lep > 0.8 && "
+           + ptCol + " > 250 && "
+           "abs(FatJet_eta) <= 2.5 && "
+           "FatJet_msoftdrop > 40 && "
+           "FatJet_jetId > 0";
+}
+} // anonymous namespace
+
 // MET filters
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
 RNode METFilters(RNode df_) {
@@ -161,6 +184,23 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
 
     df = applyObjectMaskNewAffix(df, "_good_ak4jets", "Jet", affix);
     df = df.Define("ht_" + affix, "Sum(" + affix + "_pt)");
+
+    // Per-variation good-jet masks at the all-jet level (capital). Same selection logic
+    // as nominal but with Jet_pt swapped for the JES-shifted column. Defined once,
+    // alongside the primary FJ-cleaned "jet" collection. NOTE: these use
+    // ak4GoodJetSelectionExpr, which does NOT include the fat-jet cleaning cut applied to
+    // the nominal "jet" collection above -- variation masks preserve the pre-refactor JES
+    // definition (no FJ cleaning). Stored on the snapshot so downstream coffea can
+    // construct per-variation jet collections from the single-copy capital Jet_*
+    // attributes (eta, phi, btag, ...) plus per-variation Jet_pt_<sfx> / Jet_mass_<sfx> +
+    // Jet_isGood_<sfx>. Defined AFTER applyObjectMaskNewAffix so they don't get
+    // nominal-masked into lowercase aliases.
+    if (affix == "jet") {
+        for (const auto& sfx : jesVariationSuffixes()) {
+            df = df.Define("Jet_isGood_" + sfx,
+                           ak4GoodJetSelectionExpr("Jet_pt_" + sfx) + " && !Jet_vetoMap");
+        }
+    }
     return df;
 }
 
@@ -178,16 +218,18 @@ RNode AK4JetProperties(RNode df_)
 RNode AK8JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
-                  .Define("_good_ak8jets", "_dR_ak8_lep > 0.8 && "
-                                           "FatJet_pt > 250 && "
-                                           "abs(FatJet_eta) <= 2.5 && "
-                                           "FatJet_msoftdrop > 40 && "
-                                           "FatJet_jetId > 0")
+                  .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"))
                   .Define("nFatJets", "Sum(_good_ak8jets)");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
 
+    // Per-variation good-fatjet masks. JES affects FatJet_pt only; FatJet_msoftdrop is
+    // unchanged (its own JEC recipe lives in [[softdrop_mass_jec_recipe]]). Defined AFTER
+    // applyObjectMaskNewAffix for the same reason as the AK4 case.
+    for (const auto& sfx : jesVariationSuffixes()) {
+        df = df.Define("FatJet_isGood_" + sfx, ak8GoodJetSelectionExpr("FatJet_pt_" + sfx));
+    }
     return df;
 }
 
