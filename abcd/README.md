@@ -1,5 +1,21 @@
 # VBS ABCDNet
 
+## Environment Setup
+
+Run the following commands to setup the environment for the training
+
+```
+conda create —name abcd
+
+conda activate abcd
+
+conda install python==3.12
+
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+
+pip install pyaml numpy uproot matplotlib scikit-learn tqdm pytorch-lightning tensorboard pandas
+```
+
 ## Config
 
 - `sig_base_path`, `bkg_base_path`
