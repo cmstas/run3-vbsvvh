@@ -6,19 +6,20 @@ import subprocess
 
 # The known analysis channels (key) and which skim they use (value)
 ANA_CHANNELS = {
-        "0lep_0FJ"     : "0lep_0FJ",
-        "0lep_1FJ"     : "0lep_1FJ",
-        "0lep_1FJ_met" : "0lep_1FJ",
-        "0lep_2FJ"     : "0lep_2FJ",
-        "0lep_2FJ_met" : "0lep_2FJ",
-        "0lep_3FJ"     : "0lep_3FJ",
-        "1lep_1FJ"     : "1lep_1FJ",
-        "1lep_2FJ"     : "1lep_1FJ",
+        "0lep_0FJ"      : "0lep_0FJ",
+        "0lep_1FJ"      : "0lep_1FJ",
+        "0lep_1FJ_met"  : "0lep_1FJ",
+        "0lep_2FJ"      : "0lep_2FJ",
+        "0lep_2FJ_met"  : "0lep_2FJ",
+        "0lep_3FJ"      : "0lep_3FJ",
+        "1lep_1FJ"      : "1lep_1FJ",
+        "1lep_2FJ"      : "1lep_1FJ",
         #"2lepSS"       : "2lepSS", # DNE yet
-        "2lep_1FJ"     : "2lep_1FJ", # Analysis channel shared between SF and OF
-        "2lep_2FJ"     : "2lep_2FJ",
-        "3lep"         : "3lep",
-        "4lep"         : "4lep",
+        "2lep_1FJ_onZ"  : "2lep_1FJ",
+        "2lep_1FJ_offZ" : "2lep_1FJ",
+        "2lep_2FJ"      : "2lep_2FJ",
+        "3lep"          : "3lep",
+        "4lep"          : "4lep",
 }
 
 # Merge the input jsons into one dictionary
