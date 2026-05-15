@@ -172,7 +172,7 @@ xsec_dict = {
             "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.03174,
             #---------------------------------------------------
 
-            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.02316, # this needs to be checked again, in xsdb is 23.16 same in genxsec
+            "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.01395, # From twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGGGF_RUN2 and using BR:0.000267
             "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
             "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
             "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
@@ -372,8 +372,8 @@ xsec_dict = {
             "WZTo1L1Nu2Q_4f_TuneCP5_13TeV"                             : 9.119,
             #-----------------------------------------------------------------------------
 
-            # From AN-19-144 (https://cms.cern.ch/iCMS/jsp/db_notes/noteInfo.jsp?cmsnoteid=CMS%20AN-2019/144)
-            "GluGluHToZZTo4L": 0.011814 #gives a different number in xsecgen is around 28
+            # From twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGGGF_RUN2 and using BR:0.000267
+            "GluGluHToZZTo4L": 0.01297 
 
         }
     },
