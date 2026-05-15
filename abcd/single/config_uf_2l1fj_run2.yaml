@@ -1,0 +1,49 @@
+sig_base_path: "/home/users/kmohrman/vbs_vvh/ewkcoffea_for_vbs_vvh/ewkcoffea/analysis/vbs_vvh/histos/"
+bkg_base_path: "/home/users/kmohrman/vbs_vvh/ewkcoffea_for_vbs_vvh/ewkcoffea/analysis/vbs_vvh/histos/"
+data_base_path: "/home/users/kmohrman/vbs_vvh/ewkcoffea_for_vbs_vvh/ewkcoffea/analysis/vbs_vvh/histos/"
+
+sig_path: ["siphontest_2l_r2_sig.root"]
+bkg_path: ["siphontest_2l_r2_dy.root"]
+
+training_features:
+  - fj0_eta: minmax 
+  - fj0_phi: minmax
+  - fj0_pt: log
+  - l0_eta: minmax
+  - l0_phi: minmax
+  - l0_pt: log
+  - l1_eta: minmax
+  - l1_phi: minmax
+  - l1_pt: log
+  - met: log
+  - nbtagsl: minmax
+  - njets: minmax
+
+derived_vars: {}
+auto_include_derived_vars: false
+auto_include_derived_vars_transform: none
+
+extra_vars:
+  - weight
+
+#preselection: "(boosted_h_candidate_score >= 0.1) | (boosted_v_candidate_score >= 0.1)"
+#preselection: "nFatJets == 1"
+
+constraint_var: "mjj_max_any"
+
+batch_size: 8192 #16384
+learning_rate: 0.0001
+n_epochs: 1000
+
+architecture: [64, 32, 16]
+bce_weight: 1.0
+disco_lambda: 10.0
+
+use_batchnorm: true
+dropout: 0.2
+weight_decay: 0.01
+label_smoothing: 0.0
+
+devices: [2]
+
+output: "2l1FJ_NEW_RUN2"

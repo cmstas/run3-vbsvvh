@@ -139,6 +139,9 @@ def _read_root_frame(path, branches, dataset_idx, sample_idx):
     with uproot.open(path) as root_file:
         arrays = root_file["Events"].arrays(branches, library="np")
 
+    if not isinstance(arrays, dict):
+        arrays = {name: arrays[name] for name in arrays.dtype.names}
+
     columns = {}
     n_events = None
     for branch in branches:
@@ -209,11 +212,13 @@ def _evaluate_preselection_mask(data, expression):
     return np.asarray(eval(expression, {"__builtins__": {}, "np": np}, local_dict), dtype=bool)
 
 
+# Also return fitted min/max so they can be saved for inference-time scaling
 def _safe_minmax_scale(values, valid_mask):
     scaled = np.zeros_like(values, dtype=np.float64)
     scaler = MinMaxScaler()
-    scaled[valid_mask] = scaler.fit_transform(values[valid_mask].reshape(-1, 1)).ravel()
-    return scaled
+    scaler.fit(values[valid_mask].reshape(-1, 1))
+    scaled[valid_mask] = scaler.transform(values[valid_mask].reshape(-1, 1)).ravel()
+    return scaled, float(scaler.data_min_[0]), float(scaler.data_max_[0])
 
 
 def load_data(paths, features, extra_vars, num_workers=1):
@@ -257,11 +262,11 @@ def load_data(paths, features, extra_vars, num_workers=1):
     return data
 
 
-def preprocess_data(data, training_features, feature_transforms, constraint_var):
+# If scaler_output_path is provided, fitted min/max per feature are saved to JSON for use at inference time
+def preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=None):
     out = {k: np.asarray(v).copy() for k, v in data.items()}
     cols_to_clean = list(dict.fromkeys(training_features + [constraint_var]))
     present_cols = [col for col in cols_to_clean if col in out]
-
     for col in present_cols:
         arr = np.asarray(out[col])
         if arr.dtype == object:
@@ -270,27 +275,29 @@ def preprocess_data(data, training_features, feature_transforms, constraint_var)
             arr = arr.astype(np.float64, copy=False)
         arr = np.where(np.isfinite(arr), arr, np.nan)
         out[col] = np.nan_to_num(arr, nan=MISSING_VALUE, posinf=MISSING_VALUE, neginf=MISSING_VALUE)
-
+    scaler_params = {}
     for feat in training_features:
         feat_arr = np.asarray(out[feat], dtype=np.float64)
         valid = (feat_arr != MISSING_VALUE) & np.isfinite(feat_arr)
-
         transform = feature_transforms.get(feat, "none")
         if transform == "log":
             positive = valid & (feat_arr > 0)
             feat_arr[valid & ~positive] = MISSING_VALUE
             valid = positive
-
         if transform == "log":
             feat_arr[valid] = np.log(feat_arr[valid])
-
-        out[feat] = _safe_minmax_scale(feat_arr, valid)
-
+        out[feat], fmin, fmax = _safe_minmax_scale(feat_arr, valid)
+        scaler_params[feat] = {"transform": transform, "min": fmin, "max": fmax}
     if constraint_var not in training_features:
         constraint_arr = np.asarray(out[constraint_var], dtype=np.float64)
         valid_constraint = constraint_arr != MISSING_VALUE
-        out[constraint_var] = _safe_minmax_scale(constraint_arr, valid_constraint)
-
+        out[constraint_var], fmin, fmax = _safe_minmax_scale(constraint_arr, valid_constraint)
+        scaler_params[constraint_var] = {"transform": "none", "min": fmin, "max": fmax}
+    if scaler_output_path is not None:
+        import json
+        with open(scaler_output_path, "w") as f:
+            json.dump(scaler_params, f, indent=2)
+        logging.info("Saved scaler params to %s", scaler_output_path)
     return out
 
 def normalize_class_weights(sig_data, bkg_data):
@@ -809,7 +816,9 @@ def main():
         for key in combined_keys
     }
     data = apply_derived_vars(data, derived_vars_cfg)
-    data = preprocess_data(data, training_features, feature_transforms, constraint_var)
+    # Save scaler params alongside the output so inference can apply identical scaling
+    scaler_path = Path(cfg.get("output", "simple_abcdisco_output")) / "scaler_params.json"
+    data = preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=scaler_path)
 
     if args.infer:
         logging.info("Skipping training. Running inference only...")
@@ -857,6 +866,12 @@ def main():
     )
 
     logging.info("Training finished.")
+
+    # Copy scaler params to the versioned checkpoint directory so they stay with the model
+    checkpoint_path = _latest_checkpoint_from_config(cfg, flavor=flavor)
+    scaler_path_final = _inference_output_dir_from_checkpoint(checkpoint_path) / "scaler_params.json"
+    shutil.copy(str(scaler_path_tmp), str(scaler_path_final))
+    logging.info("Copied scaler params to %s", scaler_path_final)
 
     logging.info("Running inference...")
     run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg)
