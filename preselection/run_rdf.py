@@ -122,9 +122,7 @@ def main():
             # Assume we want signal, data, and bkg
             run_base = f"etc/input_sample_jsons/run{args.run}"
             jsons = [
-                f"{run_base}/sig_c2v1p0_c3_1p0/all_events/",
-                f"{run_base}/sig_c2v1p5_c3_1p0/all_events/",
-                f"{run_base}/sig_c2v1p0_c3_10p0/all_events/",
+                f"{run_base}/sig/all_events/",
                 f"{run_base}/bkg/{ANA_CHANNELS[chan_name]}",
                 f"{run_base}/data/{ANA_CHANNELS[chan_name]}",
             ]

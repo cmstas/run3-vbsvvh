@@ -1,6 +1,8 @@
 #include "selections.h"
 #include "cutflow.h"
 
+// MET filters
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
 RNode METFilters(RNode df_) {
     return df_.Filter("(isRun3 && (Flag_goodVertices && "
             "Flag_globalSuperTightHalo2016Filter && "
@@ -11,7 +13,7 @@ RNode METFilters(RNode df_) {
             "Flag_eeBadScFilter && "
             "Flag_ecalBadCalibFilter)) || "
         "(isRun2 && (Flag_goodVertices && "
-            "(!isData || Flag_globalSuperTightHalo2016Filter) && "
+            "Flag_globalSuperTightHalo2016Filter && "
             "Flag_HBHENoiseFilter && "
             "Flag_HBHENoiseIsoFilter && "
             "Flag_EcalDeadCellTriggerPrimitiveFilter && "
@@ -44,51 +46,80 @@ RNode TriggerSelections(RNode df_, std::string trigger_logic_string) {
     return df_.Filter(trigger_condition, "C1: Trigger Selection");
 }
 
+
+// Ele selection
 RNode ElectronSelections(RNode df_)
 {
-    auto df = df_.Define("Electron_SC_eta", "Electron_eta + Electron_deltaEtaSC")
-                  .Define("_looseElectrons", "Electron_pt > 7 &&"
-                                            "abs(Electron_SC_eta) < 2.5 && "
-                                            "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || (abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
-                                            "abs(Electron_sip3d) < 8 && "
-                                            "Electron_cutBased >= 2 && "
-                                            "Electron_pfRelIso03_all < 0.4 && "
-                                            "Electron_lostHits <= 1")
-                  .Define("_tightElectrons", "_looseElectrons &&"
-                                             "Electron_pt > 10 && "
-                                             "Electron_cutBased >= 4 && "
-                                             "Electron_pfRelIso03_all < 0.15 && "
-                                             "Electron_hoe < 0.1 && "
-                                             "Electron_eInvMinusPInv > -0.04 && "
-                                             "((abs(Electron_SC_eta) <= 1.479 && Electron_sieie < 0.011) || Electron_sieie <= 0.030) && "
-                                             "Electron_convVeto == true && "
-                                             "Electron_tightCharge == 2 && "
-                                             "Electron_lostHits == 0")
-                  .Define("nElectron_Loose", "nElectron == 0 ? 0 : Sum(_looseElectrons)")
-                  .Define("nElectron_Tight", "nElectron_Loose == 0 ? 0 : Sum(_tightElectrons)")
-                  .Define("vvhTightLepMaskElectron", "_tightElectrons");
-    return applyObjectMaskNewAffix(df, "_tightElectrons", "Electron", "electron");
+    auto df = df_.Define("Electron_SC_eta", "Electron_eta + Electron_deltaEtaSC");
+
+    // Veto selection
+    df = df.Define(
+        "_vetoElectrons",
+        "Electron_pt > 10 &&"
+        "abs(Electron_SC_eta) < 2.5 && "
+        "((abs(Electron_SC_eta) <= 1.479 && abs(Electron_dxy) <= 0.05 && abs(Electron_dz) < 0.1) || ((abs(Electron_SC_eta) > 1.479) && abs(Electron_dxy) <= 0.1 && abs(Electron_dz) < 0.2)) && "
+        "Electron_cutBased >= 1"
+    );
+
+    // Loose selection
+    df = df.Define(
+        "_looseElectrons",
+        "_vetoElectrons &&"
+        "Electron_cutBased >= 2"
+    );
+
+    // Define the counts of each
+    df = df.Define("nElectron_Veto", "nElectron == 0 ? 0 : Sum(_vetoElectrons)");
+    df = df.Define("nElectron_Loose", "nElectron_Veto == 0 ? 0 : Sum(_looseElectrons)");
+
+    // We will write out the electron object
+    df = applyObjectMaskNewAffix(df, "_vetoElectrons", "Electron", "electron");
+
+    // Append the masks to electron object
+    df = df.Define("electron_isLoose",  "electron_cutBased >=2");
+    df = df.Define("electron_isMedium", "electron_cutBased >=3");
+    df = df.Define("electron_isTight",  "electron_cutBased >=4");
+
+    return df;
 }
 
+// Muon selections
 RNode MuonSelections(RNode df_)
 {
-    auto df = df_.Define("_looseMuons", "Muon_pt > 5 && "
-                                        "Muon_pfIsoId >= 2 && "
-                                        "abs(Muon_eta) < 2.4 && "
-                                        "abs(Muon_dxy) < 0.2 && "
-                                        "abs(Muon_dz) < 0.5 && "
-                                        "abs(Muon_sip3d) < 8 && "
-                                        "Muon_looseId")
-                  .Define("_tightMuons", "_looseMuons && "
-                                         "Muon_pt > 10 && "
-                                         "Muon_pfIsoId > 4 && "
-                                         "Muon_tightCharge == 2 && "
-                                         "Muon_highPurity && "
-                                         "Muon_tightId")
-                  .Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)")
-                  .Define("nMuon_Tight", "nMuon_Loose == 0 ? 0 : Sum(_tightMuons)")
-                  .Define("vvhTightLepMaskMuon", "_tightMuons");
-    return applyObjectMaskNewAffix(df, "_tightMuons", "Muon", "muon");
+
+    // Loose selection
+    auto df = df_.Define(
+        "_looseMuons",
+        "Muon_pt > 10 && "
+        "Muon_pfIsoId >= 2 && "
+        "abs(Muon_eta) < 2.4 && "
+        "abs(Muon_dxy) < 0.2 && "
+        "abs(Muon_dz) < 0.5 && "
+        "abs(Muon_sip3d) < 8 && "
+        "Muon_looseId"
+    );
+
+    // Medium selection
+    df = df.Define(
+        "_mediumMuons",
+        "_looseMuons && "
+        "Muon_pfIsoId >= 3 && "
+        "Muon_mediumId"
+    );
+
+    // Define the counts of each
+    df = df.Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)");
+    df = df.Define("nMuon_Medium", "nMuon_Loose == 0 ? 0 : Sum(_mediumMuons)");
+
+    // We will write out the muon object
+    df = applyObjectMaskNewAffix(df, "_looseMuons", "Muon", "muon");
+
+    // Append the masks to electron object
+    df = df.Define("muon_isMedium",    "muon_mediumId && (muon_pfIsoId >=3)");
+    df = df.Define("muon_isTight",     "muon_mediumId && (muon_pfIsoId >=4)");
+    df = df.Define("muon_isVeryTight", "muon_mediumId && (muon_pfIsoId >=5)");
+
+    return df;
 }
 
 RNode LeptonSelections(RNode df_)
