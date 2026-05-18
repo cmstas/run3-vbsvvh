@@ -38,10 +38,13 @@ xsec_dict = {
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
-            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01384,
-            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00346,
-            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00406,
-            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00347,
+            #Used XSDB value multiplied by BR
+            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01384, # BR = 0.002264
+            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00346, # BR = 0.001131
+            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00406, # BR = 0.001133
+            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00347, # BR = 0.00135
+            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.01386, # BR = 0.002267
+            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.01387, # BR = 0.002269
             
             # QCD-HT (obtained by Cristina manually with genXsecAnalyzer) - Cristina Mantilla Suarez at Virginia (see comment from Lara in issue #45)
             "QCD-4Jets_Bin-HT-40to70_TuneCP5_13p6TeV": 311600000.0,
@@ -193,9 +196,7 @@ xsec_dict = {
             "ZZto4Q-1Jets_TuneCP5_13p6TeV" : 7.832,
             "ZZ_TuneCP5_13p6TeV" : 12.75, # XSDB Also quotes 12.85
             "ZZZ-5F_TuneCP5_13p6TeV" : 0.01591,
-
-            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.01386, # From XSDB, also quotes 6.242
-            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.01387, # From XSDB, also quotes 6.242
+ 
 
             # No longer using these samples, using inclusive instead
             # From the old xsecs_13p6TeV.json in the repo (from XSDB?)
