@@ -13,7 +13,7 @@
                 "kind": "bkg",
                 "year": "2024Prompt",
                 "xsec": 1.476,
-                "lumi": 109.08,
+                "lumi": 109.95,
                 "shortname": "TbarBtoLNu-s-channel_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
