@@ -5,6 +5,7 @@ import re
 import sys
 import csv
 import yaml
+import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from argparse import ArgumentParser
 from pathlib import Path
@@ -870,7 +871,7 @@ def main():
     # Copy scaler params to the versioned checkpoint directory so they stay with the model
     checkpoint_path = _latest_checkpoint_from_config(cfg, flavor=flavor)
     scaler_path_final = _inference_output_dir_from_checkpoint(checkpoint_path) / "scaler_params.json"
-    shutil.copy(str(scaler_path_tmp), str(scaler_path_final))
+    shutil.copy(str(scaler_path), str(scaler_path_final))
     logging.info("Copied scaler params to %s", scaler_path_final)
 
     logging.info("Running inference...")
