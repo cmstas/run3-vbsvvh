@@ -287,6 +287,11 @@ def preprocess_data(data, training_features, feature_transforms, constraint_var,
             valid = positive
         if transform == "log":
             feat_arr[valid] = np.log(feat_arr[valid])
+        if valid.sum() == 0:
+            print(f"WARNING: feature '{feat}' has no valid samples, skipping scaler fit")
+            out[feat] = np.zeros_like(feat_arr, dtype=np.float64)
+            scaler_params[feat] = {"transform": transform, "min": 0.0, "max": 1.0}
+            continue
         out[feat], fmin, fmax = _safe_minmax_scale(feat_arr, valid)
         scaler_params[feat] = {"transform": transform, "min": fmin, "max": fmax}
     if constraint_var not in training_features:
@@ -296,8 +301,13 @@ def preprocess_data(data, training_features, feature_transforms, constraint_var,
         scaler_params[constraint_var] = {"transform": "none", "min": fmin, "max": fmax}
     if scaler_output_path is not None:
         import json
+        scaler_out = {
+            "_training_features": training_features,
+            "_constraint_var": constraint_var,
+        }
+        scaler_out.update(scaler_params)
         with open(scaler_output_path, "w") as f:
-            json.dump(scaler_params, f, indent=2)
+            json.dump(scaler_out, f, indent=2)
         logging.info("Saved scaler params to %s", scaler_output_path)
     return out
 
@@ -388,7 +398,7 @@ def run_training(
         monitor="val_loss",
         mode="min",
         save_top_k=5,
-        save_weights_only=True,
+        save_weights_only=False,
     )
     lr_monitor = LearningRateMonitor(logging_interval="epoch")
 
