@@ -302,33 +302,38 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-    	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+        df = df.Define("nElectron_Tight", "Sum(electron_isTight)")
+            .Define("nMuon_Tight", "Sum(muon_isTight)");
+
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
+                       
         Cutflow::Add(df, "C2: 1-lepton selection");
         df = df.Filter("nfatjet >= 2");
         Cutflow::Add(df, "C3: at-least 2 fat jets");
         df = df.Filter("njet >= 2");
         Cutflow::Add(df, "C4: at-least 2 jets");
-        
-        // VBS candidate selection using BDT
-        // df = df.Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {"jet_pt", "jet_eta", "jet_phi", "jet_mass", "isRun2"})
-        //     .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])")
-        //     .Define("vbs_jet2_idx", "static_cast<int>(_vbs_candidate_jet_pairs[1])")
-        //     .Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
-        //     .Define("vbs_jet1_pt", "vbs_jet1_idx != -1 ? jet_pt[vbs_jet1_idx] : -999.0f")
-        //     .Define("vbs_jet1_eta", "vbs_jet1_idx != -1 ? jet_eta[vbs_jet1_idx] : -999.0f")
-        //     .Define("vbs_jet1_phi", "vbs_jet1_idx != -1 ? jet_phi[vbs_jet1_idx] : -999.0f")
-        //     .Define("vbs_jet1_mass", "vbs_jet1_idx != -1 ? jet_mass[vbs_jet1_idx] : -999.0f")
-        //     .Define("vbs_jet2_pt", "vbs_jet2_idx != -1 ? jet_pt[vbs_jet2_idx] : -999.0f")
-        //     .Define("vbs_jet2_eta", "vbs_jet2_idx != -1 ? jet_eta[vbs_jet2_idx] : -999.0f")
-        //     .Define("vbs_jet2_phi", "vbs_jet2_idx != -1 ? jet_phi[vbs_jet2_idx] : -999.0f")
-        //     .Define("vbs_jet2_mass", "vbs_jet2_idx != -1 ? jet_mass[vbs_jet2_idx] : -999.0f")
-        //     .Define("vbs_mjj", "(vbs_jet1_idx != -1 && vbs_jet2_idx != -1) ? (ROOT::Math::PtEtaPhiMVector(vbs_jet1_pt, vbs_jet1_eta, vbs_jet1_phi, vbs_jet1_mass) + "
-        //         "ROOT::Math::PtEtaPhiMVector(vbs_jet2_pt, vbs_jet2_eta, vbs_jet2_phi, vbs_jet2_mass)).M() : -999.0f")
-        //     .Define("vbs_detajj", "(vbs_jet1_idx != -1 && vbs_jet2_idx != -1) ? abs(vbs_jet1_eta - vbs_jet2_eta) : -999.0f")
-        //     .Define("vbs_candidate_found", "vbs_jet1_idx != -1 && vbs_jet2_idx != -1")
-        //     .Filter("vbs_candidate_found");
+
+        df = df.Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {"jet_pt", "jet_eta", "jet_phi", "jet_mass", "isRun2"})
+            .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])")
+            .Define("vbs_jet2_idx", "static_cast<int>(_vbs_candidate_jet_pairs[1])")
+            .Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
+            .Define("vbs_jet1_pt", "vbs_jet1_idx != -1 ? jet_pt[vbs_jet1_idx] : -999.0f")
+            .Define("vbs_jet1_eta", "vbs_jet1_idx != -1 ? jet_eta[vbs_jet1_idx] : -999.0f")
+            .Define("vbs_jet1_phi", "vbs_jet1_idx != -1 ? jet_phi[vbs_jet1_idx] : -999.0f")
+            .Define("vbs_jet1_mass", "vbs_jet1_idx != -1 ? jet_mass[vbs_jet1_idx] : -999.0f")
+            .Define("vbs_jet2_pt", "vbs_jet2_idx != -1 ? jet_pt[vbs_jet2_idx] : -999.0f")
+            .Define("vbs_jet2_eta", "vbs_jet2_idx != -1 ? jet_eta[vbs_jet2_idx] : -999.0f")
+            .Define("vbs_jet2_phi", "vbs_jet2_idx != -1 ? jet_phi[vbs_jet2_idx] : -999.0f")
+            .Define("vbs_jet2_mass", "vbs_jet2_idx != -1 ? jet_mass[vbs_jet2_idx] : -999.0f")
+            .Define("vbs_mjj", "(vbs_jet1_idx != -1 && vbs_jet2_idx != -1) ? (ROOT::Math::PtEtaPhiMVector(vbs_jet1_pt, vbs_jet1_eta, vbs_jet1_phi, vbs_jet1_mass) + "
+                "ROOT::Math::PtEtaPhiMVector(vbs_jet2_pt, vbs_jet2_eta, vbs_jet2_phi, vbs_jet2_mass)).M() : -999.0f")
+            .Define("vbs_detajj", "(vbs_jet1_idx != -1 && vbs_jet2_idx != -1) ? abs(vbs_jet1_eta - vbs_jet2_eta) : -999.0f")
+            .Define("vbs_candidate_found", "vbs_jet1_idx != -1 && vbs_jet2_idx != -1")
+            .Filter("vbs_candidate_found");
+
+        Cutflow::Add(df, "C5: VBS candidate selection");
     }
 
     // 2lepSS
