@@ -132,7 +132,8 @@ RNode LeptonSelections(RNode df_)
             .Define("lepton_eta", "Take(Concatenate(electron_eta, muon_eta), _leptonSorted)")
             .Define("lepton_phi", "Take(Concatenate(electron_phi, muon_phi), _leptonSorted)")
             .Define("lepton_mass", "Take(Concatenate(electron_mass, muon_mass), _leptonSorted)")
-            .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)");
+            .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)")
+            .Define("lepton_invMass", "ROOT::VecOps::InvariantMass(lepton_pt,lepton_eta,lepton_phi,lepton_mass)");
 }
 
 RNode AK4JetsSelection(RNode df_)
@@ -172,6 +173,7 @@ RNode AK8JetsSelection(RNode df_)
 
     return df;
 }
+
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
@@ -322,24 +324,42 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2)",
-            //TODO implement a same sign requirement
             "C2: 2lepSS"
         );
+	    df = df.Filter("lepton_charge[0] * lepton_charge[1] > 0", "C4: Same Sign");
     }
 
-    // 2lep_1FJ (currently shared between OF and SF)
-    else if (channel == "2lep_1FJ"){
+    // 2lep_1FJ_onZ
+    else if (channel == "2lep_1FJ_onZ"){
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
+        df = df.Filter( //Require exactly 2 electrons or 2 muons
+            "(!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) &&" 
+	        "((nMuon_Loose + nElectron_Loose) == 2) &&"
             "(nFatJets == 1)",
-            "C2: 2lep_1FJ"
-        );
+            "C2: 2lep_1FJ_onZ");
+	    df = df.Filter("(lepton_invMass > 81) && (lepton_invMass < 101) ", "C3: invariant mass selection");
+	    df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
     }
+    // 2lep_1FJ_offZ
+    else if (channel == "2lep_1FJ_offZ"){
 
+        df = TriggerSelections(df,trigger_logic_string_multilep);
+        Cutflow::Add(df, "C1: Trigger selection");
+        df = df.Filter( //Require either e+mu or 2mu/2e
+	        "((nMuon_Loose == 1) && (nElectron_Loose == 1)) || "
+	        "((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)))",
+	        "C2: 2lep_1FJ_offZ");
+      
+        df = df.Filter(//Apply dilepton mass cut only to 2mu/2e channels
+            "((nMuon_Loose == 1) && (nElectron_Loose == 1)) || "
+	        "((!(nMuon_Loose == 2) != !(nElectron_Loose == 2)) && ((lepton_invMass < 81) || (lepton_invMass > 101)))",
+	        "C3: invariant mass selection");
+        df = df.Filter("lepton_charge[0] * lepton_charge[1] < 0", "C4: Opposite Sign");
+
+    }
     // 2lep_2FJ
     else if (channel == "2lep_2FJ"){
 
