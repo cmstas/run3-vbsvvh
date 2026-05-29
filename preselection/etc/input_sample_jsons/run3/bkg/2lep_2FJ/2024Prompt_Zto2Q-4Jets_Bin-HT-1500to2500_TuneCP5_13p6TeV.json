@@ -16,7 +16,7 @@
                 "kind": "bkg",
                 "year": "2024Prompt",
                 "xsec": 0.8541,
-                "lumi": 109.08,
+                "lumi": 109.95,
                 "shortname": "Zto2Q-4Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",

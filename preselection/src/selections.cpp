@@ -1,6 +1,8 @@
 #include "selections.h"
 #include "cutflow.h"
 
+// MET filters
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
 RNode METFilters(RNode df_) {
     return df_.Filter("(isRun3 && (Flag_goodVertices && "
             "Flag_globalSuperTightHalo2016Filter && "
@@ -11,7 +13,7 @@ RNode METFilters(RNode df_) {
             "Flag_eeBadScFilter && "
             "Flag_ecalBadCalibFilter)) || "
         "(isRun2 && (Flag_goodVertices && "
-            "(!isData || Flag_globalSuperTightHalo2016Filter) && "
+            "Flag_globalSuperTightHalo2016Filter && "
             "Flag_HBHENoiseFilter && "
             "Flag_HBHENoiseIsoFilter && "
             "Flag_EcalDeadCellTriggerPrimitiveFilter && "

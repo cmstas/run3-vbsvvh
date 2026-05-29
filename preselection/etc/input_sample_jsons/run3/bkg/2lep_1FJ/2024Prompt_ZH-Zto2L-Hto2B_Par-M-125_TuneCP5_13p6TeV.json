@@ -10,8 +10,8 @@
             "metadata": {
                 "kind": "bkg",
                 "year": "2024Prompt",
-                "xsec": 0.08545,
-                "lumi": 109.08,
+                "xsec": 0.03174,
+                "lumi": 109.95,
                 "shortname": "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",

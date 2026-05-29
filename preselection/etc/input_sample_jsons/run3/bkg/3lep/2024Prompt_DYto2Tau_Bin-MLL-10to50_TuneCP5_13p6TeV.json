@@ -39,7 +39,7 @@
                 "kind": "bkg",
                 "year": "2024Prompt",
                 "xsec": 6744.0,
-                "lumi": 109.08,
+                "lumi": 109.95,
                 "shortname": "DYto2Tau_Bin-MLL-10to50_TuneCP5_13p6TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/",
