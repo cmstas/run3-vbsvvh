@@ -185,6 +185,7 @@ RNode ZeroLepAnalysisVBSfirstBDT(RNode df_) {
     df = df.Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {"jet_pt", "jet_eta", "jet_phi", "jet_mass", "isRun2"})
         .Define("_vbs_jet1_idx", "_vbs_candidate_jet_pairs[0]")
         .Define("_vbs_jet2_idx", "_vbs_candidate_jet_pairs[1]")
+	.Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
         .Define("vbs_jet1_pt", "_vbs_jet1_idx != -1 ? jet_pt[_vbs_jet1_idx] : -999.0f")
         .Define("vbs_jet1_eta", "_vbs_jet1_idx != -1 ? jet_eta[_vbs_jet1_idx] : -999.0f")
         .Define("vbs_jet1_phi", "_vbs_jet1_idx != -1 ? jet_phi[_vbs_jet1_idx] : -999.0f")
