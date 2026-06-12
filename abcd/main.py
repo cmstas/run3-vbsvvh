@@ -14,6 +14,8 @@ import numpy as np
 import torch
 import uproot
 import awkward as ak
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import auc, roc_curve
 from sklearn.model_selection import train_test_split
@@ -26,6 +28,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from dataloader import get_dataloader
 from model import ABCDLightningModule
+
+from torch.utils.tensorboard import SummaryWriter
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 MISSING_VALUE = -999.0
 
@@ -375,6 +380,28 @@ def make_dataloaders(data, training_features, constraint_var, batch_size):
 
     return train_loader, val_loader
 
+
+def save_tensorboard_plots(log_dir, output_dir):
+    ea = EventAccumulator(str(log_dir))
+    ea.Reload()
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for tag in ea.Tags().get("scalars", []):
+        events = ea.Scalars(tag)
+        steps  = [e.step  for e in events]
+        values = [e.value for e in events]
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.plot(steps, values, linewidth=2)
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel(tag)
+        ax.set_title(tag)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        safe_tag = tag.replace("/", "_")
+        plt.savefig(output_dir / f"{safe_tag}.png", dpi=150)
+        plt.close()
+        print(f"Saved {output_dir / safe_tag}.png")
+
 def run_training(
     model,
     train_loader,
@@ -424,6 +451,7 @@ def run_training(
     )
 
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
+    save_tensorboard_plots(logger.log_dir, logger.log_dir)
     return trainer
 
 
@@ -647,6 +675,61 @@ def _plot_score_densities(data, flavor, output_path):
     plt.savefig(output_path, dpi=200)
     plt.close()
 
+# Compute permutation importance by shuffling each feature one at a time and measuring
+# the resulting drop in AUC, averaged over n_repeats shuffles. Features with a larger
+# AUC drop are more important to the model's discrimination.
+def compute_permutation_importance(model, feature_matrix, labels, weights, training_features, device, batch_size=8192, n_repeats=3):
+    """Compute permutation importance by shuffling each feature and measuring AUC drop."""
+    def get_auc(features_tensor):
+        all_scores = []
+        with torch.no_grad():
+            for start in range(0, len(features_tensor), batch_size):
+                batch = features_tensor[start:start + batch_size].to(device)
+                logits = model(batch)
+                if logits.ndim == 1:
+                    logits = logits.unsqueeze(-1)
+                scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
+                all_scores.append(scores)
+        scores = np.concatenate(all_scores)
+        fpr, tpr, _ = roc_curve(labels, scores, sample_weight=weights)
+        return auc(fpr, tpr)
+
+    baseline_tensor = torch.from_numpy(feature_matrix)
+    baseline_auc = get_auc(baseline_tensor)
+
+    importances = {}
+    for i, feat in enumerate(training_features):
+        drops = []
+        for _ in range(n_repeats):
+            shuffled = feature_matrix.copy()
+            np.random.shuffle(shuffled[:, i])
+            shuffled_tensor = torch.from_numpy(shuffled)
+            shuffled_auc = get_auc(shuffled_tensor)
+            drops.append(baseline_auc - shuffled_auc)
+        importances[feat] = np.mean(drops)
+
+    return baseline_auc, importances
+
+
+# Plot permutation importance as a horizontal bar chart, sorted by importance.
+# Features that hurt the AUC most when shuffled appear at the top.
+def plot_permutation_importance(baseline_auc, importances, output_path):
+    """Plot permutation importance as a horizontal bar chart sorted by importance."""
+    sorted_feats = sorted(importances, key=importances.get)
+    sorted_vals  = [importances[f] for f in sorted_feats]
+
+    fig, ax = plt.subplots(figsize=(10, max(6, len(sorted_feats) * 0.25)))
+    colors = ["tab:red" if v > 0 else "tab:blue" for v in sorted_vals]
+    ax.barh(sorted_feats, sorted_vals, color=colors)
+    ax.axvline(0, color="black", linewidth=0.8)
+    ax.set_xlabel("Mean AUC drop when feature is shuffled")
+    ax.set_title(f"Permutation Importance (baseline AUC={baseline_auc:.4f})")
+    ax.grid(True, alpha=0.3, axis="x")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    print(f"Saved {output_path}")
+
 
 def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None):
     logging.info("Starting inference steps...")
@@ -707,6 +790,20 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         _plot_score_densities(full_inference_data, flavor=flavor, output_path=density_path)
         logging.info("Saved ROC plot to %s", roc_path)
         logging.info("Saved score density plot to %s", density_path)
+
+        # Compute and save permutation importance to identify which features the model relies on most
+        importance_path = output_csv.with_name(f"{output_csv.stem}_permutation_importance.png")
+        baseline_auc, importances = compute_permutation_importance(
+            model=model,
+            feature_matrix=feature_matrix,
+            labels=np.asarray(full_inference_data["label"]),
+            weights=np.asarray(full_inference_data["weight"]),
+            training_features=training_features,
+            device=device,
+            batch_size=cfg.get("batch_size", 8192),
+        )
+        plot_permutation_importance(baseline_auc, importances, importance_path)
+        logging.info("Saved permutation importance plot to %s", importance_path)
 
 
 def main():
