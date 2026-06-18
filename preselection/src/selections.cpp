@@ -122,6 +122,7 @@ RNode MuonSelections(RNode df_)
     return df;
 }
 
+// Put ele and mu together into lepton collection
 RNode LeptonSelections(RNode df_)
 {
     auto df = ElectronSelections(df_);
@@ -135,28 +136,44 @@ RNode LeptonSelections(RNode df_)
             .Define("lepton_charge", "Take(Concatenate(electron_charge, muon_charge), _leptonSorted)");
 }
 
-RNode AK4JetsSelection(RNode df_)
+
+// Small-radius AK4 jet selection
+RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
 {
-    auto df = df_.Define("_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
-                .Define("_good_ak4jets", "_dR_ak4_lep > 0.4 &&"
-                                        "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
-                                        "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||" // horn removal JME recommendation for Run3
-                                        "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
-                                        "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
-    
-    df = applyJetVetoMaps(df);
-    df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))"); // for Run3, events with any jet in veto region are removed
+    auto df = DefineOrRedefine(df_, "_dR_ak4_lep", VVdR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"});
+
+    // Optionally define the dR between AK4 jets and fat jets, and include it in the AK4 selection if cleanAgainstFJ is set
+    std::string fj_cut = "";
+    if (cleanAgainstFJ) {
+        df = df.Define("_dR_ak4_fatjet", VVdR, {"Jet_eta", "Jet_phi", "fatjet_eta", "fatjet_phi"});
+        fj_cut = "_dR_ak4_fatjet > 0.8 && ";
+    }
+
+    df = DefineOrRedefine(df, "_good_ak4jets", "_dR_ak4_lep > 0.4 && " + fj_cut +
+                                    "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
+                                    "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||"
+                                    "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
+                                    "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+
+    df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))");
     df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
 
-    df = df.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
-            .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
-            .Define("Jet_isLooseBTag", isbTagLoose, {"year", "Jet_btagUParTAK4B"});
-
-    df = applyObjectMaskNewAffix(df, "_good_ak4jets", "Jet", "jet");
-    df = df.Define("ht_jets", "Sum(jet_pt)");
+    df = applyObjectMaskNewAffix(df, "_good_ak4jets", "Jet", affix);
+    df = df.Define("ht_" + affix, "Sum(" + affix + "_pt)");
     return df;
 }
 
+// Define per-jet properties (b-tagging, veto maps) independent of jet selection
+RNode AK4JetProperties(RNode df_)
+{
+    df_ = applyJetVetoMaps(df_);
+    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
+              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
+              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "Jet_btagUParTAK4B"});
+}
+
+
+// Fat jet AK8 selection
 RNode AK8JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
@@ -173,23 +190,55 @@ RNode AK8JetsSelection(RNode df_)
     return df;
 }
 
+// Perform VBS jet tagging via VBSBDTInfer and compute VBS pair kinematics
+// Note this requires at least 2 jets (i.e., applies a njet >= 2 filter)
+RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
+{
+    return df_.Filter("n" + jetCollectionName + " >= 2", "At-least 2 overlap-removed (against FJ) jets")
+        .Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {jetCollectionName + "_pt", jetCollectionName + "_eta", jetCollectionName + "_phi", jetCollectionName + "_mass", "isRun2"})
+        .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])")
+        .Define("vbs_jet2_idx", "static_cast<int>(_vbs_candidate_jet_pairs[1])")
+        .Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
+        .Define("vbs_jet1_pt",   jetCollectionName + "_pt[vbs_jet1_idx]")
+        .Define("vbs_jet1_eta",  jetCollectionName + "_eta[vbs_jet1_idx]")
+        .Define("vbs_jet1_phi",  jetCollectionName + "_phi[vbs_jet1_idx]")
+        .Define("vbs_jet1_mass", jetCollectionName + "_mass[vbs_jet1_idx]")
+        .Define("vbs_jet2_pt",   jetCollectionName + "_pt[vbs_jet2_idx]")
+        .Define("vbs_jet2_eta",  jetCollectionName + "_eta[vbs_jet2_idx]")
+        .Define("vbs_jet2_phi",  jetCollectionName + "_phi[vbs_jet2_idx]")
+        .Define("vbs_jet2_mass", jetCollectionName + "_mass[vbs_jet2_idx]")
+        .Define("vbs_mjj",    "(ROOT::Math::PtEtaPhiMVector(vbs_jet1_pt, vbs_jet1_eta, vbs_jet1_phi, vbs_jet1_mass) + "
+                              "ROOT::Math::PtEtaPhiMVector(vbs_jet2_pt, vbs_jet2_eta, vbs_jet2_phi, vbs_jet2_mass)).M()")
+        .Define("vbs_detajj", "abs(vbs_jet1_eta - vbs_jet2_eta)");
+}
+
+
+
+///////////////// Main channel selection block /////////////////
 RNode runPreselection(RNode df_, std::string channel, bool noCut)
 {
 
     Cutflow::Add(df_, "All events");
-    
-    auto df = METFilters(df_);
-    df = LeptonSelections(df);
-    df = AK4JetsSelection(df);
-    df = AK8JetsSelection(df);
-    df = df.Define("jet_minDrFromAnyGoodFatJet", dRfromClosestJet, {"jet_eta", "jet_phi", "fatjet_eta", "fatjet_phi"})
-            .Define("jet_passFatJetOverlapRemoval", "jet_minDrFromAnyGoodFatJet>0.8");
 
+    // Standard MET filters
+    auto df = METFilters(df_);
     Cutflow::Add(df, "C0: MET filters");
 
-    if (noCut) return df;
+    // Perform lepton selection first (these have highest priority)
+    df = LeptonSelections(df);
+
+    // Fat jet selection (cleaned against leptons)
+    df = AK8JetsSelection(df);
+
+    // Do the ak4 jet selection
+    df = AK4JetProperties(df);
+    df = AK4JetsSelection(df, /*cleanAgainstFJ=*/true, "jet");
+    df = AK4JetsSelection(df, /*cleanAgainstFJ=*/false, "jetNoFJClean");
+
+
 
     // Passthrough
+    if (noCut) return df;
     if (channel == "all_events"){
         df = df.Filter(
             "nMuon_Loose > -1", // Probably there is a better way to write a pass through
@@ -199,6 +248,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
     // 0lep_0FJ
     else if (channel == "0lep_0FJ"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
@@ -215,6 +267,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
     // 0lep_1FJ
     else if (channel == "0lep_1FJ"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
@@ -233,6 +288,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 0lep_1FJ_met
     else if (channel == "0lep_1FJ_met"){
 
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
+
         df = TriggerSelections(df,trigger_logic_string_met);
         Cutflow::Add(df, "C1: Trigger selection");
 
@@ -245,6 +303,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
     // 0lep_2FJ
     else if (channel == "0lep_2FJ"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
@@ -259,6 +320,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 0lep_2FJ_met
     else if (channel == "0lep_2FJ_met"){
 
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
+
         df = TriggerSelections(df,trigger_logic_string_met);
         Cutflow::Add(df, "C1: Trigger selection");
 
@@ -272,6 +336,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
 
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
+
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
@@ -284,6 +351,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
     // 1lep_1FJ
     else if (channel == "1lep_1FJ"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
@@ -301,21 +371,30 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 1lep_2FJ
     else if (channel == "1lep_2FJ"){
 
+        df = VBSTagging(df, "jetNoFJClean");
+        Cutflow::Add(df, "VBS pair candidate found");
+
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-    	df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+        df = df.Define("nElectron_Tight", "Sum(electron_isTight)")
+            .Define("nMuon_Tight", "Sum(muon_isTight)");
+
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
+                       
         Cutflow::Add(df, "C2: 1-lepton selection");
         df = df.Filter("nfatjet >= 2");
         Cutflow::Add(df, "C3: at-least 2 fat jets");
-        df = df.Filter("njet >= 2");
-        Cutflow::Add(df, "C4: at-least 2 jets");
+
     }
 
     // 2lepSS
     else if (channel == "2lepSS"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
@@ -330,6 +409,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 2lep_1FJ (currently shared between OF and SF)
     else if (channel == "2lep_1FJ"){
 
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
+
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
@@ -342,6 +424,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
     // 2lep_2FJ
     else if (channel == "2lep_2FJ"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
@@ -357,6 +442,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
     // 3lep
     else if (channel == "3lep"){
 
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
+
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
@@ -368,6 +456,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
 
     // 4lep
     else if (channel == "4lep"){
+
+        df = VBSTagging(df);
+        Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");

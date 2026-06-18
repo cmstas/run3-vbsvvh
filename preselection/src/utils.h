@@ -13,6 +13,10 @@
 
 #include "TLorentzVector.h"
 
+#include "TMVA/RInferenceUtils.hxx"
+#include "TMVA/RReader.hxx"
+#include "TMVA/RBDT.hxx"
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "TString.h"
@@ -53,6 +57,26 @@ public:
 RNode removeDuplicates(RNode df);
 RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName);
 RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::string &objectName, const std::string &newAffix);
+
+// Define or redefine a column depending on whether it already exists in the dataframe.
+// Useful when a function may be called multiple times with different arguments (e.g. AK4JetsSelection).
+template <typename F>
+RNode DefineOrRedefine(RNode df_, const std::string& colName, F func, const std::vector<std::string>& colArgs)
+{
+    auto colNames = df_.GetColumnNames();
+    if (std::find(colNames.begin(), colNames.end(), colName) != colNames.end())
+        return df_.Redefine(colName, func, colArgs);
+    else
+        return df_.Define(colName, func, colArgs);
+}
+inline RNode DefineOrRedefine(RNode df_, const std::string& colName, const std::string& expression)
+{
+    auto colNames = df_.GetColumnNames();
+    if (std::find(colNames.begin(), colNames.end(), colName) != colNames.end())
+        return df_.Redefine(colName, expression);
+    else
+        return df_.Define(colName, expression);
+}
 
 /*
 ############################################
@@ -112,6 +136,9 @@ RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_
 
 RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
+
+RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2);
+const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights.root");
 
 /*
 ############################################
