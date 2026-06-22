@@ -5,6 +5,7 @@ import re
 import sys
 import csv
 import yaml
+import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from argparse import ArgumentParser
 from pathlib import Path
@@ -13,6 +14,8 @@ import numpy as np
 import torch
 import uproot
 import awkward as ak
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import auc, roc_curve
 from sklearn.model_selection import train_test_split
@@ -25,6 +28,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from dataloader import get_dataloader
 from model import ABCDLightningModule
+
+from torch.utils.tensorboard import SummaryWriter
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 MISSING_VALUE = -999.0
 
@@ -139,6 +145,9 @@ def _read_root_frame(path, branches, dataset_idx, sample_idx):
     with uproot.open(path) as root_file:
         arrays = root_file["Events"].arrays(branches, library="np")
 
+    if not isinstance(arrays, dict):
+        arrays = {name: arrays[name] for name in arrays.dtype.names}
+
     columns = {}
     n_events = None
     for branch in branches:
@@ -209,11 +218,13 @@ def _evaluate_preselection_mask(data, expression):
     return np.asarray(eval(expression, {"__builtins__": {}, "np": np}, local_dict), dtype=bool)
 
 
+# Also return fitted min/max so they can be saved for inference-time scaling
 def _safe_minmax_scale(values, valid_mask):
     scaled = np.zeros_like(values, dtype=np.float64)
     scaler = MinMaxScaler()
-    scaled[valid_mask] = scaler.fit_transform(values[valid_mask].reshape(-1, 1)).ravel()
-    return scaled
+    scaler.fit(values[valid_mask].reshape(-1, 1))
+    scaled[valid_mask] = scaler.transform(values[valid_mask].reshape(-1, 1)).ravel()
+    return scaled, float(scaler.data_min_[0]), float(scaler.data_max_[0])
 
 
 def load_data(paths, features, extra_vars, num_workers=1):
@@ -257,11 +268,11 @@ def load_data(paths, features, extra_vars, num_workers=1):
     return data
 
 
-def preprocess_data(data, training_features, feature_transforms, constraint_var):
+# If scaler_output_path is provided, fitted min/max per feature are saved to JSON for use at inference time
+def preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=None):
     out = {k: np.asarray(v).copy() for k, v in data.items()}
     cols_to_clean = list(dict.fromkeys(training_features + [constraint_var]))
     present_cols = [col for col in cols_to_clean if col in out]
-
     for col in present_cols:
         arr = np.asarray(out[col])
         if arr.dtype == object:
@@ -270,27 +281,39 @@ def preprocess_data(data, training_features, feature_transforms, constraint_var)
             arr = arr.astype(np.float64, copy=False)
         arr = np.where(np.isfinite(arr), arr, np.nan)
         out[col] = np.nan_to_num(arr, nan=MISSING_VALUE, posinf=MISSING_VALUE, neginf=MISSING_VALUE)
-
+    scaler_params = {}
     for feat in training_features:
         feat_arr = np.asarray(out[feat], dtype=np.float64)
         valid = (feat_arr != MISSING_VALUE) & np.isfinite(feat_arr)
-
         transform = feature_transforms.get(feat, "none")
         if transform == "log":
             positive = valid & (feat_arr > 0)
             feat_arr[valid & ~positive] = MISSING_VALUE
             valid = positive
-
         if transform == "log":
             feat_arr[valid] = np.log(feat_arr[valid])
-
-        out[feat] = _safe_minmax_scale(feat_arr, valid)
-
+        if valid.sum() == 0:
+            print(f"WARNING: feature '{feat}' has no valid samples, skipping scaler fit")
+            out[feat] = np.zeros_like(feat_arr, dtype=np.float64)
+            scaler_params[feat] = {"transform": transform, "min": 0.0, "max": 1.0}
+            continue
+        out[feat], fmin, fmax = _safe_minmax_scale(feat_arr, valid)
+        scaler_params[feat] = {"transform": transform, "min": fmin, "max": fmax}
     if constraint_var not in training_features:
         constraint_arr = np.asarray(out[constraint_var], dtype=np.float64)
         valid_constraint = constraint_arr != MISSING_VALUE
-        out[constraint_var] = _safe_minmax_scale(constraint_arr, valid_constraint)
-
+        out[constraint_var], fmin, fmax = _safe_minmax_scale(constraint_arr, valid_constraint)
+        scaler_params[constraint_var] = {"transform": "none", "min": fmin, "max": fmax}
+    if scaler_output_path is not None:
+        import json
+        scaler_out = {
+            "_training_features": training_features,
+            "_constraint_var": constraint_var,
+        }
+        scaler_out.update(scaler_params)
+        with open(scaler_output_path, "w") as f:
+            json.dump(scaler_out, f, indent=2)
+        logging.info("Saved scaler params to %s", scaler_output_path)
     return out
 
 def normalize_class_weights(sig_data, bkg_data):
@@ -355,7 +378,29 @@ def make_dataloaders(data, training_features, constraint_var, batch_size):
         is_validation=True,
     )
 
-    return train_loader, val_loader
+    # Also return indices so callers can tag events by their split for later analysis
+    return train_loader, val_loader, train_idx, val_idx
+
+def save_tensorboard_plots(log_dir, output_dir):
+    ea = EventAccumulator(str(log_dir))
+    ea.Reload()
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for tag in ea.Tags().get("scalars", []):
+        events = ea.Scalars(tag)
+        steps  = [e.step  for e in events]
+        values = [e.value for e in events]
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.plot(steps, values, linewidth=2)
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel(tag)
+        ax.set_title(tag)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        safe_tag = tag.replace("/", "_")
+        plt.savefig(output_dir / f"{safe_tag}.png", dpi=150)
+        plt.close()
+        print(f"Saved {output_dir / safe_tag}.png")
 
 def run_training(
     model,
@@ -380,7 +425,7 @@ def run_training(
         monitor="val_loss",
         mode="min",
         save_top_k=5,
-        save_weights_only=True,
+        save_weights_only=False,
     )
     lr_monitor = LearningRateMonitor(logging_interval="epoch")
 
@@ -406,6 +451,7 @@ def run_training(
     )
 
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
+    save_tensorboard_plots(logger.log_dir, logger.log_dir)
     return trainer
 
 
@@ -550,6 +596,84 @@ def _batched_scores(model, features_tensor, batch_size, flavor, device):
     out_1 = np.concatenate(scores_1) if scores_1 else np.array([], dtype=np.float32)
     return out_0, out_1
 
+def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
+    def profile_overlay(ax, x, y, bins, xrange):
+        bin_edges = np.linspace(xrange[0], xrange[1], bins + 1)
+        bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+        means, errors = [], []
+        for lo, hi in zip(bin_edges[:-1], bin_edges[1:]):
+            mask = (x >= lo) & (x < hi)
+            vals = y[mask]
+            if len(vals) > 0:
+                means.append(np.mean(vals))
+                errors.append(np.std(vals) / np.sqrt(len(vals)))
+            else:
+                means.append(np.nan)
+                errors.append(np.nan)
+        means = np.array(means)
+        errors = np.array(errors)
+        ax.errorbar(bin_centers, means, yerr=errors, color='yellow',
+                    fmt='o', markersize=3, linewidth=1.5, label='Profile mean')
+        ax.legend(fontsize=9)
+
+    labels = np.asarray(data["label"])
+    signal = {k: np.asarray(v)[labels == 1] for k, v in data.items()}
+    background = {k: np.asarray(v)[labels == 0] for k, v in data.items()}
+
+    score_col = "dnn_score" if flavor == "single" else "dnn_0_score"
+
+    bins = [50, 50]
+    dnn_range = (0, 1)
+    constrain_var_range = (0, max(np.asarray(data[constraint_var])))
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    h1 = axes[0].hist2d(background[score_col], background[constraint_var], bins=bins,
+                         range=[dnn_range, constrain_var_range], cmap='Blues',
+                         norm=matplotlib.colors.LogNorm())
+    plt.colorbar(h1[3], ax=axes[0], label='Counts')
+    axes[0].set_title('Background')
+    axes[0].set_xlabel('DNN Score')
+    axes[0].set_ylabel(constraint_var)
+    profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range)
+
+    h2 = axes[1].hist2d(signal[score_col], signal[constraint_var], bins=bins,
+                         range=[dnn_range, constrain_var_range], cmap='Reds',
+                         norm=matplotlib.colors.LogNorm())
+    plt.colorbar(h2[3], ax=axes[1], label='Counts')
+    axes[1].set_title('Signal')
+    axes[1].set_xlabel('DNN Score')
+    axes[1].set_ylabel(constraint_var)
+    profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range)
+
+    fig.suptitle(f'ABCD Plane{" - " + title_suffix if title_suffix else ""}')
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    logging.info("Saved ABCD plane plot to %s", output_path)
+
+
+def _plot_decorrelation_check(data, flavor, constraint_var, output_path, title_suffix=""):
+    score_col = "dnn_score" if flavor == "single" else "dnn_0_score"
+    labels = np.asarray(data["label"])
+    background = {k: np.asarray(v)[labels == 0] for k, v in data.items()}
+
+    score_bins = [0.0, 0.25, 0.5, 0.75, 1.0]
+
+    fig, ax = plt.subplots(figsize=(7, 6))
+    for i in range(len(score_bins) - 1):
+        mask = (background[score_col] >= score_bins[i]) & (background[score_col] < score_bins[i + 1])
+        ax.hist(background[constraint_var][mask], bins=50, density=True,
+                histtype='step', label=f'DNN score [{score_bins[i]}, {score_bins[i + 1]}]')
+
+    ax.set_xlabel(constraint_var)
+    ax.set_ylabel('Normalised counts')
+    ax.legend()
+    ax.set_title(f'{constraint_var} in DNN score slices (background){" - " + title_suffix if title_suffix else ""}')
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    logging.info("Saved decorrelation check plot to %s", output_path)
 
 def _plot_roc_curves(data, flavor, output_path):
     labels = np.asarray(data["label"])
@@ -629,8 +753,63 @@ def _plot_score_densities(data, flavor, output_path):
     plt.savefig(output_path, dpi=200)
     plt.close()
 
+# Compute permutation importance by shuffling each feature one at a time and measuring
+# the resulting drop in AUC, averaged over n_repeats shuffles. Features with a larger
+# AUC drop are more important to the model's discrimination.
+def compute_permutation_importance(model, feature_matrix, labels, weights, training_features, device, batch_size=8192, n_repeats=3):
+    """Compute permutation importance by shuffling each feature and measuring AUC drop."""
+    def get_auc(features_tensor):
+        all_scores = []
+        with torch.no_grad():
+            for start in range(0, len(features_tensor), batch_size):
+                batch = features_tensor[start:start + batch_size].to(device)
+                logits = model(batch)
+                if logits.ndim == 1:
+                    logits = logits.unsqueeze(-1)
+                scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
+                all_scores.append(scores)
+        scores = np.concatenate(all_scores)
+        fpr, tpr, _ = roc_curve(labels, scores, sample_weight=weights)
+        return auc(fpr, tpr)
 
-def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None):
+    baseline_tensor = torch.from_numpy(feature_matrix)
+    baseline_auc = get_auc(baseline_tensor)
+
+    importances = {}
+    for i, feat in enumerate(training_features):
+        drops = []
+        for _ in range(n_repeats):
+            shuffled = feature_matrix.copy()
+            np.random.shuffle(shuffled[:, i])
+            shuffled_tensor = torch.from_numpy(shuffled)
+            shuffled_auc = get_auc(shuffled_tensor)
+            drops.append(baseline_auc - shuffled_auc)
+        importances[feat] = np.mean(drops)
+
+    return baseline_auc, importances
+
+
+# Plot permutation importance as a horizontal bar chart, sorted by importance.
+# Features that hurt the AUC most when shuffled appear at the top.
+def plot_permutation_importance(baseline_auc, importances, output_path):
+    """Plot permutation importance as a horizontal bar chart sorted by importance."""
+    sorted_feats = sorted(importances, key=importances.get)
+    sorted_vals  = [importances[f] for f in sorted_feats]
+
+    fig, ax = plt.subplots(figsize=(10, max(6, len(sorted_feats) * 0.25)))
+    colors = ["tab:red" if v > 0 else "tab:blue" for v in sorted_vals]
+    ax.barh(sorted_feats, sorted_vals, color=colors)
+    ax.axvline(0, color="black", linewidth=0.8)
+    ax.set_xlabel("Mean AUC drop when feature is shuffled")
+    ax.set_title(f"Permutation Importance (baseline AUC={baseline_auc:.4f})")
+    ax.grid(True, alpha=0.3, axis="x")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    print(f"Saved {output_path}")
+
+
+def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None, train_idx=None, val_idx=None):
     logging.info("Starting inference steps...")
     checkpoint_path = Path(args.checkpoint) if args.checkpoint else _latest_checkpoint_from_config(cfg, flavor=flavor)
     logging.info("Using checkpoint: %s", checkpoint_path)
@@ -638,7 +817,7 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
     if is_data:
         full_inference_data = inference_data
     else:
-        full_inference_data = _concat_sig_bkg(sig_data, bkg_data)
+        full_inference_data = _concat_sig_bkg(sig_data, bkg_data)  # NOTE: must remain signal-first to match ordering assumed by train_idx/val_idx
         
     full_inference_data = apply_derived_vars(full_inference_data, derived_vars_cfg)
 
@@ -670,6 +849,14 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         full_inference_data["dnn_0_score"] = score_0
         full_inference_data["dnn_1_score"] = score_1
 
+    # Tag each event with its split so plots can be made per-subset
+    n_events = _data_length(full_inference_data)
+    split_col = np.full(n_events, "unknown", dtype=object)
+    if train_idx is not None and val_idx is not None:
+        split_col[train_idx] = "train"
+        split_col[val_idx] = "val"
+    full_inference_data["split"] = split_col
+
     if is_data:
         default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}_data.csv"
     else:
@@ -689,6 +876,37 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         _plot_score_densities(full_inference_data, flavor=flavor, output_path=density_path)
         logging.info("Saved ROC plot to %s", roc_path)
         logging.info("Saved score density plot to %s", density_path)
+
+        # Make ABCD plane and decorrelation plots (for all events, for train only, and for val only)
+        plot_subsets = [("all", full_inference_data)]
+        if train_idx is not None and val_idx is not None:
+            train_mask = np.asarray(full_inference_data["split"]) == "train"
+            val_mask   = np.asarray(full_inference_data["split"]) == "val"
+            plot_subsets.append(("train", _apply_mask(full_inference_data, train_mask)))
+            plot_subsets.append(("val",   _apply_mask(full_inference_data, val_mask)))
+
+        for subset_name, subset_data in plot_subsets:
+            abcd_path = output_csv.with_name(f"{output_csv.stem}_abcd_plane_{subset_name}.png")
+            _plot_abcd_plane(subset_data, flavor=flavor, constraint_var=constraint_var,
+                             output_path=abcd_path, title_suffix=subset_name)
+
+            decorr_path = output_csv.with_name(f"{output_csv.stem}_decorrelation_check_{subset_name}.png")
+            _plot_decorrelation_check(subset_data, flavor=flavor, constraint_var=constraint_var,
+                                      output_path=decorr_path, title_suffix=subset_name)
+
+        # Compute and save permutation importance to identify which features the model relies on most
+        importance_path = output_csv.with_name(f"{output_csv.stem}_permutation_importance.png")
+        baseline_auc, importances = compute_permutation_importance(
+            model=model,
+            feature_matrix=feature_matrix,
+            labels=np.asarray(full_inference_data["label"]),
+            weights=np.asarray(full_inference_data["weight"]),
+            training_features=training_features,
+            device=device,
+            batch_size=cfg.get("batch_size", 8192),
+        )
+        plot_permutation_importance(baseline_auc, importances, importance_path)
+        logging.info("Saved permutation importance plot to %s", importance_path)
 
 
 def main():
@@ -772,7 +990,7 @@ def main():
         )
 
         logging.info("Skipping training. Running inference on data only...")
-        run_inference(args, cfg, flavor, None, None, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=True, inference_data=real_data)
+        run_inference(args, cfg, flavor, None, None, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=True, inference_data=real_data, train_idx=None, val_idx=None)
         return
 
     logging.info("Loading signal data...")
@@ -809,15 +1027,17 @@ def main():
         for key in combined_keys
     }
     data = apply_derived_vars(data, derived_vars_cfg)
-    data = preprocess_data(data, training_features, feature_transforms, constraint_var)
+    # Save scaler params alongside the output so inference can apply identical scaling
+    scaler_path = Path(cfg.get("output", "simple_abcdisco_output")) / "scaler_params.json"
+    data = preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=scaler_path)
 
     if args.infer:
         logging.info("Skipping training. Running inference only...")
-        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg)
+        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=None, val_idx=None)
         return
 
     logging.info("Creating data loaders...")
-    train_loader, val_loader = make_dataloaders(
+    train_loader, val_loader, train_idx, val_idx = make_dataloaders(
         data=data,
         training_features=training_features,
         constraint_var=constraint_var,
@@ -857,9 +1077,20 @@ def main():
     )
 
     logging.info("Training finished.")
+    checkpoint_path = _latest_checkpoint_from_config(cfg, flavor=flavor)
+    version_dir = _inference_output_dir_from_checkpoint(checkpoint_path)
+
+    # Save a copy of the config used for this run to the versioned directory for reference
+    shutil.copy(args.config, version_dir / Path(args.config).name)
+    logging.info("Saved config to %s", version_dir / Path(args.config).name)
+
+    # Copy scaler params to the versioned checkpoint directory so they stay with the model
+    scaler_path_final = version_dir / "scaler_params.json"
+    shutil.copy(str(scaler_path), str(scaler_path_final))
+    logging.info("Copied scaler params to %s", scaler_path_final)
 
     logging.info("Running inference...")
-    run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg)
+    run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=train_idx, val_idx=val_idx)
     logging.info("Inference finished.")
 
 if __name__ == "__main__":

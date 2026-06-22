@@ -86,7 +86,7 @@ class ABCDLightningModule(pl.LightningModule):
         self.lr_scheduler_patience = lr_scheduler_patience
         self.lr_scheduler_factor = lr_scheduler_factor
         self.lr_scheduler_min_lr = lr_scheduler_min_lr
-        
+
         self.save_hyperparameters()
 
     def forward(self, x):
