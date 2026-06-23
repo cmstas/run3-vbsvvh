@@ -58,6 +58,26 @@ RNode removeDuplicates(RNode df);
 RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName);
 RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::string &objectName, const std::string &newAffix);
 
+// Define or redefine a column depending on whether it already exists in the dataframe.
+// Useful when a function may be called multiple times with different arguments (e.g. AK4JetsSelection).
+template <typename F>
+RNode DefineOrRedefine(RNode df_, const std::string& colName, F func, const std::vector<std::string>& colArgs)
+{
+    auto colNames = df_.GetColumnNames();
+    if (std::find(colNames.begin(), colNames.end(), colName) != colNames.end())
+        return df_.Redefine(colName, func, colArgs);
+    else
+        return df_.Define(colName, func, colArgs);
+}
+inline RNode DefineOrRedefine(RNode df_, const std::string& colName, const std::string& expression)
+{
+    auto colNames = df_.GetColumnNames();
+    if (std::find(colNames.begin(), colNames.end(), colName) != colNames.end())
+        return df_.Redefine(colName, expression);
+    else
+        return df_.Define(colName, expression);
+}
+
 /*
 ############################################
 LUMIMASK
@@ -123,6 +143,9 @@ RVec<RVec<int>> getJetPairs(const RVec<float>& goodJets);
 RVec<int> findJetPairWithMaxDeltaEta(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
 RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2);
 
+const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights.root");
+
+RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2);
 const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights.root");
 
 /*
