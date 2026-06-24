@@ -307,7 +307,7 @@ def create_tarball(preselection_dir: Path) -> Path:
     spanet_run3_dir = "spanet/v2/"
     # Items to include in tarball (from preselection dir)
     preselection_items = [
-        "Makefile", "src", "include", "corrections",
+        "Makefile", "src", "include", "corrections", "bdt",
         spanet_run2_dir, spanet_run3_dir
     ]
 
