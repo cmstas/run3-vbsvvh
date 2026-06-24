@@ -1,4 +1,6 @@
 validation/
+**/CMSSW*
+datacard/
 
 .vscode/
 .DS_Store

@@ -1,0 +1,902 @@
+{
+    "samples": {
+        "JetMET0_Run2023C-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15-v1_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2023C-NanoAODv15_v2-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v2-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v2-v1_NANOAOD/output_2.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2023C-NanoAODv15_v3-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v3-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v3-v1_NANOAOD/output_2.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2023D-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15-v1_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptD",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2023D-NanoAODv15_v2-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15_v2-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2023D-NanoAODv15_v2-v1_NANOAOD/output_2.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptD",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_6.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_7.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_13.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_14.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_15.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_16.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_17.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_18.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_19.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_20.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_21.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_22.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_23.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_24.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_25.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_26.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_13.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_14.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_15.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_16.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_17.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_18.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_19.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_20.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_21.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_22.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_23.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_24.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_25.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_26.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_27.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_28.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_29.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_30.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_31.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_32.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024H-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024I-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15-v2_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET0_Run2024I-MINIv6NANOv15_v2-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET0",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2023C-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15-v1_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2023C-NanoAODv15_v2-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v2-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v2-v1_NANOAOD/output_2.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2023C-NanoAODv15_v3-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v3-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v3-v1_NANOAOD/output_2.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023C-NanoAODv15_v4-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2023D-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15-v1_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptD",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2023D-NanoAODv15_v2-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15_v2-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2023D-NanoAODv15_v2-v1_NANOAOD/output_2.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptD",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_6.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024D-MINIv6NANOv15-v1_NANOAOD/output_7.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024E-MINIv6NANOv15-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_13.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_14.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_15.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_16.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_17.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_18.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_19.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_20.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_21.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_22.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_23.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_24.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_25.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_26.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024F-MINIv6NANOv15-v2_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_13.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_14.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_15.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_16.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_17.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_18.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_19.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_20.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_21.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_22.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_23.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_24.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_25.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_26.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_27.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_28.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_29.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_30.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_31.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_32.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_33.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024G-MINIv6NANOv15-v2_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024H-MINIv6NANOv15-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024H-MINIv6NANOv15-v2_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024I-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15-v1_NANOAOD/output_5.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET1_Run2024I-MINIv6NANOv15_v2-v2_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET1",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET_Run2022C-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_13.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_14.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022C-NanoAODv15-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2022Re-recoBCD",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET_Run2022D-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022D-NanoAODv15-v1_NANOAOD/output_8.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2022Re-recoBCD",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET_Run2022E-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022E-NanoAODv15-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2022Re-recoE+PromptFG",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET_Run2022F-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_10.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_11.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_12.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_13.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_14.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_15.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_16.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_17.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_18.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_19.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_20.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_21.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_22.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_23.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_24.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_25.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_26.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_27.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_28.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_29.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_30.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_31.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_32.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_33.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_34.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_35.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_36.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_37.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_38.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_39.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_40.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_41.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_42.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_7.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_8.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022F-NanoAODv15-v1_NANOAOD/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2022Re-recoE+PromptFG",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0
+            }
+        },
+        "JetMET_Run2022G-NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_1.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_2.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_3.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_4.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_5.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_6.root",
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ/JetMET_Run2022G-NanoAODv15-v1_NANOAOD/output_7.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2022Re-recoE+PromptFG",
+                "type": "JetMET",
+                "xsec": 1.0,
+                "lumi": 1.0,
+                "sumw": 1.0,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0
+            }
+        }
+    }
+}

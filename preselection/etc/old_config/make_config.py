@@ -34,7 +34,7 @@ LUMI = {
     "2022Re-recoE+PromptFG": 26.6717,
     "2023PromptC": 18.063,
     "2023PromptD": 9.693,
-    "2024Prompt": 109.08 + 7.9804 + 26.6717 + 18.063 + 9.693,  # sum of all 2022+2023 runs
+    "2024Prompt": 109.08 + 34.76 + 28.28,  # sum of all 2022+2023 runs
 }
 
 SAMPLE_TYPE_MAPPING = {
@@ -306,9 +306,16 @@ class ConfigGenerator:
         else:
             sample_type = self.extract_mc_sample_type(sample_name)
 
-        if self.is_data and sample_type not in ["Muon", "Electron"]:
-            print(f"  ❌ Skipping Sample type: {sample_type}")
-            return {}, []
+        if self.is_data:
+            # 0-lepton channels use the hadronic (JetHT/MET) datasets;
+            # leptonic channels use the SingleMuon/EGamma datasets.
+            if self.channel.startswith("0Lep"):
+                allowed_types = ["JetHT", "MET", "JetMET"]
+            else:
+                allowed_types = ["Muon", "Electron"]
+            if sample_type not in allowed_types:
+                print(f"  ❌ Skipping Sample type: {sample_type}")
+                return {}, []
 
         # Get files - strip trailing slash to avoid double slashes in pattern
         sample_dir_clean = sample_dir.rstrip('/')

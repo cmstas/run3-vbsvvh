@@ -69,16 +69,6 @@
     "QCD-4Jets_Bin-HT-1500to2000"                  :     125.2,
     "QCD-4Jets_Bin-HT-2000"                        :     26.49,
 
-    "QCD_Bin-PT-300to470"                          :     7581.0,
-    "QCD_Bin-PT-470to600"                          :     623.3,
-    "QCD_Bin-PT-600to800"                          :     178.7,
-    "QCD_Bin-PT-800to1000"                         :     30.62,
-    "QCD_Bin-PT-1000to1500"                        :     9.306,
-    "QCD_Bin-PT-1500to2000"                        :     0.5015,
-    "QCD_Bin-PT-2000to2500"                        :     0.04264,
-    "QCD_Bin-PT-2500to3000"                        :     0.004454,
-    "QCD_Bin-PT-3000"                              :     0.0005539,
-
     "DYto2E_Bin-MLL-10to50"                        :     6744.0,
     "DYto2Mu_Bin-MLL-10to50"                       :     6744.0,
     "DYto2Tau_Bin-MLL-10to50"                      :     6744.0,

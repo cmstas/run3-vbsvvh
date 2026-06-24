@@ -4,6 +4,7 @@ Script to extract and sum cutflow tables from job stdout files.
 """
 
 import re
+import gzip
 from collections import defaultdict
 from pathlib import Path
 from argparse import ArgumentParser
@@ -21,9 +22,15 @@ def extract_cutflow_table(file_path):
     cutflow_data = []
     
     try:
-        with open(file_path, 'r') as f:
-            content = f.read()
-            
+        with open(file_path, 'rb') as raw:
+            magic = raw.read(2)
+        if magic == b'\x1f\x8b':
+            with gzip.open(file_path, 'rt', errors='replace') as f:
+                content = f.read()
+        else:
+            with open(file_path, 'r', errors='replace') as f:
+                content = f.read()
+
         matches = CUTFLOW_PATTERN.findall(content)
         
         for match in matches:
