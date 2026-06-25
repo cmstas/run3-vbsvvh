@@ -102,6 +102,17 @@ DS_DICT_SINGLELEP = {
             ],
         },
     },
+    "2025" : {
+        "ds_prio_lst" : ["Muon", "EGamma"],
+        "ds_trg_dict" : {
+            "Muon" : [
+                "HLT_IsoMu24",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
+            ],
+        },
+    },
 
 }
 
