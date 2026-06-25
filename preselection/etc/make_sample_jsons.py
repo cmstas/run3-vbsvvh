@@ -17,31 +17,31 @@ SKIM_PATH_DICT = {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep0FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep0FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep0FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep0FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep0FJ",
     },
     "0lep_1FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep1FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep1FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep1FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep1FJ",
     },
     "0lep_2FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep2FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep2FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep2FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep2FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep2FJ",
     },
     "0lep_3FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_0Lep3FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_0Lep3FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_0Lep3FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_0Lep3FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ",
     },
     "1lep_1FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_1Lep1FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_1Lep1FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_1Lep1FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_1Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_1Lep1FJ",
     },
     "2lep_1FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_2Lep1FJ",
@@ -53,7 +53,7 @@ SKIM_PATH_DICT = {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_2Lep2FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep2FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_2Lep2FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_2Lep2FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_2Lep2FJ",
     },
     "2lep_SS" : {
         #("run2", "bkg")  : "",
@@ -71,7 +71,7 @@ SKIM_PATH_DICT = {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_4Lep",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_4Lep",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_4Lep",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_4Lep",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_4Lep",
     },
 }
 
