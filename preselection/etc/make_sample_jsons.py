@@ -47,7 +47,7 @@ SKIM_PATH_DICT = {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_2Lep1FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep1FJ",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_2Lep1FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_2Lep1FJ",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_2Lep1FJ",
     },
     "2lep_2FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_2Lep2FJ",
@@ -65,7 +65,7 @@ SKIM_PATH_DICT = {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_3Lep",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_3Lep",
         ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Bkg_v15_v28_3Lep",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run3_Data_v15_v28_3Lep",
+        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_3Lep",
     },
     "4lep"    : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v28/Run2_Bkg_v15_v28_4Lep",
@@ -85,6 +85,7 @@ LUMI_DICT = {
     "2022": 34.76,
     "2023": 28.28,
     "2024Prompt": 109.95,
+    "2025": 110.84
 }
 
 
@@ -224,7 +225,7 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, ru
     # What name to include for the metadata
     if kind == "data":
         name_for_metadata = dataset_name_short.split("_")[0] # For data just keep e.g. "DoubleEG"
-        if name_for_metadata.endswith("0") or name_for_metadata.endswith("1"):
+        if name_for_metadata.endswith("0") or name_for_metadata.endswith("1") or name_for_metadata.endswith("2") or name_for_metadata.endswith("3"):
             # Run 3 dataset names include e.g. Muon, Muon0, Muon1
             name_for_metadata = name_for_metadata[:-1]
     else: name_for_metadata = dataset_name_short
