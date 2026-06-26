@@ -5,9 +5,9 @@
                 "Events"
             ],
             "files": [
-                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep2FJ/DoubleMuon_Run2016E-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_1.root",
-                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep2FJ/DoubleMuon_Run2016E-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_2.root",
-                "store/user/phchang/skim/VBSVVH_skim_v28/Run2_Data_v15_v28_2Lep2FJ/DoubleMuon_Run2016E-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_3.root"
+                "store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_2Lep2FJ/DoubleMuon_Run2016E-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_1.root",
+                "store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_2Lep2FJ/DoubleMuon_Run2016E-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_2.root",
+                "store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_2Lep2FJ/DoubleMuon_Run2016E-HIPM_UL2016_NanoAODv15-v1_NANOAOD/output_3.root"
             ],
             "metadata": {
                 "kind": "data",
