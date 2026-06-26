@@ -37,7 +37,9 @@ const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrec
     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
-    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
+    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
+    // Recomendation from: https://btv-wiki.docs.cern.ch/ScaleFactors/Run3Prompt25/
+    {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
 
 // 2. Map of Numbers: Put the actual numeric thresholds here
@@ -50,7 +52,8 @@ static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
     {"2022Re-recoE+PromptFG", btaggingCorrections.at("2022Re-recoE+PromptFG").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"L"})},
-    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
+    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
+    {"2025",        btaggingCorrections.at("2025").at("UParTAK4_wp_values")->evaluate({"L"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
@@ -62,7 +65,8 @@ static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
     {"2022Re-recoE+PromptFG", btaggingCorrections.at("2022Re-recoE+PromptFG").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"M"})},
-    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
+    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})},
+    {"2025",        btaggingCorrections.at("2025").at("UParTAK4_wp_values")->evaluate({"M"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
@@ -74,7 +78,8 @@ static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
     {"2022Re-recoE+PromptFG", btaggingCorrections.at("2022Re-recoE+PromptFG").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"T"})},
-    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
+    {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})},
+    {"2025",        btaggingCorrections.at("2025").at("UParTAK4_wp_values")->evaluate({"T"})}
 };
 
 /*
