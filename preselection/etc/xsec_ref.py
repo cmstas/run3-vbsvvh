@@ -198,18 +198,17 @@ xsec_dict = {
             "ZZZ-5F_TuneCP5_13p6TeV" : 0.01591,
  
 
-            # No longer using these samples, using inclusive instead
             # From the old xsecs_13p6TeV.json in the repo (from XSDB?)
-            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100": 475.3,
-            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200": 45.42,
-            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400": 3.382,
-            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600": 0.1162,
-            #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600": 0.01392,
-            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100": 179.3,
-            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200": 51.68,
-            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
-            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
-            #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
+            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100": 475.3,
+            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200": 45.42,
+            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400": 3.382,
+            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600": 0.1162,
+            "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600": 0.01392,
+            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100": 179.3,
+            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200": 51.68,
+            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
+            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
+            "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
 
         },
 
@@ -374,7 +373,20 @@ xsec_dict = {
             #-----------------------------------------------------------------------------
 
             # From twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGGGF_RUN2 and using BR:0.000267
-            "GluGluHToZZTo4L": 0.01297 
+            "GluGluHToZZTo4L": 0.01297,
+
+            #-----------------------------------------------------------------------------
+
+            # From GenXSecAnalyzer (computed by claude)
+            "DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV"   : 139.7,
+            "DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV"  : 140.3,
+            "DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV"  : 38.51,
+            "DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV"  : 5.211,
+            "DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV"  : 1.268,
+            "DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV" : 0.5683,
+            "DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV": 0.1333,
+            "DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV" : 0.002987,
+
 
         }
     },
