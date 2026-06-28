@@ -16,7 +16,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_OS",
                 "xsec": 0.001789,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWWH_OS_C2V_1p0_C3_10p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -38,7 +38,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_OS",
                 "xsec": 0.0007233,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWWH_OS_C2V_1p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -60,7 +60,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_OS",
                 "xsec": 0.001277,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWWH_OS_C2V_1p5_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -82,7 +82,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_OS",
                 "xsec": 0.002838,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWWH_OS_C2V_2p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -104,7 +104,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_SS",
                 "xsec": 0.0005075,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 495000.0,
                 "shortname": "VBSWWH_SS_C2V_1p0_C3_10p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -126,7 +126,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_SS",
                 "xsec": 0.000359,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 495000.0,
                 "shortname": "VBSWWH_SS_C2V_1p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -148,7 +148,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_SS",
                 "xsec": 0.0007359,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWWH_SS_C2V_1p5_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -170,7 +170,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWWH_SS",
                 "xsec": 0.001813,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWWH_SS_C2V_2p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -192,7 +192,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWZH",
                 "xsec": 0.0007107,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWZH_C2V_1p0_C3_10p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -214,7 +214,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWZH",
                 "xsec": 0.000474,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSWZH_C2V_1p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -236,7 +236,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWZH",
                 "xsec": 0.0008252,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 495000.0,
                 "shortname": "VBSWZH_C2V_1p5_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -258,7 +258,7 @@
                 "year": "2024Prompt",
                 "type": "VBSWZH",
                 "xsec": 0.001863,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 430000.0,
                 "shortname": "VBSWZH_C2V_2p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -280,7 +280,7 @@
                 "year": "2024Prompt",
                 "type": "VBSZZH",
                 "xsec": 0.000469,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSZZH_C2V_1p0_C3_10p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -302,7 +302,7 @@
                 "year": "2024Prompt",
                 "type": "VBSZZH",
                 "xsec": 0.000125,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSZZH_C2V_1p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -324,7 +324,7 @@
                 "year": "2024Prompt",
                 "type": "VBSZZH",
                 "xsec": 0.0004378,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 500000.0,
                 "shortname": "VBSZZH_C2V_1p5_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0
@@ -346,7 +346,7 @@
                 "year": "2024Prompt",
                 "type": "VBSZZH",
                 "xsec": 0.001367,
-                "lumi": 172.12,
+                "lumi": 282.96000000000004,
                 "sumw": 420000.0,
                 "shortname": "VBSZZH_C2V_2p0_C3_1p0_13p6TeV_4f_LO",
                 "do_ewk_corr": 0

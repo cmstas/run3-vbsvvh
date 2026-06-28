@@ -7,14 +7,26 @@ B-TAGGING WORKING POINTS
 */
 
 RVec<bool> isbTagLoose(std::string year, RVec<float> btag_score) {
+    if (btaggingWPMap_Loose.find(year) == btaggingWPMap_Loose.end()) {
+        std::cerr << "Error: B-tagging loose working point for year " << year << " not found. Please add it to btaggingWPMap_Loose in corrections.h." << std::endl;
+        std::exit(1);
+    }
     return btag_score > btaggingWPMap_Loose.at(year);
 }
 
 RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score) {
+    if (btaggingWPMap_Medium.find(year) == btaggingWPMap_Medium.end()) {
+        std::cerr << "Error: B-tagging medium working point for year " << year << " not found. Please add it to btaggingWPMap_Medium in corrections.h." << std::endl;
+        std::exit(1);
+    }
     return btag_score > btaggingWPMap_Medium.at(year);
 }
 
 RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
+    if (btaggingWPMap_Tight.find(year) == btaggingWPMap_Tight.end()) {
+        std::cerr << "Error: B-tagging tight working point for year " << year << " not found. Please add it to btaggingWPMap_Tight in corrections.h." << std::endl;
+        std::exit(1);
+    }
     return btag_score > btaggingWPMap_Tight.at(year);
 }
 

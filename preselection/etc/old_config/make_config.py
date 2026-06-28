@@ -34,7 +34,7 @@ LUMI = {
     "2022Re-recoE+PromptFG": 26.6717,
     "2023PromptC": 18.063,
     "2023PromptD": 9.693,
-    "2024Prompt": 109.08 + 34.76 + 28.28,  # sum of all 2022+2023 runs
+    "2024Prompt": 109.08 + 34.76 + 28.28 + 110.84,  # sum of all 2022+2023+2024+2025 runs
 }
 
 SAMPLE_TYPE_MAPPING = {
@@ -107,6 +107,8 @@ class ConfigGenerator:
                 return "2023PromptD"
             elif any(run in sample_path for run in ["Run2024B", "Run2024C", "Run2024D", "Run2024E", "Run2024F", "Run2024G", "Run2024H", "Run2024I"]):
                 return "2024Prompt"
+            elif any(run in sample_path for run in ["Run2025A", "Run2025B", "Run2025C", "Run2025D", "Run2025E", "Run2025F", "Run2025G", "Run2025H"]):
+                return "2025Prompt"
 
         # MC patterns - Run 2
         if "UL16" in sample_path and "APV" in sample_path:

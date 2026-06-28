@@ -81,10 +81,7 @@
     "GluGluZH-Zto2L-Hto2B_Par-M-125"               :     0.006838,
     "GluGluZH-Zto2Nu-Hto2B_Par-M-125"              :     0.01351,
     "GluGluZH-Zto2Q-Hto2B_Par-M-125"               :     0.04776,
-    "QCD_Bin-PT-50to80"                            :     16730000.0,
-    "QCD_Bin-PT-80to120"                           :     2506000.0,
-    "QCD_Bin-PT-120to170"                          :     439800.0,
-    "QCD_Bin-PT-170to300"                          :     113300.0,
+
     "TbarBQto2Q-t-channel-4FS"                     :     46.73,
     "TbarBQtoLNu-t-channel-4FS"                    :     23.34,
     "TbarBtoLNu-s-channel"                         :     3.825,

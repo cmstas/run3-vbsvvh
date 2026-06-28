@@ -149,10 +149,10 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
     }
 
     df = DefineOrRedefine(df, "_good_ak4jets", "_dR_ak4_lep > 0.4 && " + fj_cut +
-                                    "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
-                                    "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||"
-                                    "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
-                                    "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
+                                "((isRun3 && ((Jet_pt > 20 && (abs(Jet_eta) <= 2.5 || abs(Jet_eta) >= 3.0) && abs(Jet_eta) < 5.0) || "
+                                "(Jet_pt > 50 && abs(Jet_eta) > 2.5 && abs(Jet_eta) < 3.0))) ||"
+                                "(isRun2 && Jet_pt > 20 && abs(Jet_eta) < 5.0)) &&  "
+                                "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2))");
 
     df = df.Filter("(isRun2) || (isRun3 && !Any(Jet_vetoMap))");
     df = df.Redefine("_good_ak4jets", "_good_ak4jets && !Jet_vetoMap");
