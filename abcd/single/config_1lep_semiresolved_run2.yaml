@@ -1,8 +1,10 @@
-sig_base_path: "~/ceph/vbsvvh/preselection/"
-bkg_base_path: "~/ceph/vbsvvh/preselection/"
+sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r2*1fj_sig*/*/*.root"]
+sig_path: ["*r2*1fj_sig*/*1p5*/*.root"]
 bkg_path: ["*r2*1fj_bkg*/*/*.root"]
+data_path: ["*r2*1fj_data*/*/*.root"]
 
 training_features:
   - lepton_pt: log
@@ -36,16 +38,7 @@ training_features:
   - resolved_dR_3: minmax
   - resolved_dR_4: minmax
   - resolved_dR_5: minmax
-  - vbs_jet1_pt: log
-  - vbs_jet1_eta: minmax
-  - vbs_jet1_phi: minmax
-  - vbs_jet1_mass: log
-  - vbs_jet2_pt: log
-  - vbs_jet2_eta: minmax
-  - vbs_jet2_phi: minmax
-  - vbs_jet2_mass: log
-  - vbs_detajj: minmax
-  - vbs_mjj: log
+  - mlb_min: log
 
 derived_vars:
   - resolved_mjj_1_residue_h: "np.where(resolved_mjj_1 > 0, np.abs(resolved_mjj_1 - 125.0), -999.0)"
@@ -67,16 +60,17 @@ derived_vars:
 auto_include_derived_vars: true
 auto_include_derived_vars_transform: log
 
-constraint_var: vbs_detajj
-
 extra_vars:
   - weight
   - boosted_h_candidate_score
   - boosted_v_candidate_score
+  - vbs_score
 
 preselection: "(boosted_h_candidate_score >= 0.1) | (boosted_v_candidate_score >= 0.1)"
 
-batch_size: 8192
+constraint_var: "vbs_detajj"
+
+batch_size: 8192 #16384
 learning_rate: 0.0001
 n_epochs: 1000
 
@@ -89,6 +83,6 @@ dropout: 0.2
 weight_decay: 0.01
 label_smoothing: 0.0
 
-devices: [1]
+devices: [2]
 
-output: "1FJ_NEW_RUN2"
+output: "output/1LEP_1FJ_RUN2"

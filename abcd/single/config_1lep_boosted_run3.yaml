@@ -1,8 +1,10 @@
-sig_base_path: "~/ceph/vbsvvh/preselection/"
-bkg_base_path: "~/ceph/vbsvvh/preselection/"
+sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r2*2fj_sig*/*/*.root"]
-bkg_path: ["*r2*2fj_bkg*/*/*.root"]
+sig_path: ["*r3*2fj_sig*/*1p5*/*.root"]
+bkg_path: ["*r3*2fj_bkg*/*/*.root"]
+data_path: ["*r3*2fj_data*/*/*.root"]
 
 training_features:
   - lepton_pt: log
@@ -21,43 +23,35 @@ training_features:
   - boosted_v_candidate_phi: minmax
   - boosted_v_candidate_mass: log
   - boosted_v_candidate_tau21: none
-  - vbs_jet1_pt: log
-  - vbs_jet1_eta: minmax
-  - vbs_jet1_phi: minmax
-  - vbs_jet1_mass: log
-  - vbs_jet2_pt: log
-  - vbs_jet2_eta: minmax
-  - vbs_jet2_phi: minmax
-  - vbs_jet2_mass: log
-  - vbs_detajj: minmax
-  - vbs_mjj: log
+  - mlb_min: log
 
 derived_vars: {}
 auto_include_derived_vars: false
 auto_include_derived_vars_transform: none
 
-constraint_var: vbs_detajj
-
 extra_vars:
   - weight
   - boosted_h_candidate_score
   - boosted_v_candidate_score
+  - vbs_score
+
+constraint_var: "vbs_detajj"
 
 preselection: "(boosted_h_candidate_score >= 0.1) & (boosted_v_candidate_score >= 0.1)"
 
 learning_rate: 0.0001
-batch_size: 4096
+batch_size: 2048
 n_epochs: 1000
 
 architecture: [64, 32, 16]
 bce_weight: 1.0
-disco_lambda: 100.0
+disco_lambda: 5.0
 
 use_batchnorm: true
-dropout: 0.1
+dropout: 0.2
 weight_decay: 0.01
-label_smoothing: 0.01
+label_smoothing: 0.0
 
 devices: [1]
 
-output: "2FJ_NEW_RUN2"
+output: "output/1LEP_2FJ_RUN3"

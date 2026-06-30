@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from joblib import Parallel, delayed
 
 def to_threshold_bin_idx(vals, thresholds):
     """
@@ -26,7 +27,7 @@ def optimize_cuts(df_sig, df_bkg,
                   disco1_col="dnn_0_score", disco2_col="dnn_1_score",
                   cut_var1_list=None, cut_var2_list=None, cut_var3_list=None,
                   cut_disco1_list=None, cut_disco2_list=None,
-                  combine_method="and"):
+                  combine_method="and", n_jobs=16):
     """
     Optimizes 5D cuts to maximize significance.
     """
@@ -82,10 +83,10 @@ def optimize_cuts(df_sig, df_bkg,
     sig_valid = (sig_d_idx >= 0) & (sig_j_idx >= 0)
     bkg_valid = (bkg_d_idx >= 0) & (bkg_j_idx >= 0)
 
-    best_significance = -np.inf
-    best_tuple = None
-
-    for i, cut_var1 in enumerate(cut_var1_list):
+    def evaluate_cut_var1(i, cut_var1):
+        local_best_significance = -np.inf
+        local_best_tuple = None
+        
         sig_mask_h = sig_h_ge[:, i]
         bkg_mask_h = bkg_h_ge[:, i]
 
@@ -127,9 +128,22 @@ def optimize_cuts(df_sig, df_bkg,
 
                 idx = np.unravel_index(np.argmax(S), S.shape)
                 current_significance = S[idx]
-                if current_significance > best_significance:
-                    best_significance = current_significance
-                    best_tuple = (cut_var1, cut_var2, cut_var3, cut_disco1_list[idx[0]], cut_disco2_list[idx[1]])
+                if current_significance > local_best_significance:
+                    local_best_significance = current_significance
+                    local_best_tuple = (cut_var1, cut_var2, cut_var3, cut_disco1_list[idx[0]], cut_disco2_list[idx[1]])
+        
+        return local_best_significance, local_best_tuple
+
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(evaluate_cut_var1)(i, cut_var1) for i, cut_var1 in enumerate(cut_var1_list)
+    )
+
+    best_significance = -np.inf
+    best_tuple = None
+    for sig, tup in results:
+        if sig > best_significance:
+            best_significance = sig
+            best_tuple = tup
 
     if best_tuple is None:
         # Default or fallback if none is found
@@ -137,20 +151,30 @@ def optimize_cuts(df_sig, df_bkg,
 
     return best_significance, best_tuple
 
-def get_ABCD_regions(df, cut_var1, cut_var2, cut_disco1, cut_disco2, 
-                     var1_col="boosted_h_candidate_score", var2_col="boosted_v_candidate_score", 
+def get_ABCD_regions(df, cut_var1, cut_var2, cut_disco1, cut_disco2,
+                     var1_col="boosted_h_candidate_score", var2_col="boosted_v_candidate_score",
                      disco1_col="dnn_0_score", disco2_col="dnn_1_score",
-                     combine_method="and"):
+                     combine_method="and",
+                     var3_col=None, cut_var3=None):
     """
     Computes ABCD region yields given the optimized cut thresholds.
+
+    Optionally applies a third tagger cut (var3_col >= cut_var3), combined with
+    the first two using the same combine_method.
     """
     # Apply initial kinematic cuts if applicable
     if combine_method == "and":
-        df_filtered = df[(df[var1_col] >= cut_var1) & (df[var2_col] >= cut_var2)]
+        kin_mask = (df[var1_col] >= cut_var1) & (df[var2_col] >= cut_var2)
+        if var3_col is not None:
+            kin_mask = kin_mask & (df[var3_col] >= cut_var3)
     elif combine_method == "or":
-        df_filtered = df[(df[var1_col] >= cut_var1) | (df[var2_col] >= cut_var2)]
+        kin_mask = (df[var1_col] >= cut_var1) | (df[var2_col] >= cut_var2)
+        if var3_col is not None:
+            kin_mask = kin_mask | (df[var3_col] >= cut_var3)
     else:
         raise ValueError("combine_method must be 'and' or 'or'")
+
+    df_filtered = df[kin_mask]
     
     A = df_filtered[(df_filtered[disco1_col] >= cut_disco1) & (df_filtered[disco2_col] >= cut_disco2)].weight.sum()
     B = df_filtered[(df_filtered[disco1_col] >= cut_disco1) & (df_filtered[disco2_col] < cut_disco2)].weight.sum()

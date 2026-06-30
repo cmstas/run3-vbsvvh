@@ -1,10 +1,10 @@
-sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/"
-bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/"
-data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/"
+sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r3*2fj_sig*/*/*.root"]
-bkg_path: ["*r3*2fj_bkg*/*/*.root"]
-data_path: ["*r3*2fj_data*/*/*.root"]
+sig_path: ["*r2*2fj_sig*/*1p5*/*.root"]
+bkg_path: ["*r2*2fj_bkg*/*/*.root"]
+data_path: ["*r2*2fj_data*/*/*.root"]
 
 training_features:
   - lepton_pt: log
@@ -25,33 +25,31 @@ training_features:
   - boosted_v_candidate_tau21: none
   - mlb_min: log
 
-derived_vars: {}
-auto_include_derived_vars: false
-auto_include_derived_vars_transform: none
-
 extra_vars:
   - weight
   - boosted_h_candidate_score
   - boosted_v_candidate_score
-  - vbs_detajj
+  - vbs_score
 
-constraint_var: "vbs_score"
+constraint_var: "vbs_detajj"
 
 preselection: "(boosted_h_candidate_score >= 0.1) & (boosted_v_candidate_score >= 0.1)"
 
 learning_rate: 0.0001
-batch_size: 2048
+batch_size: 4096
 n_epochs: 1000
 
 architecture: [64, 32, 16]
 bce_weight: 1.0
-disco_lambda: 5.0
+disco_lambda: 10.0
 
+closure_n_events_min: 10
+closure_symmetrize: true
 use_batchnorm: true
 dropout: 0.2
 weight_decay: 0.01
 label_smoothing: 0.0
 
-devices: [1]
+devices: [0]
 
-output: "2FJ_NEW_RUN3"
+output: "output/1LEP_2FJ_RUN2"
