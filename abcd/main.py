@@ -547,6 +547,15 @@ def _latest_checkpoint_from_config(cfg, flavor) -> Path:
         raise FileNotFoundError(f"No .ckpt files found under {ckpt_dir}")
     return sorted(ckpts, key=lambda p: p.stat().st_mtime)[-1]
 
+def _all_checkpoints_from_config(cfg, flavor) -> list:
+    output_dir = Path(cfg.get("output", "simple_abcdisco_output"))
+    version_dir = _latest_version_dir(output_dir, flavor=flavor)
+    ckpt_dir = version_dir / "checkpoints"
+    ckpts = [p for p in ckpt_dir.glob("*.ckpt") if p.is_file()]
+    if not ckpts:
+        raise FileNotFoundError(f"No .ckpt files found under {ckpt_dir}")
+    return sorted(ckpts, key=lambda p: p.stat().st_mtime)
+
 
 def _inference_output_dir_from_checkpoint(checkpoint_path: Path) -> Path:
     if checkpoint_path.parent.name == "checkpoints":
@@ -597,23 +606,27 @@ def _batched_scores(model, features_tensor, batch_size, flavor, device):
     return out_0, out_1
 
 def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
-    def profile_overlay(ax, x, y, bins, xrange):
+    def profile_overlay(ax, x, y, bins, xrange, weights=None, color='yellow', label='Profile mean'):
         bin_edges = np.linspace(xrange[0], xrange[1], bins + 1)
         bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
         means, errors = [], []
         for lo, hi in zip(bin_edges[:-1], bin_edges[1:]):
             mask = (x >= lo) & (x < hi)
             vals = y[mask]
+            w = weights[mask] if weights is not None else None
             if len(vals) > 0:
-                means.append(np.mean(vals))
-                errors.append(np.std(vals) / np.sqrt(len(vals)))
+                mean = np.average(vals, weights=w)
+                variance = np.average((vals - mean) ** 2, weights=w)
+                n_eff = (np.sum(w) ** 2 / np.sum(w ** 2)) if w is not None else len(vals)
+                errors.append(np.sqrt(variance / n_eff))
+                means.append(mean)
             else:
                 means.append(np.nan)
                 errors.append(np.nan)
         means = np.array(means)
         errors = np.array(errors)
-        ax.errorbar(bin_centers, means, yerr=errors, color='yellow',
-                    fmt='o', markersize=3, linewidth=1.5, label='Profile mean')
+        ax.errorbar(bin_centers, means, yerr=errors, color=color,
+                    fmt='o', markersize=3, linewidth=1.5, label=label)
         ax.legend(fontsize=9)
 
     labels = np.asarray(data["label"])
@@ -636,6 +649,9 @@ def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix="")
     axes[0].set_xlabel('DNN Score')
     axes[0].set_ylabel(constraint_var)
     profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range)
+    profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range,
+                    weights=background["weight"] if "weight" in background else None,
+                    color='orange', label='Profile mean (weighted)')
 
     h2 = axes[1].hist2d(signal[score_col], signal[constraint_var], bins=bins,
                          range=[dnn_range, constrain_var_range], cmap='Reds',
@@ -645,6 +661,9 @@ def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix="")
     axes[1].set_xlabel('DNN Score')
     axes[1].set_ylabel(constraint_var)
     profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range)
+    profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range,
+                    weights=signal["weight"] if "weight" in signal else None,
+                    color='orange', label='Profile mean (weighted)')
 
     fig.suptitle(f'ABCD Plane{" - " + title_suffix if title_suffix else ""}')
     plt.tight_layout()
@@ -860,7 +879,7 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
     if is_data:
         default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}_data.csv"
     else:
-        default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}.csv"
+        default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}_{checkpoint_path.stem}.csv"
 
     output_csv = Path(args.output_csv) if args.output_csv else default_out
     output_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -1090,7 +1109,11 @@ def main():
     logging.info("Copied scaler params to %s", scaler_path_final)
 
     logging.info("Running inference...")
-    run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=train_idx, val_idx=val_idx)
+    all_checkpoints = _all_checkpoints_from_config(cfg, flavor=flavor)
+    for ckpt_path in all_checkpoints:
+        logging.info("Running inference for checkpoint: %s", ckpt_path)
+        args.checkpoint = str(ckpt_path)
+        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=train_idx, val_idx=val_idx)
     logging.info("Inference finished.")
 
 if __name__ == "__main__":
