@@ -605,6 +605,98 @@ def _batched_scores(model, features_tensor, batch_size, flavor, device):
     out_1 = np.concatenate(scores_1) if scores_1 else np.array([], dtype=np.float32)
     return out_0, out_1
 
+def _plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, output_path):
+    labels = np.asarray(data["label"])
+    constraint = np.asarray(data[constraint_var])
+    weights = np.asarray(data["weight"]) if "weight" in data else None
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10), gridspec_kw={"height_ratios": [3, 1]})
+
+    for col, (mask, title) in enumerate([
+        (labels == 0, "Background"),
+        (labels == 1, "Signal"),
+    ]):
+        ax_main = axes[0, col]
+        ax_ratio = axes[1, col]
+
+        all_idx = np.where(mask)[0]
+        train_mask_idx = np.intersect1d(all_idx, train_idx)
+        val_mask_idx = np.intersect1d(all_idx, val_idx)
+
+        all_vals = constraint[all_idx]
+        train_vals = constraint[train_mask_idx]
+        val_vals = constraint[val_mask_idx]
+
+        all_w = weights[all_idx] if weights is not None else None
+        train_w = weights[train_mask_idx] if weights is not None else None
+        val_w = weights[val_mask_idx] if weights is not None else None
+
+        bins = np.linspace(np.min(all_vals), np.max(all_vals), 51)
+
+        all_counts, _ = np.histogram(all_vals, bins=bins, weights=all_w, density=False)
+        train_counts, _ = np.histogram(train_vals, bins=bins, weights=train_w, density=False)
+        val_counts, _ = np.histogram(val_vals, bins=bins, weights=val_w, density=False)
+
+        all_counts_norm = all_counts / (all_counts.sum() + 1e-12)
+        train_counts_norm = train_counts / (train_counts.sum() + 1e-12)
+        val_counts_norm = val_counts / (val_counts.sum() + 1e-12)
+
+        bin_centers = 0.5 * (bins[:-1] + bins[1:])
+
+        ax_main.step(bins[:-1], all_counts_norm, where="post", linewidth=2,
+                     color="black", label=f"All ({len(all_vals)})")
+        ax_main.step(bins[:-1], train_counts_norm, where="post", linewidth=2,
+                     color="tab:blue", label=f"Train ({len(train_vals)})")
+        ax_main.step(bins[:-1], val_counts_norm, where="post", linewidth=2,
+                     color="tab:orange", label=f"Val ({len(val_vals)})")
+        ax_main.set_ylabel("Density")
+        ax_main.set_title(f"{title} {constraint_var} distribution")
+        ax_main.legend()
+        ax_main.grid(True, alpha=0.3)
+
+        ratio = np.where(train_counts_norm > 1e-12, val_counts_norm / train_counts_norm, np.nan)
+        ax_ratio.step(bins[:-1], ratio, where="post", linewidth=2, color="black")
+        ax_ratio.axhline(1.0, color="red", linewidth=1, linestyle="--")
+        ax_ratio.set_xlabel(constraint_var)
+        ax_ratio.set_ylabel("Val / Train")
+        ax_ratio.set_title("Val / Train ratio", fontsize=10)
+        ax_ratio.set_ylim(0, 2)
+        ax_ratio.grid(True, alpha=0.3)
+
+    fig.suptitle(f"{constraint_var} train/val split distribution")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    logging.info("Saved constraint var distribution plot to %s", output_path)
+
+
+def _plot_weight_distributions(sig_data, bkg_data, output_path):
+    sig_weights = np.asarray(sig_data["weight"])
+    bkg_weights = np.asarray(bkg_data["weight"])
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    axes[0].hist(sig_weights, bins=50, histtype="step", linewidth=2, color="tab:red")
+    axes[0].set_xlabel("Weight")
+    axes[0].set_ylabel("Counts")
+    axes[0].set_title("Signal weight distribution")
+    axes[0].set_yscale("log")
+    axes[0].grid(True, alpha=0.3)
+
+    axes[1].hist(bkg_weights, bins=50, histtype="step", linewidth=2, color="tab:blue")
+    axes[1].set_xlabel("Weight")
+    axes[1].set_ylabel("Counts")
+    axes[1].set_title("Background weight distribution")
+    axes[1].set_yscale("log")
+    axes[1].grid(True, alpha=0.3)
+
+    fig.suptitle("Input weight distributions")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    logging.info("Saved weight distribution plot to %s", output_path)
+
+
 def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
     def profile_overlay(ax, x, y, bins, xrange, weights=None, color='yellow', label='Profile mean'):
         bin_edges = np.linspace(xrange[0], xrange[1], bins + 1)
@@ -877,7 +969,7 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
     full_inference_data["split"] = split_col
 
     if is_data:
-        default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}_data.csv"
+        default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}_{checkpoint_path.stem}_data.csv"
     else:
         default_out = _inference_output_dir_from_checkpoint(checkpoint_path) / f"predictions_{flavor}_{checkpoint_path.stem}.csv"
 
@@ -1037,6 +1129,10 @@ def main():
     raw_sig_data = {k: np.copy(v) for k, v in sig_data.items()}
     raw_bkg_data = {k: np.copy(v) for k, v in bkg_data.items()}
 
+    weight_plot_path = Path(cfg.get("output", "simple_abcdisco_output")) / "input_weight_distributions.png"
+    weight_plot_path.parent.mkdir(parents=True, exist_ok=True)
+    _plot_weight_distributions(sig_data, bkg_data, weight_plot_path)
+
     sig_data, bkg_data = normalize_class_weights(sig_data, bkg_data)
 
     logging.info("Preprocessing data...")
@@ -1062,6 +1158,11 @@ def main():
         constraint_var=constraint_var,
         batch_size=cfg.get("batch_size", 4096),
     )
+
+    constraint_plot_path = Path(cfg.get("output", "simple_abcdisco_output")) / "constraint_var_distribution.png"
+    constraint_plot_path.parent.mkdir(parents=True, exist_ok=True)
+    _plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, constraint_plot_path)
+    exit()
 
     lightning_model = ABCDLightningModule(
         input_size=len(training_features),
