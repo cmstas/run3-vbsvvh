@@ -586,6 +586,17 @@ def _build_model_from_config(cfg, flavor, input_size, checkpoint_path, device):
     return model
 
 
+def _copy_input_plots_to_version_dir(source_dir, version_dir):
+    source_dir = Path(source_dir)
+    version_dir = Path(version_dir)
+    version_dir.mkdir(parents=True, exist_ok=True)
+
+    for plot_path in source_dir.glob("inputs_*.png"):
+        dest = version_dir / plot_path.name
+        shutil.copy(str(plot_path), str(dest))
+        logging.info("Copied input plot to %s", dest)
+
+
 def _batched_scores(model, features_tensor, batch_size, flavor, device):
     scores_0 = []
     scores_1 = []
@@ -604,6 +615,199 @@ def _batched_scores(model, features_tensor, batch_size, flavor, device):
     out_0 = np.concatenate(scores_0) if scores_0 else np.array([], dtype=np.float32)
     out_1 = np.concatenate(scores_1) if scores_1 else np.array([], dtype=np.float32)
     return out_0, out_1
+
+def _plot_input_feature_distributions(
+    raw_data,
+    training_features,
+    train_idx,
+    val_idx,
+    output_dir,
+    feature_transforms=None,
+    skip_cols=None,
+):
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    labels = np.asarray(raw_data["label"])
+    weights = np.asarray(raw_data["weight"]) if "weight" in raw_data else np.ones(_data_length(raw_data), dtype=np.float64)
+
+    train_mask = np.zeros(_data_length(raw_data), dtype=bool)
+    val_mask = np.zeros(_data_length(raw_data), dtype=bool)
+    train_mask[np.asarray(train_idx, dtype=np.int64)] = True
+    val_mask[np.asarray(val_idx, dtype=np.int64)] = True
+
+    training_feature_set = set(training_features)
+    feature_transforms = feature_transforms or {}
+    skip_cols = set(skip_cols or [])
+
+    default_skip = {
+        "label", "weight", "dataset_idx", "sample_idx", "split",
+        "dnn_score", "dnn_0_score", "dnn_1_score",
+    }
+    skip_cols |= default_skip
+
+    def _safe_filename(name):
+        return re.sub(r"[^A-Za-z0-9_.-]+", "_", str(name))
+
+    def _weighted_density(values, weights, bins):
+        counts, edges = np.histogram(values, bins=bins, weights=weights, density=False)
+        total = np.sum(counts)
+        if total > 0:
+            counts = counts / total
+        return counts, edges
+
+    def _get_plot_values(arr):
+        arr = np.asarray(arr)
+
+        if arr.dtype == object:
+            try:
+                arr = np.asarray([_flatten_awkward_cell(v) for v in arr], dtype=np.float64)
+            except Exception:
+                return None
+        elif np.issubdtype(arr.dtype, np.number):
+            arr = arr.astype(np.float64, copy=False)
+        else:
+            return None
+
+        arr = arr[np.isfinite(arr)]
+        if arr.size == 0:
+            return None
+        return arr
+
+    all_features = []
+    for key in raw_data.keys():
+        if key in skip_cols:
+            continue
+        vals = _get_plot_values(raw_data[key])
+        if vals is None:
+            continue
+        all_features.append(key)
+
+    all_features = sorted(all_features)
+
+    color_map = {
+        ("bkg", "train"): "tab:blue",
+        ("bkg", "val"): "tab:green",
+        ("sig", "train"): "tab:red",
+        ("sig", "val"): "tab:orange",
+    }
+
+    for feat in all_features:
+        values = _get_plot_values(raw_data[feat])
+        if values is None:
+            logging.info("Skipping non-numeric or empty feature '%s' for input plotting", feat)
+            continue
+
+        finite_mask = np.isfinite(np.asarray(raw_data[feat], dtype=object) if np.asarray(raw_data[feat]).dtype == object else np.asarray(raw_data[feat]))
+        # Rebuild cleaned full-length numeric array for masking
+        full_arr = np.asarray(raw_data[feat])
+        if full_arr.dtype == object:
+            try:
+                full_arr = np.asarray([_flatten_awkward_cell(v) for v in full_arr], dtype=np.float64)
+            except Exception:
+                logging.info("Skipping feature '%s' because it could not be flattened", feat)
+                continue
+        else:
+            full_arr = full_arr.astype(np.float64, copy=False)
+
+        valid_mask = np.isfinite(full_arr)
+        if valid_mask.sum() < 2:
+            logging.info("Skipping feature '%s' because it has fewer than 2 finite values", feat)
+            continue
+
+        plot_vals = full_arr[valid_mask]
+        plot_labels = labels[valid_mask]
+        plot_weights = weights[valid_mask]
+        plot_train_mask = train_mask[valid_mask]
+        plot_val_mask = val_mask[valid_mask]
+
+        vmin = np.min(plot_vals)
+        vmax = np.max(plot_vals)
+
+        if not np.isfinite(vmin) or not np.isfinite(vmax):
+            logging.info("Skipping feature '%s' because plotting range is not finite", feat)
+            continue
+
+        if vmin == vmax:
+            eps = 0.5 if vmin == 0 else 0.05 * abs(vmin)
+            vmin -= eps
+            vmax += eps
+
+        bins = np.linspace(vmin, vmax, 51)
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        subsets = [
+            ("bkg", "train", (plot_labels == 0) & plot_train_mask, "Background train"),
+            ("bkg", "val",   (plot_labels == 0) & plot_val_mask,   "Background val"),
+            ("sig", "train", (plot_labels == 1) & plot_train_mask, "Signal train"),
+            ("sig", "val",   (plot_labels == 1) & plot_val_mask,   "Signal val"),
+        ]
+
+        drew_any = False
+        for cls_name, split_name, mask, legend_label in subsets:
+            vals = plot_vals[mask]
+            wts = plot_weights[mask]
+            if len(vals) == 0 or np.sum(wts) <= 0:
+                continue
+
+            counts, edges = _weighted_density(vals, wts, bins=bins)
+            ax.step(
+                edges[:-1],
+                counts,
+                where="post",
+                linewidth=2,
+                color=color_map[(cls_name, split_name)],
+                label=f"{legend_label} (n={len(vals)})",
+            )
+            drew_any = True
+
+        if not drew_any:
+            plt.close(fig)
+            logging.info("Skipping feature '%s' because no drawable subsets were found", feat)
+            continue
+
+        ax.set_title(feat)
+        ax.set_xlabel(feat)
+        ax.set_ylabel("Unit-normalized weighted yield")
+        legend = ax.legend(loc="best")
+        ax.grid(True, alpha=0.3)
+
+        if feat in training_feature_set:
+            transform = feature_transforms.get(feat, "none")
+            training_note = "★ used in training"
+            if transform != "none":
+                training_note += f" (transform: {transform})"
+
+            fig.canvas.draw()
+            if legend is not None:
+                bbox_disp = legend.get_window_extent(fig.canvas.get_renderer())
+                bbox_axes = bbox_disp.transformed(ax.transAxes.inverted())
+                x_text = bbox_axes.x0
+                y_text = max(0.02, bbox_axes.y0 - 0.06)
+            else:
+                x_text = 0.02
+                y_text = 0.02
+
+            ax.text(
+                x_text,
+                y_text,
+                training_note,
+                transform=ax.transAxes,
+                fontsize=10,
+                color="black",
+                ha="left",
+                va="top",
+                bbox=dict(boxstyle="round,pad=0.25", facecolor="gold", alpha=0.25, edgecolor="goldenrod"),
+            )
+
+        output_path = output_dir / f"inputs_{_safe_filename(feat)}.png"
+        plt.tight_layout()
+        plt.savefig(output_path, dpi=150)
+        plt.close()
+
+        logging.info("Saved input feature plot to %s", output_path)
+
 
 def _plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, output_path):
     labels = np.asarray(data["label"])
@@ -1163,6 +1367,17 @@ def main():
     constraint_plot_path.parent.mkdir(parents=True, exist_ok=True)
     _plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, constraint_plot_path)
 
+    raw_plot_data = _concat_sig_bkg(raw_sig_data, raw_bkg_data)
+    raw_plot_data = apply_derived_vars(raw_plot_data, derived_vars_cfg)
+    _plot_input_feature_distributions(
+        raw_data=raw_plot_data,
+        training_features=training_features,
+        train_idx=train_idx,
+        val_idx=val_idx,
+        output_dir=Path(cfg.get("output", "simple_abcdisco_output")),
+        feature_transforms=feature_transforms,
+    )
+
     lightning_model = ABCDLightningModule(
         input_size=len(training_features),
         hidden_layers=cfg.get("architecture", [64, 32, 16]),
@@ -1207,6 +1422,19 @@ def main():
     scaler_path_final = version_dir / "scaler_params.json"
     shutil.copy(str(scaler_path), str(scaler_path_final))
     logging.info("Copied scaler params to %s", scaler_path_final)
+
+    # Copy input diagnostic plots to the versioned directory for reference
+    shutil.copy(str(weight_plot_path), str(version_dir / "input_weight_distributions.png"))
+    logging.info("Copied weight distribution plot to %s", version_dir / "input_weight_distributions.png")
+
+    constraint_plot_path_src = Path(cfg.get("output", "simple_abcdisco_output")) / "constraint_var_distribution.png"
+    shutil.copy(str(constraint_plot_path_src), str(version_dir / "constraint_var_distribution.png"))
+    logging.info("Copied constraint var distribution plot to %s", version_dir / "constraint_var_distribution.png")
+
+    _copy_input_plots_to_version_dir(
+        source_dir=Path(cfg.get("output", "simple_abcdisco_output")),
+        version_dir=version_dir,
+    )
 
     logging.info("Running inference...")
     all_checkpoints = _all_checkpoints_from_config(cfg, flavor=flavor)
