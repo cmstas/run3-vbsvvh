@@ -1162,7 +1162,6 @@ def main():
     constraint_plot_path = Path(cfg.get("output", "simple_abcdisco_output")) / "constraint_var_distribution.png"
     constraint_plot_path.parent.mkdir(parents=True, exist_ok=True)
     _plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, constraint_plot_path)
-    exit()
 
     lightning_model = ABCDLightningModule(
         input_size=len(training_features),
