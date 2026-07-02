@@ -30,7 +30,6 @@ RNode defineMetadata(RNode df, bool isData = false) {
         .Define("is2025", "year == \"2025Prompt\"")
         .Define("isRun2", "is2016 || is2017 || is2018")
         .Define("isRun3", "is2022 || is2023 || is2024 || is2025")
-        .Define("isRun3", "is2022 || is2023 || is2024 || is2025")
         .Define("xsecweight", "isData ? 1 : 1000 * xsec * lumi / sumw")
         .Define("baseweight", "xsecweight * genWeight")
         .Define("weight", "baseweight");
