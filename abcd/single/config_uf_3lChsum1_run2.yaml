@@ -1,0 +1,185 @@
+sig_base_path: "/home/users/kmohrman/vbs_vvh/ewkcoffea_for_vbs_vvh/ewkcoffea/analysis/vbs_vvh/histos/"
+bkg_base_path: "/home/users/kmohrman/vbs_vvh/ewkcoffea_for_vbs_vvh/ewkcoffea/analysis/vbs_vvh/histos/"
+data_base_path: "/home/users/kmohrman/vbs_vvh/ewkcoffea_for_vbs_vvh/ewkcoffea/analysis/vbs_vvh/histos/"
+
+sig_path: ["siphontest_3lch1_jul2_02_sig.root"]
+bkg_path: ["siphontest_3lch1_jul2_03_bkg.root"]
+
+training_features:
+  - abs_ch_sum_3l: minmax
+  - abs_pdgid_sum: minmax
+  - absdeta_max_any: minmax
+  - absdeta_max_fwd: minmax
+  - absdphi_FJ0lepmet: minmax
+  - absdphi_j0centj1cent: minmax
+  - absdphi_j0fwdj1fwd: minmax
+  - absdphi_j0j1: minmax
+  - absdphi_l0l1: minmax
+  - absdphi_lepmet: minmax
+  - bbscore0_bscore: minmax
+  - bbscore1_bscore: minmax
+  #- dnn_score_2lH: log
+  #- dnn_score_2lV: log
+  - dr_fj0l0: minmax
+  - dr_j0centj1cent: minmax
+  - dr_j0fwdj1fwd: minmax
+  - dr_j0j1: minmax
+  - dr_l0l1: minmax
+  - dr_lepmet: minmax
+  - dr_lj_max: minmax
+  - dr_lj_min: minmax
+  - dr_ljnvbs_max: minmax
+  - dr_ljnvbs_min: minmax
+  - dr_wlepmet: minmax
+  - fj0_eta: minmax
+  - fj0_gptHvsQCD: log
+  - fj0_gptVvsQCD: log
+  - fj0_gptWvsQCD: log
+  - fj0_gptZvsQCD: log
+  - fj0_gpt_Hfrac: log
+  - fj0_gpt_Hsf: log
+  - fj0_gpt_Wfrac: log
+  - fj0_gpt_Wsf: log
+  - fj0_gpt_Zfrac: log
+  - fj0_gpt_Zsf: log
+  - fj0_gpt_mass: log
+  - fj0_gpt_mass2p: log
+  - fj0_mass: log
+  - fj0_mparticlenet: log
+  - fj0_msoftdrop: log
+  - fj0_pNetH4qvsQCD: minmax
+  - fj0_pNetHbbvsQCD: minmax
+  - fj0_pNetHccvsQCD: minmax
+  - fj0_pNetQCD: minmax
+  - fj0_pNetTvsQCD: minmax
+  - fj0_pNetWvsQCD: minmax
+  - fj0_pNetZvsQCD: minmax
+  - fj0_phi: minmax
+  - fj0_pt: log
+  #- isRun3: minmax
+  - j0_eta: minmax
+  - j0_phi: minmax
+  - j0_pt: log
+  - j0central_eta: minmax
+  - j0central_phi: minmax
+  - j0central_pt: log
+  - j0forward_eta: minmax
+  - j0forward_phi: minmax
+  - j0forward_pt: log
+  - jbscore0_bscore: minmax
+  - jbscore1_bscore: minmax
+  - jj_pairs_atmindr_mjj: log
+  - l0_eta: minmax
+  - l0_iso: minmax
+  - l0_miniiso: minmax
+  - l0_phi: minmax
+  - l0_pt: log
+  - l1_eta: minmax
+  - l1_iso: minmax
+  - l1_miniiso: minmax
+  - l1_phi: minmax
+  - l1_pt: log
+  - l2_eta: minmax
+  - l2_iso: minmax
+  - l2_miniiso: minmax
+  - l2_phi: minmax
+  - l2_pt: log
+  - mass_b0b1: log
+  - mass_bbscore0bbscore1: log
+  - mass_bmbscore0bmbscore1: log
+  - mass_j0centj1cent: log
+  - mass_j0fwdj1fwd: log
+  - mass_j0j1: log
+  - mass_jFJ_max: log
+  - mass_jFJ_min: log
+  - mass_jbscore0jbscore1: log
+  - mass_l0l1: log
+  - mass_lj_max: log
+  - mass_lj_min: log
+  - met: log
+  - metphi: minmax
+  - mjj_max_any: log
+  - mjj_max_cent: log
+  - mjj_max_fwd: log
+  - mjjjall_nearest_t: log
+  - mjjjany: log
+  - mjjjcnt: log
+  - mjjjcnt_nearest_t: log
+  - mlb_max: log
+  - mlb_min: log
+  - mljjjany: log
+  - mll_min_afos: log
+  - mll_z: log
+  - pt_z: log
+  - mt_wlep: log
+  - n_ll_sfos: minmax
+  - nbtagsl: minmax
+  - nbtagsm: minmax
+  - nbtagst: minmax
+  - nfatjets: minmax
+  - njets: minmax
+  - njets_central: minmax
+  #- njets_counts: minmax
+  - njets_forward: minmax
+  - nleps: minmax
+  #- nleps_counts: minmax
+  - pt_l0l1: log
+  - scalarptsum_jet: log
+  - scalarptsum_jetCent: log
+  - scalarptsum_jetFwd: log
+  - scalarptsum_lep: log
+  - scalarptsum_lepmet: log
+  - scalarptsum_lepmetFJ0: log
+  - scalarptsum_lepmetFJ01: log
+  - scalarptsum_lepmetalljets: log
+  - scalarptsum_lepmetcentjets: log
+  - scalarptsum_lepmetfwdjets: log
+  - scalarptsum_lepmetvbsFJ0: log
+  - vbs1_eta: minmax
+  - vbs1_phi: minmax
+  - vbs1_pt: log
+  - vbs2_eta: minmax
+  - vbs2_phi: minmax
+  - vbs2_pt: log
+  - vbs_absdetajj: minmax
+  - vbs_mjj: log
+  - vbs_score: minmax
+  - vectorsum_lepmetvbsFJ0_pt: log
+
+
+
+derived_vars: {}
+auto_include_derived_vars: false
+auto_include_derived_vars_transform: none
+
+extra_vars:
+  - weight
+
+#preselection: "(boosted_h_candidate_score >= 0.1) | (boosted_v_candidate_score >= 0.1)"
+#preselection: "nFatJets == 1"
+
+#constraint_var: "mjj_max_any"
+constraint_var: "vbs_mjj"
+#constraint_var: "vbs_score"
+#constraint_var: "fj0_gptZvsQCD"
+
+batch_size: 8192 #16384
+learning_rate: 0.01
+n_epochs: 5000
+
+early_stopping_patience: 500
+
+architecture: [64, 32, 16]
+#architecture: [256, 128, 64, 32]
+bce_weight: 1.0
+#disco_lambda: 30.0
+disco_lambda: 0.0
+
+use_batchnorm: true
+dropout: 0.2
+weight_decay: 0.01
+label_smoothing: 0.0
+
+devices: [2]
+
+output: "3lChsum1_NEW_RUN2"
