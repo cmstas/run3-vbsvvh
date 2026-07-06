@@ -381,6 +381,53 @@ def make_dataloaders(data, training_features, constraint_var, batch_size):
     # Also return indices so callers can tag events by their split for later analysis
     return train_loader, val_loader, train_idx, val_idx
 
+def subsample_data_stratified(data, fraction, stratify_keys=("label", "sample_idx"), random_state=42):
+    if fraction <= 0 or fraction > 1:
+        raise ValueError(f"fraction must be in (0, 1], got {fraction}")
+
+    n_total = _data_length(data)
+    if fraction == 1.0 or n_total == 0:
+        return data, np.arange(n_total)
+
+    rng = np.random.default_rng(random_state)
+
+    strat_arrays = []
+    for key in stratify_keys:
+        if key not in data:
+            raise KeyError(f"Stratification key '{key}' not found in data")
+        strat_arrays.append(np.asarray(data[key]).astype(str))
+
+    strata = strat_arrays[0]
+    for arr in strat_arrays[1:]:
+        strata = np.char.add(np.char.add(strata, "||"), arr)
+
+    keep_indices = []
+    unique_strata = np.unique(strata)
+
+    for s in unique_strata:
+        idx = np.where(strata == s)[0]
+        n_keep = int(np.floor(len(idx) * fraction))
+
+        # keep at least one event from non-empty strata if fraction > 0
+        if len(idx) > 0 and n_keep == 0:
+            n_keep = 1
+
+        chosen = rng.choice(idx, size=n_keep, replace=False)
+        keep_indices.append(np.sort(chosen))
+
+    if keep_indices:
+        keep_indices = np.sort(np.concatenate(keep_indices))
+    else:
+        keep_indices = np.array([], dtype=np.int64)
+
+    out = {k: np.asarray(v)[keep_indices] for k, v in data.items()}
+    logging.info(
+        "Subsampled data with fraction=%.3f: kept %d / %d events",
+        fraction, len(keep_indices), n_total
+    )
+    return out, keep_indices
+
+
 def save_tensorboard_plots(log_dir, output_dir):
     ea = EventAccumulator(str(log_dir))
     ea.Reload()
@@ -586,15 +633,15 @@ def _build_model_from_config(cfg, flavor, input_size, checkpoint_path, device):
     return model
 
 
-def _copy_input_plots_to_version_dir(source_dir, version_dir):
+def _move_input_plots_to_version_dir(source_dir, version_dir):
     source_dir = Path(source_dir)
     version_dir = Path(version_dir)
     version_dir.mkdir(parents=True, exist_ok=True)
 
     for plot_path in source_dir.glob("inputs_*.png"):
         dest = version_dir / plot_path.name
-        shutil.copy(str(plot_path), str(dest))
-        logging.info("Copied input plot to %s", dest)
+        shutil.move(str(plot_path), str(dest))
+        logging.info("Moved input plot to %s", dest)
 
 
 def _batched_scores(model, features_tensor, batch_size, flavor, device):
@@ -1346,6 +1393,23 @@ def main():
         for key in combined_keys
     }
     data = apply_derived_vars(data, derived_vars_cfg)
+
+    training_event_fraction = float(cfg.get("training_event_fraction", 1.0))
+    if training_event_fraction < 1.0:
+        data, kept_idx = subsample_data_stratified(
+            data,
+            fraction=training_event_fraction,
+            stratify_keys=("label", "sample_idx"),
+            random_state=42,
+        )
+        # Keep raw copies in sync with the subsampled training data
+        raw_combined = _concat_sig_bkg(raw_sig_data, raw_bkg_data)
+        raw_combined_subsampled = _apply_mask(raw_combined, kept_idx)
+        raw_sig_data = _apply_mask(raw_combined_subsampled,
+                                   np.asarray(raw_combined_subsampled["label"]) == 1)
+        raw_bkg_data = _apply_mask(raw_combined_subsampled,
+                                   np.asarray(raw_combined_subsampled["label"]) == 0)
+
     # Save scaler params alongside the output so inference can apply identical scaling
     scaler_path = Path(cfg.get("output", "simple_abcdisco_output")) / "scaler_params.json"
     data = preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=scaler_path)
@@ -1420,18 +1484,18 @@ def main():
 
     # Copy scaler params to the versioned checkpoint directory so they stay with the model
     scaler_path_final = version_dir / "scaler_params.json"
-    shutil.copy(str(scaler_path), str(scaler_path_final))
-    logging.info("Copied scaler params to %s", scaler_path_final)
+    shutil.move(str(scaler_path), str(scaler_path_final))
+    logging.info("Moved scaler params to %s", scaler_path_final)
 
     # Copy input diagnostic plots to the versioned directory for reference
-    shutil.copy(str(weight_plot_path), str(version_dir / "input_weight_distributions.png"))
-    logging.info("Copied weight distribution plot to %s", version_dir / "input_weight_distributions.png")
+    shutil.move(str(weight_plot_path), str(version_dir / "input_weight_distributions.png"))
+    logging.info("Moved weight distribution plot to %s", version_dir / "input_weight_distributions.png")
 
     constraint_plot_path_src = Path(cfg.get("output", "simple_abcdisco_output")) / "constraint_var_distribution.png"
-    shutil.copy(str(constraint_plot_path_src), str(version_dir / "constraint_var_distribution.png"))
-    logging.info("Copied constraint var distribution plot to %s", version_dir / "constraint_var_distribution.png")
+    shutil.move(str(constraint_plot_path_src), str(version_dir / "constraint_var_distribution.png"))
+    logging.info("Moved constraint var distribution plot to %s", version_dir / "constraint_var_distribution.png")
 
-    _copy_input_plots_to_version_dir(
+    _move_input_plots_to_version_dir(
         source_dir=Path(cfg.get("output", "simple_abcdisco_output")),
         version_dir=version_dir,
     )
