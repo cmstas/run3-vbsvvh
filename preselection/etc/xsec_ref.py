@@ -39,7 +39,7 @@ xsec_dict = {
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
             # new xsec values from HZZ
-            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.00624157
+            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.00624157,
             "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00303575,
             "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00303575,
             "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00303575,
