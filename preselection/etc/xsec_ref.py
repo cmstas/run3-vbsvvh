@@ -38,13 +38,21 @@ xsec_dict = {
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
-            #Used XSDB value multiplied by BR
-            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01384, # BR = 0.002264
-            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00346, # BR = 0.001131
-            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00406, # BR = 0.001133
-            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00347, # BR = 0.00135
-            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.01386, # BR = 0.002267
-            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.01387, # BR = 0.002269
+            # new xsec values from HZZ
+            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.00624157
+            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00303575,
+            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00303575,
+            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00303575,
+            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.00624157,
+            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.00624157,
+
+            # #Used XSDB value multiplied by BR
+            # "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01384, # BR = 0.002264
+            # "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00346, # BR = 0.001131
+            # "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00406, # BR = 0.001133
+            # "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00347, # BR = 0.00135
+            # "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.01386, # BR = 0.002267
+            # "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.01387, # BR = 0.002269
             
             # QCD-HT (obtained by Cristina manually with genXsecAnalyzer) - Cristina Mantilla Suarez at Virginia (see comment from Lara in issue #45)
             "QCD-4Jets_Bin-HT-40to70_TuneCP5_13p6TeV": 311600000.0,
@@ -305,7 +313,7 @@ xsec_dict = {
             "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                       : 0.0262749,
             "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
             "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
-            "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 1.256,
+            "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 13.74,
             "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                     : 0.0024614,
             "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, 
             # for numbers below we use averages
