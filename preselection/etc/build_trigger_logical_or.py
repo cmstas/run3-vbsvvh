@@ -326,6 +326,134 @@ DS_DICT_SINGLELEP = {
 
 }
 
+DS_DICT_DILEP = {
+    "2016" : {
+        "ds_prio_lst" : ["DoubleMuon", "MuonEG", "DoubleEG", "SingleMuon", "SingleElectron"],
+        "ds_trg_dict" : {
+            "DoubleMuon" : [
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL",
+                "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL",
+                "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
+            ],
+            "MuonEG" : [
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ",
+            ],
+            "DoubleEG" : [
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+            ],
+            "SingleMuon" : [
+                "HLT_IsoMu24",
+                "HLT_IsoTkMu24",
+                "HLT_IsoMu22_eta2p1",
+                "HLT_IsoTkMu22_eta2p1",
+                "HLT_IsoMu22",
+                "HLT_IsoTkMu22",
+                "HLT_IsoMu27",
+            ],
+            "SingleElectron" : [
+                "HLT_Ele27_WPTight_Gsf",
+                "HLT_Ele25_eta2p1_WPTight_Gsf",
+                "HLT_Ele27_eta2p1_WPLoose_Gsf",
+            ],
+        },
+    },
+
+    "2017" : {
+        "ds_prio_lst" : ["DoubleMuon", "MuonEG", "DoubleEG", "SingleMuon", "SingleElectron"],
+        "ds_trg_dict" : {
+            "DoubleMuon" : [
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8",
+            ],
+            "MuonEG" : [
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+            ],
+            "DoubleEG" : [
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+            ],
+            "SingleMuon" : [
+                "HLT_IsoMu24",
+                "HLT_IsoMu27",
+            ],
+            "SingleElectron" : [
+                "HLT_Ele32_WPTight_Gsf",
+                "HLT_Ele35_WPTight_Gsf",
+            ],
+        },
+    },
+
+    "2018" : {
+        "ds_prio_lst" : ["DoubleMuon", "MuonEG", "SingleMuon", "EGamma"],
+        "ds_trg_dict" : {
+            "DoubleMuon" : [
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+            ],
+            "MuonEG" : [
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+            ],
+            "SingleMuon" : [
+                "HLT_IsoMu24",
+                "HLT_IsoMu27",
+            ],
+            "EGamma" : [
+                "HLT_Ele32_WPTight_Gsf",
+                "HLT_Ele35_WPTight_Gsf",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
+            ],
+        },
+    },
+    "2024" : {
+        "ds_prio_lst" : ["Muon", "MuonEG", "EGamma"],
+        "ds_trg_dict" : {
+            "Muon" : [
+                "HLT_IsoMu24",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+            ],
+            "MuonEG" : [
+                # From ZZ Run 3 CMS AN-25-159
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
+            ],
+        },
+    },
+    "2025" : {
+        # Just copied 2024 for now
+        "ds_prio_lst" : ["Muon", "MuonEG", "EGamma"],
+        "ds_trg_dict" : {
+            "Muon" : [
+                "HLT_IsoMu24",
+                "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+            ],
+            "MuonEG" : [
+                # From ZZ Run 3 CMS AN-25-159
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
+            ],
+        },
+    },
+
+}
 
 DS_DICT_MULTILEP = {
     "2016" : {
@@ -592,8 +720,9 @@ def main():
     # dump_logical_or_string(DS_DICT_HT,do_overlap_removal=False)
     # dump_logical_or_string(DS_DICT_MET,do_overlap_removal=False)
     # dump_logical_or_string(DS_DICT_SINGLELEP,do_overlap_removal=True)
-    # dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_removal=True)
-    dump_logical_or_string(DS_DICT_0lep0FJ, do_overlap_removal=False)
+    # dump_logical_or_string(DS_DICT_DILEP,do_overlap_removal=True)
+    dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_removal=True)
+    # dump_logical_or_string(DS_DICT_0lep0FJ, do_overlap_removal=False)
     # dump_logical_or_string(DS_DICT_0lep1FJ, do_overlap_removal=False)
 
 main()
