@@ -28,6 +28,216 @@ DS_DICT_HT = {
     },
 }
 
+DS_DICT_0lep0FJ = {
+    "2016" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetHT" : [
+                "HLT_QuadPFJet_BTagCSV_p016_VBF_Mqq460",
+                "HLT_QuadPFJet_BTagCSV_p016_VBF_Mqq500",
+                "HLT_QuadPFJet_BTagCSV_p016_p11_VBF_Mqq200",
+                "HLT_QuadPFJet_BTagCSV_p016_p11_VBF_Mqq240",
+
+                "HLT_PFHT400_SixJet30_DoubleBTagCSV_p056",
+            ],
+        },
+    },
+    "2017" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetHT" : [
+                "HLT_PFHT380_SixJet32_DoubleBTagCSV_p075",
+
+                "HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2",
+                "HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2",
+                
+
+                # don't exist in data
+                # "HLT_QuadPFJet103_88_75_15_BTagCSV_p013_VBF2",
+                # "HLT_QuadPFJet103_88_75_15_DoubleBTagCSV_p013_p08_VBF1",
+                # "HLT_QuadPFJet105_88_76_15_BTagCSV_p013_VBF2",
+                # "HLT_QuadPFJet105_90_76_15_DoubleBTagCSV_p013_p08_VBF1",
+                # "HLT_QuadPFJet111_90_80_15_BTagCSV_p013_VBF2",
+                # "HLT_QuadPFJet111_90_80_15_DoubleBTagCSV_p013_p08_VBF1",
+                # "HLT_QuadPFJet98_83_71_15_BTagCSV_p013_VBF2",
+                # "HLT_QuadPFJet98_83_71_15_DoubleBTagCSV_p013_p08_VBF1",
+            ],
+        },
+    },
+    "2018" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetHT" : [
+                "HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet103_88_75_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet105_88_76_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet105_88_76_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet111_90_80_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet98_83_71_15_PFBTagDeepCSV_1p3_VBF2",
+
+                "HLT_PFHT400_SixPFJet32_DoublePFBTagDeepCSV_2p94",
+                "HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2"
+            ],
+        },
+    },
+    "2022" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet103_88_75_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet103_88_75_15_PFBTagDeepJet_1p3_VBF2",
+                "HLT_QuadPFJet105_88_76_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet105_88_76_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet105_88_76_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet105_88_76_15_PFBTagDeepJet_1p3_VBF2",
+                "HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet111_90_80_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet111_90_80_15_PFBTagDeepJet_1p3_VBF2",
+                "HLT_QuadPFJet70_50_40_30_PFBTagParticleNet_2BTagSum0p65",
+                "HLT_QuadPFJet70_50_40_35_PFBTagParticleNet_2BTagSum0p65",
+                "HLT_QuadPFJet70_50_45_35_PFBTagParticleNet_2BTagSum0p65",
+                "HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet98_83_71_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet98_83_71_15_PFBTagDeepJet_1p3_VBF2",
+
+                "HLT_PFHT400_SixPFJet32_DoublePFBTagDeepCSV_2p94",
+                "HLT_PFHT400_SixPFJet32_DoublePFBTagDeepJet_2p94",
+            ],
+        },
+    },
+    "2023" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet103_88_75_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet103_88_75_15_PFBTagDeepJet_1p3_VBF2",
+                "HLT_QuadPFJet105_88_76_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet105_88_76_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet105_88_76_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet105_88_76_15_PFBTagDeepJet_1p3_VBF2",
+                "HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet111_90_80_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet111_90_80_15_PFBTagDeepJet_1p3_VBF2",
+                "HLT_QuadPFJet70_50_40_30_PFBTagParticleNet_2BTagSum0p65",
+                "HLT_QuadPFJet70_50_40_35_PFBTagParticleNet_2BTagSum0p65",
+                "HLT_QuadPFJet70_50_45_35_PFBTagParticleNet_2BTagSum0p65",
+                "HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1",
+                "HLT_QuadPFJet98_83_71_15_DoublePFBTagDeepJet_1p3_7p7_VBF1",
+                "HLT_QuadPFJet98_83_71_15_PFBTagDeepCSV_1p3_VBF2",
+                "HLT_QuadPFJet98_83_71_15_PFBTagDeepJet_1p3_VBF2",
+
+                "HLT_PFHT400_SixPFJet32_DoublePFBTagDeepCSV_2p94",
+                "HLT_PFHT400_SixPFJet32_DoublePFBTagDeepJet_2p94",
+
+                #single btag
+                # "HLT_PFHT450_SixPFJet36_PFBTagDeepCSV_1p59",
+                # "HLT_PFHT450_SixPFJet36_PFBTagDeepJet_1p59",
+            ],
+        },
+    },
+
+    "2024" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_QuadPFJet103_88_75_15_PNet2BTag_0p4_0p12_VBF1",
+                "HLT_QuadPFJet103_88_75_15_PNetBTag_0p4_VBF2",
+                "HLT_QuadPFJet105_88_76_15_PNet2BTag_0p4_0p12_VBF1",
+                "HLT_QuadPFJet105_88_76_15_PNetBTag_0p4_VBF2",
+                "HLT_QuadPFJet111_90_80_15_PNet2BTag_0p4_0p12_VBF1",
+                "HLT_QuadPFJet111_90_80_15_PNetBTag_0p4_VBF2",
+
+                "HLT_PFHT400_SixPFJet32_PNet2BTagMean0p50",
+                # "HLT_PFHT450_SixPFJet36_PNetBTag0p35",
+            ],
+        },
+    },
+}
+
+DS_DICT_0lep1FJ = {
+    "2016" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetHT" : [
+                "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20",
+                "HLT_AK8PFHT700_TrimR0p1PT0p03Mass50",
+                "HLT_AK8PFJet360_TrimMass30",
+                "HLT_PFHT650_WideJetMJJ900DEtaJJ1p5",
+                "HLT_PFHT650_WideJetMJJ950DEtaJJ1p5",
+                "HLT_PFHT800",
+                "HLT_PFHT900",
+                "HLT_PFJet450",
+            ],
+        },
+    },
+    "2017" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetHT" : [
+                "HLT_AK8PFHT800_TrimMass50",
+                "HLT_AK8PFJet330_BTagCSV_p17",
+                "HLT_AK8PFJet400_TrimMass30",
+                "HLT_AK8PFJet420_TrimMass30",
+                "HLT_AK8PFJet500",
+                "HLT_PFHT1050",
+                "HLT_PFJet500",
+
+            ],
+        },
+    },
+    "2018" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetHT" : [
+                "HLT_AK8PFHT800_TrimMass50",
+                "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2",
+                "HLT_AK8PFJet400_TrimMass30",
+                "HLT_AK8PFJet420_TrimMass30",
+                "HLT_AK8PFJet500",
+                "HLT_PFHT1050",
+                "HLT_PFJet500",
+            ],
+        },
+    },
+    "2022" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_AK8PFJet250_SoftDropMass40_PFAK8ParticleNetBB0p35",
+                "HLT_AK8PFJet425_SoftDropMass40",
+            ],
+        },
+    },
+    "2023" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06",
+                "HLT_AK8PFJet425_SoftDropMass40",
+            ],
+        },
+    },
+
+    "2024" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06",
+                "HLT_AK8PFJet425_SoftDropMass30",
+            ],
+        },
+    },
+}
+
 
 DS_DICT_MET = {
     "2016" : {
@@ -282,7 +492,7 @@ def get_higher_priority_ds_trgs(ds_dict, my_ds, year):
 
 
 # Main wrapper function for making the logical OR string for a given dataset dictionary
-def dump_logical_or_string(ds_dict,do_overlap_remoal):
+def dump_logical_or_string(ds_dict,do_overlap_removal):
 
     # The final output string
     out_str = ""
@@ -291,7 +501,7 @@ def dump_logical_or_string(ds_dict,do_overlap_remoal):
     for i,year in enumerate(ds_dict):
 
         # Check for self-consistency in the ds_dict for dataset priority
-        if do_overlap_remoal:
+        if do_overlap_removal:
             ds_names_prio_lst = ds_dict[year]["ds_prio_lst"]
             ds_names_from_keys = ds_dict[year]["ds_trg_dict"].keys()
             if len(ds_names_prio_lst) != len(ds_names_from_keys): raise Exception(f"Mismatch length between ds_prio_lst and ds_trg_dict keys in year: {year}")
@@ -310,7 +520,7 @@ def dump_logical_or_string(ds_dict,do_overlap_remoal):
             trg_passes   = get_or_of_trgs(trgs_for_this_ds)
 
             # Build a string of ORs between all of the triggers that overlap
-            if do_overlap_remoal:
+            if do_overlap_removal:
                 trgs_for_higher_priority_ds = get_higher_priority_ds_trgs(ds_dict, ds_name,year)
                 trg_overlaps = get_or_of_trgs(trgs_for_higher_priority_ds)
             else:
@@ -351,10 +561,12 @@ def dump_logical_or_string(ds_dict,do_overlap_remoal):
 
 def main():
 
-    dump_logical_or_string(DS_DICT_HT,do_overlap_remoal=False)
-    dump_logical_or_string(DS_DICT_MET,do_overlap_remoal=False)
-    dump_logical_or_string(DS_DICT_SINGLELEP,do_overlap_remoal=True)
-    dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_remoal=True)
+    # dump_logical_or_string(DS_DICT_HT,do_overlap_removal=False)
+    # dump_logical_or_string(DS_DICT_MET,do_overlap_removal=False)
+    # dump_logical_or_string(DS_DICT_SINGLELEP,do_overlap_removal=True)
+    # dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_removal=True)
+    dump_logical_or_string(DS_DICT_0lep0FJ, do_overlap_removal=False)
+    # dump_logical_or_string(DS_DICT_0lep1FJ, do_overlap_removal=False)
 
 main()
 
