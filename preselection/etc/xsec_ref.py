@@ -38,13 +38,13 @@ xsec_dict = {
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
 
-            # new xsec values from HZZ
-            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.00624157,
-            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00303575,
-            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00303575,
-            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00303575,
-            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.00624157,
-            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.00624157,
+            # new xsec values from HZZ, multiplied by 1.7 (original values in comments)
+            "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01061067, # 0.00624157
+            "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00516078, # 0.00303575
+            "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00516078, # 0.00303575
+            "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00516078, # 0.00303575
+            "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV": 0.01061067, # 0.00624157
+            "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV": 0.01061067, # 0.00624157
 
             # #Used XSDB value multiplied by BR
             # "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01384, # BR = 0.002264
