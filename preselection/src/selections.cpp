@@ -252,7 +252,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        df = TriggerSelections(df,trigger_logic_string_0lep0FJ);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(
@@ -271,7 +271,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        df = TriggerSelections(df,trigger_logic_string_0lep1FJ);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = df.Filter(

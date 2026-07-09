@@ -6,11 +6,11 @@ def distance_corr(
         var_2:torch.tensor,
         normedweight:torch.tensor,
         power=1,
-        )->torch.tensor:
-    
+) -> torch.tensor:
+
     # Normalize the weights
     normedweight = normedweight/torch.sum(normedweight)*len(var_1)
-    
+
     xx = var_1.view(-1, 1).repeat(1, len(var_1)).view(len(var_1),len(var_1))
     yy = var_1.repeat(len(var_1),1).view(len(var_1),len(var_1))
     amat = (xx-yy).abs()
@@ -33,9 +33,9 @@ def distance_corr(
     AAavg = torch.mean(Amat*Amat*normedweight,dim=1)
     BBavg = torch.mean(Bmat*Bmat*normedweight,dim=1)
 
-    if(power==1):
+    if (power==1):
         dCorr=(torch.mean(ABavg*normedweight))/torch.sqrt((torch.mean(AAavg*normedweight)*torch.mean(BBavg*normedweight)))
-    elif(power==2):
+    elif (power==2):
         dCorr=(torch.mean(ABavg*normedweight))**2/(torch.mean(AAavg*normedweight)*torch.mean(BBavg*normedweight))
     else:
         dCorr=((torch.mean(ABavg*normedweight))/torch.sqrt((torch.mean(AAavg*normedweight)*torch.mean(BBavg*normedweight))))**power
@@ -74,17 +74,17 @@ def __get_abcd_random_cuts(var1, var2, n_events_min, max_tries=1_000_000_000):
         rand_cut_x = np.random.uniform(x_min, x_max)
         rand_cut_y = np.random.uniform(y_min, y_max)
         rand_cuts = [rand_cut_x, rand_cut_y]
-        
+
         check = __check_number_of_events(
             var1,
             var2,
             rand_cuts,
             n_events_min,
         )
-        
+
         if check:
             return rand_cuts
-    
+
     raise ValueError(f"Could not find a suitable set of cuts after {max_tries} tries")
 
 def closure(var_1, var_2, weights, labels, symmetrize, n_events_min=10):
