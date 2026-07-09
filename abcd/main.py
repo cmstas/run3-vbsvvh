@@ -27,6 +27,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from dataloader import get_dataloader
 from model import ABCDLightningModule
+import bdt as bdt_lib
 
 MISSING_VALUE = -999.0
 
@@ -632,7 +633,7 @@ def _plot_score_densities(data, flavor, output_path):
     plt.close()
 
 
-def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None):
+def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None, bdt_features=None):
     logging.info("Starting inference steps...")
     checkpoint_path = Path(args.checkpoint) if args.checkpoint else _latest_checkpoint_from_config(cfg, flavor=flavor)
     logging.info("Using checkpoint: %s", checkpoint_path)
@@ -641,8 +642,16 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         full_inference_data = inference_data
     else:
         full_inference_data = _concat_sig_bkg(sig_data, bkg_data)
-        
+
     full_inference_data = apply_derived_vars(full_inference_data, derived_vars_cfg)
+
+    if bdt_features:
+        output_dir = cfg.get("output", "simple_abcdisco_output")
+        logging.info("Loading trained BDT to compute '%s' constraint...", bdt_lib.BDT_SCORE_NAME)
+        bdt_model = bdt_lib.load_bdt(output_dir)
+        full_inference_data[bdt_lib.BDT_SCORE_NAME] = bdt_lib.predict_bdt(
+            bdt_model, full_inference_data, bdt_features
+        )
 
     logging.info("Preprocessing inference features...")
     processed = preprocess_data(
@@ -710,6 +719,16 @@ def main():
 
     training_features, feature_transforms = parse_training_features(cfg["training_features"])
     constraint_var = cfg["constraint_var"]
+
+    bdt_features = bdt_lib.parse_bdt_features(cfg.get("bdt_features", []))
+    use_bdt = len(bdt_features) > 0
+    if use_bdt and cfg.get("use_bdt_as_constraint", True):
+        constraint_var = bdt_lib.BDT_SCORE_NAME
+        logging.info(
+            "BDT enabled: '%s' will be used as the DNN decorrelation constraint",
+            constraint_var,
+        )
+
     derived_vars_cfg = _normalize_derived_vars_cfg(cfg.get("derived_vars", {}))
     if flavor == "double" and constraint_var not in training_features:
         training_features.append(constraint_var)
@@ -737,9 +756,15 @@ def main():
     derived_var_names = set(derived_vars_cfg.keys())
     derived_input_vars = _collect_derived_input_vars(derived_vars_cfg)
 
-    load_training_features = [f for f in training_features if f not in derived_var_names]
-    load_constraint = [] if constraint_var in derived_var_names else [constraint_var]
-    load_features = list(dict.fromkeys(load_training_features + load_constraint + derived_input_vars))
+    # Variables that are computed in-memory rather than read from the ROOT trees.
+    computed_vars = set(derived_var_names)
+    if use_bdt:
+        computed_vars.add(bdt_lib.BDT_SCORE_NAME)
+
+    load_training_features = [f for f in training_features if f not in computed_vars]
+    load_constraint = [] if constraint_var in computed_vars else [constraint_var]
+    load_bdt_features = bdt_features if use_bdt else []
+    load_features = list(dict.fromkeys(load_training_features + load_constraint + derived_input_vars + load_bdt_features))
     extra_vars = cfg.get("extra_vars", [])
     if "weight" not in extra_vars:
         extra_vars.append("weight")
@@ -774,7 +799,7 @@ def main():
         )
 
         logging.info("Skipping training. Running inference on data only...")
-        run_inference(args, cfg, flavor, None, None, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=True, inference_data=real_data)
+        run_inference(args, cfg, flavor, None, None, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=True, inference_data=real_data, bdt_features=bdt_features)
         return
 
     logging.info("Loading signal data...")
@@ -797,7 +822,20 @@ def main():
 
     sig_data["label"] = np.ones(_data_length(sig_data), dtype=np.float32)
     bkg_data["label"] = np.zeros(_data_length(bkg_data), dtype=np.float32)
-    
+
+    # Train (or load) the BDT and attach its score so it can serve as the DNN
+    # decorrelation constraint. Uses the raw physics weights (class balancing is
+    # handled inside the BDT trainer), so this must run before normalize_class_weights.
+    if use_bdt:
+        bdt_output_dir = cfg.get("output", "simple_abcdisco_output")
+        if args.infer:
+            logging.info("Loading existing BDT (inference mode)...")
+            bdt_model = bdt_lib.load_bdt(bdt_output_dir)
+        else:
+            bdt_model = bdt_lib.train_bdt(sig_data, bkg_data, bdt_features, cfg, bdt_output_dir)
+        sig_data[bdt_lib.BDT_SCORE_NAME] = bdt_lib.predict_bdt(bdt_model, sig_data, bdt_features)
+        bkg_data[bdt_lib.BDT_SCORE_NAME] = bdt_lib.predict_bdt(bdt_model, bkg_data, bdt_features)
+
     # Keep copies of the original data (with raw weights and features) for inference
     raw_sig_data = {k: np.copy(v) for k, v in sig_data.items()}
     raw_bkg_data = {k: np.copy(v) for k, v in bkg_data.items()}
@@ -815,7 +853,7 @@ def main():
 
     if args.infer:
         logging.info("Skipping training. Running inference only...")
-        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg)
+        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, bdt_features=bdt_features)
         return
 
     logging.info("Creating data loaders...")
@@ -861,7 +899,7 @@ def main():
     logging.info("Training finished.")
 
     logging.info("Running inference...")
-    run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg)
+    run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, bdt_features=bdt_features)
     logging.info("Inference finished.")
 
 if __name__ == "__main__":

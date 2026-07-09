@@ -1,7 +1,7 @@
 validation/
 **/CMSSW*
 datacard/
-
+env/
 output/
 
 .vscode/
@@ -43,3 +43,4 @@ __pycache__/
 *.rar
 *.min.js
 *.map
+*.ipynb

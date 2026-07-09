@@ -14,7 +14,14 @@ def main():
     parser.add_argument("-i", "--input", required=True, help="Path to the input predictions CSV file")
     parser.add_argument("-d", "--data", required=False, help="Path to the data predictions CSV file (optional)")
     parser.add_argument("-n", "--num-scans", type=int, default=1, help="Number of orthogonal scans to perform")
+    parser.add_argument("-dd", "--data-driven", action="store_true",
+                        help="Optimize using the data-driven ABCD background estimate (B*C/D from data control regions) instead of MC background. Requires --data. Region A of the data is never used.")
+    parser.add_argument("--min-data-yield", type=float, default=0.0,
+                        help="Minimum (weighted) yield required in each data control region B, C, D for a cell to be eligible (data-driven mode only).")
     args = parser.parse_args()
+
+    if args.data_driven and not args.data:
+        parser.error("--data-driven requires --data (the data control regions provide the background estimate)")
 
     out_dir = os.path.dirname(args.input)
     if out_dir == "":
@@ -35,6 +42,7 @@ def main():
     total_sig_A, total_sig_B, total_sig_C, total_sig_D = 0, 0, 0, 0
     total_bkg_A, total_bkg_B, total_bkg_C, total_bkg_D = 0, 0, 0, 0
     total_data_B, total_data_C, total_data_D = 0, 0, 0
+    total_data_A_pred = 0
 
     for scan_idx in range(args.num_scans):
         print(f"\n{'='*50}")
@@ -55,13 +63,18 @@ def main():
             var1_col="boosted_h_candidate_score",
             var2_col="boosted_v_candidate_score",
             disco1_col="dnn_score",
-            disco2_col="vbs_detajj",
+            disco2_col="bdt_score",
             cut_var1_list=np.linspace(0.1, 1.0, 46),
             cut_var2_list=np.linspace(0.1, 1.0, 46),
             cut_disco1_list=np.linspace(0., 1.0, 51),
-            cut_disco2_list=np.linspace(0., 10.0, 51),
-            combine_method="and"
+            cut_disco2_list=np.linspace(0., 1.0, 51),
+            combine_method="and",
+            df_data=df_data if args.data_driven else None,
+            use_data_driven_bkg=args.data_driven,
+            min_data_yield=args.min_data_yield,
         )
+        if args.data_driven:
+            print("(Optimized against data-driven ABCD background estimate B*C/D)")
         
         if sig == -np.inf:
             print("No valid cuts could be found. Stopping.")
@@ -76,44 +89,32 @@ def main():
         print(f"  boosted_h_candidate_score > {cut_var1_best:.4f}")
         print(f"  boosted_v_candidate_score > {cut_var2_best:.4f}")
         print(f"  dnn_score                 > {cut_dnn_best:.4f}")
-        print(f"  vbs_detajj                 > {vbs_cut_best:.4f}")
+        print(f"  bdt_score                 > {vbs_cut_best:.4f}")
         print("-" * 50)
         print(f"Significance at optimal cuts: {sig:.4f}")
         print("="*50)
         
-        a, b, c, d = get_ABCD_regions(df_sig, cut_var1_best, cut_var2_best, cut_dnn_best, vbs_cut_best, disco1_col="dnn_score", disco2_col="vbs_detajj")
-        e, f, g, h = get_ABCD_regions(df_bkg, cut_var1_best, cut_var2_best, cut_dnn_best, vbs_cut_best, disco1_col="dnn_score", disco2_col="vbs_detajj")
+        a, b, c, d = get_ABCD_regions(df_sig, cut_var1_best, cut_var2_best, cut_dnn_best, vbs_cut_best, disco1_col="dnn_score", disco2_col="bdt_score")
+        e, f, g, h = get_ABCD_regions(df_bkg, cut_var1_best, cut_var2_best, cut_dnn_best, vbs_cut_best, disco1_col="dnn_score", disco2_col="bdt_score")
+        
+        # Background decorrelation plots. In --data-driven mode these are drawn from
+        # data with the signal region (A) kept blind; otherwise from background MC.
+        bkg_kin_query = "boosted_h_candidate_score >= @cut_var1_best & boosted_v_candidate_score >= @cut_var2_best"
+        df_bkg_kin = df_bkg.query(bkg_kin_query)
+        df_data_kin = df_data.query(bkg_kin_query) if (df_data is not None and args.data_driven) else None
+        plot_background_decorrelation(
+            df_bkg_kin, cut_dnn_best, vbs_cut_best, out_dir, scan_idx,
+            disco1_col="dnn_score", disco2_col="bdt_score",
+            df_data_kin=df_data_kin, use_data_driven=args.data_driven,
+            profile_name="background_dnn_vs_vbs_median_profile",
+        )
         
         fig, ax = plt.subplots(figsize=(10, 8))
-        sns.histplot(data=df_bkg.query("boosted_h_candidate_score >= @cut_var1_best & boosted_v_candidate_score >= @cut_var2_best"), x="dnn_score", y="vbs_detajj", weights="weight", bins=100, color='blue', cbar=True, ax=ax)
-        
-        # Add lines to mark ABCD regions
-        ax.axvline(x=cut_dnn_best, color='red', linestyle='--', linewidth=2, label=f'dnn_score = {cut_dnn_best}')
-        ax.axhline(y=vbs_cut_best, color='red', linestyle='--', linewidth=2, label=f'vbs_detajj = {vbs_cut_best}')
-        
-        # ax.legend()
-        ax.set_title(f'Background: ABCD Regions (Scan {scan_idx + 1})')
-        plt.savefig(os.path.join(out_dir, f'background_abcd_regions_scan_{scan_idx + 1}.png'))
-        plt.close()
-        
-        # profile plot of bkg in dnn_score vs vbs_detajj, with color representing the mean weight in each bin
-        fig, ax = plt.subplots(figsize=(10, 8))
-        sns.histplot(data=df_bkg.query("boosted_h_candidate_score >= @cut_var1_best & boosted_v_candidate_score >= @cut_var2_best"), x="dnn_score", y="vbs_detajj", weights="weight", bins=100, color='blue', cbar=True, ax=ax)
-        
-        # profile of mean of vbs_detajj in bins of dnn_score
-        bin_means = df_bkg.query("boosted_h_candidate_score >= @cut_var1_best & boosted_v_candidate_score >= @cut_var2_best").groupby(pd.cut(df_bkg["dnn_score"], bins=20), observed=False)["vbs_detajj"].mean()
-        bin_centers = [interval.mid for interval in bin_means.index.categories]
-        ax.plot(bin_centers, bin_means.values, color='red', marker='o', label='Mean vbs_detajj')
-        ax.set_title(f'Background: dnn_score vs vbs_detajj with Mean Profile (Scan {scan_idx + 1})')
-        plt.savefig(os.path.join(out_dir, f'background_dnn_vs_vbs_median_profile_scan_{scan_idx + 1}.png'))
-        plt.close()
-        
-        fig, ax = plt.subplots(figsize=(10, 8))
-        sns.histplot(data=df_sig.query("boosted_h_candidate_score >= @cut_var1_best & boosted_v_candidate_score >= @cut_var2_best"), x="dnn_score", y="vbs_detajj", weights="weight", bins=100, color='red', cbar=True, ax=ax)
+        sns.histplot(data=df_sig.query("boosted_h_candidate_score >= @cut_var1_best & boosted_v_candidate_score >= @cut_var2_best"), x="dnn_score", y="bdt_score", weights="weight", bins=100, color='red', cbar=True, ax=ax)
         
         # Add lines to mark ABCD regions
         ax.axvline(x=cut_dnn_best, color='black', linestyle='--', linewidth=2, label=f'dnn_score = {cut_dnn_best}')
-        ax.axhline(y=vbs_cut_best, color='black', linestyle='--', linewidth=2, label=f'vbs_detajj = {vbs_cut_best}')
+        ax.axhline(y=vbs_cut_best, color='black', linestyle='--', linewidth=2, label=f'bdt_score = {vbs_cut_best}')
         
         ax.set_title(f'Signal: ABCD Regions (Scan {scan_idx + 1})')
         plt.savefig(os.path.join(out_dir, f'signal_abcd_regions_scan_{scan_idx + 1}.png'))
@@ -126,12 +127,14 @@ def main():
         total_bkg_A += e; total_bkg_B += f; total_bkg_C += g; total_bkg_D += h
 
         if df_data is not None:
-            _, j, k, l = get_ABCD_regions(df_data, cut_var1_best, cut_var2_best, cut_dnn_best, vbs_cut_best, disco1_col="dnn_score", disco2_col="vbs_detajj")
-            _ = -1 # blind
-            
-            total_data_B += j; total_data_C += k; total_data_D += l
+            _, j, k, l = get_ABCD_regions(df_data, cut_var1_best, cut_var2_best, cut_dnn_best, vbs_cut_best, disco1_col="dnn_score", disco2_col="bdt_score")
+            _ = -1 # blind (observed data in region A is never used)
+            a_pred = (j * k / l) if l > 0 else float("nan")  # data-driven prediction (blind)
 
-            print(f"\nData Regions Yields (Scan {scan_idx + 1}):\nA: {_:.4f}, B: {j:.4f}, C: {k:.4f}, D: {l:.4f}")
+            total_data_B += j; total_data_C += k; total_data_D += l
+            total_data_A_pred += a_pred if l > 0 else 0
+
+            print(f"\nData Regions Yields (Scan {scan_idx + 1}):\nA (blind): {_:.4f}, A_pred (B*C/D): {a_pred:.4f}, B: {j:.4f}, C: {k:.4f}, D: {l:.4f}")
 
         # Update dataframe for the next scan by removing events that fall in the current combined kinematic region
         # i.e., those that satisfied (boosted_h >= cut_var1_best) AND (boosted_v >= cut_var2_best)
@@ -157,7 +160,7 @@ def main():
     print(f"Total Signal Regions Yields:\nA: {total_sig_A:.4f}, B: {total_sig_B:.4f}, C: {total_sig_C:.4f}, D: {total_sig_D:.4f}")
     print(f"\nTotal Background Regions Yields:\nA: {total_bkg_A:.4f}, B: {total_bkg_B:.4f}, C: {total_bkg_C:.4f}, D: {total_bkg_D:.4f}")
     if df_data is not None:
-        print(f"\nTotal Data Regions Yields:\nA: -1.0000, B: {total_data_B:.4f}, C: {total_data_C:.4f}, D: {total_data_D:.4f}")
+        print(f"\nTotal Data Regions Yields:\nA (blind): -1.0000, A_pred (sum B*C/D): {total_data_A_pred:.4f}, B: {total_data_B:.4f}, C: {total_data_C:.4f}, D: {total_data_D:.4f}")
     print("="*50)
 
 if __name__ == "__main__":

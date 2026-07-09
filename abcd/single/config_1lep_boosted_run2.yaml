@@ -2,7 +2,7 @@ sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r2*2fj_sig*/*1p5*/*.root"]
+sig_path: ["*r2*2fj_sig*/*/*.root"]
 bkg_path: ["*r2*2fj_bkg*/*/*.root"]
 data_path: ["*r2*2fj_data*/*/*.root"]
 
@@ -16,12 +16,14 @@ training_features:
   - boosted_h_candidate_pt: log
   - boosted_h_candidate_eta: minmax
   - boosted_h_candidate_phi: minmax
-  - boosted_h_candidate_mass: log
+  - boosted_h_candidate_part_mass: log
+  - boosted_h_candidate_msoftdrop: log
   - boosted_h_candidate_tau21: none
   - boosted_v_candidate_pt: log
   - boosted_v_candidate_eta: minmax
   - boosted_v_candidate_phi: minmax
-  - boosted_v_candidate_mass: log
+  - boosted_v_candidate_part_mass: log
+  - boosted_v_candidate_msoftdrop: log
   - boosted_v_candidate_tau21: none
   - mlb_min: log
 
@@ -32,6 +34,35 @@ extra_vars:
   - vbs_score
 
 constraint_var: "vbs_detajj"
+
+# VBS variables for the BDT. The BDT is trained to separate signal from background;
+# its output (bdt_score) replaces constraint_var as the DNN decorrelation target.
+# Set use_bdt_as_constraint: false to keep vbs_detajj as the constraint instead.
+bdt_features:
+  - vbs_mjj
+  - vbs_detajj
+  - vbs_jet1_pt
+  - vbs_jet1_eta
+  - vbs_jet1_phi
+  - vbs_jet1_mass
+  - vbs_jet2_pt
+  - vbs_jet2_eta
+  - vbs_jet2_phi
+  - vbs_jet2_mass
+
+use_bdt_as_constraint: true
+
+bdt:
+  n_estimators: 1000
+  max_depth: 6
+  learning_rate: 0.03
+  min_child_weight: 20
+  subsample: 0.8
+  colsample_bytree: 0.7
+  gamma: 1.0
+  reg_lambda: 10.0
+  reg_alpha: 0.0
+  early_stopping_rounds: 40
 
 preselection: "(boosted_h_candidate_score >= 0.1) & (boosted_v_candidate_score >= 0.1)"
 
@@ -50,6 +81,6 @@ dropout: 0.2
 weight_decay: 0.01
 label_smoothing: 0.0
 
-devices: [0]
+devices: [2]
 
 output: "output/1LEP_2FJ_RUN2"
