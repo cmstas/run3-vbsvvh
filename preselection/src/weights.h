@@ -71,120 +71,137 @@ MUON SFs
 ############################################
 */
 
-// Muon SF files
-const std::unordered_map<std::string, correction::CorrectionSet> muonScaleFactors = {
-    {"2016preVFP",           *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2016preVFP_UL__muon_Z.json.gz")},
-    {"2016postVFP",          *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2016postVFP_UL__muon_Z.json.gz")},
-    {"2017",                 *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2017_UL__muon_Z.json.gz")},
-    {"2018",                 *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2018_UL__muon_Z.json.gz")},
-    {"2022Re-recoBCD",       *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2022_Summer22__muon_Z.json.gz")},
-    {"2022Re-recoE+PromptFG",*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2022_Summer22EE__muon_Z.json.gz")},
-    {"2023PromptC",          *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2023_Summer23__muon_Z.json.gz")},
-    {"2023PromptD",          *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2023_Summer23BPix__muon_Z.json.gz")},
-    {"2024Prompt",           *CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2024_Summer24__muon_Z.json.gz")},
+/*
+############################################
+MUON SFs
+############################################
+*/
+
+/*
+############################################
+MUON SFs
+############################################
+*/
+
+struct MuonCorrectionSet {
+    correction::CorrectionSet cset;
+    bool abs_eta; // true = use abs(eta), false = use signed eta
 };
 
-// RECO SFs (only present for Run 2)
-const std::unordered_map<std::string, std::string> muonRecoScaleFactors_yearmap = {
-    {"2016preVFP",           "NUM_TrackerMuons_DEN_genTracks"},
-    {"2016postVFP",          "NUM_TrackerMuons_DEN_genTracks"},
-    {"2017",                 "NUM_TrackerMuons_DEN_genTracks"},
-    {"2018",                 "NUM_TrackerMuons_DEN_genTracks"},
+const std::unordered_map<std::string, MuonCorrectionSet> muonScaleFactors = {
+    {"2016preVFP",            {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2016preVFP_UL__muon_Z.json.gz"),    true}},  // abs eta
+    {"2016postVFP",           {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2016postVFP_UL__muon_Z.json.gz"),   true}},  // abs eta
+    {"2017",                  {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2017_UL__muon_Z.json.gz"),           true}},  // abs eta
+    {"2018",                  {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2018_UL__muon_Z.json.gz"),           true}},  // abs eta
+    {"2022Re-recoBCD",        {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2022_Summer22__muon_Z.json.gz"),     true}},  // abs eta
+    {"2022Re-recoE+PromptFG", {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2022_Summer22EE__muon_Z.json.gz"),  true}},  // abs eta
+    {"2023PromptC",           {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2023_Summer23__muon_Z.json.gz"),     false}}, // signed eta
+    {"2023PromptD",           {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2023_Summer23BPix__muon_Z.json.gz"),false}}, // signed eta
+    {"2024Prompt",            {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2024_Summer24__muon_Z.json.gz"),     false}}, // signed eta
 };
-RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
-// ID SFs
-// Loose
-const std::unordered_map<std::string, std::string> muonIDScaleFactorsL_yearmap = {
-    {"2016preVFP",           "NUM_LooseID_DEN_TrackerMuons"},
-    {"2016postVFP",          "NUM_LooseID_DEN_TrackerMuons"},
-    {"2017",                 "NUM_LooseID_DEN_TrackerMuons"},
-    {"2018",                 "NUM_LooseID_DEN_TrackerMuons"},
-    {"2022Re-recoBCD",       "NUM_LooseID_DEN_TrackerMuons"},
-    {"2022Re-recoE+PromptFG","NUM_LooseID_DEN_TrackerMuons"},
-    {"2023PromptC",          "NUM_LooseID_DEN_TrackerMuons"},
-    {"2023PromptD",          "NUM_LooseID_DEN_TrackerMuons"},
-    {"2024Prompt",           "NUM_LooseID_DEN_TrackerMuons"}
+struct MuonSFYear {
+    std::string correction_key;
+    float pt_min; // minimum valid pt, verified against JSON bin edges
 };
-// Med
-const std::unordered_map<std::string, std::string> muonIDScaleFactorsM_yearmap = {
-    {"2016preVFP",           "NUM_MediumID_DEN_TrackerMuons"},
-    {"2016postVFP",          "NUM_MediumID_DEN_TrackerMuons"},
-    {"2017",                 "NUM_MediumID_DEN_TrackerMuons"},
-    {"2018",                 "NUM_MediumID_DEN_TrackerMuons"},
-    {"2022Re-recoBCD",       "NUM_MediumID_DEN_TrackerMuons"},
-    {"2022Re-recoE+PromptFG","NUM_MediumID_DEN_TrackerMuons"},
-    {"2023PromptC",          "NUM_MediumID_DEN_TrackerMuons"},
-    {"2023PromptD",          "NUM_MediumID_DEN_TrackerMuons"},
-    {"2024Prompt",           "NUM_MediumID_DEN_TrackerMuons"},
-};
-// Tight
-const std::unordered_map<std::string, std::string> muonIDScaleFactorsT_yearmap = {
-    {"2016preVFP",           "NUM_TightID_DEN_TrackerMuons"},
-    {"2016postVFP",          "NUM_TightID_DEN_TrackerMuons"},
-    {"2017",                 "NUM_TightID_DEN_TrackerMuons"},
-    {"2018",                 "NUM_TightID_DEN_TrackerMuons"},
-    {"2022Re-recoBCD",       "NUM_TightID_DEN_TrackerMuons"},
-    {"2022Re-recoE+PromptFG","NUM_TightID_DEN_TrackerMuons"},
-    {"2023PromptC",          "NUM_TightID_DEN_TrackerMuons"},
-    {"2023PromptD",          "NUM_TightID_DEN_TrackerMuons"},
-    {"2024Prompt",           "NUM_TightID_DEN_TrackerMuons"},
-};
-RNode applyMuonIDScaleFactorsL(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
-RNode applyMuonIDScaleFactorsM(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
-RNode applyMuonIDScaleFactorsT(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
-// Iso SFs
-const std::unordered_map<std::string, std::string> muonIsoScaleFactorsLL_yearmap = {
-    {"2016preVFP",           "NUM_LooseRelIso_DEN_LooseID"},
-    {"2016postVFP",          "NUM_LooseRelIso_DEN_LooseID"},
-    {"2017",                 "NUM_LooseRelIso_DEN_LooseID"},
-    {"2018",                 "NUM_LooseRelIso_DEN_LooseID"},
-    {"2022Re-recoBCD",       "NUM_LoosePFIso_DEN_LooseID"},
-    {"2022Re-recoE+PromptFG","NUM_LoosePFIso_DEN_LooseID"},
-    {"2023PromptC",          "NUM_LoosePFIso_DEN_LooseID"},
-    {"2023PromptD",          "NUM_LoosePFIso_DEN_LooseID"},
-    {"2024Prompt",           "NUM_LoosePFIso_DEN_LooseID"},
+struct MuonSFConfig {
+    std::unordered_map<std::string, MuonSFYear> year_map;
 };
-const std::unordered_map<std::string, std::string> muonIsoScaleFactorsTM_yearmap = {
-    {"2016preVFP",           "NUM_TightRelIso_DEN_MediumID"},
-    {"2016postVFP",          "NUM_TightRelIso_DEN_MediumID"},
-    {"2017",                 "NUM_TightRelIso_DEN_MediumID"},
-    {"2018",                 "NUM_TightRelIso_DEN_MediumID"},
-    {"2022Re-recoBCD",       "NUM_TightPFIso_DEN_MediumID"},
-    {"2022Re-recoE+PromptFG","NUM_TightPFIso_DEN_MediumID"},
-    {"2023PromptC",          "NUM_TightPFIso_DEN_MediumID"},
-    {"2023PromptD",          "NUM_TightPFIso_DEN_MediumID"},
-    {"2024Prompt",           "NUM_TightPFIso_DEN_MediumID"},
-};
-const std::unordered_map<std::string, std::string> muonIsoScaleFactorsTT_yearmap = {
-    {"2016preVFP",           "NUM_TightRelIso_DEN_TightIDandIPCut"},
-    {"2016postVFP",          "NUM_TightRelIso_DEN_TightIDandIPCut"},
-    {"2017",                 "NUM_TightRelIso_DEN_TightIDandIPCut"},
-    {"2018",                 "NUM_TightRelIso_DEN_TightIDandIPCut"},
-    {"2022Re-recoBCD",       "NUM_TightPFIso_DEN_TightID"},
-    {"2022Re-recoE+PromptFG","NUM_TightPFIso_DEN_TightID"},
-    {"2023PromptC",          "NUM_TightPFIso_DEN_TightID"},
-    {"2023PromptD",          "NUM_TightPFIso_DEN_TightID"},
-    {"2024Prompt",           "NUM_TightPFIso_DEN_TightID"}
-};
-RNode applyMuonIsoScaleFactorsLL(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
-RNode applyMuonIsoScaleFactorsMT(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
-RNode applyMuonIsoScaleFactorsTT(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
 
-// Trigger SFs, currently only evaluated for 1 lep
-const std::unordered_map<std::string, std::string> muonTriggerScaleFactors_yearmap = {
-    {"2016preVFP",           "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2016postVFP",          "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2017",                 "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2018",                 "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2022Re-recoBCD",       "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2022Re-recoE+PromptFG","NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2023PromptC",          "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2023PromptD",          "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2024Prompt",           "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"}
+const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
+    // RECO SF (Run 2 only, only defined above 40 GeV, returns 1.0 for Run 3 years)
+    {"weight_muon_reco", {{
+        {"2016preVFP",  {"NUM_TrackerMuons_DEN_genTracks", 40.0}},
+        {"2016postVFP", {"NUM_TrackerMuons_DEN_genTracks", 40.0}},
+        {"2017",        {"NUM_TrackerMuons_DEN_genTracks", 40.0}},
+        {"2018",        {"NUM_TrackerMuons_DEN_genTracks", 40.0}},
+    }}},
+    // ID SFs
+    {"weight_muon_id_loose", {{
+        {"2016preVFP",            {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2016postVFP",           {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2017",                  {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2018",                  {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2022Re-recoBCD",        {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2023PromptC",           {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2023PromptD",           {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
+        {"2024Prompt",            {"NUM_LooseID_DEN_TrackerMuons", 10.1}},
+    }}},
+    {"weight_muon_id_medium", {{
+        {"2016preVFP",            {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2016postVFP",           {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2017",                  {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2018",                  {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2022Re-recoBCD",        {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2023PromptC",           {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2023PromptD",           {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
+        {"2024Prompt",            {"NUM_MediumID_DEN_TrackerMuons", 10.1}},
+    }}},
+    {"weight_muon_id_tight", {{
+        {"2016preVFP",            {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2016postVFP",           {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2017",                  {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2018",                  {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2022Re-recoBCD",        {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2023PromptC",           {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2023PromptD",           {"NUM_TightID_DEN_TrackerMuons", 15.1}},
+        {"2024Prompt",            {"NUM_TightID_DEN_TrackerMuons", 10.1}},
+    }}},
+    // ISO SFs
+    {"weight_muon_iso_looseid_looseiso", {{
+        {"2016preVFP",            {"NUM_LooseRelIso_DEN_LooseID", 15.1}},
+        {"2016postVFP",           {"NUM_LooseRelIso_DEN_LooseID", 15.1}},
+        {"2017",                  {"NUM_LooseRelIso_DEN_LooseID", 15.1}},
+        {"2018",                  {"NUM_LooseRelIso_DEN_LooseID", 15.1}},
+        {"2022Re-recoBCD",        {"NUM_LoosePFIso_DEN_LooseID",  15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_LoosePFIso_DEN_LooseID",  15.1}},
+        {"2023PromptC",           {"NUM_LoosePFIso_DEN_LooseID",  15.1}},
+        {"2023PromptD",           {"NUM_LoosePFIso_DEN_LooseID",  15.1}},
+        {"2024Prompt",            {"NUM_LoosePFIso_DEN_LooseID",  10.1}},
+    }}},
+    {"weight_muon_iso_mediumid_tightiso", {{
+        {"2016preVFP",            {"NUM_TightRelIso_DEN_MediumID", 15.1}},
+        {"2016postVFP",           {"NUM_TightRelIso_DEN_MediumID", 15.1}},
+        {"2017",                  {"NUM_TightRelIso_DEN_MediumID", 15.1}},
+        {"2018",                  {"NUM_TightRelIso_DEN_MediumID", 15.1}},
+        {"2022Re-recoBCD",        {"NUM_TightPFIso_DEN_MediumID",  15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_TightPFIso_DEN_MediumID",  15.1}},
+        {"2023PromptC",           {"NUM_TightPFIso_DEN_MediumID",  15.1}},
+        {"2023PromptD",           {"NUM_TightPFIso_DEN_MediumID",  15.1}},
+        {"2024Prompt",            {"NUM_TightPFIso_DEN_MediumID",  10.1}},
+    }}},
+    {"weight_muon_iso_tightid_tightiso", {{
+        {"2016preVFP",            {"NUM_TightRelIso_DEN_TightIDandIPCut", 15.1}},
+        {"2016postVFP",           {"NUM_TightRelIso_DEN_TightIDandIPCut", 15.1}},
+        {"2017",                  {"NUM_TightRelIso_DEN_TightIDandIPCut", 15.1}},
+        {"2018",                  {"NUM_TightRelIso_DEN_TightIDandIPCut", 15.1}},
+        {"2022Re-recoBCD",        {"NUM_TightPFIso_DEN_TightID",          15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_TightPFIso_DEN_TightID",          15.1}},
+        {"2023PromptC",           {"NUM_TightPFIso_DEN_TightID",          15.1}},
+        {"2023PromptD",           {"NUM_TightPFIso_DEN_TightID",          15.1}},
+        {"2024Prompt",            {"NUM_TightPFIso_DEN_TightID",          10.1}},
+    }}},
+    // Trigger SF (not yet moved to per-channel)
+    {"weight_muon_trigger", {{
+        {"2016preVFP",            {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight", 15.1}},
+        {"2016postVFP",           {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight", 15.1}},
+        {"2017",                  {"NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
+        {"2018",                  {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
+        {"2022Re-recoBCD",        {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
+        {"2022Re-recoE+PromptFG", {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
+        {"2023PromptC",           {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
+        {"2023PromptD",           {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
+        {"2024Prompt",            {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               10.1}},
+    }}},
 };
-RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
+
+// Function declarations
+RNode applyMuonScaleFactors(std::unordered_map<std::string, MuonCorrectionSet> cset_muon, std::string output_name, MuonSFConfig config, RNode df);
+RNode applyMuonSFsByKey(RNode df, bool isData, std::vector<std::string> sf_keys);
 
 /*
 ############################################

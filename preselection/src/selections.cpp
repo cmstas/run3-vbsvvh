@@ -1,5 +1,6 @@
 #include "selections.h"
 #include "cutflow.h"
+#include "weights.h"
 
 // MET filters
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
@@ -215,7 +216,7 @@ RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 
 
 ///////////////// Main channel selection block /////////////////
-RNode runPreselection(RNode df_, std::string channel, bool noCut)
+RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 {
 
     Cutflow::Add(df_, "All events");
@@ -452,6 +453,15 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             "((nMuon_Loose + nElectron_Loose) == 3)",
             "C2: 3lep"
         );
+
+        df = applyMuonSFsByKey(df, isData, {
+            "weight_muon_reco",
+            "weight_muon_id_loose",
+            "weight_muon_iso_looseid_looseiso",
+            "weight_muon_id_medium",
+            "weight_muon_iso_mediumid_tightiso"
+        });
+
     }
 
     // 4lep

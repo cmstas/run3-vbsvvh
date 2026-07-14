@@ -46,15 +46,13 @@ MUON SFs
 ############################################
 */
 
-
 RNode applyMuonScaleFactors(
-    std::unordered_map<std::string, correction::CorrectionSet> cset_muon,
-    std::unordered_map<std::string, std::string> year_map,
-    RNode df,
+    std::unordered_map<std::string, MuonCorrectionSet> cset_muon,
     std::string output_name,
-    float pt_min = 15.1)
+    MuonSFConfig config,
+    RNode df)
 {
-    auto eval_correction = [cset_muon, year_map, pt_min] (std::string year, const RVec<float> eta, const RVec<float> pt) {
+    auto eval_correction = [cset_muon, output_name, config] (std::string year, const RVec<float> eta, const RVec<float> pt) {
         RVec<double> muon_sf_weights = {1., 1., 1.};
         if (eta.empty()) {
             return muon_sf_weights;
@@ -67,24 +65,18 @@ RNode applyMuonScaleFactors(
             }
             return muon_sf_weights;
         }
-        if (year_map.find(year) == year_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: Muon SF year map for year " << year << " not found. Setting weights to 1." << std::endl;
-                warned_years.insert(year);
-            }
+        if (config.year_map.find(year) == config.year_map.end()) {
+            // Not a warning, some configs intentionally omit certain years (e.g. reco SF is Run 2 only)
             return muon_sf_weights;
         }
-        auto correctionset = cset_muon.at(year).at(year_map.at(year));
-        // eta convention: ABS for 2016/2017/2018/2022, SIGNED for 2023/2024
-        // verified against JSON bin edges on 2026-07-13
-        bool uses_abs_eta = (year.find("2016") != std::string::npos ||
-                             year.find("2017") != std::string::npos ||
-                             year.find("2018") != std::string::npos ||
-                             year.find("2022") != std::string::npos);
+        auto& entry = cset_muon.at(year);
+        auto& year_config = config.year_map.at(year);
+        auto correctionset = entry.cset.at(year_config.correction_key);
+        bool abs_eta = entry.abs_eta;
+        float pt_min = year_config.pt_min;
         for (size_t i = 0; i < eta.size(); i++) {
             float pt_to_pass = std::max(pt[i], pt_min);
-            float eta_to_pass = uses_abs_eta ? abs(eta[i]) : eta[i];
+            float eta_to_pass = abs_eta ? abs(eta[i]) : eta[i];
             muon_sf_weights[0] *= correctionset->evaluate({eta_to_pass, pt_to_pass, "nominal"});
             muon_sf_weights[1] *= correctionset->evaluate({eta_to_pass, pt_to_pass, "systup"});
             muon_sf_weights[2] *= correctionset->evaluate({eta_to_pass, pt_to_pass, "systdown"});
@@ -94,31 +86,15 @@ RNode applyMuonScaleFactors(
     return df.Define(output_name, eval_correction, {"year", "muon_eta", "muon_pt"});
 }
 
-RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df) {
-    auto eval_correction = [cset_muon, year_map] (std::string year, const RVec<float> eta, const RVec<float> pt) {
-        RVec<double> muon_sf_weights = {1., 1., 1.};
-        if (eta.empty()) {
-            return muon_sf_weights;
+RNode applyMuonSFsByKey(RNode df, bool isData, std::vector<std::string> sf_keys) {
+    if (isData) return df;
+    for (const auto& key : sf_keys) {
+        if (muonSFConfigs.find(key) == muonSFConfigs.end()) {
+            throw std::runtime_error("applyMuonSFs: unknown SF key '" + key + "'");
         }
-        if (cset_muon.find(year) == cset_muon.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: Muon Trigger correction set for year " << year << " not found. Setting muon trigger weights to 1." << std::endl;
-                warned_years.insert(year);
-            }
-            return muon_sf_weights;
-        }
-        auto correctionset = cset_muon.at(year).at(year_map.at(year));
-        for (size_t i = 0; i < eta.size(); i++) {
-            float pt_min = 29.1;
-            float pt_to_pass = std::max(pt[i],pt_min);
-            muon_sf_weights[0] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "nominal"});
-            muon_sf_weights[1] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systup"});
-            muon_sf_weights[2] *= correctionset->evaluate({abs(eta[i]), pt_to_pass, "systdown"});
-        }
-        return muon_sf_weights;
-    };
-    return df.Define("weight_muon_trigger", eval_correction, {"year", "muon_eta", "muon_pt"});
+        df = applyMuonScaleFactors(muonScaleFactors, key, muonSFConfigs.at(key), df);
+    }
+    return df;
 }
 
 /*
@@ -465,21 +441,21 @@ RNode applyMCWeights(RNode df_) {
 
     auto df = applyPileupScaleFactors(pileupScaleFactors, pileupScaleFactors_yearmap, df_);
 
-    // Reco
-    df = applyMuonScaleFactors(muonScaleFactors, muonRecoScaleFactors_yearmap, df, "weight_muon_reco", 40.0);
+    //// Reco
+    //df = applyMuonScaleFactors(muonScaleFactors, muonRecoScaleFactors_yearmap, df, "weight_muon_reco", 40.0);
 
-    // ID
-    df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsL_yearmap, df, "weight_muon_id");
-    df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsM_yearmap, df, "weight_muon_id2");
-    df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsT_yearmap, df, "weight_muon_idr3");
+    //// ID
+    //df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsL_yearmap, df, "weight_muon_id");
+    //df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsM_yearmap, df, "weight_muon_id2");
+    //df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsT_yearmap, df, "weight_muon_idr3");
 
-    // Iso
-    df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsLL_yearmap, df, "weight_muon_iso");
-    df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsTM_yearmap, df, "weight_muon_iso2");
-    df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsTT_yearmap, df, "weight_muon_iso3");
+    //// Iso
+    //df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsLL_yearmap, df, "weight_muon_iso");
+    //df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsTM_yearmap, df, "weight_muon_iso2");
+    //df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsTT_yearmap, df, "weight_muon_iso3");
 
-    // Trg
-    df = applyMuonTriggerScaleFactors(muonScaleFactors, muonTriggerScaleFactors_yearmap, df);
+    //// Trg
+    //df = applyMuonTriggerScaleFactors(muonScaleFactors, muonTriggerScaleFactors_yearmap, df);
 
     df = applyElectronIDScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
     df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
@@ -508,9 +484,9 @@ RNode applyMCWeights(RNode df_) {
     return df.Redefine("weight",
         "weight *"
         "weight_pileup[0] * "
-        "weight_muon_id[0] * "
-        "weight_muon_reco[0] * "
-        "weight_muon_trigger[0] * "
+        //"weight_muon_id[0] * "
+        //"weight_muon_reco[0] * "
+        //"weight_muon_trigger[0] * "
         "weight_electronid[0] * "
         "weight_electronreco[0] * "
         "weight_electrontrigger[0] * "
