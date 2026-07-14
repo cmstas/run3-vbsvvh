@@ -71,21 +71,27 @@ MUON SFs
 ############################################
 */
 
-/*
-############################################
-MUON SFs
-############################################
-*/
-
-/*
-############################################
-MUON SFs
-############################################
-*/
-
 struct MuonCorrectionSet {
     correction::CorrectionSet cset;
     bool abs_eta; // true = use abs(eta), false = use signed eta
+};
+
+const std::unordered_map<std::string, std::vector<std::string>> muonWorkingPointSFs = {
+    {"weight_muon_looseid_looseiso", {
+        "weight_muon_reco",
+        "weight_muon_id_loose",
+        "weight_muon_iso_looseid_looseiso"
+    }},
+    {"weight_muon_mediumid_tightiso", {
+        "weight_muon_reco",
+        "weight_muon_id_medium",
+        "weight_muon_iso_mediumid_tightiso"
+    }},
+    {"weight_muon_tightid_tightiso", {
+        "weight_muon_reco",
+        "weight_muon_id_tight",
+        "weight_muon_iso_tightid_tightiso"
+    }}
 };
 
 const std::unordered_map<std::string, MuonCorrectionSet> muonScaleFactors = {
@@ -200,8 +206,11 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
 };
 
 // Function declarations
+//RNode applyMuonScaleFactors(std::unordered_map<std::string, MuonCorrectionSet> cset_muon, std::string output_name, MuonSFConfig config, RNode df);
+//RNode applyMuonSFsByKey(RNode df, bool isData, std::vector<std::string> sf_keys);
 RNode applyMuonScaleFactors(std::unordered_map<std::string, MuonCorrectionSet> cset_muon, std::string output_name, MuonSFConfig config, RNode df);
-RNode applyMuonSFsByKey(RNode df, bool isData, std::vector<std::string> sf_keys);
+RNode combineScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys);
+RNode applyMuonWorkingPointSFs(RNode df, bool isData, std::vector<std::string> wp_keys);
 
 /*
 ############################################

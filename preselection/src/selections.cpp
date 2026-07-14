@@ -454,12 +454,10 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             "C2: 3lep"
         );
 
-        df = applyMuonSFsByKey(df, isData, {
-            "weight_muon_reco",
-            "weight_muon_id_loose",
-            "weight_muon_iso_looseid_looseiso",
-            "weight_muon_id_medium",
-            "weight_muon_iso_mediumid_tightiso"
+
+        df = applyMuonWorkingPointSFs(df, isData, {
+            "weight_muon_looseid_looseiso",
+            "weight_muon_mediumid_tightiso"
         });
 
     }

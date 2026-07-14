@@ -52,7 +52,7 @@ RNode applyMuonScaleFactors(
     MuonSFConfig config,
     RNode df)
 {
-    auto eval_correction = [cset_muon, output_name, config] (std::string year, const RVec<float> eta, const RVec<float> pt) {
+    auto eval_correction = [cset_muon, config] (std::string year, const RVec<float> eta, const RVec<float> pt) {
         RVec<double> muon_sf_weights = {1., 1., 1.};
         if (eta.empty()) {
             return muon_sf_weights;
@@ -66,36 +66,72 @@ RNode applyMuonScaleFactors(
             return muon_sf_weights;
         }
         if (config.year_map.find(year) == config.year_map.end()) {
-            // Not a warning, some configs intentionally omit certain years (e.g. reco SF is Run 2 only)
             return muon_sf_weights;
         }
-        auto& entry = cset_muon.at(year);
-        auto& year_config = config.year_map.at(year);
+
+        const auto& entry = cset_muon.at(year);
+        const auto& year_config = config.year_map.at(year);
         auto correctionset = entry.cset.at(year_config.correction_key);
-        bool abs_eta = entry.abs_eta;
-        float pt_min = year_config.pt_min;
+
         for (size_t i = 0; i < eta.size(); i++) {
-            float pt_to_pass = std::max(pt[i], pt_min);
-            float eta_to_pass = abs_eta ? abs(eta[i]) : eta[i];
+            float eta_to_pass = entry.abs_eta ? abs(eta[i]) : eta[i];
+            float pt_to_pass = std::max(pt[i], year_config.pt_min);
+
             muon_sf_weights[0] *= correctionset->evaluate({eta_to_pass, pt_to_pass, "nominal"});
             muon_sf_weights[1] *= correctionset->evaluate({eta_to_pass, pt_to_pass, "systup"});
             muon_sf_weights[2] *= correctionset->evaluate({eta_to_pass, pt_to_pass, "systdown"});
         }
         return muon_sf_weights;
     };
+
     return df.Define(output_name, eval_correction, {"year", "muon_eta", "muon_pt"});
 }
 
-RNode applyMuonSFsByKey(RNode df, bool isData, std::vector<std::string> sf_keys) {
+RNode combineScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys)
+{
+    auto combine = [](const RVec<double>& w0,
+                      const RVec<double>& w1,
+                      const RVec<double>& w2) {
+        return RVec<double>{
+            w0[0] * w1[0] * w2[0],
+            w0[1] * w1[1] * w2[1],
+            w0[2] * w1[2] * w2[2]
+        };
+    };
+
+    return df.Define(output_name, combine, input_keys);
+}
+
+
+RNode applyMuonWorkingPointSFs(RNode df, bool isData, std::vector<std::string> wp_keys)
+{
     if (isData) return df;
-    for (const auto& key : sf_keys) {
-        if (muonSFConfigs.find(key) == muonSFConfigs.end()) {
-            throw std::runtime_error("applyMuonSFs: unknown SF key '" + key + "'");
+
+    std::unordered_set<std::string> component_keys;
+
+    for (const auto& wp_key : wp_keys) {
+        if (muonWorkingPointSFs.find(wp_key) == muonWorkingPointSFs.end()) {
+            throw std::runtime_error("applyMuonWorkingPointSFs: unknown WP key '" + wp_key + "'");
         }
-        df = applyMuonScaleFactors(muonScaleFactors, key, muonSFConfigs.at(key), df);
+        for (const auto& component_key : muonWorkingPointSFs.at(wp_key)) {
+            component_keys.insert(component_key);
+        }
     }
+
+    for (const auto& component_key : component_keys) {
+        if (muonSFConfigs.find(component_key) == muonSFConfigs.end()) {
+            throw std::runtime_error("applyMuonWorkingPointSFs: unknown component key '" + component_key + "'");
+        }
+        df = applyMuonScaleFactors(muonScaleFactors, component_key, muonSFConfigs.at(component_key), df);
+    }
+
+    for (const auto& wp_key : wp_keys) {
+        df = combineScaleFactorWeightsByKey(df, wp_key, muonWorkingPointSFs.at(wp_key));
+    }
+
     return df;
 }
+
 
 /*
 ############################################
