@@ -84,7 +84,7 @@ RNode applyMuonScaleFactors(
         return muon_sf_weights;
     };
 
-    return df.Define(output_name, eval_correction, {"year", "muon_eta", "muon_pt"});
+    return df.Define(output_name, eval_correction, {"year", "_muonSel_eta", "_muonSel_pt"});
 }
 
 RNode combineScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys)
@@ -190,7 +190,7 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
         }
         return electron_sf_weights;
     };
-    return df.Define(output_name, eval_correction, {"year", "electron_SC_eta", "electron_pt"});
+    return df.Define(output_name, eval_correction, {"year", "_electronSel_SC_eta", "_electronSel_pt"});
 }
 
 RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, ElectronIDConfig config, std::string output_name, RNode df) {
@@ -219,7 +219,7 @@ RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::Co
         }
         return electron_sf_weights;
     };
-    return df.Define(output_name, eval_correction, {"year", "electron_SC_eta", "electron_pt"});
+    return df.Define(output_name, eval_correction, {"year", "_electronSel_SC_eta", "_electronSel_pt"});
 }
 
 RNode combineElectronScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys)
@@ -539,24 +539,6 @@ RNode applyMCWeights(RNode df_) {
 
     auto df = applyPileupScaleFactors(pileupScaleFactors, pileupScaleFactors_yearmap, df_);
 
-    //// Reco
-    //df = applyMuonScaleFactors(muonScaleFactors, muonRecoScaleFactors_yearmap, df, "weight_muon_reco", 40.0);
-
-    //// ID
-    //df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsL_yearmap, df, "weight_muon_id");
-    //df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsM_yearmap, df, "weight_muon_id2");
-    //df = applyMuonScaleFactors(muonScaleFactors, muonIDScaleFactorsT_yearmap, df, "weight_muon_idr3");
-
-    //// Iso
-    //df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsLL_yearmap, df, "weight_muon_iso");
-    //df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsTM_yearmap, df, "weight_muon_iso2");
-    //df = applyMuonScaleFactors(muonScaleFactors, muonIsoScaleFactorsTT_yearmap, df, "weight_muon_iso3");
-
-    //// Trg
-    //df = applyMuonTriggerScaleFactors(muonScaleFactors, muonTriggerScaleFactors_yearmap, df);
-
-    //df = applyElectronIDScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
-    //df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
     df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
     df = applyBTaggingScaleFactors(bTaggingScaleFactors, bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname,  df);

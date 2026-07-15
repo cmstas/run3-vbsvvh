@@ -128,6 +128,18 @@ RNode LeptonSelections(RNode df_)
 {
     auto df = ElectronSelections(df_);
     df = MuonSelections(df);
+
+    // Counting lepton collections: used for SF calculation and channel counting
+    //     - These are the leptons that define the channel (loose WP for both flavors)
+    //     - Prefixed with _ so they are not written to the output snapshot
+    //     - Muons: loose muons (muon_* collection is already loose)
+    //     - Electrons: loose electrons (i.e., loose subset of the veto electron collection)
+    df = df.Define("_muonSel_pt",  "muon_pt")
+           .Define("_muonSel_eta", "muon_eta");
+    df = df.Define("_electronSel_pt",     "electron_pt[electron_isLoose]")
+           .Define("_electronSel_eta",    "electron_eta[electron_isLoose]")
+           .Define("_electronSel_SC_eta", "electron_SC_eta[electron_isLoose]");
+
     return df.Define("lepton_pt", "Concatenate(electron_pt, muon_pt)")
             .Define("_leptonSorted", "Argsort(-lepton_pt)")
             .Redefine("lepton_pt", "Take(lepton_pt, _leptonSorted)")
