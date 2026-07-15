@@ -314,7 +314,7 @@ xsec_dict = {
             "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                       : 0.0262749,
             "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
             "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
-            "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 13.74,
+            "ZZTo4L_M-1toInf_TuneCP5_13TeV"                            : 13.74, # https://xsecdb-xsdb-official.app.cern.ch/xsdb/?columns=50331648&currentPage=0&pageSize=50&searchQuery=process_name%3DZTo4L_M-1toInf_TuneCP5_13TeV%20%2A
             "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                     : 0.0024614,
             "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, 
             # for numbers below we use averages
