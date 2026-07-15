@@ -67,6 +67,17 @@ RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::Correc
 
 /*
 ############################################
+Lepton SFs (putting e and m together)
+############################################
+*/
+
+RNode combineTwoLeptonSFWeightsIntoOne(RNode df,
+    const std::string& ele_key,
+    const std::string& mu_key,
+    const std::string& output_key = "weight_lepSF");
+
+/*
+############################################
 MUON SFs
 ############################################
 */

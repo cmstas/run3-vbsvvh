@@ -469,13 +469,35 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = applyMuonWorkingPointSFs(df, isData, {
             "weight_muon_looseid_looseiso",
-            "weight_muon_mediumid_tightiso"
+            "weight_muon_mediumid_tightiso",
+            "weight_muon_tightid_tightiso"
         });
+
 
         df = applyElectronWorkingPointSFs(df, isData, {
             "weight_electron_reco_looseid",
             "weight_electron_reco_tightid"
         });
+
+
+
+        // 1
+        df = combineTwoLeptonSFWeightsIntoOne(df,
+            "weight_electron_reco_looseid",
+            "weight_muon_mediumid_tightiso",
+            "weight_lepSF1");
+
+        // 2
+        df = combineTwoLeptonSFWeightsIntoOne(df,
+            "weight_electron_reco_looseid",
+            "weight_muon_looseid_looseiso",
+            "weight_lepSF2");
+
+        // 3
+        df = combineTwoLeptonSFWeightsIntoOne(df,
+            "weight_electron_reco_tightid",
+            "weight_muon_tightid_tightiso",
+            "weight_lepSF3");
 
     }
 
