@@ -460,6 +460,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             "weight_muon_mediumid_tightiso"
         });
 
+        df = applyElectronWorkingPointSFs(df, isData, {
+            "weight_electron_reco_looseid",
+            "weight_electron_reco_tightid"
+        });
+
     }
 
     // 4lep
