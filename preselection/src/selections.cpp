@@ -216,18 +216,25 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
     // Downstream coffea uses Jet_isGood (nominal) and Jet_isGood_<sfx> (variations)
     // uniformly to construct jet collections from the shared Jet_* arrays.
     //
-    // NOTE: the per-variation masks use ak4GoodJetSelectionExpr, which does NOT include
-    // the fat-jet cleaning cut applied to the nominal "jet" mask (_good_ak4jets) above --
-    // variation masks preserve the pre-refactor JES definition (no FJ cleaning).
+    // Each per-variation mask is fat-jet-cleaned against the good fat jets FOR THAT
+    // variation (FatJet_isGood_<sfx>), so Jet_isGood_<sfx> parallels the FJ-cleaned nominal
+    // Jet_isGood (= _good_ak4jets for the "jet" affix). Only the good-fatjet membership
+    // changes with the variation; the ak4-ak8 dR geometry itself is JEC-invariant (eta/phi
+    // are unchanged by JEC). VVdR returns 999 for every AK4 jet when a variation has no good
+    // fat jets, so the >0.8 cut then passes (no cleaning) -- matching the nominal fj_cut.
     //
-    // njet_<sfx> = Sum(Jet_isGood_<sfx>) parallels the nominal `njet` (defined inside
-    // applyObjectMaskNewAffix) and feeds the per-variation channel-pass flags built in
-    // runPreselection.
+    // njet_<sfx> = Sum(Jet_isGood_<sfx>) then parallels the nominal `njet` (defined inside
+    // applyObjectMaskNewAffix, also FJ-cleaned) and feeds the per-variation channel-pass flags.
     if (affix == "jet") {
         df = df.Define("Jet_isGood", "_good_ak4jets");
         for (const auto& sfx : jesVariationSuffixes()) {
+            df = df.Define("_fatjet_eta_" + sfx, "FatJet_eta[FatJet_isGood_" + sfx + "]");
+            df = df.Define("_fatjet_phi_" + sfx, "FatJet_phi[FatJet_isGood_" + sfx + "]");
+            df = df.Define("_dR_ak4_fatjet_" + sfx, VVdR,
+                           {"Jet_eta", "Jet_phi", "_fatjet_eta_" + sfx, "_fatjet_phi_" + sfx});
             df = df.Define("Jet_isGood_" + sfx,
-                           ak4GoodJetSelectionExpr("Jet_pt_" + sfx) + " && !Jet_vetoMap");
+                           ak4GoodJetSelectionExpr("Jet_pt_" + sfx)
+                               + " && !Jet_vetoMap && _dR_ak4_fatjet_" + sfx + " > 0.8");
             df = df.Define("njet_" + sfx, "Sum(Jet_isGood_" + sfx + ")");
         }
     }
