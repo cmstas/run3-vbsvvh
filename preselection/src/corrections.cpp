@@ -1,5 +1,9 @@
 #include "corrections.h"
 
+#include <algorithm>
+#include <cmath>
+#include <utility>
+
 /*
 ############################################
 B-TAGGING WORKING POINTS
@@ -20,86 +24,92 @@ RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
 
 /*
 ############################################
-JET MASS SCALE (JMS) AND RESOLUTION (JMR)
+JET MASS SCALE (JMS) AND RESOLUTION (JMR) — generic, per-mass-column
 ############################################
 
-Parametrization is applied on `FatJet_msoftdrop`:
+Column-agnostic helpers: pass the target mass branch (and, for JMR, the gen
+reference mass + gen-index columns) as arguments so the same code serves
+`FatJet_msoftdrop`, the GloParT regressed mass, or any other analysis mass
+variable.
 
-  JMS  : msd' = max(0, msd + Δshift[year])               // additive shift in GeV
-  JMR  : matched   →  msd' = max(0, m_gen + f * (msd - m_gen))   
-         unmatched →  msd' = max(0, msd * (1 + √max(f²-1,0) * σrel * N(0,1)))
-                      // σrel = 1.0 is a placeholder; replace with the per-era msd
-                      // resolution when JMR is derived. Branch is dead while f == 1.0.
+  JMS  : m' = max(0, m + Δshift[year])                   // additive shift in GeV
+  JMR  : matched   →  m' = max(0, m_gen + f * (m - m_gen))
+         unmatched →  m' = max(0, m * (1 + √max(f²-1,0) * σrel[year] * N(0,1)))
 
-Current factors are placeholders (Δshift = 0 GeV and f = 1.0), both reduce to the identity.
-Replace with the calibration outputs once derived. 
-TO DO: add systematic up/down, add a `variation` argument and pass ±1σ shift/scale instead of the central.
+Choice of gen reference `m_gen` matters for GloParT: use whatever the network
+was regressed to (parton W/Z/H mass or particle-level jet mass). For msd, the
+POG-standard proxy is `GenJetAK8_mass[FatJet_genJetAK8Idx]`.
 
+Currently unwired — this analysis calibrates JMS/JMR on the GloParT mass, not
+on msd (§ 5-6 of CORRECTIONS.md), and the GloParT calibration hasn't been
+derived yet. When it lands, wire the calls into `applyMCCorrections` with the
+GloParT column names + per-era shift/factor/σ_rel maps from the calibration
+fit. Up/down systematic variants add a `variation` arg carrying the ±1σ
+shift/scale.
 */
 
-RNode applyJetMassScale(const std::unordered_map<std::string, float>& jms_shift, RNode df) {
-    auto eval = [jms_shift](std::string year, RVec<float> msd) {
-        auto it = jms_shift.find(year);
-        if (it == jms_shift.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.insert(year).second) {
-                std::cout << "Warning: JMS shift not defined for year " << year
-                          << ". Skipping." << std::endl;
+RNode applyJetMassScale(const std::unordered_map<std::string, float>& shift_map,
+                     const std::string& mass_col,
+                     RNode df) {
+    auto eval = [shift_map, mass_col](std::string year, RVec<float> m) {
+        auto it = shift_map.find(year);
+        if (it == shift_map.end()) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(mass_col + "/" + year).second) {
+                std::cout << "Warning: mass-scale shift not defined for year " << year
+                          << " on column " << mass_col << ". Skipping." << std::endl;
             }
-            return msd;
+            return m;
         }
         const float shift = it->second;
-        if (shift == 0.0f || msd.empty()) return msd;
-        // apply jet mass cale shift to every fat jet's soft-drop mass in the event
-        for (auto& m : msd) m = std::max(0.0f, m + shift);
-        return msd;
+        if (shift == 0.0f || m.empty()) return m;
+        for (auto& x : m) x = std::max(0.0f, x + shift);
+        return m;
     };
-    return df.Redefine("FatJet_msoftdrop", eval, {"year", "FatJet_msoftdrop"});
+    return df.Redefine(mass_col, eval, {"year", mass_col});
 }
 
-RNode applyJetMassResolution(const std::unordered_map<std::string, float>& jmr_factor,
-                             const std::unordered_map<std::string, float>& jmr_sigma_rel,
-                             RNode df) {
-    auto eval = [jmr_factor, jmr_sigma_rel](std::string year,
-                             RVec<float> msd,
-                             RVec<short> genJet_idx, RVec<float> genJet_mass,
+RNode applyJetMassResolution(const std::unordered_map<std::string, float>& factor_map,
+                          const std::unordered_map<std::string, float>& sigma_rel_map,
+                          const std::string& mass_col,
+                          const std::string& gen_mass_col,
+                          const std::string& gen_idx_col,
+                          RNode df) {
+    auto eval = [factor_map, sigma_rel_map, mass_col](std::string year,
+                             RVec<float> m,
+                             RVec<short> gen_idx, RVec<float> gen_mass,
                              unsigned int lumi, unsigned long long event) {
-        auto it = jmr_factor.find(year);
-        if (it == jmr_factor.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.insert(year).second) {
-                std::cout << "Warning: JMR factor not defined for year " << year
-                          << ". Skipping." << std::endl;
+        auto it = factor_map.find(year);
+        if (it == factor_map.end()) {
+            static std::unordered_set<std::string> warned;
+            if (warned.insert(mass_col + "/" + year).second) {
+                std::cout << "Warning: mass-resolution factor not defined for year " << year
+                          << " on column " << mass_col << ". Skipping." << std::endl;
             }
-            return msd;
+            return m;
         }
         const float f = it->second;
-        if (f == 1.0f || msd.empty()) return msd;
+        if (f == 1.0f || m.empty()) return m;
 
         const float widen = std::sqrt(std::max(f * f - 1.0f, 0.0f));
-        // sigma_rel = relative msoftdrop resolution σ(msd)/msd, used by the unmatched
-        // stochastic branch. Per-era placeholder maps jetMassResolution_sigmaRel_central
-        // in corrections.h; replace with the value from the same calibration fit as
-        // jmr_factor. Falls back to 1.0 if the year is missing from the map.
-        auto sr_it = jmr_sigma_rel.find(year);
-        const float sigma_rel = (sr_it != jmr_sigma_rel.end()) ? sr_it->second : 1.0f;
+        auto sr_it = sigma_rel_map.find(year);
+        const float sigma_rel = (sr_it != sigma_rel_map.end()) ? sr_it->second : 1.0f;
         TRandom3 rng((static_cast<unsigned long long>(lumi) << 10) ^ event);
-        for (size_t i = 0; i < msd.size(); ++i) {
-            const bool matched = (genJet_idx[i] >= 0
-                                  && genJet_idx[i] < static_cast<int>(genJet_mass.size()));
+        for (size_t i = 0; i < m.size(); ++i) {
+            const bool matched = (gen_idx[i] >= 0
+                                  && gen_idx[i] < static_cast<int>(gen_mass.size()));
             if (matched) {
-                const float m_gen = genJet_mass[genJet_idx[i]];
-                msd[i] = std::max(0.0f, m_gen + f * (msd[i] - m_gen));
+                const float m_gen = gen_mass[gen_idx[i]];
+                m[i] = std::max(0.0f, m_gen + f * (m[i] - m_gen));
             } else {
                 const float kick = static_cast<float>(rng.Gaus(0.0, 1.0));
-                msd[i] = std::max(0.0f, msd[i] * (1.0f + widen * sigma_rel * kick));
+                m[i] = std::max(0.0f, m[i] * (1.0f + widen * sigma_rel * kick));
             }
         }
-        return msd;
+        return m;
     };
-    return df.Redefine("FatJet_msoftdrop", eval,
-                       {"year", "FatJet_msoftdrop",
-                        "FatJet_genJetAK8Idx", "GenJetAK8_mass",
+    return df.Redefine(mass_col, eval,
+                       {"year", mass_col, gen_idx_col, gen_mass_col,
                         "luminosityBlock", "event"});
 }
 
@@ -160,9 +170,12 @@ RNode applyMETPhiCorrections(RNode df, bool isData) {
         
         return std::make_pair(static_cast<float>(pt_corr), static_cast<float>(phi_corr));
     };
-    return df.Define("_MET_phicorr", eval_correction, {"year", "PuppiMET_pt", "PuppiMET_phi", "PV_npvs", "run"})
-            .Define("met_pt", "_MET_phicorr.first")            
-            .Define("met_phi", "_MET_phicorr.second");
+    // Runs AFTER applyType1MET, so it refines the already-rebuilt (met_pt, met_phi) rather than
+    // starting from PuppiMET. Run 3 has no met.json configured (see corrections.h) → no-op there;
+    // the φ correction currently only touches the nominal MET, not the JES-varied copies.
+    return df.Define("_MET_phicorr", eval_correction, {"year", "met_pt", "met_phi", "PV_npvs", "run"})
+            .Redefine("met_pt",  "_MET_phicorr.first")
+            .Redefine("met_phi", "_MET_phicorr.second");
 }
 
 /*
@@ -195,20 +208,20 @@ Recipe (per AK4 jet, year-aware):
   pt_raw   = (1 - Jet_rawFactor) * Jet_pt     // undo NanoAOD JEC
   mass_raw = (1 - Jet_rawFactor) * Jet_mass
 
-  factor   = compound(Jet_area, Jet_eta, pt_raw, rho [, run])
+  factor   = compound(Jet_area, Jet_eta, pt_raw, rho [, Jet_phi] [, run])
              // compound = L1FastJet * L2Relative * L3Absolute (* L2L3Residual for DATA),
              // with `inputs_update=[JetPt]` so each stage feeds the next its updated pt.
+             // The 2023BPix + 2024 pinned files also require Jet_phi; evalJECCompound()
+             // appends JetPhi/run only when the file declares them (see below).
   pt_new   = pt_raw   * factor
   mass_new = mass_raw * factor
 
-Type-I MET is rebuilt on top of the NanoAOD baseline:
-  met_x_new = met_x_old + sum_jets (pt_NanoAOD - pt_new) * cos(phi)
-  met_y_new = met_y_old + sum_jets (pt_NanoAOD - pt_new) * sin(phi)
-where the sum runs over jets with pt_new > 15 GeV and (neEmEF + chEmEF) < 0.9.
-FIXME: this needs to be updated to the new recommendation: https://indico.cern.ch/event/1644923/contributions/6916115/attachments/3211593/5720863/260202_JMEGeneral_Type1METWithNano_Nurfikri.pdf
+MET is NOT touched here anymore. Type-I MET is rebuilt from RawPuppiMET in applyType1MET()
+(over Jet + CorrT1METJet, with muon subtraction), following the JERC recipe in
+Type1MET.pdf / skimmer getT1CHSMET. See the TYPE-1 PUPPI MET section below.
 
 NanoAOD branches consumed:
-  Jet_pt, Jet_mass, Jet_eta, Jet_phi, Jet_area, Jet_rawFactor, Jet_neEmEF, Jet_chEmEF,
+  Jet_pt, Jet_mass, Jet_eta, Jet_phi, Jet_area, Jet_rawFactor,
   Rho_fixedGridRhoFastjetAll, run, year
 */
 
@@ -226,6 +239,52 @@ namespace {
         }
         return base + (isData ? "_DATA" : "_MC") + "_L1L2L3Res_" + algo;
     }
+
+    // Evaluate a JEC L1L2L3Res compound, building the input vector in the exact order the
+    // file declares it. The pinned 2026-06-05 files added a `JetPhi` input to the
+    // 2023BPix + 2024 compounds (and DATA additionally takes `run`); older eras do not have
+    // it. Querying inputs() keeps a single call correct for every era and future file bumps —
+    // passing a fixed-length arg list silently threw "wrong number of inputs" for 2023BPix/2024,
+    // which the per-jet catch turned into sf=1.0 (jets left at raw pT).
+    inline double evalJECCompound(const correction::CompoundCorrection& comp,
+                                  double area, double eta, double pt, double rho,
+                                  double phi, double run) {
+        std::vector<correction::Variable::Type> args;
+        args.reserve(comp.inputs().size());
+        for (const auto& v : comp.inputs()) {
+            const std::string n = v.name();
+            if      (n == "JetA")   args.push_back(area);
+            else if (n == "JetEta") args.push_back(eta);
+            else if (n == "JetPt")  args.push_back(pt);
+            else if (n == "Rho")    args.push_back(rho);
+            else if (n == "JetPhi") args.push_back(phi);
+            else if (n == "run")    args.push_back(run);
+            else throw std::runtime_error("JEC compound: unexpected input '" + n
+                                          + "'. corrections.cpp evalJECCompound needs a mapping for it.");
+        }
+        return comp.evaluate(args);
+    }
+
+    // Evaluate a JER PtResolution / ScaleFactor correction by input name. The pinned
+    // 2026-06-05 files ship the ScaleFactor with inputs [JetEta, JetPt] and NO `systematic`
+    // string (older files had one). The previous size>=3 heuristic mistook that for
+    // [JetEta, systematic] and fed "nom" into the JetPt slot ("wrong type: got string").
+    // `syst` is only used when the correction actually declares a `systematic` input.
+    inline double evalJERCorrection(const correction::Correction& c,
+                                    double eta, double pt, double rho, const std::string& syst) {
+        std::vector<correction::Variable::Type> args;
+        args.reserve(c.inputs().size());
+        for (const auto& v : c.inputs()) {
+            const std::string n = v.name();
+            if      (n == "JetEta")     args.push_back(eta);
+            else if (n == "JetPt")      args.push_back(pt);
+            else if (n == "Rho")        args.push_back(rho);
+            else if (n == "systematic") args.push_back(syst);
+            else throw std::runtime_error("JER correction '" + c.name() + "': unexpected input '" + n
+                                          + "'. corrections.cpp evalJERCorrection needs a mapping for it.");
+        }
+        return c.evaluate(args);
+    }
 }
 
 RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
@@ -235,7 +294,7 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
 
     auto compute_factor = [cset_jerc, jec_prefix_map, jec_suffix_map, isData](
             std::string year,
-            RVec<float> pt, RVec<float> eta, RVec<float> area, RVec<float> rawFactor,
+            RVec<float> pt, RVec<float> eta, RVec<float> phi, RVec<float> area, RVec<float> rawFactor,
             float rho, unsigned int run) {
 
         RVec<float> factor(pt.size(), 1.0f);
@@ -245,12 +304,9 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
         auto pf_it = jec_prefix_map.find(year);
         auto sf_it = jec_suffix_map.find(year);
         if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.insert(year).second) {
-                std::cout << "Warning: JEC inputs missing for year " << year
-                          << ". Skipping nominal JEC re-application." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK4 JEC: no correction set / prefix / suffix configured for year '"
+                                     + year + "'. Refusing to run with jets uncorrected — add this year to "
+                                       "the JEC maps in corrections.h.");
         }
 
         const std::string compound_name = makeCompoundJECName(pf_it->second, sf_it->second, isData);
@@ -258,28 +314,22 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
         try {
             compound = cs_it->second.compound().at(compound_name);
         } catch (const std::out_of_range&) {
-            static std::unordered_set<std::string> warned_keys;
-            if (warned_keys.insert(year + "/" + compound_name).second) {
-                std::cout << "Warning: compound JEC '" << compound_name
-                          << "' not found for year " << year
-                          << ". Skipping nominal JEC re-application." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK4 JEC: compound '" + compound_name
+                                     + "' not found in the pinned jet_jerc.json.gz for year '" + year
+                                     + "'. The JEC tag string in corrections.h is stale relative to the "
+                                       "pinned snapshot (version drift). Refusing to run with jets uncorrected.");
         }
 
         for (size_t i = 0; i < pt.size(); ++i) {
             float pt_raw = (1.0f - rawFactor[i]) * pt[i];
             double sf = 1.0;
             try {
-                if (isData) {
-                    sf = compound->evaluate({(double)area[i], (double)eta[i],
-                                             (double)pt_raw,  (double)rho,
-                                             (double)run});
-                } else {
-                    sf = compound->evaluate({(double)area[i], (double)eta[i],
-                                             (double)pt_raw,  (double)rho});
-                }
+                // evalJECCompound appends JetPhi / run only when the pinned file declares them.
+                sf = evalJECCompound(*compound, (double)area[i], (double)eta[i], (double)pt_raw,
+                                     (double)rho, (double)phi[i], (double)run);
             } catch (const std::exception& e) {
+                std::cout << "Warning: JEC evaluation failed for jet " << i << " (pt_raw=" << pt_raw
+                          << ", eta=" << eta[i] << "): " << e.what() << ". Setting SF to 1.0." << std::endl;
                 sf = 1.0;
             }
             // Multiplicative factor on the *NanoAOD* pt: Jet_pt_new = Jet_pt * factor
@@ -289,34 +339,13 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
         return factor;
     };
 
-    auto met_propagate = [](RVec<float> pt_old, RVec<float> phi,
-                            RVec<float> factor, RVec<float> neEmEF, RVec<float> chEmEF,
-                            float met_pt, float met_phi) {
-        // Type-I MET propagation: replace the contribution of NanoAOD-corrected jets
-        // (pt_old) with re-corrected jets (pt_new = pt_old * factor) in the MET sum.
-        double px = met_pt * std::cos(met_phi);
-        double py = met_pt * std::sin(met_phi);
-        for (size_t i = 0; i < pt_old.size(); ++i) {
-            const float pt_new = pt_old[i] * factor[i];
-            if (pt_new <= 15.0f) continue;                       // Type-I threshold
-            if ((neEmEF[i] + chEmEF[i]) > 0.9f) continue;        // EM-fraction veto
-            const double dpt = static_cast<double>(pt_old[i] - pt_new);
-            px += dpt * std::cos(phi[i]);
-            py += dpt * std::sin(phi[i]);
-        }
-        return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
-                              static_cast<float>(std::atan2(py, px)));
-    };
-
+    // NOTE: Type-I MET is no longer propagated here. It is rebuilt from scratch in
+    // applyType1MET() (from RawPuppiMET, over Jet + CorrT1METJet, with muon subtraction),
+    // which runs after all jet corrections. This function only re-calibrates the jets.
     return df
         .Define("Jet_jecFactor", compute_factor,
-                {"year", "Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor",
+                {"year", "Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor",
                  "Rho_fixedGridRhoFastjetAll", "run"})
-        .Define("_jec_metProp", met_propagate,
-                {"Jet_pt", "Jet_phi", "Jet_jecFactor",
-                 "Jet_neEmEF", "Jet_chEmEF", "met_pt", "met_phi"})
-        .Redefine("met_pt",   "_jec_metProp.first")
-        .Redefine("met_phi",  "_jec_metProp.second")
         .Redefine("Jet_pt",   "Jet_pt   * Jet_jecFactor")
         .Redefine("Jet_mass", "Jet_mass * Jet_jecFactor")
         // Reset rawFactor so downstream callers see a self-consistent (pt, mass, rawFactor) triple.
@@ -351,7 +380,7 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
 
     auto compute_factor = [cset_jerc, jec_prefix_map, jec_suffix_map, isData](
             std::string year,
-            RVec<float> pt, RVec<float> eta, RVec<float> area, RVec<float> rawFactor,
+            RVec<float> pt, RVec<float> eta, RVec<float> phi, RVec<float> area, RVec<float> rawFactor,
             float rho, unsigned int run) {
 
         RVec<float> factor(pt.size(), 1.0f);
@@ -361,12 +390,9 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
         auto pf_it = jec_prefix_map.find(year);
         auto sf_it = jec_suffix_map.find(year);
         if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.insert(year).second) {
-                std::cout << "Warning: AK8 JEC inputs missing for year " << year
-                          << ". Skipping nominal AK8 JEC re-application." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK8 JEC: no correction set / prefix / suffix configured for year '"
+                                     + year + "'. Refusing to run with fat jets uncorrected — add this year "
+                                       "to the JEC maps in corrections.h.");
         }
 
         const std::string compound_name = makeCompoundJECName(pf_it->second, sf_it->second, isData);
@@ -374,28 +400,21 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
         try {
             compound = cs_it->second.compound().at(compound_name);
         } catch (const std::out_of_range&) {
-            static std::unordered_set<std::string> warned_keys;
-            if (warned_keys.insert(year + "/" + compound_name).second) {
-                std::cout << "Warning: AK8 compound JEC '" << compound_name
-                          << "' not found for year " << year
-                          << ". Skipping nominal AK8 JEC re-application." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK8 JEC: compound '" + compound_name
+                                     + "' not found in the pinned fatJet_jerc.json.gz for year '" + year
+                                     + "'. The JEC tag string in corrections.h is stale relative to the "
+                                       "pinned snapshot (version drift). Refusing to run with fat jets uncorrected.");
         }
 
         for (size_t i = 0; i < pt.size(); ++i) {
             float pt_raw = (1.0f - rawFactor[i]) * pt[i];
             double sf = 1.0;
             try {
-                if (isData) {
-                    sf = compound->evaluate({(double)area[i], (double)eta[i],
-                                             (double)pt_raw,  (double)rho,
-                                             (double)run});
-                } else {
-                    sf = compound->evaluate({(double)area[i], (double)eta[i],
-                                             (double)pt_raw,  (double)rho});
-                }
-            } catch (const std::exception&) {
+                sf = evalJECCompound(*compound, (double)area[i], (double)eta[i], (double)pt_raw,
+                                     (double)rho, (double)phi[i], (double)run);
+            } catch (const std::exception& e) {
+                std::cout << "Warning: JEC evaluation failed for fat jet " << i << " (pt_raw=" << pt_raw
+                          << ", eta=" << eta[i] << "): " << e.what() << ". Setting SF to 1.0." << std::endl;
                 sf = 1.0;
             }
             factor[i] = (1.0f - rawFactor[i]) * static_cast<float>(sf);
@@ -405,7 +424,7 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
 
     return df
         .Define("FatJet_jecFactor", compute_factor,
-                {"year", "FatJet_pt", "FatJet_eta", "FatJet_area", "FatJet_rawFactor",
+                {"year", "FatJet_pt", "FatJet_eta", "FatJet_phi", "FatJet_area", "FatJet_rawFactor",
                  "Rho_fixedGridRhoFastjetAll", "run"})
         .Redefine("FatJet_pt",   "FatJet_pt   * FatJet_jecFactor")
         .Redefine("FatJet_mass", "FatJet_mass * FatJet_jecFactor")
@@ -433,10 +452,10 @@ Run *after* applyJetEnergyCorrections / applyFatJetEnergyCorrections. Each call 
 one set of suffixed columns; the driver applyJESVariations loops over the 11 Regrouped V2
 sources × {Up, Dn} = 22 variations.
 
-  AK4: Jet_pt_<sfx>, Jet_mass_<sfx>, met_pt_<sfx>, met_phi_<sfx>   (Type-I MET propagated)
-  AK8: FatJet_pt_<sfx>, FatJet_mass_<sfx>                          (no MET propagation;
-                                                                    FatJet_msoftdrop has
-                                                                    its own JEC recipe)
+  AK4: Jet_pt_<sfx>, Jet_mass_<sfx>, _Jet_shift_<sfx>   (per-jet shift; MET built in applyType1MET)
+  AK8: FatJet_pt_<sfx>, FatJet_mass_<sfx>               (FatJet_msoftdrop has its own JEC recipe)
+  The matching met_pt_<sfx> / met_phi_<sfx> are produced by applyType1MET, which reads
+  _Jet_shift_<sfx> and rebuilds the Type-I MET from RawPuppiMET for that variation.
   <sfx> = "jes" + column_label + direction   e.g. "jesAbsoluteUp", "jesAbsoluteYearDn"
 
 Source list lives in kJESRegroupedSources below. Lookup keys in jet_jerc.json.gz are
@@ -462,12 +481,18 @@ auto makeJESShiftEvaluator(
         auto pf_it = jec_prefix_map.find(year);
         auto sf_it = jec_suffix_map.find(year);
         if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
-            return out;
+            throw std::runtime_error("JES uncertainty: no correction set / prefix / suffix configured for "
+                                     "year '" + year + "' (source '" + base_source + "'). Refusing to emit "
+                                     "an empty JES variation — add this year to the JEC maps in corrections.h.");
         }
         std::string src = base_source;
         if (yearDecorrelated) {
             auto yt_it = year_token_map.find(year);
-            if (yt_it == year_token_map.end()) return out;
+            if (yt_it == year_token_map.end()) {
+                throw std::runtime_error("JES uncertainty: no year token configured for year '" + year
+                                         + "' (needed for year-decorrelated source '" + base_source
+                                         + "'). Add it to jetEnergyCorrections_yearToken in corrections.h.");
+            }
             src += "_" + yt_it->second;
         }
         const std::string unc_name = pf_it->second + "_" + src + "_" + sf_it->second;
@@ -475,12 +500,10 @@ auto makeJESShiftEvaluator(
         try {
             unc = cs_it->second.at(unc_name);
         } catch (const std::out_of_range&) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(year + "/" + unc_name).second) {
-                std::cout << "Warning: JEC uncertainty source '" << unc_name
-                          << "' not found for year " << year << "." << std::endl;
-            }
-            return out;
+            throw std::runtime_error("JES uncertainty: source '" + unc_name
+                                     + "' not found in the pinned jerc file for year '" + year
+                                     + "'. The JEC tag string in corrections.h is stale relative to the "
+                                       "pinned snapshot (version drift). Refusing to emit an empty variation.");
         }
         for (size_t i = 0; i < pt.size(); ++i) {
             float u = unc->evaluate({(double)eta[i], (double)pt[i]});
@@ -490,25 +513,6 @@ auto makeJESShiftEvaluator(
     };
 }
 
-// Type-I-style MET shift: rebuilds (met_pt, met_phi) from (pt_old - pt_new) per AK4 jet,
-// applying the standard >15 GeV / emf<0.9 filter.
-auto jesMetPropagator() {
-    return [](RVec<float> pt_old, RVec<float> pt_new, RVec<float> phi,
-              RVec<float> neEmEF, RVec<float> chEmEF,
-              float met_pt, float met_phi) {
-        double px = met_pt * std::cos(met_phi);
-        double py = met_pt * std::sin(met_phi);
-        for (size_t i = 0; i < pt_old.size(); ++i) {
-            if (pt_new[i] <= 15.0f) continue;
-            if ((neEmEF[i] + chEmEF[i]) > 0.9f) continue;
-            const double dpt = static_cast<double>(pt_old[i] - pt_new[i]);
-            px += dpt * std::cos(phi[i]);
-            py += dpt * std::sin(phi[i]);
-        }
-        return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
-                              static_cast<float>(std::atan2(py, px)));
-    };
-}
 } // anonymous namespace
 
 RNode defineAK4JESVariation(
@@ -522,21 +526,17 @@ RNode defineAK4JESVariation(
     const float sign = (direction == "Up") ? +1.0f : -1.0f;
     const std::string sfx = "jes" + column_label + direction;
     const std::string shiftCol = "_Jet_shift_" + sfx;
-    const std::string metPropCol = "_metProp_" + sfx;
 
     auto eval_factor = makeJESShiftEvaluator(cset_jerc, jec_prefix_map, jec_suffix_map,
                                              year_token_map, base_source, yearDecorrelated, sign);
-    auto met_prop = jesMetPropagator();
 
+    // Writes the per-jet shift factor (_Jet_shift_<sfx>) and the shifted Jet kinematics.
+    // The matching met_pt_<sfx> / met_phi_<sfx> are built in applyType1MET(), which reads
+    // _Jet_shift_<sfx> and rebuilds the Type-I MET from RawPuppiMET for this variation.
     return df
         .Define(shiftCol, eval_factor, {"year", "Jet_pt", "Jet_eta"})
         .Define("Jet_pt_"   + sfx, "Jet_pt   * " + shiftCol)
-        .Define("Jet_mass_" + sfx, "Jet_mass * " + shiftCol)
-        .Define(metPropCol, met_prop,
-                {"Jet_pt", "Jet_pt_" + sfx, "Jet_phi", "Jet_neEmEF", "Jet_chEmEF",
-                 "met_pt", "met_phi"})
-        .Define("met_pt_"  + sfx, [](std::pair<float,float> p){ return p.first;  }, {metPropCol})
-        .Define("met_phi_" + sfx, [](std::pair<float,float> p){ return p.second; }, {metPropCol});
+        .Define("Jet_mass_" + sfx, "Jet_mass * " + shiftCol);
 }
 
 RNode defineFatJetJESVariation(
@@ -568,8 +568,7 @@ struct JESSourceSpec {
 };
 
 // 11 Regrouped V2 sources — confirmed against jet_jerc.json.gz / fatJet_jerc.json.gz
-// for all 9 campaigns on 2026-05-14. JME-POG standard set; combine treats the *_Year
-// entries as uncorrelated across years (handled downstream via the `year` hist axis).
+// for all 9 campaigns on 2026-05-14. JME-POG standard set;
 static const std::vector<JESSourceSpec> kJESRegroupedSources = {
     {"Absolute",            "Regrouped_Absolute",       false},
     {"BBEC1",               "Regrouped_BBEC1",          false},
@@ -623,6 +622,256 @@ std::vector<std::string> jesVariationSuffixes() {
 
 /*
 ############################################
+TYPE-1 PUPPI MET — full rebuild from RawPuppiMET
+############################################
+
+Matches the central JERC application tutorial (cms-analysis/jme/jerc-application-tutorial,
+JecApplication.cpp::correctedMet + JecApplication.py::_recompute_type1_met) and the JERC
+Type-1 MET recipe (Type1MET.pdf, 2026-04-17):
+
+  MET_T1 = RawPuppiMET + Σ_jets  p⃗_raw,musub · (c_L1 − c_full)
+
+summed over the *merged* AK4 list (Jet + CorrT1METJet). For PUPPI the L1FastJet offset
+c_L1 ≡ 1.0 (verified for AK4PFPuppi across all 9 eras in the pinned 2026-06-05 files), so
+the per-jet contribution is  p⃗_raw,musub · (1 − c_full).
+
+Per jet:
+  * p_raw       = (1 − rawFactor) · pt              (CorrT1METJet ships rawPt directly)
+  * p_raw,musub = p_raw · (1 − muonSubtrFactor)     direction = phi + muonSubtrDeltaPhi
+  * c_full      = c_JEC · c_JER · c_JES-shift        (c_JEC = L1L2L3Res compound at p_raw,musub)
+  * selection   : (chEmEF+neEmEF) < 0.9, |eta| < 5.2, and c_full · p_raw,musub > 15 GeV
+  * baseline    : RawPuppiMET (NOT PuppiMET — PuppiMET already has Type-1 applied)
+
+Decisions / scope (documented for the review):
+  - c_L1 = 1 hardcoded (PUPPI). If a future file gives L1 ≠ 1, this must evaluate L1FastJet.
+    (The tutorial evaluates L1FastJet explicitly; identical to c_L1=1 for PUPPI.)
+  - JEC compound evaluated at the muon-subtracted pt (matches the tutorial's per-level chain,
+    which feeds ptRawMinusMuon through L1·L2·L3). Muon-jets are the only ones affected.
+  - Direction = phi + muonSubtrDeltaPhi, per Type1MET.pdf §1.5 (accounts for the jet's
+    direction change when the muon is removed). NOTE: the JERC tutorial code and getT1CHSMET
+    use the plain jet phi here; we deliberately follow the PDF instead.
+  - BOTH collections (Jet and CorrT1METJet) carry the full JEC·JER·JES-shift per scenario —
+    no approximation. CorrT1METJet get their own gen-matched JER (ΔR<0.2 to GenJet, then
+    JERSmear) and their own per-source JES shift, exactly like the main jets.
+      · main-jet JER = the analysis Jet_jerFactor (evaluated on the JEC pt, consistent with
+        the jets used in the event selection);
+      · CorrT1METJet JER = gen-matched JERSmear on their JEC muon-subtracted pt (they have no
+        Jet_genJetIdx, so we ΔR-match to GenJet as the JERC tutorial does).
+    JES shift is evaluated at the JEC·JER-corrected pt for both (nominal-JER × per-source
+    shift), matching this framework's main-jet convention.
+  - MET-φ corrections (Run 2) are applied afterwards, on top of this rebuilt MET.
+*/
+
+namespace {
+
+// Per-(main-)jet building blocks for the Type-1 MET sum. Computed once, reused by the
+// nominal MET and every JES variation (which only swap the per-jet shift factor).
+struct T1JetBlocks {
+    RVec<double> rmpx, rmpy;   // raw muon-subtracted momentum comps (direction = phi + muonSubtrDeltaPhi)
+    RVec<double> corrjec;      // JEC factor (L1L2L3Res compound at the muon-subtracted pt)
+    RVec<double> rawmusubpt;   // |raw muon-subtracted pT|, for the 15 GeV threshold
+    RVec<unsigned char> pass;  // selection: (neEmEF + chEmEF) < 0.9 and |eta| < 5.2
+};
+
+// If column `src` exists, alias `out`->`src`; otherwise Define `out` as an RVec<float> of
+// `fill`, length matching `sizeRef`. Lets the rebuild tolerate NanoAOD versions lacking
+// muonSubtrDeltaPhi / CorrT1METJet_EmEF, and the data path lacking Jet_jerFactor.
+RNode aliasOrFill(RNode df, const std::string& out, const std::string& src,
+                  const std::string& sizeRef, float fill) {
+    auto cols = df.GetColumnNames();
+    if (std::find(cols.begin(), cols.end(), src) != cols.end())
+        return df.Alias(out, src);
+    return df.Define(out, [fill](const RVec<float>& ref) { return RVec<float>(ref.size(), fill); },
+                     {sizeRef});
+}
+
+} // anonymous namespace
+
+RNode applyType1MET(RNode df, bool isData) {
+    // Tolerate optional / MC-only branches.
+    df = aliasOrFill(df, "_t1_jet_musubDphi", "Jet_muonSubtrDeltaPhi",          "Jet_eta",          0.0f);
+    df = aliasOrFill(df, "_t1_jer",           "Jet_jerFactor",                  "Jet_eta",          1.0f);
+    df = aliasOrFill(df, "_t1_ct1_musubDphi", "CorrT1METJet_muonSubtrDeltaPhi", "CorrT1METJet_eta", 0.0f);
+    df = aliasOrFill(df, "_t1_ct1_EmEF",      "CorrT1METJet_EmEF",              "CorrT1METJet_eta", 0.0f);
+    // Single EM-fraction column so the block builder is shared with CorrT1METJet.
+    df = df.Define("_t1_jet_emfrac", "Jet_neEmEF + Jet_chEmEF");
+
+    // --- shared per-jet block builder (used for both Jet and CorrT1METJet) ---------------
+    auto build_blocks = [isData](
+            std::string year,
+            const RVec<float>& rawpt, const RVec<float>& eta, const RVec<float>& phi,
+            const RVec<float>& area,  const RVec<float>& musubF, const RVec<float>& musubDphi,
+            const RVec<float>& emFrac,
+            float rho, unsigned int run) {
+        T1JetBlocks b;
+        const size_t n = rawpt.size();
+        b.rmpx.resize(n); b.rmpy.resize(n); b.corrjec.resize(n);
+        b.rawmusubpt.resize(n); b.pass.resize(n);
+        if (n == 0) return b;
+        const auto& cs = jetEnergyCorrections.at(year);
+        const std::string cname = makeCompoundJECName(jetEnergyCorrections_JEC_prefix.at(year),
+                                                      jetEnergyCorrections_JEC_suffix.at(year), isData);
+        auto comp = cs.compound().at(cname);
+        for (size_t i = 0; i < n; ++i) {
+            const double rawmusubpt = (double)rawpt[i] * (1.0 - (double)musubF[i]);
+            // MET-shift direction = phi + muonSubtrDeltaPhi, per Type1MET.pdf §1.5 (accounts
+            // for the jet's direction change when the muon is removed; falls back to phi when
+            // the branch is absent, via the 0-filled musubDphi column).
+            const double dir = (double)phi[i] + (double)musubDphi[i];
+            b.rmpx[i] = rawmusubpt * std::cos(dir);
+            b.rmpy[i] = rawmusubpt * std::sin(dir);
+            b.rawmusubpt[i] = rawmusubpt;
+            double sf = 1.0;
+            try {
+                // JEC chain evaluated on the muon-subtracted pt (JERC tutorial JecApplication.cpp).
+                sf = evalJECCompound(*comp, (double)area[i], (double)eta[i], rawmusubpt,
+                                     (double)rho, (double)phi[i], (double)run);
+            } catch (const std::exception& e) {
+                std::cout << "Warning: JEC evaluation failed for MET jet " << i << " (musub_pt=" << rawmusubpt
+                          << ", eta=" << eta[i] << "): " << e.what() << ". Setting SF to 1.0." << std::endl;
+                sf = 1.0;
+            }
+            b.corrjec[i] = sf;
+            b.pass[i] = (emFrac[i] < 0.9f && std::abs((double)eta[i]) < 5.2) ? 1 : 0;
+        }
+        return b;
+    };
+    // Handle Jet collection
+    df = df.Define("_t1_jet_blocks", build_blocks,
+                   {"year", "_Jet_rawpt", "Jet_eta", "Jet_phi", "Jet_area",
+                    "Jet_muonSubtrFactor", "_t1_jet_musubDphi", "_t1_jet_emfrac",
+                    "Rho_fixedGridRhoFastjetAll", "run"});
+    // Handle CorrT1METJet collection (already raw pt, no rawFactor)                  
+    df = df.Define("_t1_ct1_blocks", build_blocks,
+                   {"year", "CorrT1METJet_rawPt", "CorrT1METJet_eta", "CorrT1METJet_phi",
+                    "CorrT1METJet_area", "CorrT1METJet_muonSubtrFactor", "_t1_ct1_musubDphi",
+                    "_t1_ct1_EmEF", "Rho_fixedGridRhoFastjetAll", "run"});
+
+    // Nominal per-jet "shift" = 1, sized to each collection.
+    auto ones_like = [](const T1JetBlocks& b) { return RVec<float>(b.corrjec.size(), 1.0f); };
+    df = df.Define("_t1_jet_ones", ones_like, {"_t1_jet_blocks"});
+    df = df.Define("_t1_ct1_ones", ones_like, {"_t1_ct1_blocks"});
+
+    // --- CorrT1METJet JER: gen-matched (ΔR<0.2 to GenJet) JERSmear on the JEC musub pt -----
+    // (main-jet JER is the analysis Jet_jerFactor, already in _t1_jer). Data → ones.
+    if (!isData) {
+        auto build_ct1_jer = [](std::string year, const T1JetBlocks& b,
+                                const RVec<float>& eta, const RVec<float>& phi,
+                                const RVec<float>& gpt, const RVec<float>& geta, const RVec<float>& gphi,
+                                float rho, unsigned long long event) {
+            RVec<float> jer(b.corrjec.size(), 1.0f);
+            if (b.corrjec.empty()) return jer;
+            std::shared_ptr<const correction::Correction> res, sf;
+            std::shared_ptr<const correction::Correction> smear;
+            try {
+                res   = jetEnergyCorrections.at(year).at(jetEnergyResolution_JER_res_name.at(year));
+                sf    = jetEnergyCorrections.at(year).at(jetEnergyResolution_JER_sf_name.at(year));
+                smear = jetEnergyResolution_smear.at("jer_smear").at("JERSmear");
+            } catch (const std::out_of_range&) {
+                throw std::runtime_error("CorrT1METJet JER: res/sf/smear key missing for year '" + year
+                                         + "'. Stale JER tag vs pinned snapshot (see corrections.h).");
+            }
+            for (size_t i = 0; i < b.corrjec.size(); ++i) {
+                const double pt_jec = b.rawmusubpt[i] * b.corrjec[i];   // JEC-corrected musub pt
+                // Nearest GenJet within ΔR<0.2 (CorrT1METJet has no Jet_genJetIdx).
+                float gen_pt = -1.0f; double best = 0.2 * 0.2;
+                for (size_t g = 0; g < gpt.size(); ++g) {
+                    const double dphi = std::atan2(std::sin((double)phi[i] - (double)gphi[g]),
+                                                   std::cos((double)phi[i] - (double)gphi[g]));
+                    const double deta = (double)eta[i] - (double)geta[g];
+                    const double dr2  = deta * deta + dphi * dphi;
+                    if (dr2 < best) { best = dr2; gen_pt = gpt[g]; }
+                }
+                const double r  = evalJERCorrection(*res, (double)eta[i], pt_jec, (double)rho, "nom");
+                const double s  = evalJERCorrection(*sf,  (double)eta[i], pt_jec, (double)rho, "nom");
+                const double sm = smear->evaluate({pt_jec, (double)eta[i], (double)gen_pt,
+                                                   (double)rho, (int)event, r, s});
+                jer[i] = static_cast<float>(sm);
+            }
+            return jer;
+        };
+        df = df.Define("_t1_ct1_jer", build_ct1_jer,
+                       {"year", "_t1_ct1_blocks", "CorrT1METJet_eta", "CorrT1METJet_phi",
+                        "GenJet_pt", "GenJet_eta", "GenJet_phi", "Rho_fixedGridRhoFastjetAll", "event"});
+    } else {
+        df = df.Alias("_t1_ct1_jer", "_t1_ct1_ones");
+    }
+
+    // CorrT1METJet JEC·JER-corrected pt — the pt at which the JES source is evaluated.
+    df = df.Define("_t1_ct1_corrpt",
+                   [](const T1JetBlocks& b, const RVec<float>& jer) {
+                       RVec<float> o(b.corrjec.size());
+                       for (size_t i = 0; i < b.corrjec.size(); ++i)
+                           o[i] = static_cast<float>(b.rawmusubpt[i] * b.corrjec[i]
+                                                     * (i < jer.size() ? (double)jer[i] : 1.0));
+                       return o;
+                   },
+                   {"_t1_ct1_blocks", "_t1_ct1_jer"});
+
+    // Per-source CorrT1METJet JES shift columns (same 22 Regrouped sources as the main jets).
+    if (!isData && g_storeSysts) {
+        for (const auto& src : kJESRegroupedSources) {
+            for (const char* dir : kJESDirections) {
+                const float sign = (std::string(dir) == "Up") ? +1.0f : -1.0f;
+                auto eval = makeJESShiftEvaluator(jetEnergyCorrections,
+                                                  jetEnergyCorrections_JEC_prefix,
+                                                  jetEnergyCorrections_JEC_suffix,
+                                                  jetEnergyCorrections_yearToken,
+                                                  src.base_source, src.yearDecorrelated, sign);
+                df = df.Define("_t1_ct1_shift_jes" + std::string(src.label) + dir, eval,
+                               {"year", "_t1_ct1_corrpt", "CorrT1METJet_eta"});
+            }
+        }
+    }
+
+    // --- assemble a MET for one scenario: sum both collections, corr_full = corrjec*jer*shift ---
+    auto met_from = [](const T1JetBlocks& jb, const RVec<float>& jjer, const RVec<float>& jshift,
+                       const T1JetBlocks& cb, const RVec<float>& cjer, const RVec<float>& cshift,
+                       float rawmet_pt, float rawmet_phi) {
+        double px = (double)rawmet_pt * std::cos((double)rawmet_phi);
+        double py = (double)rawmet_pt * std::sin((double)rawmet_phi);
+        auto add = [&px, &py](const T1JetBlocks& b, const RVec<float>& jer, const RVec<float>& shift) {
+            for (size_t i = 0; i < b.corrjec.size(); ++i) {
+                if (!b.pass[i]) continue;
+                const double jf = (i < jer.size())   ? (double)jer[i]   : 1.0;
+                const double sh = (i < shift.size()) ? (double)shift[i] : 1.0;
+                const double corr_full = b.corrjec[i] * jf * sh;         // c_L1 = 1 (PUPPI)
+                if (corr_full * b.rawmusubpt[i] <= 15.0) continue;       // Type-I threshold on full pT
+                px += b.rmpx[i] * (1.0 - corr_full);
+                py += b.rmpy[i] * (1.0 - corr_full);
+            }
+        };
+        add(jb, jjer, jshift);
+        add(cb, cjer, cshift);
+        return std::make_pair(static_cast<float>(std::hypot(px, py)),
+                              static_cast<float>(std::atan2(py, px)));
+    };
+
+    // Nominal MET (JEC·JER on both collections; JER=1 in data via the _t1_*_ones fallbacks).
+    df = df.Define("_t1_met_nom", met_from,
+                   {"_t1_jet_blocks", "_t1_jer", "_t1_jet_ones",
+                    "_t1_ct1_blocks", "_t1_ct1_jer", "_t1_ct1_ones",
+                    "RawPuppiMET_pt", "RawPuppiMET_phi"});
+    df = df.Define("met_pt",  "(float)_t1_met_nom.first");
+    df = df.Define("met_phi", "(float)_t1_met_nom.second");
+
+    // Per-variation MET: swap in the JES shift for BOTH collections.
+    if (!isData) {
+        for (const auto& sfx : jesVariationSuffixes()) {
+            const std::string metCol = "_t1_met_" + sfx;
+            df = df.Define(metCol, met_from,
+                           {"_t1_jet_blocks", "_t1_jer", "_Jet_shift_" + sfx,
+                            "_t1_ct1_blocks", "_t1_ct1_jer", "_t1_ct1_shift_" + sfx,
+                            "RawPuppiMET_pt", "RawPuppiMET_phi"});
+            df = df.Define("met_pt_"  + sfx, "(float)" + metCol + ".first");
+            df = df.Define("met_phi_" + sfx, "(float)" + metCol + ".second");
+        }
+    }
+    return df;
+}
+
+/*
+############################################
 JET ENERGY RESOLUTION — hybrid smearing (MC only)
 ############################################
 
@@ -660,12 +909,9 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
         auto sn_it = jer_sf_map.find(year);
         if (cs_it == cset_jerc.end() || sm_it == cset_jer_smear.end()
             || rn_it == jer_res_map.end() || sn_it == jer_sf_map.end()) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(year).second) {
-                std::cout << "Warning: JER inputs missing for year " << year
-                          << ". Skipping JER smearing." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK4 JER: resolution / SF / smear inputs not configured for year '"
+                                     + year + "'. Refusing to run with jets un-smeared — add this year to the "
+                                       "JER maps in corrections.h.");
         }
 
         std::shared_ptr<const correction::Correction> res, sf, smear;
@@ -674,22 +920,17 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
             sf    = cs_it->second.at(sn_it->second);
             smear = sm_it->second.at("JERSmear");
         } catch (const std::out_of_range&) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(year).second) {
-                std::cout << "Warning: JER res/sf/smear key missing for year " << year
-                          << " (res=" << rn_it->second << " sf=" << sn_it->second
-                          << "). Skipping JER smearing." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK4 JER: a res/sf key (res='" + rn_it->second + "', sf='" + sn_it->second
+                                     + "') was not found in the pinned jet_jerc.json.gz for year '" + year
+                                     + "'. The JER tag string in corrections.h is stale relative to the pinned "
+                                       "snapshot (version drift). Refusing to run with jets un-smeared.");
         }
 
-        const bool sf_has_pt = (sf->inputs().size() >= 3);
         for (size_t i = 0; i < pt.size(); ++i) {
             const float gen_pt = (genJet_idx[i] >= 0 && genJet_idx[i] < (int)genJet_pt.size())
                                      ? genJet_pt[genJet_idx[i]] : -1.0f;
-            double r  = res->evaluate({(double)eta[i], (double)pt[i], (double)rho});
-            double s  = sf_has_pt ? sf->evaluate({(double)eta[i], (double)pt[i], vary})
-                                  : sf->evaluate({(double)eta[i], vary});
+            double r  = evalJERCorrection(*res, (double)eta[i], (double)pt[i], (double)rho, vary);
+            double s  = evalJERCorrection(*sf,  (double)eta[i], (double)pt[i], (double)rho, vary);
             double sm = smear->evaluate({(double)pt[i], (double)eta[i], (double)gen_pt,
                                          (double)rho, (int)event, r, s});
             factor[i] = static_cast<float>(sm);
@@ -697,33 +938,13 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
         return factor;
     };
 
-    auto met_propagate_jer = [](RVec<float> pt_pre, RVec<float> factor, RVec<float> phi,
-                                RVec<float> neEmEF, RVec<float> chEmEF,
-                                float met_pt, float met_phi) {
-        double px = met_pt * std::cos(met_phi);
-        double py = met_pt * std::sin(met_phi);
-        for (size_t i = 0; i < pt_pre.size(); ++i) {
-            const float pt_new = pt_pre[i] * factor[i];
-            if (pt_new <= 15.0f) continue;
-            if ((neEmEF[i] + chEmEF[i]) > 0.9f) continue;
-            const double dpt = static_cast<double>(pt_pre[i] - pt_new);
-            px += dpt * std::cos(phi[i]);
-            py += dpt * std::sin(phi[i]);
-        }
-        return std::make_pair(static_cast<float>(std::sqrt(px*px + py*py)),
-                              static_cast<float>(std::atan2(py, px)));
-    };
-
+    // NOTE: MET is no longer propagated here. Jet_jerFactor is consumed by applyType1MET(),
+    // which folds JEC*JER into the per-jet correction when rebuilding the Type-I MET from
+    // RawPuppiMET. This function only smears the jets.
     return df
         .Define("Jet_jerFactor", compute_smear,
                 {"year", "Jet_pt", "Jet_eta", "Jet_genJetIdx", "GenJet_pt",
                  "Rho_fixedGridRhoFastjetAll", "event"})
-        .Define("_Jet_pt_preJER", "Jet_pt")
-        .Define("_jer_metProp", met_propagate_jer,
-                {"_Jet_pt_preJER", "Jet_jerFactor", "Jet_phi",
-                 "Jet_neEmEF", "Jet_chEmEF", "met_pt", "met_phi"})
-        .Redefine("met_pt",   "_jer_metProp.first")
-        .Redefine("met_phi",  "_jer_metProp.second")
         .Redefine("Jet_pt",   "Jet_pt   * Jet_jerFactor")
         .Redefine("Jet_mass", "Jet_mass * Jet_jerFactor");
 }
@@ -760,12 +981,9 @@ RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correcti
         auto sn_it = jer_sf_map.find(year);
         if (cs_it == cset_jerc.end() || sm_it == cset_jer_smear.end()
             || rn_it == jer_res_map.end() || sn_it == jer_sf_map.end()) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(year).second) {
-                std::cout << "Warning: AK8 JER inputs missing for year " << year
-                          << ". Skipping AK8 JER smearing." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK8 JER: resolution / SF / smear inputs not configured for year '"
+                                     + year + "'. Refusing to run with fat jets un-smeared — add this year to "
+                                       "the JER maps in corrections.h.");
         }
 
         std::shared_ptr<const correction::Correction> res, sf, smear;
@@ -774,22 +992,17 @@ RNode applyFatJetEnergyResolution(const std::unordered_map<std::string, correcti
             sf    = cs_it->second.at(sn_it->second);
             smear = sm_it->second.at("JERSmear");
         } catch (const std::out_of_range&) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(year).second) {
-                std::cout << "Warning: AK8 JER res/sf/smear key missing for year " << year
-                          << " (res=" << rn_it->second << " sf=" << sn_it->second
-                          << "). Skipping AK8 JER smearing." << std::endl;
-            }
-            return factor;
+            throw std::runtime_error("AK8 JER: a res/sf key (res='" + rn_it->second + "', sf='" + sn_it->second
+                                     + "') was not found in the pinned fatJet_jerc.json.gz for year '" + year
+                                     + "'. The JER tag string in corrections.h is stale relative to the pinned "
+                                       "snapshot (version drift). Refusing to run with fat jets un-smeared.");
         }
 
-        const bool sf_has_pt = (sf->inputs().size() >= 3);
         for (size_t i = 0; i < pt.size(); ++i) {
             const float gen_pt = (genJet_idx[i] >= 0 && genJet_idx[i] < (int)genJet_pt.size())
                                      ? genJet_pt[genJet_idx[i]] : -1.0f;
-            double r  = res->evaluate({(double)eta[i], (double)pt[i], (double)rho});
-            double s  = sf_has_pt ? sf->evaluate({(double)eta[i], (double)pt[i], vary})
-                                  : sf->evaluate({(double)eta[i], vary});
+            double r  = evalJERCorrection(*res, (double)eta[i], (double)pt[i], (double)rho, vary);
+            double s  = evalJERCorrection(*sf,  (double)eta[i], (double)pt[i], (double)rho, vary);
             double sm = smear->evaluate({(double)pt[i], (double)eta[i], (double)gen_pt,
                                          (double)rho, (int)event, r, s});
             factor[i] = static_cast<float>(sm);
@@ -949,9 +1162,11 @@ GENERAL CORRECTIONS
 */
 
 RNode applyDataCorrections(RNode df_) {
-    auto df = applyMETPhiCorrections(df_, true);
-    // Re-apply the latest JEC stack (raw recovery + L1*L2*L3*Residual compound).
-    // AK4 propagates to MET; AK8 does not (PuppiMET only includes AK4 Type-I).
+    // Snapshot the raw AK4 pt before JEC mutates Jet_pt — applyType1MET rebuilds the MET
+    // from these raw jets (Jet_rawFactor is reset by JEC, so raw pt can't be recovered later).
+    auto df = df_.Define("_Jet_rawpt", "(1.0f - Jet_rawFactor) * Jet_pt");
+    // Re-apply the latest JEC stack (raw recovery + L1*L2*L3*Residual compound). No MET
+    // propagation here — Type-I MET is rebuilt from RawPuppiMET in applyType1MET below.
     df = applyJetEnergyCorrections(jetEnergyCorrections,
                                    jetEnergyCorrections_JEC_prefix,
                                    jetEnergyCorrections_JEC_suffix,
@@ -960,14 +1175,20 @@ RNode applyDataCorrections(RNode df_) {
                                       fatJetEnergyCorrections_JEC_prefix,
                                       fatJetEnergyCorrections_JEC_suffix,
                                       df, /*isData=*/true);
+    // Rebuild Type-I MET (nominal only for data), then apply the Run 2 MET-φ correction on top.
+    df = applyType1MET(df, /*isData=*/true);
+    df = applyMETPhiCorrections(df, true);
     df = HEMCorrection(df, true);
     df = applyElectronScaleAndSmearing(df, true);
     return df;
 }
 
 RNode applyMCCorrections(RNode df_) {
-    auto df = applyMETPhiCorrections(df_, false);
-    // Nominal JEC for AK4 and AK8.
+    // Snapshot the raw AK4 pt before JEC mutates Jet_pt — applyType1MET rebuilds the MET from
+    // these raw jets (Jet_rawFactor is reset by JEC + JER doesn't update it, so raw pt can't be
+    // recovered from the mutated columns afterwards).
+    auto df = df_.Define("_Jet_rawpt", "(1.0f - Jet_rawFactor) * Jet_pt");
+    // Nominal JEC for AK4 and AK8 (no MET propagation here).
     df = applyJetEnergyCorrections(jetEnergyCorrections,
                                    jetEnergyCorrections_JEC_prefix,
                                    jetEnergyCorrections_JEC_suffix,
@@ -976,7 +1197,7 @@ RNode applyMCCorrections(RNode df_) {
                                       fatJetEnergyCorrections_JEC_prefix,
                                       fatJetEnergyCorrections_JEC_suffix,
                                       df, /*isData=*/false);
-    // JER smearing on top of JEC-corrected jets.
+    // JER smearing on top of JEC-corrected jets (defines Jet_jerFactor, consumed by applyType1MET).
     df = applyJetEnergyResolution(jetEnergyCorrections,
                                   jetEnergyResolution_smear,
                                   jetEnergyResolution_JER_res_name,
@@ -988,13 +1209,16 @@ RNode applyMCCorrections(RNode df_) {
                                      fatJetEnergyResolution_JER_sf_name,
                                      df, /*variation=*/"nominal");
     // JES uncertainties — 11 Regrouped V2 sources × {Up, Dn} as suffixed branches.
-    // Must run after the nominal JEC+JER so the shift sits on top of the corrected baseline.
+    // Must run after the nominal JEC+JER so the shift sits on top of the corrected baseline
+    // (defines _Jet_shift_<sfx>, consumed by applyType1MET for the per-variation MET).
     if (g_storeSysts) df = applyJESVariations(df);
-    // JMS / JMR on FatJet_msoftdrop. Currently no-op: centrals are placeholders
-    // (shift = 0 GeV, factor = 1.0). Replace jetMassScale_central / jetMassResolution_central
-    // in corrections.h with the values derived from the per-analysis calibration fit.
-    df = applyJetMassScale(jetMassScale_central, df);
-    df = applyJetMassResolution(jetMassResolution_central, jetMassResolution_sigmaRel_central, df);
+    // Rebuild Type-I MET from RawPuppiMET over Jet + CorrT1METJet, for the nominal and every
+    // JES variation, then apply the Run 2 MET-φ correction on top of the nominal MET.
+    df = applyType1MET(df, /*isData=*/false);
+    df = applyMETPhiCorrections(df, false);
+    // GloParT JMS/JMR would be wired here via applyJetMassScale / applyJetMassResolution
+    // once the calibration is derived. FatJet_msoftdrop is intentionally not calibrated
+    // (loose object cut only; GloParT is used in the rest of the analysis) — see CORRECTIONS.md § 5-6.
     df = HEMCorrection(df, false);
     df = applyElectronScaleAndSmearing(df, false);
     return df;

@@ -431,6 +431,9 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
     if (dumpInput) {
         auto nanoColNames = df.GetColumnNames();
         for (auto &&colName : nanoColNames) {
+            // Skip internal "_"-prefixed helper columns: input NanoAOD branches never start with
+            // "_", and some helpers (e.g. the Type-1 MET blocks/pairs) have no ROOT dictionary.
+            if (colName.starts_with("_")) continue;
             if ((std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) &&
                 (colName.find("HLT") == std::string::npos) && (colName.find("L1") == std::string::npos)) {
                 final_variables.push_back(colName);
