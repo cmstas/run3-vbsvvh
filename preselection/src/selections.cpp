@@ -444,23 +444,25 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             "C2: 2lep_1FJ"
         );
 
-        // 1
-        df = combineTwoLeptonSFWeightsIntoOne(df,
-            "weight_electron_reco_looseid",
-            "weight_muon_mediumid_tightiso",
-            "weighttest_lepSF1");
+        if (not isData) {
+            // 1
+            df = combineTwoLeptonSFWeightsIntoOne(df,
+                "weight_electron_reco_looseid",
+                "weight_muon_mediumid_tightiso",
+                "weighttest_lepSF1");
 
-        // 2
-        df = combineTwoLeptonSFWeightsIntoOne(df,
-            "weight_electron_reco_looseid",
-            "weight_muon_looseid_looseiso",
-            "weighttest_lepSF2");
+            // 2
+            df = combineTwoLeptonSFWeightsIntoOne(df,
+                "weight_electron_reco_looseid",
+                "weight_muon_looseid_looseiso",
+                "weighttest_lepSF2");
 
-        // 3
-        df = combineTwoLeptonSFWeightsIntoOne(df,
-            "weight_electron_reco_tightid",
-            "weight_muon_tightid_tightiso",
-            "weighttest_lepSF3");
+            // 3
+            df = combineTwoLeptonSFWeightsIntoOne(df,
+                "weight_electron_reco_tightid",
+                "weight_muon_tightid_tightiso",
+                "weighttest_lepSF3");
+        }
 
     }
 
