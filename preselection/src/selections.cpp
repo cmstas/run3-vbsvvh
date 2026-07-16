@@ -248,6 +248,16 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     df = AK4JetsSelection(df, /*cleanAgainstFJ=*/true, "jet");
     df = AK4JetsSelection(df, /*cleanAgainstFJ=*/false, "jetNoFJClean");
 
+    // Get the relevant lepton SFs (choose which ones to actually apply in each channel)
+    df = applyMuonWorkingPointSFs(df, isData, {
+        "weight_muon_looseid_looseiso",
+        "weight_muon_mediumid_tightiso",
+        "weight_muon_tightid_tightiso"
+    });
+    df = applyElectronWorkingPointSFs(df, isData, {
+        "weight_electron_reco_looseid",
+        "weight_electron_reco_tightid"
+    });
 
 
     // Passthrough
@@ -433,6 +443,25 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             "(nFatJets == 1)",
             "C2: 2lep_1FJ"
         );
+
+        // 1
+        df = combineTwoLeptonSFWeightsIntoOne(df,
+            "weight_electron_reco_looseid",
+            "weight_muon_mediumid_tightiso",
+            "weighttest_lepSF1");
+
+        // 2
+        df = combineTwoLeptonSFWeightsIntoOne(df,
+            "weight_electron_reco_looseid",
+            "weight_muon_looseid_looseiso",
+            "weighttest_lepSF2");
+
+        // 3
+        df = combineTwoLeptonSFWeightsIntoOne(df,
+            "weight_electron_reco_tightid",
+            "weight_muon_tightid_tightiso",
+            "weighttest_lepSF3");
+
     }
 
     // 2lep_2FJ
@@ -467,37 +496,23 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         );
 
 
-        df = applyMuonWorkingPointSFs(df, isData, {
-            "weight_muon_looseid_looseiso",
-            "weight_muon_mediumid_tightiso",
-            "weight_muon_tightid_tightiso"
-        });
-
-
-        df = applyElectronWorkingPointSFs(df, isData, {
-            "weight_electron_reco_looseid",
-            "weight_electron_reco_tightid"
-        });
-
-
-
         // 1
         df = combineTwoLeptonSFWeightsIntoOne(df,
             "weight_electron_reco_looseid",
             "weight_muon_mediumid_tightiso",
-            "weight_lepSF1");
+            "weighttest_lepSF1");
 
         // 2
         df = combineTwoLeptonSFWeightsIntoOne(df,
             "weight_electron_reco_looseid",
             "weight_muon_looseid_looseiso",
-            "weight_lepSF2");
+            "weighttest_lepSF2");
 
         // 3
         df = combineTwoLeptonSFWeightsIntoOne(df,
             "weight_electron_reco_tightid",
             "weight_muon_tightid_tightiso",
-            "weight_lepSF3");
+            "weighttest_lepSF3");
 
     }
 
