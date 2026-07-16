@@ -54,11 +54,11 @@ CHANNELS=(0lep_1FJ 0lep_2FJ)
 # Run-3 MC-only b-tag efficiency production for every channel and sample:
 # python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff -c all -m "$MODE" -r 3 -f 1 --btag-eff
 
-for RUN in 2; do
+for RUN in 2 3; do
     RUN_BASE="etc/input_sample_jsons/run${RUN}"
 
     # Signal (three variants under the all_events pass-through channel)
-    #  python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
+    python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
 
     # Sig + bkg + data per channel
     python3 run_rdf.py -p $PREFIX -o $OUT_DIR -n r${RUN} -c "${CHANNELS[@]}" -m $MODE -r $RUN -f 1

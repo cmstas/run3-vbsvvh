@@ -332,7 +332,9 @@ if [[ "$EXTRA_FLAGS" == *"--btag_eff"* ]]; then
 import sys
 import ROOT
 f = ROOT.TFile.Open("$OUTPUT_ROOT_FILE")
-if not f or f.IsZombie() or not f.Get("btag_b_den"):
+required = [f"btag_{flavor}_{state}" for flavor in ("b", "c", "light")
+            for state in ("den", "T", "L", "LT", "N")]
+if not f or f.IsZombie() or any(not f.Get(name) for name in required):
     sys.exit(1)
 f.Close()
 EOF
@@ -364,7 +366,7 @@ fi
 # Verify output file integrity at the destination via checksum comparison.
 # First try ADLER32 checksums (fast). If checksums can't be computed (e.g. gfal-sum
 # not available or XRootD doesn't support it), fall back to opening the remote file
-# with ROOT and checking the Events tree is readable.
+# with ROOT and checking the mode-appropriate output object is readable.
 # In either case, if verification fails the remote file is deleted to avoid leaving
 # corrupted files on storage that would look like successful output.
 echo "=== Verifying output file on XRootD ==="
@@ -388,12 +390,23 @@ try:
     if not f or f.IsZombie():
         print("[VALIDATE] ERROR: Cannot open remote file or file is zombie")
         sys.exit(1)
-    t = f.Get("Events")
-    if not t:
-        print("[VALIDATE] ERROR: Tree 'Events' not found in remote file")
-        f.Close()
-        sys.exit(1)
-    print(f"[VALIDATE] PASSED: Remote file readable with {t.GetEntries()} entries")
+    is_btag_eff = "--btag_eff" in "${EXTRA_FLAGS}"
+    if is_btag_eff:
+        required = [f"btag_{flavor}_{state}" for flavor in ("b", "c", "light")
+                    for state in ("den", "T", "L", "LT", "N")]
+        missing = [name for name in required if not f.Get(name)]
+        if missing:
+            print(f"[VALIDATE] ERROR: Missing b-tag efficiency histograms: {missing}")
+            f.Close()
+            sys.exit(1)
+        print("[VALIDATE] PASSED: Remote b-tag efficiency histograms are readable")
+    else:
+        t = f.Get("Events")
+        if not t:
+            print("[VALIDATE] ERROR: Tree 'Events' not found in remote file")
+            f.Close()
+            sys.exit(1)
+        print(f"[VALIDATE] PASSED: Remote file readable with {t.GetEntries()} entries")
     f.Close()
 except Exception as e:
     print(f"[VALIDATE] ERROR: {e}")

@@ -180,9 +180,12 @@ const std::unordered_map<std::string, correction::CorrectionSet> bTaggingScaleFa
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-23CSep23-Summer23-NanoAODv12/latest/btagging.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/btagging.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
-    {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
-    {"eff", *CorrectionSet::from_file("corrections/scalefactors/btagging/btag_eff.json")}
+    {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
+
+// Deliberately lazy: --btag_eff must be able to create this payload when it
+// does not yet exist in a fresh checkout or worker sandbox.
+correction::CorrectionSet loadBTagEfficiencyCorrectionSet();
 
 const std::unordered_map<std::string, std::string> bTaggingScaleFactors_HF_corrname = {
     {"2016preVFP", "UParTAK4_comb"},

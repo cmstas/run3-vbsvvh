@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cmath>
+#include <stdexcept>
 
 namespace {
 constexpr double kBTagDenominatorEpsilon = 1.e-8;
@@ -29,6 +30,10 @@ void printBTagDiagnostics(std::ostream &out) {
     out << "[BTag SF diagnostics] negative intermediate probabilities=" << negative
         << ", tiny denominators=" << tiny_denominator
         << ", invalid efficiencies/probabilities=" << invalid_probability << '\n';
+}
+
+correction::CorrectionSet loadBTagEfficiencyCorrectionSet() {
+    return *CorrectionSet::from_file("corrections/scalefactors/btagging/btag_eff.json");
 }
 
 /*
@@ -293,25 +298,15 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
 
         const auto cset_it = cset_btag.find(year);
         const auto cset_eff_it = cset_btag.find("eff");
-        if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end()) {
-            static std::unordered_set<std::string> warned;
-            const std::string key = year + ":correction-set";
-            if (warned.insert(key).second)
-                std::cout << "Warning: B-tag SF or efficiency correction set for " << year
-                          << " not found. Setting b-tag weights to 1." << std::endl;
-            return btag_sf_weights;
-        }
+        if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end())
+            throw std::runtime_error("B-tag SF or efficiency correction set is unavailable for year " + year);
 
         const std::string efficiency_name = "btag_" + year + "_" + channel;
         try {
             (void)cset_eff_it->second.at(efficiency_name);
         } catch (const std::exception &) {
-            static std::unordered_set<std::string> warned;
-            const std::string key = year + ":" + channel;
-            if (warned.insert(key).second)
-                std::cout << "Warning: b-tag efficiency map " << efficiency_name
-                          << " is unavailable. Setting b-tag weights to 1." << std::endl;
-            return btag_sf_weights;
+            throw std::runtime_error("B-tag efficiency map " + efficiency_name +
+                                     " is unavailable; run --btag_eff and convert the matching MC sample first");
         }
 
         const auto &sf_correction = cset_it->second.at(correction_name);
@@ -367,12 +362,8 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                 eff_tight = efficiency->evaluate({sample, flavor_label, "T", pt[i], eta[i]});
                 eff_loose = efficiency->evaluate({sample, flavor_label, "L", pt[i], eta[i]});
             } catch (const std::exception &) {
-                static std::unordered_set<std::string> warned;
-                const std::string key = year + ":" + channel + ":" + sample;
-                if (warned.insert(key).second)
-                    std::cout << "Warning: b-tag efficiency entries for " << key
-                              << " are unavailable. Setting b-tag weights to 1." << std::endl;
-                return RVec<double>{1., 1., 1.};
+                throw std::runtime_error("B-tag efficiency entries are unavailable for " +
+                                         year + ":" + channel + ":" + sample);
             }
             const double abs_eta = std::abs(eta[i]);
             const auto evaluate_sf = [&](const char *variation, const char *wp) {
@@ -394,14 +385,8 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                                                  const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
                                                                  const RVec<bool> &is_loose) {
         auto corrname_it = corrname_map_HF.find(year);
-        if (corrname_it == corrname_map_HF.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: B-tagging HF correction name for year " << year << " not found. Setting b-tagging HF weights to 1." << std::endl;
-                warned_years.insert(year);
-            }
-            return RVec<double>{1., 1., 1.};
-        }
+        if (corrname_it == corrname_map_HF.end())
+            throw std::runtime_error("No UParTAK4 HF b-tag SF payload is configured for year " + year);
         return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, true);
     };
 
@@ -410,14 +395,8 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                                                  const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
                                                                  const RVec<bool> &is_loose) {
         auto corrname_it = corrname_map_LF.find(year);
-        if (corrname_it == corrname_map_LF.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: B-tagging LF correction name for year " << year << " not found. Setting b-tagging LF weights to 1." << std::endl;
-                warned_years.insert(year);
-            }
-            return RVec<double>{1., 1., 1.};
-        }
+        if (corrname_it == corrname_map_LF.end())
+            throw std::runtime_error("No UParTAK4 LF b-tag SF payload is configured for year " + year);
         return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, false);
     };
 
@@ -536,8 +515,10 @@ RNode applyMCWeights(RNode df_, const std::string &channel) {
     df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
     df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
+    auto btag_corrections = bTaggingScaleFactors;
+    btag_corrections.emplace("eff", loadBTagEfficiencyCorrectionSet());
     resetBTagDiagnostics();
-    df = applyBTaggingScaleFactors(bTaggingScaleFactors, bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);
+    df = applyBTaggingScaleFactors(std::move(btag_corrections), bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);
 
     if (hasLHEPart) {
         df = applyEWKCorrections(cset_ewk, df);

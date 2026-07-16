@@ -66,8 +66,8 @@ There are examples in `run_wrapper.sh` for running `run_rdf.py` either locally o
 ## B-tag efficiency production
 
 Use the MC-only `--btag-eff` mode to run the normal channel preselection and
-write raw selected-AK4 jet counts (B/C/light denominator plus tight, loose,
-loose-not-tight, and untagged numerators).  The all-channel/all-sample batch
+write signed nominal-MC-weighted selected-AK4 jet yields (B/C/light denominator
+plus tight, loose, loose-not-tight, and untagged numerators).  The all-channel/all-sample batch
 command is shown, commented out, in `run_wrapper.sh`:
 
 ```bash
@@ -77,7 +77,8 @@ command is shown, commented out, in `run_wrapper.sh`:
 
 Merge worker ROOT files separately for each exact sample, then use
 `../misc/sf-utils/bEff-convert-to-correction.py` to append its validated
-efficiency map to `corrections/scalefactors/btagging/btag_eff.json`.
+efficiency map to `corrections/scalefactors/btagging/btag_eff.json`.  Regenerate
+older unweighted pilot files before converting them.
 
 ---
 ## Details on the condor batch submission

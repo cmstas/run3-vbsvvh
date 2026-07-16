@@ -106,7 +106,7 @@ def main():
     args = parser.parse_args()
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
-    if args.channels == ["all"]: channels_to_run = ANA_CHANNELS.keys()
+    if args.channels == ["all"]: channels_to_run = [*ANA_CHANNELS.keys(), "all_events"]
     else: channels_to_run = args.channels
 
     # Run RDF once for each specified channel
@@ -125,12 +125,15 @@ def main():
             # Normal production includes signal, background, and data.  The
             # b-tag efficiency mode is MC-only, so do not create data jobs.
             run_base = f"etc/input_sample_jsons/run{args.run}"
-            jsons = [
-                f"{run_base}/sig/all_events/",
-                f"{run_base}/bkg/{ANA_CHANNELS[chan_name]}",
-            ]
-            if not args.btag_eff:
-                jsons.append(f"{run_base}/data/{ANA_CHANNELS[chan_name]}")
+            if chan_name == "all_events":
+                jsons = [f"{run_base}/sig/all_events/"]
+            else:
+                jsons = [
+                    f"{run_base}/sig/all_events/",
+                    f"{run_base}/bkg/{ANA_CHANNELS[chan_name]}",
+                ]
+                if not args.btag_eff:
+                    jsons.append(f"{run_base}/data/{ANA_CHANNELS[chan_name]}")
             merged_json_dict = merge_jsons(jsons)
 
         # Prepend the appropriate prefix to all files in the input json
@@ -166,7 +169,7 @@ def main():
         elif args.mode == "condor":
             dry_run_flag = " --dry-run" if args.dry_run else ""
             ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
-            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{btag_eff_flag}{dry_run_flag}"
+            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{btag_eff_flag}{dry_run_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             os.system(command)
         elif args.mode == "slurm":

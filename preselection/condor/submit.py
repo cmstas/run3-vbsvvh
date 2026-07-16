@@ -185,6 +185,8 @@ Examples:
                         help="Run SPANet inference (--spanet_infer flag)")
     parser.add_argument("--btag-eff", action="store_true",
                         help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
+    parser.add_argument("--store-hlt", action="store_true",
+                        help="Store HLT trigger branches in output (--store_hlt flag)")
     return parser.parse_args()
 
 
@@ -412,6 +414,8 @@ def generate_submit_file(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_infer"
     if args.btag_eff:
         extra_flags += " --btag_eff"
+    if args.store_hlt:
+        extra_flags += " --store_hlt"
 
     # Arguments passed to executable:
     # USER N_CPUS CONFIG_FILE OUTPUT_NAME ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]

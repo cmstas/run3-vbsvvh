@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert merged raw b-tag efficiency histograms into correctionlib JSON.
+"""Convert merged weighted b-tag efficiency histograms into correctionlib JSON.
 
 Each invocation adds (or replaces) one exact MC sample in one
 year/channel correction.  Pass every worker ROOT file for that sample; raw
@@ -33,18 +33,39 @@ def parse_args():
     return parser.parse_args()
 
 
+def histogram_values_in_application_range(hist, path, hist_name):
+    """Fold pT flow into edge bins, matching correctionlib's pT clamp flow."""
+    values, pt_edges, eta_edges = hist.to_numpy(flow=True)
+    # The producer rejects |eta| >= 2.5, so eta flow would indicate a
+    # producer/application mismatch rather than information to clamp.
+    if np.any(values[:, 0] != 0) or np.any(values[:, -1] != 0):
+        raise ValueError(f"{path}:{hist_name} has unexpected eta under/overflow entries")
+    central = values[1:-1, 1:-1].astype(float, copy=True)
+    central[0, :] += values[0, 1:-1]
+    central[-1, :] += values[-1, 1:-1]
+    return central, pt_edges[1:-1], eta_edges[1:-1]
+
+
 def read_merged_histograms(paths):
-    """Return raw summed arrays and common pT/eta edges for all flavors."""
+    """Return signed nominal-weight sums and common pT/eta edges for all flavors."""
     merged = {}
     edges = None
     for path in paths:
         with uproot.open(path) as root_file:
+            if "btag_eff_format" not in root_file:
+                raise ValueError(f"{path} has no b-tag efficiency format metadata")
+            output_format = root_file["btag_eff_format"].member("fTitle")
+            if not output_format.startswith("signed baseweight"):
+                raise ValueError(
+                    f"{path} contains obsolete unweighted b-tag histograms; regenerate it with the current --btag_eff workflow"
+                )
             for flavor in FLAVORS:
                 for state in ("den", *WORKING_POINTS):
                     hist_name = f"btag_{flavor}_{state}"
                     if hist_name not in root_file:
                         raise ValueError(f"{path} does not contain {hist_name}")
-                    values, pt_edges, eta_edges = root_file[hist_name].to_numpy(flow=False)
+                    values, pt_edges, eta_edges = histogram_values_in_application_range(
+                        root_file[hist_name], path, hist_name)
                     if edges is None:
                         edges = (pt_edges, eta_edges)
                     elif not (np.array_equal(pt_edges, edges[0]) and np.array_equal(eta_edges, edges[1])):
@@ -55,22 +76,37 @@ def read_merged_histograms(paths):
 
 
 def validate_counts(counts):
-    """Validate nested-WP identities before constructing an efficiency map."""
+    """Validate signed weighted yields before constructing an efficiency map."""
     for flavor in FLAVORS:
         denominator = counts[(flavor, "den")]
         tight = counts[(flavor, "T")]
         loose = counts[(flavor, "L")]
         loose_not_tight = counts[(flavor, "LT")]
         untagged = counts[(flavor, "N")]
-        if np.any(denominator < 0) or any(np.any(counts[(flavor, state)] < 0)
-                                      for state in WORKING_POINTS):
-            raise ValueError(f"Negative raw b-tag count found for flavor {flavor}")
-        if np.any(tight > loose) or np.any(loose > denominator):
-            raise ValueError(f"Nested-WP counts are inconsistent for flavor {flavor}")
         if not np.allclose(loose, tight + loose_not_tight, rtol=0, atol=1e-9):
             raise ValueError(f"L != T + LT for flavor {flavor}")
         if not np.allclose(denominator, tight + loose_not_tight + untagged, rtol=0, atol=1e-9):
             raise ValueError(f"denominator != T + LT + N for flavor {flavor}")
+
+        # Signed generator weights can make a small MC bin statistically
+        # pathological.  Do not silently turn it into an unweighted result:
+        # reject it so the bin can be merged or supplied with more MC.
+        scale = max(1.0, *(float(np.max(np.abs(x))) for x in
+                           (denominator, tight, loose, loose_not_tight, untagged)))
+        tolerance = 1e-10 * scale
+        nonempty = np.abs(denominator) > tolerance
+        invalid = ((nonempty & ((denominator <= 0) | (tight < -tolerance) |
+                                (loose < -tolerance) | (tight > loose + tolerance) |
+                                (loose > denominator + tolerance))) |
+                   (~nonempty & ((np.abs(tight) > tolerance) |
+                                 (np.abs(loose_not_tight) > tolerance) |
+                                 (np.abs(untagged) > tolerance))))
+        if np.any(invalid):
+            bad_bins = np.argwhere(invalid).tolist()
+            raise ValueError(
+                f"Signed-weight b-tag yields are unphysical for flavor {flavor} in bins {bad_bins}; "
+                "merge those bins or provide more MC before conversion"
+            )
 
 
 def efficiency(values, denominator):

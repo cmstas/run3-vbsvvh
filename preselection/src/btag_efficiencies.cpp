@@ -45,24 +45,24 @@ struct HistogramSet {
         }
     }
 
-    void fill(float pt, float eta, int hadron_flavor, bool tight, bool loose) {
+    void fill(float pt, float eta, int hadron_flavor, bool tight, bool loose, double weight) {
         // BTV AK4 calibrations are defined in the central-jet region.  The
         // selected collection can include forward jets, which must not enter
         // these efficiencies or their SF application.
         if (std::abs(eta) >= 2.5f) return;
         const int flavor = flavorIndex(hadron_flavor);
-        histograms[flavor][0]->Fill(pt, eta); // denominator
+        histograms[flavor][0]->Fill(pt, eta, weight); // denominator
         if (tight) {
-            histograms[flavor][1]->Fill(pt, eta); // T (inclusive)
+            histograms[flavor][1]->Fill(pt, eta, weight); // T (inclusive)
         }
         if (loose) {
-            histograms[flavor][2]->Fill(pt, eta); // L (inclusive)
+            histograms[flavor][2]->Fill(pt, eta, weight); // L (inclusive)
         }
         if (loose && !tight) {
-            histograms[flavor][3]->Fill(pt, eta); // loose-not-tight
+            histograms[flavor][3]->Fill(pt, eta, weight); // loose-not-tight
         }
         if (!loose) {
-            histograms[flavor][4]->Fill(pt, eta); // untagged
+            histograms[flavor][4]->Fill(pt, eta, weight); // untagged
         }
     }
 
@@ -97,16 +97,17 @@ void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
                            const ROOT::VecOps::RVec<float> &eta,
                            const ROOT::VecOps::RVec<unsigned char> &hadron_flavor,
                            const ROOT::VecOps::RVec<bool> &tight,
-                           const ROOT::VecOps::RVec<bool> &loose) {
+                           const ROOT::VecOps::RVec<bool> &loose,
+                           double baseweight) {
             if (slot >= slot_histograms.size())
                 throw std::runtime_error("RDataFrame used more b-tag histogram slots than allocated");
             if (pt.size() != eta.size() || pt.size() != hadron_flavor.size() ||
                 pt.size() != tight.size() || pt.size() != loose.size())
                 throw std::runtime_error("Selected AK4 jet branches have inconsistent sizes");
             for (std::size_t jet = 0; jet < pt.size(); ++jet)
-                slot_histograms[slot]->fill(pt[jet], eta[jet], hadron_flavor[jet], tight[jet], loose[jet]);
+                slot_histograms[slot]->fill(pt[jet], eta[jet], hadron_flavor[jet], tight[jet], loose[jet], baseweight);
         },
-        {"jet_pt", "jet_eta", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"});
+        {"jet_pt", "jet_eta", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag", "baseweight"});
 
     HistogramSet merged("");
     for (const auto &histograms : slot_histograms)
@@ -119,7 +120,7 @@ void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
         throw std::runtime_error("Could not create b-tag efficiency output: " + path);
 
     TNamed("btag_eff_channel", channel.c_str()).Write();
-    TNamed("btag_eff_format", "raw selected-jet counts; efficiencies must be calculated after merging").Write();
+    TNamed("btag_eff_format", "signed baseweight selected-jet yields; efficiencies must be calculated after merging").Write();
     merged.write();
     output.Close();
 }
