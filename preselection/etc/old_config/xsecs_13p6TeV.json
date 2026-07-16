@@ -39,6 +39,16 @@
     "VBSZZH_C2V_2p0_C3_1p0_13p6TeV_4f_LO"          :     1.367e-03,
     "VBSZZH_C2V_1p0_C3_10p0_13p6TeV_4f_LO"         :     4.690e-04,
 
+    "VBSWWH_OS_C2V_0p75_C3_1p0_13p6TeV_4f_LO"      :     8.349e-04,
+    "VBSWWH_SS_C2V_0p75_C3_1p0_13p6TeV_4f_LO"      :     4.339e-04,
+    "VBSWZH_C2V_0p75_C3_1p0_13p6TeV_4f_LO"         :     5.549e-04,
+    "VBSZZH_C2V_0p75_C3_1p0_13p6TeV_4f_LO"         :     1.927e-04,
+
+    "VBSWWH_OS_C2V_0p25_C3_1p0_13p6TeV_4f_LO"      :     1.804e-03,
+    "VBSWWH_SS_C2V_0p25_C3_1p0_13p6TeV_4f_LO"      :     1.107e-03,
+    "VBSWZH_C2V_0p25_C3_1p0_13p6TeV_4f_LO"         :     1.234e-03,
+    "VBSZZH_C2V_0p25_C3_1p0_13p6TeV_4f_LO"         :     7.807e-04,
+
     "TTto4Q"                                       :     431.5,
     "TTto2L2Nu"                                    :     97.45,
     "TTtoLNu2Q"                                    :     403.25,

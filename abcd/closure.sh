@@ -3,24 +3,26 @@
 REGION=${REGION:-all}
 NSCAN=${NSCAN:-50}
 
-# Latest version_N dir (highest N) that has BOTH the data predictions and a
-# regions.yaml (i.e. inference-on-data and signal-region optimization have run).
+data_pred_file() {
+    ls "$1"/predictions_single*_data.csv 2>/dev/null | tail -1
+}
+
 latest() {
     ls -d "$1"/version_* 2>/dev/null \
         | sort -t_ -k2 -n \
-        | while read -r d; do [ -f "$d/predictions_single_data.csv" ] && [ -f "$d/regions.yaml" ] && echo "$d"; done \
+        | while read -r d; do [ -n "$(data_pred_file "$d")" ] && [ -f "$d/regions.yaml" ] && echo "$d"; done \
         | tail -1
 }
 
-# run <output_tag> <channel> <logname>
 run() {
     BASE=$(latest "output/$1/single")
     if [ -z "$BASE" ]; then
-        echo "[skip] $1: no version_* with predictions_single_data.csv + regions.yaml" >&2
+        echo "[skip] $1: no version_* with predictions_single*_data.csv + regions.yaml" >&2
         return
     fi
+    DATA=$(data_pred_file "$BASE")
     echo "[run]  $1 ($2) -> $BASE"
-    python3 closure.py -i "$BASE/predictions_single_data.csv" \
+    python3 closure.py -i "$DATA" \
         --channel "$2" \
         --regions "$BASE/regions.yaml" \
         --region "$REGION" \

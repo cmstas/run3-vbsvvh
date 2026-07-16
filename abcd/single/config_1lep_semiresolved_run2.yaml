@@ -2,7 +2,7 @@ sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r2*1fj_sig*/*/*.root"]
+sig_path: ["*r2*1fj_sig*/*1p5*/*.root"]
 bkg_path: ["*r2*1fj_bkg*/*/*.root"]
 data_path: ["*r2*1fj_data*/*/*.root"]
 
@@ -67,14 +67,13 @@ extra_vars:
   - boosted_h_candidate_score
   - boosted_v_candidate_score
   - vbs_score
+  - shortname
+  - year
 
 preselection: "(boosted_h_candidate_score >= 0.1) | (boosted_v_candidate_score >= 0.1)"
 
 constraint_var: "vbs_detajj"
 
-# VBS variables for the BDT. The BDT is trained to separate signal from background;
-# its output (bdt_score) replaces constraint_var as the DNN decorrelation target.
-# Set use_bdt_as_constraint: false to keep vbs_detajj as the constraint instead.
 bdt_features:
   - vbs_mjj
   - vbs_detajj
@@ -105,7 +104,7 @@ batch_size: 16384
 learning_rate: 0.0001
 n_epochs: 1000
 
-architecture: [64, 32, 16]
+architecture: [128, 64, 32, 16]
 bce_weight: 1.0
 disco_lambda: 10.0
 

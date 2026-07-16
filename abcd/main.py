@@ -16,6 +16,7 @@ import uproot
 import awkward as ak
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.patheffects
 import matplotlib.pyplot as plt
 from sklearn.metrics import auc, roc_curve
 from sklearn.model_selection import train_test_split
@@ -29,6 +30,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from dataloader import get_dataloader
 from model import ABCDLightningModule
 import bdt as bdt_lib
+import qcd_resampling
 
 from torch.utils.tensorboard import SummaryWriter
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
@@ -142,9 +144,17 @@ def apply_derived_vars(data, derived_vars_cfg):
 
     return out
 
-def _read_root_frame(path, branches, dataset_idx, sample_idx):
+def _read_root_frame(path, branches, dataset_idx, sample_idx, resampler=None):
     with uproot.open(path) as root_file:
-        arrays = root_file["Events"].arrays(branches, library="np")
+        tree = root_file["Events"]
+        arrays = tree.arrays(branches, library="np")
+
+        # For QCD MC, redraw the per-jet GloParT scores from the data templates and
+        # rebuild the H/V candidates before anything downstream sees them.
+        perjet = None
+        if (resampler is not None and "shortname" in arrays
+                and len(arrays["shortname"]) > 0 and resampler.is_qcd(arrays["shortname"][0])):
+            perjet = tree.arrays(qcd_resampling.PERJET_BRANCHES, library="ak")
 
     if not isinstance(arrays, dict):
         arrays = {name: arrays[name] for name in arrays.dtype.names}
@@ -177,6 +187,13 @@ def _read_root_frame(path, branches, dataset_idx, sample_idx):
         }
 
     trimmed = {name: np.asarray(vals)[:n_events] for name, vals in columns.items()}
+
+    if perjet is not None:
+        corrected = resampler.resample_candidates(perjet, resampler.rng_for(path))
+        for key, vals in corrected.items():
+            if key in trimmed:  # only overwrite candidate branches actually loaded
+                trimmed[key] = np.asarray(vals)[:n_events]
+
     trimmed["dataset_idx"] = np.full(n_events, dataset_idx, dtype=np.int32)
     trimmed["sample_idx"] = np.full(n_events, sample_idx, dtype=np.int32)
     return trimmed
@@ -228,7 +245,18 @@ def _safe_minmax_scale(values, valid_mask):
     return scaled, float(scaler.data_min_[0]), float(scaler.data_max_[0])
 
 
-def load_data(paths, features, extra_vars, num_workers=1):
+# Apply a previously fitted MinMax scaling (mirrors sklearn MinMaxScaler.transform, with a
+# zero range mapped to scale=1). Invalid entries stay 0, matching _safe_minmax_scale.
+def _apply_saved_scale(values, valid_mask, fmin, fmax):
+    scaled = np.zeros_like(values, dtype=np.float64)
+    fmin = float(fmin)
+    data_range = float(fmax) - fmin
+    scale = 1.0 / data_range if data_range != 0 else 1.0
+    scaled[valid_mask] = (values[valid_mask] - fmin) * scale
+    return scaled
+
+
+def load_data(paths, features, extra_vars, num_workers=1, resampler=None):
     branches = list(dict.fromkeys(features + extra_vars))
 
     sample_names = []
@@ -249,7 +277,7 @@ def load_data(paths, features, extra_vars, num_workers=1):
         max_workers = min(num_workers, len(indexed_paths))
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             futures = {
-                pool.submit(_read_root_frame, path, branches, dataset_idx, sample_idx): dataset_idx
+                pool.submit(_read_root_frame, path, branches, dataset_idx, sample_idx, resampler): dataset_idx
                 for dataset_idx, path, sample_idx in indexed_paths
             }
             for future in tqdm(as_completed(futures), total=len(futures), desc="Loading ROOT files"):
@@ -257,7 +285,7 @@ def load_data(paths, features, extra_vars, num_workers=1):
                 chunks[dataset_idx] = future.result()
     else:
         for dataset_idx, path, sample_idx in tqdm(indexed_paths, total=len(indexed_paths), desc="Loading ROOT files"):
-            chunks[dataset_idx] = _read_root_frame(path, branches, dataset_idx, sample_idx)
+            chunks[dataset_idx] = _read_root_frame(path, branches, dataset_idx, sample_idx, resampler)
 
     chunks = [chunk for chunk in chunks if chunk is not None]
 
@@ -269,8 +297,12 @@ def load_data(paths, features, extra_vars, num_workers=1):
     return data
 
 
-# If scaler_output_path is provided, fitted min/max per feature are saved to JSON for use at inference time
-def preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=None):
+# Scaling behaviour:
+#   * scaler_params is None  -> fit a fresh MinMaxScaler per column (training). When
+#     scaler_output_path is given, the fitted min/max are saved to JSON.
+#   * scaler_params provided  -> apply those saved min/max instead of refitting, so that
+#     data and MC are scaled identically to training (required for data/MC to agree).
+def preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=None, scaler_params=None):
     out = {k: np.asarray(v).copy() for k, v in data.items()}
     cols_to_clean = list(dict.fromkeys(training_features + [constraint_var]))
     present_cols = [col for col in cols_to_clean if col in out]
@@ -282,7 +314,18 @@ def preprocess_data(data, training_features, feature_transforms, constraint_var,
             arr = arr.astype(np.float64, copy=False)
         arr = np.where(np.isfinite(arr), arr, np.nan)
         out[col] = np.nan_to_num(arr, nan=MISSING_VALUE, posinf=MISSING_VALUE, neginf=MISSING_VALUE)
-    scaler_params = {}
+
+    def _saved_for(name):
+        if scaler_params is None:
+            return None
+        if name not in scaler_params:
+            raise ValueError(
+                f"scaler_params provided but has no entry for '{name}'; the checkpoint's "
+                f"scaler_params.json is out of sync with the config's features."
+            )
+        return scaler_params[name]
+
+    fitted_params = {}
     for feat in training_features:
         feat_arr = np.asarray(out[feat], dtype=np.float64)
         valid = (feat_arr != MISSING_VALUE) & np.isfinite(feat_arr)
@@ -293,25 +336,35 @@ def preprocess_data(data, training_features, feature_transforms, constraint_var,
             valid = positive
         if transform == "log":
             feat_arr[valid] = np.log(feat_arr[valid])
+        saved = _saved_for(feat)
+        if saved is not None:
+            out[feat] = _apply_saved_scale(feat_arr, valid, saved["min"], saved["max"])
+            fitted_params[feat] = {"transform": transform, "min": float(saved["min"]), "max": float(saved["max"])}
+            continue
         if valid.sum() == 0:
             print(f"WARNING: feature '{feat}' has no valid samples, skipping scaler fit")
             out[feat] = np.zeros_like(feat_arr, dtype=np.float64)
-            scaler_params[feat] = {"transform": transform, "min": 0.0, "max": 1.0}
+            fitted_params[feat] = {"transform": transform, "min": 0.0, "max": 1.0}
             continue
         out[feat], fmin, fmax = _safe_minmax_scale(feat_arr, valid)
-        scaler_params[feat] = {"transform": transform, "min": fmin, "max": fmax}
+        fitted_params[feat] = {"transform": transform, "min": fmin, "max": fmax}
     if constraint_var not in training_features:
         constraint_arr = np.asarray(out[constraint_var], dtype=np.float64)
         valid_constraint = constraint_arr != MISSING_VALUE
-        out[constraint_var], fmin, fmax = _safe_minmax_scale(constraint_arr, valid_constraint)
-        scaler_params[constraint_var] = {"transform": "none", "min": fmin, "max": fmax}
+        saved = _saved_for(constraint_var)
+        if saved is not None:
+            out[constraint_var] = _apply_saved_scale(constraint_arr, valid_constraint, saved["min"], saved["max"])
+            fitted_params[constraint_var] = {"transform": "none", "min": float(saved["min"]), "max": float(saved["max"])}
+        else:
+            out[constraint_var], fmin, fmax = _safe_minmax_scale(constraint_arr, valid_constraint)
+            fitted_params[constraint_var] = {"transform": "none", "min": fmin, "max": fmax}
     if scaler_output_path is not None:
         import json
         scaler_out = {
             "_training_features": training_features,
             "_constraint_var": constraint_var,
         }
-        scaler_out.update(scaler_params)
+        scaler_out.update(fitted_params)
         with open(scaler_output_path, "w") as f:
             json.dump(scaler_out, f, indent=2)
         logging.info("Saved scaler params to %s", scaler_output_path)
@@ -564,6 +617,27 @@ def _inference_output_dir_from_checkpoint(checkpoint_path: Path) -> Path:
     return checkpoint_path.parent
 
 
+# Load the frozen scaler params saved at training time so inference scales data/MC
+# identically to training. Prefer the copy next to the checkpoint, else the output dir.
+def _load_scaler_params(cfg, checkpoint_path):
+    import json
+    candidates = [
+        _inference_output_dir_from_checkpoint(checkpoint_path) / "scaler_params.json",
+        Path(cfg.get("output", "simple_abcdisco_output")) / "scaler_params.json",
+    ]
+    for path in candidates:
+        if path.is_file():
+            with open(path) as f:
+                raw = json.load(f)
+            logging.info("Loaded scaler params from %s", path)
+            return {k: v for k, v in raw.items() if not k.startswith("_")}
+    raise FileNotFoundError(
+        "Could not find scaler_params.json for inference (looked in: "
+        + ", ".join(str(c) for c in candidates)
+        + "). Re-run training to regenerate it so inference reuses the training-time scaling."
+    )
+
+
 def _build_model_from_config(cfg, flavor, input_size, checkpoint_path, device):
     model = ABCDLightningModule(
         input_size=input_size,
@@ -587,16 +661,18 @@ def _build_model_from_config(cfg, flavor, input_size, checkpoint_path, device):
     return model
 
 
-def _copy_input_plots_to_version_dir(source_dir, version_dir):
+def _move_input_plots_to_version_dir(source_dir, version_dir):
     source_dir = Path(source_dir)
     version_dir = Path(version_dir)
     version_dir.mkdir(parents=True, exist_ok=True)
 
     for plot_path in source_dir.glob("inputs_*.png"):
-        dest = version_dir / plot_path.name
-        shutil.copy(str(plot_path), str(dest))
-        logging.info("Copied input plot to %s", dest)
-
+        try:
+            dest = version_dir / plot_path.name
+            shutil.move(str(plot_path), str(dest))
+            logging.info("Copied input plot to %s", dest)
+        except Exception as e:
+            logging.warning("Failed to move input plot %s: %s", plot_path, e)
 
 def _batched_scores(model, features_tensor, batch_size, flavor, device):
     scores_0 = []
@@ -902,30 +978,46 @@ def _plot_weight_distributions(sig_data, bkg_data, output_path):
     logging.info("Saved weight distribution plot to %s", output_path)
 
 
-def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
-    def profile_overlay(ax, x, y, bins, xrange, weights=None, color='yellow', label='Profile mean'):
-        bin_edges = np.linspace(xrange[0], xrange[1], bins + 1)
-        bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
-        means, errors = [], []
-        for lo, hi in zip(bin_edges[:-1], bin_edges[1:]):
-            mask = (x >= lo) & (x < hi)
-            vals = y[mask]
-            w = weights[mask] if weights is not None else None
-            if len(vals) > 0:
-                mean = np.average(vals, weights=w)
-                variance = np.average((vals - mean) ** 2, weights=w)
-                n_eff = (np.sum(w) ** 2 / np.sum(w ** 2)) if w is not None else len(vals)
-                errors.append(np.sqrt(variance / n_eff))
-                means.append(mean)
-            else:
-                means.append(np.nan)
-                errors.append(np.nan)
-        means = np.array(means)
-        errors = np.array(errors)
-        ax.errorbar(bin_centers, means, yerr=errors, color=color,
-                    fmt='o', markersize=3, linewidth=1.5, label=label)
-        ax.legend(fontsize=9)
+# Profile-marker colours for the data plane. Both clear a 3:1 contrast ratio against the
+# light end of the Greens ramp (violet 8.2:1, orange 3.1:1), where the old yellow scored
+# 2.08:1, and they stay 95 dE apart under simulated protan/deutan/tritan vision.
+PROFILE_COLOR = '#4a3aa7'
+PROFILE_COLOR_WEIGHTED = '#eb6834'
 
+
+def _profile_overlay(ax, x, y, bins, xrange, weights=None, color='yellow', label='Profile mean'):
+    # Markers sit on a light->dark colormap, so no single colour contrasts with every
+    # cell underneath. A white outline separates them from the dark end; the marker
+    # colour itself carries the light end.
+    ring = [matplotlib.patheffects.withStroke(linewidth=2.5, foreground='white')]
+
+    bin_edges = np.linspace(xrange[0], xrange[1], bins + 1)
+    bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+    means, errors = [], []
+    for lo, hi in zip(bin_edges[:-1], bin_edges[1:]):
+        mask = (x >= lo) & (x < hi)
+        vals = y[mask]
+        w = weights[mask] if weights is not None else None
+        if len(vals) > 0:
+            mean = np.average(vals, weights=w)
+            variance = np.average((vals - mean) ** 2, weights=w)
+            n_eff = (np.sum(w) ** 2 / np.sum(w ** 2)) if w is not None else len(vals)
+            errors.append(np.sqrt(variance / n_eff))
+            means.append(mean)
+        else:
+            means.append(np.nan)
+            errors.append(np.nan)
+    means = np.array(means)
+    errors = np.array(errors)
+    container = ax.errorbar(bin_centers, means, yerr=errors, color=color,
+                            fmt='o', markersize=4, linewidth=1.5, label=label)
+    for artist in (container.lines[0], *container.lines[2]):
+        if artist is not None:
+            artist.set_path_effects(ring)
+    ax.legend(fontsize=9)
+
+
+def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
     labels = np.asarray(data["label"])
     signal = {k: np.asarray(v)[labels == 1] for k, v in data.items()}
     background = {k: np.asarray(v)[labels == 0] for k, v in data.items()}
@@ -945,8 +1037,8 @@ def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix="")
     axes[0].set_title('Background')
     axes[0].set_xlabel('DNN Score')
     axes[0].set_ylabel(constraint_var)
-    profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range)
-    profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range,
+    _profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range)
+    _profile_overlay(axes[0], background[score_col], background[constraint_var], bins[0], dnn_range,
                     weights=background["weight"] if "weight" in background else None,
                     color='orange', label='Profile mean (weighted)')
 
@@ -957,8 +1049,8 @@ def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix="")
     axes[1].set_title('Signal')
     axes[1].set_xlabel('DNN Score')
     axes[1].set_ylabel(constraint_var)
-    profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range)
-    profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range,
+    _profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range)
+    _profile_overlay(axes[1], signal[score_col], signal[constraint_var], bins[0], dnn_range,
                     weights=signal["weight"] if "weight" in signal else None,
                     color='orange', label='Profile mean (weighted)')
 
@@ -967,6 +1059,86 @@ def _plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix="")
     plt.savefig(output_path, dpi=150)
     plt.close()
     logging.info("Saved ABCD plane plot to %s", output_path)
+
+
+def _plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_threshold=0.8, title_suffix=""):
+    score_col = "dnn_score" if flavor == "single" else "dnn_0_score"
+
+    score = np.asarray(data[score_col])
+    constraint = np.asarray(data[constraint_var])
+    weights = np.asarray(data["weight"]) if "weight" in data else None
+
+    bins = [50, 50]
+    dnn_range = (0, 1)
+    constrain_var_range = (0, max(constraint))
+
+    counts, xedges, yedges = np.histogram2d(
+        score, constraint, bins=bins,
+        range=[dnn_range, constrain_var_range], weights=weights,
+    )
+
+    # Blank any cell that reaches past the threshold on either axis, not just those fully
+    # inside it, so a bin straddling the boundary cannot leak signal-region yield.
+    blind_x = xedges[1:] > blind_threshold
+    blind_y = yedges[1:] > blind_threshold
+    counts[blind_x, :] = np.nan
+    counts[:, blind_y] = np.nan
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    mesh = ax.pcolormesh(
+        xedges, yedges,
+        np.ma.masked_where(~np.isfinite(counts) | (counts <= 0), counts).T,
+        cmap='Greens', norm=matplotlib.colors.LogNorm(),
+    )
+    plt.colorbar(mesh, ax=ax, label='Counts')
+
+    # Profile exactly the cells left visible: the DNN columns left of the boundary, and
+    # within them only events below the constraint boundary. Blinding on either axis means
+    # even the low-DNN columns are truncated, so averaging every event there would fold in
+    # yields this plot is meant to hide. The result is E[constraint | constraint < cut],
+    # not the full mean -- a uniform cut across DNN bins, so a trend still reads as
+    # correlation, but the values sit below the unblinded signal/background profiles.
+    n_open = int(np.argmax(blind_x)) if blind_x.any() else bins[0]
+    y_open = yedges[int(np.argmax(blind_y))] if blind_y.any() else yedges[-1]
+    if n_open > 0:
+        open_range = (xedges[0], xedges[n_open])
+        # Cut on both axes rather than leaning on the binning range to drop the high-DNN
+        # events, so nothing blinded is handed to the profile in the first place.
+        visible = (score < xedges[n_open]) & (constraint < y_open)
+        _profile_overlay(ax, score[visible], constraint[visible], n_open, open_range,
+                         color=PROFILE_COLOR)
+        _profile_overlay(ax, score[visible], constraint[visible], n_open, open_range,
+                         weights=weights[visible] if weights is not None else None,
+                         color=PROFILE_COLOR_WEIGHTED, label='Profile mean (weighted)')
+
+    # Blinding on either axis leaves an L: the full high-DNN strip, plus the
+    # high-constraint strip beside it.
+    x0 = xedges[int(np.argmax(blind_x))] if blind_x.any() else xedges[-1]
+    for rx, ry, rw, rh in (
+        (x0, yedges[0], xedges[-1] - x0, yedges[-1] - yedges[0]),
+        (xedges[0], y_open, x0 - xedges[0], yedges[-1] - y_open),
+    ):
+        if rw > 0 and rh > 0:
+            ax.add_patch(plt.Rectangle(
+                (rx, ry), rw, rh,
+                facecolor='none', edgecolor='grey', hatch='//', linewidth=1.0, zorder=3,
+            ))
+    if blind_x.any() and blind_y.any():
+        ax.text(0.5 * (x0 + xedges[-1]), 0.5 * (y_open + yedges[-1]), 'BLINDED',
+                ha='center', va='center', color='grey', fontsize=11, fontweight='bold', zorder=4)
+
+    ax.set_xlim(dnn_range)
+    ax.set_ylim(constrain_var_range)
+    ax.set_xlabel('DNN Score')
+    ax.set_ylabel(constraint_var)
+    ax.set_title(f'ABCD Plane - Data{" - " + title_suffix if title_suffix else ""}\n'
+                 f'(blinded where either score > {blind_threshold}; profile over visible region only)',
+                 fontsize=10)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    logging.info("Saved data ABCD plane plot to %s", output_path)
 
 
 def _plot_decorrelation_check(data, flavor, constraint_var, output_path, title_suffix=""):
@@ -1125,7 +1297,7 @@ def plot_permutation_importance(baseline_auc, importances, output_path):
     print(f"Saved {output_path}")
 
 
-def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None, train_idx=None, val_idx=None):
+def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=False, inference_data=None, train_idx=None, val_idx=None, bdt_features=None):
     logging.info("Starting inference steps...")
     checkpoint_path = Path(args.checkpoint) if args.checkpoint else _latest_checkpoint_from_config(cfg, flavor=flavor)
     logging.info("Using checkpoint: %s", checkpoint_path)
@@ -1146,11 +1318,13 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         )
 
     logging.info("Preprocessing inference features...")
+    scaler_params = _load_scaler_params(cfg, checkpoint_path)
     processed = preprocess_data(
         full_inference_data,
         training_features=training_features,
         feature_transforms=feature_transforms,
         constraint_var=constraint_var,
+        scaler_params=scaler_params,
     )
 
     feature_matrix = np.column_stack([processed[f] for f in training_features]).astype(np.float32, copy=False)
@@ -1192,6 +1366,11 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
     logging.info("Writing inference CSV to %s", output_csv)
     _write_csv_numpy(full_inference_data, output_csv)
     logging.info("Done. Wrote %d rows.", _data_length(full_inference_data))
+
+    if is_data:
+        abcd_data_path = output_csv.with_name(f"{output_csv.stem}_abcd_plane_data.png")
+        _plot_abcd_plane_data(full_inference_data, flavor=flavor, constraint_var=constraint_var,
+                              output_path=abcd_data_path)
 
     if not is_data:
         roc_path = output_csv.with_name(f"{output_csv.stem}_roc.png")
@@ -1308,6 +1487,17 @@ def main():
     io_workers = int(cfg.get("io_workers", min(8, os.cpu_count() or 1)))
     logging.info("Using io_workers=%d for ROOT loading", io_workers)
 
+    qcd_cfg = cfg.get("qcd_resampling", {}) or {}
+    bkg_resampler = None
+    if qcd_cfg.get("enabled", False):
+        bkg_resampler = qcd_resampling.ScoreResampler(
+            template_path=qcd_cfg["template_path"],
+            qcd_shortname_prefix=qcd_cfg.get("qcd_shortname_prefix", "QCD"),
+            seed=qcd_cfg.get("seed", 42),
+        )
+        logging.info("QCD score resampling ENABLED (templates: %s, shortname prefix: '%s')",
+                     qcd_cfg["template_path"], qcd_cfg.get("qcd_shortname_prefix", "QCD"))
+
     if args.data:
         if not args.infer:
             parser.error("--data can only be used with --infer")
@@ -1330,13 +1520,13 @@ def main():
         )
 
         logging.info("Skipping training. Running inference on data only...")
-        run_inference(args, cfg, flavor, None, None, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=True, inference_data=real_data, train_idx=None, val_idx=None)
+        run_inference(args, cfg, flavor, None, None, training_features, feature_transforms, constraint_var, derived_vars_cfg, is_data=True, inference_data=real_data, train_idx=None, val_idx=None, bdt_features=bdt_features)
         return
 
     logging.info("Loading signal data...")
     sig_data = load_data(sig_paths, load_features, extra_vars, num_workers=io_workers)
     logging.info("Loading background data...")
-    bkg_data = load_data(bkg_paths, load_features, extra_vars, num_workers=io_workers)
+    bkg_data = load_data(bkg_paths, load_features, extra_vars, num_workers=io_workers, resampler=bkg_resampler)
 
 
     logging.info("Signal samples: %d, Background samples: %d", _data_length(sig_data), _data_length(bkg_data))
@@ -1390,7 +1580,7 @@ def main():
 
     if args.infer:
         logging.info("Skipping training. Running inference only...")
-        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=None, val_idx=None)
+        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=None, val_idx=None, bdt_features=bdt_features)
         return
 
     logging.info("Creating data loaders...")
@@ -1469,7 +1659,7 @@ def main():
     shutil.copy(str(constraint_plot_path_src), str(version_dir / "constraint_var_distribution.png"))
     logging.info("Copied constraint var distribution plot to %s", version_dir / "constraint_var_distribution.png")
 
-    _copy_input_plots_to_version_dir(
+    _move_input_plots_to_version_dir(
         source_dir=Path(cfg.get("output", "simple_abcdisco_output")),
         version_dir=version_dir,
     )
@@ -1479,7 +1669,7 @@ def main():
     for ckpt_path in all_checkpoints:
         logging.info("Running inference for checkpoint: %s", ckpt_path)
         args.checkpoint = str(ckpt_path)
-        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=train_idx, val_idx=val_idx)
+        run_inference(args, cfg, flavor, raw_sig_data, raw_bkg_data, training_features, feature_transforms, constraint_var, derived_vars_cfg, train_idx=train_idx, val_idx=val_idx, bdt_features=bdt_features)
     logging.info("Inference finished.")
 
 if __name__ == "__main__":

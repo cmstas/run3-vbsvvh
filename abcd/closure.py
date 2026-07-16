@@ -201,7 +201,7 @@ def main():
     parser.add_argument("--regions", help="regions.yaml with per-scan cuts (as written by the analysis scripts)")
     parser.add_argument("--region", default="D", choices=["D", "CD", "BD", "all"], help="Closure region orientation (default: D)")
     parser.add_argument("-n", "--n-scan", type=int, default=50, help="Number of scan points per axis (default: 50)")
-    parser.add_argument("--min-count", type=int, default=20, help="Minimum raw events required in each of A',B',C',D' (default: 1)")
+    parser.add_argument("--min-count", type=int, default=5, help="Minimum raw events required in each of A',B',C',D' (default: 1)")
     parser.add_argument("--orthogonal", action="store_true", help="With --regions, remove earlier scans' kinematic regions before each scan (matches the optimization)")
     parser.add_argument("-o", "--outdir", default=None, help="Output directory for plots/summary (default: alongside --input)")
     parser.add_argument("--dnn-col", default=DNN_COL, help=f"DNN score column (default: {DNN_COL})")
