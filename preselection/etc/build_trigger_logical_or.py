@@ -273,9 +273,16 @@ DS_DICT_SINGLELEP = {
             "SingleMuon" : [
                 "HLT_IsoMu24",
                 "HLT_IsoTkMu24",
+                "HLT_IsoMu22",
+                "HLT_IsoTkMu22",
+                "HLT_IsoMu20",
+                "HLT_IsoTkMu20",
             ],
             "SingleElectron" : [
                 "HLT_Ele27_eta2p1_WPTight_Gsf",
+                "HLT_Ele27_WPTight_Gsf",
+                "HLT_Ele25_eta2p1_WPTight_Gsf",
+                "HLT_Ele27_eta2p1_WPLoose_Gsf",
             ],
         },
     },
@@ -286,7 +293,10 @@ DS_DICT_SINGLELEP = {
                 "HLT_IsoMu27",
             ],
             "SingleElectron" : [
-                "HLT_Ele32_WPTight_Gsf_L1DoubleEG"
+                "HLT_Ele32_WPTight_Gsf_L1DoubleEG",
+                "HLT_Ele35_WPTight_Gsf",
+                "HLT_Ele38_WPTight_Gsf",
+                "HLT_Ele40_WPTight_Gsf",
             ],
         },
     },
@@ -335,7 +345,6 @@ DS_DICT_MULTILEP = {
                 "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL",
                 "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
                 "HLT_TripleMu_12_10_5",
-                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL",
             ],
             "MuonEG" : [
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL",
@@ -345,13 +354,14 @@ DS_DICT_MULTILEP = {
                 "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
                 "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
             ],
             "DoubleEG" : [
                 "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_DoubleEle33_CaloIdL_GsfTrkIdVL",
                 "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
             ],
             "SingleMuon" : [
                 "HLT_IsoMu24",
@@ -380,19 +390,20 @@ DS_DICT_MULTILEP = {
                 "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
                 "HLT_TripleMu_12_10_5",
                 "HLT_TripleMu_10_5_5_D2",
-                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
             ],
             "MuonEG" : [
                 "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
+                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
             ],
             "DoubleEG" : [
                 "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
                 "HLT_DoubleEle33_CaloIdL_GsfTrkIdVL",
                 "HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL",
-                "HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ",
             ],
             "SingleMuon" : [
                 "HLT_IsoMu24",
@@ -412,12 +423,13 @@ DS_DICT_MULTILEP = {
         "ds_trg_dict" : {
             "DoubleMuon" : [
                 "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
-                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
             ],
             "MuonEG" : [
                 "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
                 "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ",
+                "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
             ],
             "SingleMuon" : [
                 "HLT_IsoMu24",
