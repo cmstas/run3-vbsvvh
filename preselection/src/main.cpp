@@ -13,6 +13,7 @@
 
 #include "spanet.h"
 #include "spanet_run2.h"
+#include "btag_efficiencies.h"
 
 
 
@@ -32,6 +33,7 @@ struct MyArgs : public argparse::Args {
     bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
     bool &storeHLT = flag("store_hlt", "Store HLT trigger branches in output").set_default(false);
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
+    bool &makeBTagEfficiencies = flag("btag_eff", "Write selected-AK4 b-tag efficiency histograms (MC only)").set_default(false);
 };
 
 RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference *spanet_inference, SPANetRun2::SPANetInference *spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
@@ -165,6 +167,11 @@ int main(int argc, char** argv) {
         std::exit(EXIT_FAILURE);
     }
 
+    if (args.makeBTagEfficiencies && isData) {
+        std::cerr << "B-tag efficiencies can only be measured from MC samples" << std::endl;
+        return EXIT_FAILURE;
+    }
+
     bool makeSpanetTrainingdata = args.makeSpanetTrainingdata;
     if (!isSignal) {
         makeSpanetTrainingdata = false; // do not make training data for non-signal samples
@@ -188,7 +195,13 @@ int main(int argc, char** argv) {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
+        if (args.makeBTagEfficiencies) {
+            const int nslots = args.nthread > 1 ? args.nthread : 1;
+            std::cout << " -> Saving raw b-tag efficiency histograms" << std::endl;
+            saveBTagEfficiencyHistograms(df, output_dir, output_file, args.ana, nslots);
+            return 0;
+        }
+        df = applyMCWeights(df, args.ana);
     }
 
     Cutflow::Add(df, "After SFs and corrections");
@@ -201,6 +214,7 @@ int main(int argc, char** argv) {
     }
 
     saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput, args.storeHLT);
+    if (!isData) printBTagDiagnostics();
     Cutflow::Print();
 
     return 0;

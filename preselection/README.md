@@ -63,6 +63,22 @@ To run the preselection, use the compiled binary and provide the input specifica
 
 There are examples in `run_wrapper.sh` for running `run_rdf.py` either locally over single jsons for tests, or for running the full analysis at scale over all skim selections. 
 
+## B-tag efficiency production
+
+Use the MC-only `--btag-eff` mode to run the normal channel preselection and
+write raw selected-AK4 jet counts (B/C/light denominator plus tight, loose,
+loose-not-tight, and untagged numerators).  The all-channel/all-sample batch
+command is shown, commented out, in `run_wrapper.sh`:
+
+```bash
+# python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
+#   -c all -m "$MODE" -r 3 -f 1 --btag-eff
+```
+
+Merge worker ROOT files separately for each exact sample, then use
+`../misc/sf-utils/bEff-convert-to-correction.py` to append its validated
+efficiency map to `corrections/scalefactors/btagging/btag_eff.json`.
+
 ---
 ## Details on the condor batch submission
 

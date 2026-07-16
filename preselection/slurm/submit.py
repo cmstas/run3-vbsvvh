@@ -144,6 +144,8 @@ Examples:
                         help="Run SPANet inference (--spanet_infer flag)")
     parser.add_argument("--store_hlt", action="store_true",
                         help="Store HLT trigger branches in output")
+    parser.add_argument("--btag-eff", action="store_true",
+                        help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
     return parser.parse_args()
 
 
@@ -210,6 +212,8 @@ def generate_slurm_script(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_infer"
     if args.store_hlt:
         extra_flags += " --store_hlt"
+    if args.btag_eff:
+        extra_flags += " --btag_eff"
 
     # Arguments for executable.sh:
     # TASK_DIR N_CPUS CONFIG_PATH OUTPUT_DIR ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]
@@ -259,6 +263,8 @@ def generate_array_sbatch(task_dir: Path, job_entries: List[dict],
         extra_flags += " --spanet_infer"
     if args.store_hlt:
         extra_flags += " --store_hlt"
+    if args.btag_eff:
+        extra_flags += " --btag_eff"
 
     script_path = task_dir / "array.sbatch"
     script_content = f"""#!/bin/bash

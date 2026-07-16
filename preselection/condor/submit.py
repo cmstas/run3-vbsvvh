@@ -183,6 +183,8 @@ Examples:
                         help="Only make training data for SPANet (--spanet_training flag)")
     parser.add_argument("--spanet-infer", action="store_true",
                         help="Run SPANet inference (--spanet_infer flag)")
+    parser.add_argument("--btag-eff", action="store_true",
+                        help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
     return parser.parse_args()
 
 
@@ -408,6 +410,8 @@ def generate_submit_file(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_training"
     if args.spanet_infer:
         extra_flags += " --spanet_infer"
+    if args.btag_eff:
+        extra_flags += " --btag_eff"
 
     # Arguments passed to executable:
     # USER N_CPUS CONFIG_FILE OUTPUT_NAME ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]

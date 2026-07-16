@@ -1,5 +1,36 @@
 #include "weights.h"
 
+#include <atomic>
+#include <cmath>
+
+namespace {
+constexpr double kBTagDenominatorEpsilon = 1.e-8;
+std::atomic<unsigned long long> g_btag_negative_intermediate{0};
+std::atomic<unsigned long long> g_btag_tiny_denominator{0};
+std::atomic<unsigned long long> g_btag_invalid_probability{0};
+
+double unityForInvalidBTagWeight(std::atomic<unsigned long long> &counter) {
+    ++counter;
+    return 1.;
+}
+} // namespace
+
+void resetBTagDiagnostics() {
+    g_btag_negative_intermediate = 0;
+    g_btag_tiny_denominator = 0;
+    g_btag_invalid_probability = 0;
+}
+
+void printBTagDiagnostics(std::ostream &out) {
+    const auto negative = g_btag_negative_intermediate.load();
+    const auto tiny_denominator = g_btag_tiny_denominator.load();
+    const auto invalid_probability = g_btag_invalid_probability.load();
+    if (negative == 0 && tiny_denominator == 0 && invalid_probability == 0) return;
+    out << "[BTag SF diagnostics] negative intermediate probabilities=" << negative
+        << ", tiny denominators=" << tiny_denominator
+        << ", invalid efficiencies/probabilities=" << invalid_probability << '\n';
+}
+
 /*
 ############################################
 GOLDEN JSON
@@ -244,100 +275,124 @@ BTAG SFs
 ############################################
 */
 
-RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_btag, 
+RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_btag,
                                  std::unordered_map<std::string, std::string> corrname_map_HF,
                                  std::unordered_map<std::string, std::string> corrname_map_LF,
-                                 RNode df) {
-    
-    auto calc_btag_sf = [cset_btag] (const std::string& year, const RVec<float>& eta, const RVec<float>& pt, 
-                                     const RVec<int>& jetflavor, const std::string& correction_name, bool is_heavy_flavor) {
+                                 const std::string &channel, RNode df) {
+
+    auto calc_btag_sf = [cset_btag, channel] (const std::string &year, const std::string &sample,
+                                               const RVec<float> &eta, const RVec<float> &pt,
+                                               const RVec<unsigned char> &jetflavor, const RVec<bool> &is_tight,
+                                               const RVec<bool> &is_loose, const std::string &correction_name,
+                                               bool is_heavy_flavor) {
         RVec<double> btag_sf_weights = {1., 1., 1.};
-        if (eta.empty()) {
+        if (eta.empty()) return btag_sf_weights;
+        if (eta.size() != pt.size() || eta.size() != jetflavor.size() ||
+            eta.size() != is_tight.size() || eta.size() != is_loose.size())
+            throw std::runtime_error("B-tag input collections have inconsistent sizes");
+
+        const auto cset_it = cset_btag.find(year);
+        const auto cset_eff_it = cset_btag.find("eff");
+        if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end()) {
+            static std::unordered_set<std::string> warned;
+            const std::string key = year + ":correction-set";
+            if (warned.insert(key).second)
+                std::cout << "Warning: B-tag SF or efficiency correction set for " << year
+                          << " not found. Setting b-tag weights to 1." << std::endl;
             return btag_sf_weights;
         }
 
-        auto cset_it = cset_btag.find(year);
-        if (cset_it == cset_btag.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: B-tagging correction set for year " << year << " not found. Setting b-tagging weights to 1." << std::endl;
-                warned_years.insert(year);
+        const std::string efficiency_name = "btag_" + year + "_" + channel;
+        try {
+            (void)cset_eff_it->second.at(efficiency_name);
+        } catch (const std::exception &) {
+            static std::unordered_set<std::string> warned;
+            const std::string key = year + ":" + channel;
+            if (warned.insert(key).second)
+                std::cout << "Warning: b-tag efficiency map " << efficiency_name
+                          << " is unavailable. Setting b-tag weights to 1." << std::endl;
+            return btag_sf_weights;
+        }
+
+        const auto &sf_correction = cset_it->second.at(correction_name);
+        auto jet_weight = [&](double sf_tight, double sf_loose, double eff_tight,
+                              double eff_loose, bool tight, bool loose) {
+            if (!std::isfinite(sf_tight) || !std::isfinite(sf_loose) ||
+                !std::isfinite(eff_tight) || !std::isfinite(eff_loose) ||
+                !(0. <= eff_tight && eff_tight <= eff_loose && eff_loose <= 1.))
+                return unityForInvalidBTagWeight(g_btag_invalid_probability);
+            const double q_tight = sf_tight * eff_tight;
+            const double q_loose = sf_loose * eff_loose;
+            if (tight) return sf_tight;
+            if (loose) {
+                const double denominator = eff_loose - eff_tight;
+                const double numerator = q_loose - q_tight;
+                if (numerator < 0.) return unityForInvalidBTagWeight(g_btag_negative_intermediate);
+                if (std::abs(denominator) < kBTagDenominatorEpsilon)
+                    return unityForInvalidBTagWeight(g_btag_tiny_denominator);
+                return numerator / denominator;
             }
-            return btag_sf_weights;
-        }
-        const auto& cset_btag_year = cset_it->second;
-        
-        auto cset_eff_it = cset_btag.find("eff");
-        if (cset_eff_it == cset_btag.end()) {
-            static bool warned = false;
-            if (!warned) {
-                std::cout << "Warning: B-tagging efficiency correction set not found. Setting b-tagging weights to 1." << std::endl;
-                warned = true;
-            }
-            return btag_sf_weights;
-        }
-        const auto& cset_btag_eff = cset_eff_it->second;
-        
-        const std::string btag_year_key = "btag_" + year;
+            const double denominator = 1. - eff_loose;
+            const double numerator = 1. - q_loose;
+            if (numerator < 0.) return unityForInvalidBTagWeight(g_btag_invalid_probability);
+            if (std::abs(denominator) < kBTagDenominatorEpsilon)
+                return unityForInvalidBTagWeight(g_btag_tiny_denominator);
+            return numerator / denominator;
+        };
 
-        float num = 1.;
-        float num_up = 1.;
-        float num_down = 1.;
-        float den = 1.;
-
-        for (size_t i = 0; i < eta.size(); i++) {
+        for (std::size_t i = 0; i < eta.size(); ++i) {
             bool process_jet = false;
-            const char* flavor_label = nullptr;
-            
-            if (is_heavy_flavor) {
-                if (jetflavor[i] == 5) {
-                    process_jet = true;
-                    flavor_label = "B";
-                } else if (jetflavor[i] == 4) {
-                    process_jet = true;
-                    flavor_label = "C";
-                }
-            } else {
-                if (jetflavor[i] == 0) {
-                    process_jet = true;
-                    flavor_label = "L";
-                }
+            const char *flavor_label = nullptr;
+            const int flavor = std::abs(jetflavor[i]);
+            if (is_heavy_flavor && flavor == 5) {
+                process_jet = true;
+                flavor_label = "B";
+            } else if (is_heavy_flavor && flavor == 4) {
+                process_jet = true;
+                flavor_label = "C";
+            } else if (!is_heavy_flavor && flavor != 5 && flavor != 4) {
+                process_jet = true;
+                flavor_label = "L";
             }
-            
-            if (!process_jet) {
+            if (!process_jet || std::abs(eta[i]) >= 2.5f) continue;
+            if (is_tight[i] && !is_loose[i]) {
+                unityForInvalidBTagWeight(g_btag_invalid_probability);
                 continue;
             }
 
-            const float abs_eta = std::abs(eta[i]);
+            double eff_tight = 0.;
+            double eff_loose = 0.;
+            try {
+                const auto efficiency = cset_eff_it->second.at(efficiency_name);
+                eff_tight = efficiency->evaluate({sample, flavor_label, "T", pt[i], eta[i]});
+                eff_loose = efficiency->evaluate({sample, flavor_label, "L", pt[i], eta[i]});
+            } catch (const std::exception &) {
+                static std::unordered_set<std::string> warned;
+                const std::string key = year + ":" + channel + ":" + sample;
+                if (warned.insert(key).second)
+                    std::cout << "Warning: b-tag efficiency entries for " << key
+                              << " are unavailable. Setting b-tag weights to 1." << std::endl;
+                return RVec<double>{1., 1., 1.};
+            }
+            const double abs_eta = std::abs(eta[i]);
+            const auto evaluate_sf = [&](const char *variation, const char *wp) {
+                return sf_correction->evaluate({variation, wp, flavor, abs_eta, pt[i]});
+            };
 
-            const float btag_sf_tight = cset_btag_year.at(correction_name)->evaluate({"central", "T", jetflavor[i], abs_eta, pt[i]});
-            const float btag_sf_loose = cset_btag_year.at(correction_name)->evaluate({"central", "L", jetflavor[i], abs_eta, pt[i]});
-            const float btag_sf_tight_up = cset_btag_year.at(correction_name)->evaluate({"up_uncorrelated", "T", jetflavor[i], abs_eta, pt[i]});
-            const float btag_sf_loose_up = cset_btag_year.at(correction_name)->evaluate({"up_uncorrelated", "L", jetflavor[i], abs_eta, pt[i]});
-            const float btag_sf_tight_down = cset_btag_year.at(correction_name)->evaluate({"down_uncorrelated", "T", jetflavor[i], abs_eta, pt[i]});
-            const float btag_sf_loose_down = cset_btag_year.at(correction_name)->evaluate({"down_uncorrelated", "L", jetflavor[i], abs_eta, pt[i]});
-            
-            const float btag_eff_tight = cset_btag_eff.at(btag_year_key)->evaluate({flavor_label, "T", pt[i], eta[i]});
-            const float btag_eff_loose = cset_btag_eff.at(btag_year_key)->evaluate({flavor_label, "L", pt[i], eta[i]});
-
-            // Accumulate weights
-            num *= (btag_sf_tight * btag_eff_tight) * (btag_sf_loose * btag_eff_loose - btag_sf_tight * btag_eff_tight) * (1. - btag_sf_loose * btag_eff_loose);
-            num_up *= (btag_sf_tight_up * btag_eff_tight) * (btag_sf_loose_up * btag_eff_loose - btag_sf_tight_up * btag_eff_tight) * (1. - btag_sf_loose_up * btag_eff_loose);
-            num_down *= (btag_sf_tight_down * btag_eff_tight) * (btag_sf_loose_down * btag_eff_loose - btag_sf_tight_down * btag_eff_tight) * (1. - btag_sf_loose_down * btag_eff_loose);
-            den *= (btag_eff_tight) * (btag_eff_loose - btag_eff_tight) * (1. - btag_eff_loose);
+            btag_sf_weights[0] *= jet_weight(evaluate_sf("central", "T"), evaluate_sf("central", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
+            btag_sf_weights[1] *= jet_weight(evaluate_sf("up_uncorrelated", "T"), evaluate_sf("up_uncorrelated", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
+            btag_sf_weights[2] *= jet_weight(evaluate_sf("down_uncorrelated", "T"), evaluate_sf("down_uncorrelated", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
         }
-
-        if (den != 0.) {
-            btag_sf_weights[0] = num / den;
-            btag_sf_weights[1] = num_up / den;
-            btag_sf_weights[2] = num_down / den;
-        }
-
         return btag_sf_weights;
     };
 
-    auto eval_HF = [cset_btag, corrname_map_HF, calc_btag_sf] (const std::string& year, const RVec<float>& eta, 
-                                                                 const RVec<float>& pt, const RVec<int>& jetflavor) {
+    auto eval_HF = [cset_btag, corrname_map_HF, calc_btag_sf] (const std::string& year, const std::string &sample,
+                                                                 const RVec<float>& eta, const RVec<float>& pt,
+                                                                 const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
+                                                                 const RVec<bool> &is_loose) {
         auto corrname_it = corrname_map_HF.find(year);
         if (corrname_it == corrname_map_HF.end()) {
             static std::unordered_set<std::string> warned_years;
@@ -347,11 +402,13 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             }
             return RVec<double>{1., 1., 1.};
         }
-        return calc_btag_sf(year, eta, pt, jetflavor, corrname_it->second, true);
+        return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, true);
     };
 
-    auto eval_LF = [cset_btag, corrname_map_LF, calc_btag_sf] (const std::string& year, const RVec<float>& eta, 
-                                                                 const RVec<float>& pt, const RVec<int>& jetflavor) {
+    auto eval_LF = [cset_btag, corrname_map_LF, calc_btag_sf] (const std::string& year, const std::string &sample,
+                                                                 const RVec<float>& eta, const RVec<float>& pt,
+                                                                 const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
+                                                                 const RVec<bool> &is_loose) {
         auto corrname_it = corrname_map_LF.find(year);
         if (corrname_it == corrname_map_LF.end()) {
             static std::unordered_set<std::string> warned_years;
@@ -361,12 +418,13 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             }
             return RVec<double>{1., 1., 1.};
         }
-        return calc_btag_sf(year, eta, pt, jetflavor, corrname_it->second, false);
+        return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, false);
     };
 
-    // return df.Define("weight_btagging_sf_HF", eval_HF, {"year", "GnTBJet_eta", "GnTBJet_pt", "GnTBJet_hadronFlavour"})
-            //  .Define("weight_btagging_sf_LF", eval_LF, {"year", "GnTBJet_eta", "GnTBJet_pt", "GnTBJet_hadronFlavour"});
-    return df;
+    return df.Define("weight_btagging_sf_HF", eval_HF,
+                     {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
+             .Define("weight_btagging_sf_LF", eval_LF,
+                     {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"});
 }
 
 /*
@@ -460,7 +518,7 @@ RNode applyDataWeights(RNode df_) {
     return applyGoldenJSONWeight(LumiMask, df_);
 }
 
-RNode applyMCWeights(RNode df_) {
+RNode applyMCWeights(RNode df_, const std::string &channel) {
     // Check for LHE branches (not present in all samples, e.g. QCD)
     auto colNames = df_.GetColumnNames();
     auto hasColumn = [&colNames](const std::string& name) {
@@ -478,7 +536,8 @@ RNode applyMCWeights(RNode df_) {
     df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
     df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
-    df = applyBTaggingScaleFactors(bTaggingScaleFactors, bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname,  df);
+    resetBTagDiagnostics();
+    df = applyBTaggingScaleFactors(bTaggingScaleFactors, bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);
 
     if (hasLHEPart) {
         df = applyEWKCorrections(cset_ewk, df);
@@ -507,8 +566,8 @@ RNode applyMCWeights(RNode df_) {
         "weight_electronid[0] * "
         "weight_electronreco[0] * "
         "weight_electrontrigger[0] * "
-        // "weight_btagging_sf_HF[0] * "
-        // "weight_btagging_sf_LF[0] * "
+        "weight_btagging_sf_HF[0] * "
+        "weight_btagging_sf_LF[0] * "
         "weight_ewk * "
         // "weight_l1prefiring[0] * "
         "weight_PSISR[0] * "

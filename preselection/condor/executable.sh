@@ -308,8 +308,10 @@ echo "=== Directory contents after analysis ==="
 ls -la
 ls -la $OUTPUTDIR/ 2>/dev/null || echo "Output directory not found"
 
-# Determine output file path (spanet_training uses a different output file name)
-if [[ "$EXTRA_FLAGS" == *"--spanet_training"* ]]; then
+# Determine output file path for the requested production mode.
+if [[ "$EXTRA_FLAGS" == *"--btag_eff"* ]]; then
+    OUTPUT_ROOT_FILE="$OUTPUTDIR/${OUTPUTFILE}_btag_eff.root"
+elif [[ "$EXTRA_FLAGS" == *"--spanet_training"* ]]; then
     OUTPUT_ROOT_FILE="$OUTPUTDIR/${OUTPUTFILE}_spanet_training_data.root"
 else
     OUTPUT_ROOT_FILE="$OUTPUTDIR/$OUTPUTFILE.root"
@@ -325,7 +327,18 @@ fi
 
 echo ""
 echo "=== Validating output ROOT file ==="
-validate_root_file "$OUTPUT_ROOT_FILE" "Events"
+if [[ "$EXTRA_FLAGS" == *"--btag_eff"* ]]; then
+    python3 - << EOF
+import sys
+import ROOT
+f = ROOT.TFile.Open("$OUTPUT_ROOT_FILE")
+if not f or f.IsZombie() or not f.Get("btag_b_den"):
+    sys.exit(1)
+f.Close()
+EOF
+else
+    validate_root_file "$OUTPUT_ROOT_FILE" "Events"
+fi
 if [ $? -ne 0 ]; then
     echo "ERROR: Output ROOT file validation failed"
     echo "Removing corrupted file: $OUTPUT_ROOT_FILE"

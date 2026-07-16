@@ -102,6 +102,7 @@ def main():
     parser.add_argument('--memory',                    help = 'Memory per job for slurm submission (default: 8gb)', default=None)
     parser.add_argument('--time',                      help = 'Time limit per job for slurm submission (default: 04:00:00)', default=None)
     parser.add_argument('--sample',                    help = 'Regex to filter which samples to submit (slurm/condor only)', default=None)
+    parser.add_argument('--btag-eff',                  help = 'Write raw selected-AK4 b-tag efficiency histograms (MC only)', action='store_true')
     args = parser.parse_args()
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
@@ -121,13 +122,15 @@ def main():
             merged_json_dict = merge_jsons(args.jsons)
         else:
             # If no input jsons specified, look them up based on analysis channel
-            # Assume we want signal, data, and bkg
+            # Normal production includes signal, background, and data.  The
+            # b-tag efficiency mode is MC-only, so do not create data jobs.
             run_base = f"etc/input_sample_jsons/run{args.run}"
             jsons = [
                 f"{run_base}/sig/all_events/",
                 f"{run_base}/bkg/{ANA_CHANNELS[chan_name]}",
-                f"{run_base}/data/{ANA_CHANNELS[chan_name]}",
             ]
+            if not args.btag_eff:
+                jsons.append(f"{run_base}/data/{ANA_CHANNELS[chan_name]}")
             merged_json_dict = merge_jsons(jsons)
 
         # Prepend the appropriate prefix to all files in the input json
@@ -155,14 +158,15 @@ def main():
 
         # Construct the bash run command
         hlt_flag = " --store_hlt" if args.store_hlt else ""
+        btag_eff_flag = " --btag-eff" if args.btag_eff else ""
         if args.mode == "local":
-            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}"
+            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}{' --btag_eff' if args.btag_eff else ''}"
             print(f"  -> Now running command \"{command}\"...\n")
             if not args.dry_run: os.system(command)
         elif args.mode == "condor":
             dry_run_flag = " --dry-run" if args.dry_run else ""
             ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
-            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{dry_run_flag}"
+            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{btag_eff_flag}{dry_run_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             os.system(command)
         elif args.mode == "slurm":
@@ -171,11 +175,10 @@ def main():
             time_flag = f" --time {args.time}" if args.time else ""
             ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
             sample_flag = f" --sample '{args.sample}'" if args.sample else ""
-            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
+            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{btag_eff_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             os.system(command)
 
         print("Done!")
 
 main()
-

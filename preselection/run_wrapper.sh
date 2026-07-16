@@ -9,7 +9,7 @@
 # The T2 path uses your lxplus username, which can differ from
 # the HPG login ($USER). Export CERN_USER in your shell or set
 # it on the line below; the expansion aborts the script if unset.
-CERN_USER="${CERN_USER:?please set CERN_USER=<your T2 username>}"
+CERN_USER="${CERN_USER:?spmondal}"
 PREFIX="/cmsuf/data/"
 OUT_DIR="/cmsuf/data/store/user/$CERN_USER/vbs_vvh_rdf"
 
@@ -51,11 +51,14 @@ echo "Batch mode: $MODE"
 CHANNELS=(0lep_1FJ 0lep_2FJ)
 #CHANNELS=(all)
 
-for RUN in 2 3; do
+# Run-3 MC-only b-tag efficiency production for every channel and sample:
+# python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff -c all -m "$MODE" -r 3 -f 1 --btag-eff
+
+for RUN in 2; do
     RUN_BASE="etc/input_sample_jsons/run${RUN}"
 
     # Signal (three variants under the all_events pass-through channel)
-     python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
+    #  python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
 
     # Sig + bkg + data per channel
     python3 run_rdf.py -p $PREFIX -o $OUT_DIR -n r${RUN} -c "${CHANNELS[@]}" -m $MODE -r $RUN -f 1

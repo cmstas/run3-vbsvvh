@@ -1,0 +1,19 @@
+#ifndef BTAG_EFFICIENCIES_H
+#define BTAG_EFFICIENCIES_H
+
+#pragma once
+
+#include <string>
+
+#include "ROOT/RDataFrame.hxx"
+
+using RNode = ROOT::RDF::RNode;
+
+// Write unweighted, selected-AK4-jet counts for the b-tag efficiency workflow.
+// The converter combines job outputs before calculating efficiencies.
+void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
+                                  const std::string &output_name,
+                                  const std::string &channel,
+                                  int nslots);
+
+#endif
