@@ -185,7 +185,7 @@ Examples:
                         help="Run SPANet inference (--spanet_infer flag)")
     parser.add_argument("--btag-eff", action="store_true",
                         help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
-    parser.add_argument("--store-hlt", action="store_true",
+    parser.add_argument("--store-hlt", "--store_hlt", dest="store_hlt", action="store_true",
                         help="Store HLT trigger branches in output (--store_hlt flag)")
     parser.add_argument("--skip-btag-sf", action="store_true",
                         help="Skip b-tag SF application (normally enabled)")

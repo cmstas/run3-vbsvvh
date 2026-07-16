@@ -16,6 +16,8 @@ def jet_weight(sf_tight, sf_loose, eff_tight, eff_loose, is_tight, is_loose):
         return 1.0
     q_tight = sf_tight * eff_tight
     q_loose = sf_loose * eff_loose
+    if not (0.0 <= q_tight <= q_loose <= 1.0):
+        return 1.0
     if is_tight:
         return sf_tight
     if is_loose:
@@ -53,6 +55,10 @@ def main():
     close(jet_weight(0.9, 1.1, 0.7, 0.7, False, True), 1.0)  # tiny LT denominator
     close(jet_weight(0.9, 1.1, 0.4, 1.0, False, False), 1.0)  # tiny N denominator
     close(jet_weight(0.9, 1.1, 0.8, 0.7, False, True), 1.0)  # invalid nesting
+
+    # Invalid scaled probabilities must be rejected for every observed category.
+    for is_tight, is_loose in ((True, True), (False, True), (False, False)):
+        close(jet_weight(1.3, 1.2, 0.8, 0.9, is_tight, is_loose), 1.0)
 
     # Event factors are products of observed per-jet categories.
     event = (jet_weight(sf_tight, sf_loose, eff_tight, eff_loose, True, True) *

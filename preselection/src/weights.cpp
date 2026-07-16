@@ -326,6 +326,9 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                 return unityForInvalidBTagWeight(g_btag_invalid_probability);
             const double q_tight = sf_tight * eff_tight;
             const double q_loose = sf_loose * eff_loose;
+            if (!std::isfinite(q_tight) || !std::isfinite(q_loose) ||
+                !(0. <= q_tight && q_tight <= q_loose && q_loose <= 1.))
+                return unityForInvalidBTagWeight(g_btag_invalid_probability);
             if (tight) return sf_tight;
             if (loose) {
                 const double denominator = eff_loose - eff_tight;

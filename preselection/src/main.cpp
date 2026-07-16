@@ -15,6 +15,7 @@
 #include "spanet_run2.h"
 #include "btag_efficiencies.h"
 
+#include <optional>
 
 
 struct MyArgs : public argparse::Args {
@@ -100,6 +101,22 @@ int main(int argc, char** argv) {
     
     if (args.run_number != "2" && args.run_number != "3") {
         throw std::runtime_error("Invalid run_number: must be 2 or 3");
+    }
+
+    // UParTAK4 has no matching fixed-WP calibration for the NanoAODv12
+    // 2022/2023 eras.  Do not derive efficiencies from the unrelated 2024
+    // thresholds used by the legacy selection configuration.
+    std::optional<BTagEfficiencyMetadata> btag_efficiency_metadata;
+    if (args.makeBTagEfficiencies) {
+        btag_efficiency_metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
+        const auto &year = btag_efficiency_metadata->year;
+        if (year == "2022Re-recoBCD" || year == "2022Re-recoE+PromptFG" ||
+            year == "2023PromptC" || year == "2023PromptD") {
+            throw std::runtime_error(
+                "--btag_eff is not supported for " + year +
+                ": UParTAK4 fixed-WP thresholds/SFs are unavailable for NanoAODv12. "
+                "Use a supported tagger with a matched implementation, or run 2024/2025 production.");
+        }
     }
     std::cout << " -> Running analysis for Run " << args.run_number << std::endl;
     
@@ -198,10 +215,9 @@ int main(int argc, char** argv) {
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
         if (args.makeBTagEfficiencies) {
             const int nslots = args.nthread > 1 ? args.nthread : 1;
-            const auto metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
             std::cout << " -> Saving raw b-tag efficiency histograms" << std::endl;
             saveBTagEfficiencyHistograms(df, output_dir, output_file, args.ana,
-                                         metadata.year, metadata.sample, nslots);
+                                         btag_efficiency_metadata->year, btag_efficiency_metadata->sample, nslots);
             return 0;
         }
         if (args.skipBTagScaleFactors)

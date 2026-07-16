@@ -71,10 +71,15 @@ def apply_prefix(in_dict,prefix):
 
 # Do a check of the merged json to make sure it does not have more than one kind (if we're in local mode)
 # This is because the runAnalysis assumes all inputs are of the same kind
-def check_inputs(merged_json_dict,mode):
+def check_inputs(merged_json_dict, mode, btag_eff=False):
     if len(merged_json_dict["samples"]) == 0:
         raise Exception("Error, no samples specified")
     if mode == "local":
+        if btag_eff and len(merged_json_dict["samples"]) != 1:
+            raise Exception(
+                "Local --btag-eff requires exactly one MC sample in the input JSON. "
+                "Use a single-sample JSON, or submit with Condor/Slurm, which splits samples per job."
+            )
         kind_lst = []
         for ds in merged_json_dict["samples"].keys():
             kind_lst.append(merged_json_dict["samples"][ds]["metadata"]["kind"])
@@ -141,6 +146,9 @@ def main():
         if args.prefix is not None:
             apply_prefix(merged_json_dict,args.prefix)
 
+        # Validate before creating output artifacts or invoking a backend.
+        check_inputs(merged_json_dict, args.mode, args.btag_eff)
+
         # Construct the output name, given the channel and output tag
         outname = f"{chan_name}_{args.outname}"
 
@@ -151,9 +159,6 @@ def main():
         print(f"  -> Writing merged file \"{merged_json_name}\"")
         with open(merged_json_name, 'w') as outfile:
             json.dump(merged_json_dict, outfile, indent=4)
-
-        # Make sure we are not passing more than one kind to RDF for one runAnalysis
-        check_inputs(merged_json_dict,args.mode)
 
         # Make an output directory out of outpath/outname
         outdir = os.path.join(args.outpath,outname)
@@ -168,13 +173,14 @@ def main():
         if args.mode == "local":
             command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}{' --btag_eff' if args.btag_eff else ''}{' --skip-btag-sf' if args.skip_btag_sf else ''}"
             print(f"  -> Now running command \"{command}\"...\n")
-            if not args.dry_run: os.system(command)
+            if not args.dry_run:
+                subprocess.run(command, shell=True, check=True)
         elif args.mode == "condor":
             dry_run_flag = " --dry-run" if args.dry_run else ""
             ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
             command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{sample_flag}{dry_run_flag}"
             print(f"  -> Running command \"{command}\"...\n")
-            os.system(command)
+            subprocess.run(command, shell=True, check=True)
         elif args.mode == "slurm":
             dry_run_flag = " --dry-run" if args.dry_run else ""
             memory_flag = f" --memory {args.memory}" if args.memory else ""
@@ -182,7 +188,7 @@ def main():
             ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
             command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
             print(f"  -> Running command \"{command}\"...\n")
-            os.system(command)
+            subprocess.run(command, shell=True, check=True)
 
         print("Done!")
 

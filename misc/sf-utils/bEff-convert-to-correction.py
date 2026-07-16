@@ -94,7 +94,11 @@ def validate_counts(counts):
         loose = counts[(flavor, "L")]
         loose_not_tight = counts[(flavor, "LT")]
         untagged = counts[(flavor, "N")]
-        identity_tolerance = 1e-10 * np.maximum(1.0, np.maximum(np.abs(denominator), np.abs(loose)))
+        identity_scale = np.maximum.reduce([
+            np.ones_like(denominator), np.abs(denominator), np.abs(tight),
+            np.abs(loose), np.abs(loose_not_tight), np.abs(untagged),
+        ])
+        identity_tolerance = 1e-10 * identity_scale
         if np.any(np.abs(loose - (tight + loose_not_tight)) > identity_tolerance):
             raise ValueError(f"L != T + LT for flavor {flavor}")
         if np.any(np.abs(denominator - (tight + loose_not_tight + untagged)) > identity_tolerance):
@@ -103,9 +107,7 @@ def validate_counts(counts):
         # Signed generator weights can make a small MC bin statistically
         # pathological.  Do not silently turn it into an unweighted result:
         # reject it so the bin can be merged or supplied with more MC.
-        scale = max(1.0, *(float(np.max(np.abs(x))) for x in
-                           (denominator, tight, loose, loose_not_tight, untagged)))
-        tolerance = 1e-10 * scale
+        tolerance = 1e-10 * identity_scale
         nonempty = np.abs(denominator) > tolerance
         invalid = ((nonempty & ((denominator <= 0) | (tight < -tolerance) |
                                 (loose < -tolerance) | (tight > loose + tolerance) |
