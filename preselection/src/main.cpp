@@ -34,6 +34,7 @@ struct MyArgs : public argparse::Args {
     bool &storeHLT = flag("store_hlt", "Store HLT trigger branches in output").set_default(false);
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
     bool &makeBTagEfficiencies = flag("btag_eff", "Write selected-AK4 b-tag efficiency histograms (MC only)").set_default(false);
+    bool &skipBTagScaleFactors = flag("skip_btag_sf,skip-btag-sf", "Skip b-tag SF application (normally enabled)").set_default(false);
 };
 
 RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference *spanet_inference, SPANetRun2::SPANetInference *spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
@@ -197,11 +198,17 @@ int main(int argc, char** argv) {
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
         if (args.makeBTagEfficiencies) {
             const int nslots = args.nthread > 1 ? args.nthread : 1;
+            const auto metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
             std::cout << " -> Saving raw b-tag efficiency histograms" << std::endl;
-            saveBTagEfficiencyHistograms(df, output_dir, output_file, args.ana, nslots);
+            saveBTagEfficiencyHistograms(df, output_dir, output_file, args.ana,
+                                         metadata.year, metadata.sample, nslots);
             return 0;
         }
-        df = applyMCWeights(df, args.ana);
+        if (args.skipBTagScaleFactors)
+            std::cout << " -> B-tag SF application disabled by --skip-btag-sf" << std::endl;
+        else
+            std::cout << " -> Applying b-tag SFs" << std::endl;
+        df = applyMCWeights(df, args.ana, !args.skipBTagScaleFactors);
     }
 
     Cutflow::Add(df, "After SFs and corrections");

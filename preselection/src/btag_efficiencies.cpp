@@ -84,6 +84,8 @@ struct HistogramSet {
 void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
                                   const std::string &output_name,
                                   const std::string &channel,
+                                  const std::string &year,
+                                  const std::string &sample,
                                   int nslots) {
     if (nslots < 1) nslots = 1;
 
@@ -120,6 +122,8 @@ void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
         throw std::runtime_error("Could not create b-tag efficiency output: " + path);
 
     TNamed("btag_eff_channel", channel.c_str()).Write();
+    TNamed("btag_eff_year", year.c_str()).Write();
+    TNamed("btag_eff_sample", sample.c_str()).Write();
     TNamed("btag_eff_format", "signed baseweight selected-jet yields; efficiencies must be calculated after merging").Write();
     merged.write();
     output.Close();

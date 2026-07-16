@@ -46,7 +46,7 @@ def histogram_values_in_application_range(hist, path, hist_name):
     return central, pt_edges[1:-1], eta_edges[1:-1]
 
 
-def read_merged_histograms(paths):
+def read_merged_histograms(paths, expected_year, expected_channel, expected_sample):
     """Return signed nominal-weight sums and common pT/eta edges for all flavors."""
     merged = {}
     edges = None
@@ -59,6 +59,17 @@ def read_merged_histograms(paths):
                 raise ValueError(
                     f"{path} contains obsolete unweighted b-tag histograms; regenerate it with the current --btag_eff workflow"
                 )
+            expected_metadata = {
+                "btag_eff_year": expected_year,
+                "btag_eff_channel": expected_channel,
+                "btag_eff_sample": expected_sample,
+            }
+            for key, expected_value in expected_metadata.items():
+                if key not in root_file:
+                    raise ValueError(f"{path} has no {key} metadata")
+                actual_value = root_file[key].member("fTitle")
+                if actual_value != expected_value:
+                    raise ValueError(f"{path} has {key}={actual_value!r}, expected {expected_value!r}")
             for flavor in FLAVORS:
                 for state in ("den", *WORKING_POINTS):
                     hist_name = f"btag_{flavor}_{state}"
@@ -83,9 +94,10 @@ def validate_counts(counts):
         loose = counts[(flavor, "L")]
         loose_not_tight = counts[(flavor, "LT")]
         untagged = counts[(flavor, "N")]
-        if not np.allclose(loose, tight + loose_not_tight, rtol=0, atol=1e-9):
+        identity_tolerance = 1e-10 * np.maximum(1.0, np.maximum(np.abs(denominator), np.abs(loose)))
+        if np.any(np.abs(loose - (tight + loose_not_tight)) > identity_tolerance):
             raise ValueError(f"L != T + LT for flavor {flavor}")
-        if not np.allclose(denominator, tight + loose_not_tight + untagged, rtol=0, atol=1e-9):
+        if np.any(np.abs(denominator - (tight + loose_not_tight + untagged)) > identity_tolerance):
             raise ValueError(f"denominator != T + LT + N for flavor {flavor}")
 
         # Signed generator weights can make a small MC bin statistically
@@ -188,7 +200,7 @@ def update_output(path, correction_name, sample_entry):
 
 def main():
     args = parse_args()
-    counts, edges = read_merged_histograms(args.input)
+    counts, edges = read_merged_histograms(args.input, args.year, args.channel, args.sample)
     validate_counts(counts)
     update_output(args.output, f"btag_{args.year}_{args.channel}",
                   sample_category(args.sample, counts, edges))

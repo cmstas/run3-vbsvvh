@@ -226,6 +226,6 @@ RNode applyLHEScaleWeight_muR(RNode df);
 RNode applyLHEWeights_pdf(RNode df);
 
 RNode applyDataWeights(RNode df);
-RNode applyMCWeights(RNode df, const std::string &channel);
+RNode applyMCWeights(RNode df, const std::string &channel, bool apply_btag_sf);
 
 #endif //WEIGHTS

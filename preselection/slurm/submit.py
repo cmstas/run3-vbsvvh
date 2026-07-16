@@ -146,6 +146,8 @@ Examples:
                         help="Store HLT trigger branches in output")
     parser.add_argument("--btag-eff", action="store_true",
                         help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
+    parser.add_argument("--skip-btag-sf", action="store_true",
+                        help="Skip b-tag SF application (normally enabled)")
     return parser.parse_args()
 
 
@@ -214,6 +216,8 @@ def generate_slurm_script(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --store_hlt"
     if args.btag_eff:
         extra_flags += " --btag_eff"
+    if args.skip_btag_sf:
+        extra_flags += " --skip-btag-sf"
 
     # Arguments for executable.sh:
     # TASK_DIR N_CPUS CONFIG_PATH OUTPUT_DIR ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]
@@ -265,6 +269,8 @@ def generate_array_sbatch(task_dir: Path, job_entries: List[dict],
         extra_flags += " --store_hlt"
     if args.btag_eff:
         extra_flags += " --btag_eff"
+    if args.skip_btag_sf:
+        extra_flags += " --skip-btag-sf"
 
     script_path = task_dir / "array.sbatch"
     script_content = f"""#!/bin/bash

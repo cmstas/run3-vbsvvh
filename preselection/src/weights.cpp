@@ -290,7 +290,7 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                                const RVec<unsigned char> &jetflavor, const RVec<bool> &is_tight,
                                                const RVec<bool> &is_loose, const std::string &correction_name,
                                                bool is_heavy_flavor) {
-        RVec<double> btag_sf_weights = {1., 1., 1.};
+        RVec<double> btag_sf_weights = {1., 1., 1., 1., 1.};
         if (eta.empty()) return btag_sf_weights;
         if (eta.size() != pt.size() || eta.size() != jetflavor.size() ||
             eta.size() != is_tight.size() || eta.size() != is_loose.size())
@@ -302,11 +302,19 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             throw std::runtime_error("B-tag SF or efficiency correction set is unavailable for year " + year);
 
         const std::string efficiency_name = "btag_" + year + "_" + channel;
+        const std::string legacy_efficiency_name = "btag_" + year;
+        bool use_legacy_efficiency = false;
+        decltype(cset_eff_it->second.at(efficiency_name)) efficiency;
         try {
-            (void)cset_eff_it->second.at(efficiency_name);
+            efficiency = cset_eff_it->second.at(efficiency_name);
         } catch (const std::exception &) {
-            throw std::runtime_error("B-tag efficiency map " + efficiency_name +
-                                     " is unavailable; run --btag_eff and convert the matching MC sample first");
+            try {
+                efficiency = cset_eff_it->second.at(legacy_efficiency_name);
+                use_legacy_efficiency = true;
+            } catch (const std::exception &) {
+                throw std::runtime_error("B-tag efficiency map " + efficiency_name +
+                                         " is unavailable; run --btag_eff and convert the matching MC sample first");
+            }
         }
 
         const auto &sf_correction = cset_it->second.at(correction_name);
@@ -358,9 +366,13 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             double eff_tight = 0.;
             double eff_loose = 0.;
             try {
-                const auto efficiency = cset_eff_it->second.at(efficiency_name);
-                eff_tight = efficiency->evaluate({sample, flavor_label, "T", pt[i], eta[i]});
-                eff_loose = efficiency->evaluate({sample, flavor_label, "L", pt[i], eta[i]});
+                if (use_legacy_efficiency) {
+                    eff_tight = efficiency->evaluate({flavor_label, "T", pt[i], eta[i]});
+                    eff_loose = efficiency->evaluate({flavor_label, "L", pt[i], eta[i]});
+                } else {
+                    eff_tight = efficiency->evaluate({sample, flavor_label, "T", pt[i], eta[i]});
+                    eff_loose = efficiency->evaluate({sample, flavor_label, "L", pt[i], eta[i]});
+                }
             } catch (const std::exception &) {
                 throw std::runtime_error("B-tag efficiency entries are unavailable for " +
                                          year + ":" + channel + ":" + sample);
@@ -375,6 +387,10 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             btag_sf_weights[1] *= jet_weight(evaluate_sf("up_uncorrelated", "T"), evaluate_sf("up_uncorrelated", "L"),
                                               eff_tight, eff_loose, is_tight[i], is_loose[i]);
             btag_sf_weights[2] *= jet_weight(evaluate_sf("down_uncorrelated", "T"), evaluate_sf("down_uncorrelated", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
+            btag_sf_weights[3] *= jet_weight(evaluate_sf("up_correlated", "T"), evaluate_sf("up_correlated", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
+            btag_sf_weights[4] *= jet_weight(evaluate_sf("down_correlated", "T"), evaluate_sf("down_correlated", "L"),
                                               eff_tight, eff_loose, is_tight[i], is_loose[i]);
         }
         return btag_sf_weights;
@@ -400,10 +416,23 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
         return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, false);
     };
 
-    return df.Define("weight_btagging_sf_HF", eval_HF,
+    auto select_uncorrelated = [] (const RVec<double> &weights) {
+        return RVec<double>{weights[0], weights[1], weights[2]};
+    };
+    auto select_correlated = [] (const RVec<double> &weights) {
+        return RVec<double>{weights[0], weights[3], weights[4]};
+    };
+    return df.Define("btagging_sf_HF_all", eval_HF,
                      {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
-             .Define("weight_btagging_sf_LF", eval_LF,
-                     {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"});
+             .Define("btagging_sf_LF_all", eval_LF,
+                     {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
+             .Define("weight_btagging_sf_HF_uncorrelated", select_uncorrelated, {"btagging_sf_HF_all"})
+             .Define("weight_btagging_sf_HF_correlated", select_correlated, {"btagging_sf_HF_all"})
+             .Define("weight_btagging_sf_LF_uncorrelated", select_uncorrelated, {"btagging_sf_LF_all"})
+             .Define("weight_btagging_sf_LF_correlated", select_correlated, {"btagging_sf_LF_all"})
+             // Keep the historical names as aliases for the uncorrelated variation.
+             .Define("weight_btagging_sf_HF", select_uncorrelated, {"btagging_sf_HF_all"})
+             .Define("weight_btagging_sf_LF", select_uncorrelated, {"btagging_sf_LF_all"});
 }
 
 /*
@@ -497,7 +526,7 @@ RNode applyDataWeights(RNode df_) {
     return applyGoldenJSONWeight(LumiMask, df_);
 }
 
-RNode applyMCWeights(RNode df_, const std::string &channel) {
+RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf) {
     // Check for LHE branches (not present in all samples, e.g. QCD)
     auto colNames = df_.GetColumnNames();
     auto hasColumn = [&colNames](const std::string& name) {
@@ -515,10 +544,20 @@ RNode applyMCWeights(RNode df_, const std::string &channel) {
     df = applyElectronRecoScaleFactors(electronScaleFactors, electronScaleFactors_yearmap, df);
     df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
 
-    auto btag_corrections = bTaggingScaleFactors;
-    btag_corrections.emplace("eff", loadBTagEfficiencyCorrectionSet());
-    resetBTagDiagnostics();
-    df = applyBTaggingScaleFactors(std::move(btag_corrections), bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);
+    if (apply_btag_sf) {
+        auto btag_corrections = bTaggingScaleFactors;
+        btag_corrections.emplace("eff", loadBTagEfficiencyCorrectionSet());
+        resetBTagDiagnostics();
+        df = applyBTaggingScaleFactors(std::move(btag_corrections), bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);
+    } else {
+        auto unit_btag_weight = [] () { return RVec<double>{1., 1., 1.}; };
+        df = df.Define("weight_btagging_sf_HF", unit_btag_weight)
+               .Define("weight_btagging_sf_LF", unit_btag_weight)
+               .Define("weight_btagging_sf_HF_uncorrelated", unit_btag_weight)
+               .Define("weight_btagging_sf_HF_correlated", unit_btag_weight)
+               .Define("weight_btagging_sf_LF_uncorrelated", unit_btag_weight)
+               .Define("weight_btagging_sf_LF_correlated", unit_btag_weight);
+    }
 
     if (hasLHEPart) {
         df = applyEWKCorrections(cset_ewk, df);

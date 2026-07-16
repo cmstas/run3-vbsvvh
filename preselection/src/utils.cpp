@@ -49,6 +49,16 @@ std::string getCategoryFromConfig(const std::string& config_path) {
     return "";
 }
 
+BTagEfficiencyMetadata getSingleSampleBTagEfficiencyMetadata(const std::string& config_path) {
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(config_path, pt);
+    const auto &samples = pt.get_child("samples");
+    if (samples.size() != 1)
+        throw std::runtime_error("--btag_eff requires a config containing exactly one MC sample");
+    const auto &sample = *samples.begin();
+    return {sample.first, sample.second.get<std::string>("metadata.year")};
+}
+
 RNode removeDuplicates(RNode df){
     return df.Filter(FilterOnePerKind(), {"run", "luminosityBlock", "event"}, "REMOVED DUPLICATES");
 }

@@ -15,6 +15,8 @@ using RNode = ROOT::RDF::RNode;
 void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
                                   const std::string &output_name,
                                   const std::string &channel,
+                                  const std::string &year,
+                                  const std::string &sample,
                                   int nslots);
 
 #endif
