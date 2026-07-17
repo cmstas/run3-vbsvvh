@@ -172,8 +172,7 @@ void printBTagDiagnostics(std::ostream &out) {
 }
 
 correction::CorrectionSet loadBTagEfficiencyCorrectionSet(const std::string &year) {
-    const std::string file_year = (year == "2024Prompt") ? "Prompt2024" : year;
-    const std::string path = "corrections/scalefactors/btagging/btag_eff_" + file_year + ".json";
+    const std::string path = "corrections/scalefactors/btagging/btag_eff_" + year + ".json";
     return *CorrectionSet::from_file(path);
 }
 
@@ -438,8 +437,7 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             throw std::runtime_error("B-tag input collections have inconsistent sizes");
 
         const auto cset_it = cset_btag.find(year);
-        const std::string efficiency_file_year = (year == "2024Prompt") ? "Prompt2024" : year;
-        const auto cset_eff_it = cset_btag.find("eff_" + efficiency_file_year);
+        const auto cset_eff_it = cset_btag.find("eff_" + year);
         if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end())
             throw std::runtime_error("B-tag SF or efficiency correction set is unavailable for year " + year);
 
@@ -725,10 +723,9 @@ RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf) 
         for (const auto &year : {"2016preVFP", "2016postVFP", "2017", "2018",
                                  "2022Re-recoBCD", "2022Re-recoE+PromptFG",
                                  "2023PromptC", "2023PromptD", "2024Prompt", "2025"}) {
-            const std::string file_year = (std::string(year) == "2024Prompt") ? "Prompt2024" : year;
-            const std::string path = "corrections/scalefactors/btagging/btag_eff_" + file_year + ".json";
+            const std::string path = "corrections/scalefactors/btagging/btag_eff_" + std::string(year) + ".json";
             if (std::filesystem::exists(path))
-                btag_corrections.emplace("eff_" + file_year, loadBTagEfficiencyCorrectionSet(year));
+                btag_corrections.emplace("eff_" + std::string(year), loadBTagEfficiencyCorrectionSet(year));
         }
         resetBTagDiagnostics();
         df = applyBTaggingScaleFactors(std::move(btag_corrections), bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);

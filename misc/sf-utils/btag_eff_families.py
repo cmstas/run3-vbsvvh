@@ -144,14 +144,6 @@ def excluded_source_channels(config=None):
     config = load_config() if config is None else config
     return tuple(config["excluded_source_channels"])
 
-
 def final_runtime_keys(year, channel, sample, config=None):
     """The strict new-schema keys required by the C++ runtime lookup."""
     return f"btag_{year}_{final_channel(channel, config)}", final_sample_family(sample, config)
-
-
-def efficiency_file_token(year):
-    """Return the stable filename/diagnostic token for a metadata year."""
-    # Keep the established human-facing Run-3 spelling while the ROOT
-    # metadata and correction names retain the framework spelling 2024Prompt.
-    return "Prompt2024" if year == "2024Prompt" else year

@@ -12,7 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import mplhep as hep
 import numpy as np
 
-from btag_eff_families import efficiency_file_token, load_config, sample_family
+from btag_eff_families import load_config, sample_family
 
 
 EXCLUSIVE_CATEGORIES = ("T", "LT", "N")
@@ -252,7 +252,7 @@ def main():
     if args.plot_dir is None:
         args.plot_dir = (Path(__file__).parents[2] / "preselection" / "corrections" /
                           "scalefactors" / "btagging" / "diagnostics" /
-                          f"diagnostic_{efficiency_file_token(args.year)}_{args.channel}")
+                          f"diagnostic_{args.year}_{args.channel}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     _, counts, variances, _, families, completeness = collect_samples(
         conv, args.input_dir, args.year, args.channel, args.job_manifest, load_config())

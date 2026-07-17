@@ -16,7 +16,7 @@ import uproot
 import correctionlib.schemav2 as cs
 
 from btag_eff_families import (excluded_source_channels, final_channel,
-                               efficiency_file_token, final_group, load_config,
+                               final_group, load_config,
                                retained_source_channels, sample_family)
 
 
@@ -52,7 +52,7 @@ def parse_args():
 def default_output_path(year, preliminary=False, channel=None):
     directory = (Path(__file__).parents[2] / "preselection" / "corrections" /
                  "scalefactors" / "btagging")
-    token = efficiency_file_token(year)
+    token = year
     if preliminary and channel:
         return directory / f"btag_eff_{token}_{channel}_prelim.json"
     return directory / f"btag_eff_{token}{'_prelim' if preliminary else ''}.json"
@@ -508,6 +508,9 @@ def main():
     args = parse_args()
     if args.output is None:
         args.output = default_output_path(args.year, preliminary=not args.final, channel=args.channel)
+    expected_final_name = f"btag_eff_{args.year}.json"
+    if args.final and args.output.name != expected_final_name:
+        raise ValueError(f"Final output must be named {expected_final_name}; year-scoped payloads are required")
     if args.final:
         if not args.input_root:
             raise ValueError("--final requires --input-root")
@@ -529,7 +532,7 @@ def main():
         update_output(args.output, specs, replace_entries=True,
                       replace_correction_prefix=f"btag_{args.year}_")
         manifest = args.manifest or args.output.with_name(
-            f"btag_eff_{efficiency_file_token(args.year)}_final_families.json")
+            f"btag_eff_{args.year}_final_families.json")
         manifest.write_text(json.dumps({
             "mode": "final", "year": args.year, "input_root": str(args.input_root),
             "retained_source_channels": list(retained_source_channels(config)),
@@ -552,7 +555,7 @@ def main():
         specs, fallbacks = grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, members)
         update_output(args.output, specs, replace_entries=True)
         manifest = args.manifest or args.output.with_name(
-            f"btag_eff_{efficiency_file_token(args.year)}_{args.channel}_families.json")
+            f"btag_eff_{args.year}_{args.channel}_families.json")
         manifest.write_text(json.dumps({
             "year": args.year, "channel": args.channel,
             "mode": "preliminary",

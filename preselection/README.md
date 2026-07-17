@@ -108,7 +108,7 @@ INPUT_ROOT="$OUT_DIR"
 
 # 2. Produce preliminary payloads, once per retained channel.  The ROOT dump
 #    directory and metadata year are explicit; the output name is automatic:
-#    corrections/scalefactors/btagging/btag_eff_Prompt2024_1lep_1FJ_prelim.json
+#    corrections/scalefactors/btagging/btag_eff_2024Prompt_1lep_1FJ_prelim.json
 python3 ../misc/sf-utils/bEff-convert-to-correction.py \
   --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
   --year 2024Prompt --channel 1lep_1FJ
@@ -120,10 +120,10 @@ python3 ../misc/sf-utils/plot-btag-eff-families.py \
   --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
   --year 2024Prompt --channel 1lep_1FJ
 # Manually update final_merges in btag_eff_families.yaml after this review.
-# defaults to diagnostics/diagnostic_Prompt2024_prelim_all_channels_families
+# defaults to diagnostics/diagnostic_2024Prompt_prelim_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
   --mode families --input-root "$INPUT_ROOT" --year 2024Prompt
-# defaults to diagnostics/diagnostic_Prompt2024_prelim_all_samples_channels
+# defaults to diagnostics/diagnostic_2024Prompt_prelim_all_samples_channels
 python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
   --mode channels --input-root "$INPUT_ROOT" --year 2024Prompt
 
@@ -134,13 +134,13 @@ python3 ../misc/sf-utils/bEff-convert-to-correction.py --final --year 2024Prompt
   --input-root "$INPUT_ROOT"
 
 # 5. Recheck the two money plots after applying final sample/channel merges.
-# defaults to diagnostics/diagnostic_Prompt2024_final_all_channels_families
+# defaults to diagnostics/diagnostic_2024Prompt_final_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
   --mode families --input-root "$INPUT_ROOT"
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
   --mode channels --input-root "$INPUT_ROOT"
 
-# The final conversion writes btag_eff_Prompt2024.json.  The analysis selects
+# The final conversion writes btag_eff_2024Prompt.json.  The analysis selects
 # this file from each sample's metadata year; keep the year suffix.
 ```
 
