@@ -12,7 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import mplhep as hep
 import numpy as np
 
-from btag_eff_families import load_config, sample_family
+from btag_eff_families import efficiency_file_token, load_config, sample_family
 
 
 EXCLUSIVE_CATEGORIES = ("T", "LT", "N")
@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument("--year", required=True)
     parser.add_argument("--channel", required=True)
     parser.add_argument("--plot-dir", type=Path,
-                        help="Persistent diagnostics directory (defaults beside btag_eff.json)")
+                        help="Persistent diagnostics directory (defaults to diagnostic_<year>)")
     parser.add_argument("--lumi", type=float, help="Integrated luminosity in fb^-1")
     parser.add_argument("--sources", nargs="+", help="Only write detail PDFs for these source families")
     parser.add_argument("--skip-matrices", action="store_true")
@@ -252,7 +252,7 @@ def main():
     if args.plot_dir is None:
         args.plot_dir = (Path(__file__).parents[2] / "preselection" / "corrections" /
                           "scalefactors" / "btagging" / "diagnostics" /
-                          f"{args.year}_{args.channel}")
+                          f"diagnostic_{efficiency_file_token(args.year)}_{args.channel}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     _, counts, variances, _, families, completeness = collect_samples(
         conv, args.input_dir, args.year, args.channel, args.job_manifest, load_config())

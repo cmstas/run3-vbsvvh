@@ -8,7 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import mplhep as hep
 
-from btag_eff_families import load_config
+from btag_eff_families import efficiency_file_token, load_config
 
 
 def load_module(filename, name):
@@ -73,7 +73,8 @@ def main():
         stage = "final" if args.final else "prelim"
         suffix = f"{stage}_all_channels_families" if args.mode == "families" else f"{stage}_all_samples_channels"
         args.plot_dir = (Path(__file__).parents[2] / "preselection" / "corrections" /
-                         "scalefactors" / "btagging" / "diagnostics" / f"{args.year}_{suffix}")
+                         "scalefactors" / "btagging" / "diagnostics" /
+                         f"diagnostic_{efficiency_file_token(args.year)}_{suffix}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     args.channel = "all channels" if args.mode == "families" else "all samples"
     args.input_completeness_verified = bool(completeness)

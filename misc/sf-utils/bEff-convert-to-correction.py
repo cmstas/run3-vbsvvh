@@ -16,8 +16,8 @@ import uproot
 import correctionlib.schemav2 as cs
 
 from btag_eff_families import (excluded_source_channels, final_channel,
-                               final_group, load_config, retained_source_channels,
-                               sample_family)
+                               efficiency_file_token, final_group, load_config,
+                               retained_source_channels, sample_family)
 
 
 FLAVORS = ("b", "c", "light")
@@ -38,8 +38,8 @@ def parse_args():
     parser.add_argument("--year", required=True, help="Metadata year, e.g. 2024Prompt")
     parser.add_argument("--channel", help="Preliminary conversion channel, e.g. 0lep_0FJ")
     parser.add_argument("--sample", help="Exact RDataFrame sample name from the input JSON (exact-sample mode)")
-    parser.add_argument("--output", required=True, type=Path,
-                        help="CorrectionSet JSON to create or update")
+    parser.add_argument("--output", type=Path,
+                        help="Optional output path (defaults to btag_eff_<year>.json)")
     parser.add_argument("--manifest", type=Path,
                         help="Family membership manifest (defaults beside --output in family mode)")
     parser.add_argument("--job-manifest", type=Path,
@@ -47,6 +47,15 @@ def parse_args():
     parser.add_argument("--final", action="store_true",
                         help="Build final grouped efficiencies from every retained YAML channel under --input-root")
     return parser.parse_args()
+
+
+def default_output_path(year, preliminary=False, channel=None):
+    directory = (Path(__file__).parents[2] / "preselection" / "corrections" /
+                 "scalefactors" / "btagging")
+    token = efficiency_file_token(year)
+    if preliminary and channel:
+        return directory / f"btag_eff_{token}_{channel}_prelim.json"
+    return directory / f"btag_eff_{token}{'_prelim' if preliminary else ''}.json"
 
 
 def fold_pt_flow(values, path, hist_name):
@@ -497,6 +506,8 @@ def discover_final_histograms(input_root, year, config=None):
 
 def main():
     args = parse_args()
+    if args.output is None:
+        args.output = default_output_path(args.year, preliminary=not args.final, channel=args.channel)
     if args.final:
         if not args.input_root:
             raise ValueError("--final requires --input-root")
@@ -517,7 +528,8 @@ def main():
             fallbacks[channel] = channel_fallbacks
         update_output(args.output, specs, replace_entries=True,
                       replace_correction_prefix=f"btag_{args.year}_")
-        manifest = args.manifest or args.output.with_name(f"btag_eff_{args.year}_final_families.json")
+        manifest = args.manifest or args.output.with_name(
+            f"btag_eff_{efficiency_file_token(args.year)}_final_families.json")
         manifest.write_text(json.dumps({
             "mode": "final", "year": args.year, "input_root": str(args.input_root),
             "retained_source_channels": list(retained_source_channels(config)),
@@ -532,7 +544,7 @@ def main():
     if not args.channel:
         raise ValueError("--channel is required unless --final is used")
     if "_prelim" not in args.output.stem:
-        raise ValueError("Preliminary conversion output must be named *_prelim.json; reserve btag_eff.json for --final")
+        raise ValueError("Preliminary conversion output must be named *_prelim.json; reserve btag_eff_<year>.json for --final")
     prefix = f"btag_{args.year}_{args.channel}"
     if args.input_dir:
         grouped_counts, grouped_variances, grouped_edges, members, completeness = discover_family_histograms(
@@ -540,7 +552,7 @@ def main():
         specs, fallbacks = grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, members)
         update_output(args.output, specs, replace_entries=True)
         manifest = args.manifest or args.output.with_name(
-            f"btag_eff_{args.year}_{args.channel}_families.json")
+            f"btag_eff_{efficiency_file_token(args.year)}_{args.channel}_families.json")
         manifest.write_text(json.dumps({
             "year": args.year, "channel": args.channel,
             "mode": "preliminary",

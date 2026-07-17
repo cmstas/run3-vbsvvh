@@ -81,8 +81,8 @@ The shared configuration is
 conversion and compatibility plots. Its `final_merges` block defines the only
 runtime sample/channel keys: update it only after inspecting the plots.
 
-Preliminary conversion writes `btag_eff_prelim.json`; it is diagnostic-only.
-Normal MC processing loads the final `btag_eff.json`, whose correction names
+Preliminary conversion writes `btag_eff_<year>_*_prelim.json`; it is diagnostic-only.
+Normal MC processing loads the year-scoped final `btag_eff_<year>.json`, whose correction names
 and sample/channel keys must exactly match the YAML final groups. There is no
 exact-sample or preliminary-family fallback at runtime. The `_met` trigger
 subset channels (`0lep_1FJ_met`, `0lep_2FJ_met`) and `all_events` are excluded
@@ -106,11 +106,12 @@ python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
 # reject incomplete manifests and validate every expected job exactly once.
 INPUT_ROOT="$OUT_DIR"
 
-# 2. Produce preliminary payloads, once per retained channel.
+# 2. Produce preliminary payloads, once per retained channel.  The ROOT dump
+#    directory and metadata year are explicit; the output name is automatic:
+#    corrections/scalefactors/btagging/btag_eff_Prompt2024_1lep_1FJ_prelim.json
 python3 ../misc/sf-utils/bEff-convert-to-correction.py \
   --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
-  --year 2024Prompt --channel 1lep_1FJ \
-  --output corrections/scalefactors/btagging/btag_eff_prelim.json
+  --year 2024Prompt --channel 1lep_1FJ
 
 # 3. Inspect preliminary compatibility.  The first command compares families
 #    within one source channel; the next two compare retained source channels
@@ -119,27 +120,28 @@ python3 ../misc/sf-utils/plot-btag-eff-families.py \
   --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
   --year 2024Prompt --channel 1lep_1FJ
 # Manually update final_merges in btag_eff_families.yaml after this review.
+# defaults to diagnostics/diagnostic_Prompt2024_prelim_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
-  --mode families --input-root "$INPUT_ROOT" --year 2024Prompt \
-  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_prelim_all_channels_families
+  --mode families --input-root "$INPUT_ROOT" --year 2024Prompt
+# defaults to diagnostics/diagnostic_Prompt2024_prelim_all_samples_channels
 python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
-  --mode channels --input-root "$INPUT_ROOT" --year 2024Prompt \
-  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_prelim_all_samples_channels
+  --mode channels --input-root "$INPUT_ROOT" --year 2024Prompt
 
 # 4. Build the final payload.  All retained YAML channels are discovered
 # automatically; missing channels, manifests, jobs, duplicate outputs, or
 # unexpected samples are fatal.  The excluded _met subset channels are ignored.
 python3 ../misc/sf-utils/bEff-convert-to-correction.py --final --year 2024Prompt \
-  --input-root "$INPUT_ROOT" \
-  --output corrections/scalefactors/btagging/btag_eff.json
+  --input-root "$INPUT_ROOT"
 
 # 5. Recheck the two money plots after applying final sample/channel merges.
+# defaults to diagnostics/diagnostic_Prompt2024_final_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
-  --mode families --input-root "$INPUT_ROOT" \
-  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_channels_families
+  --mode families --input-root "$INPUT_ROOT"
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
-  --mode channels --input-root "$INPUT_ROOT" \
-  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_samples_channels
+  --mode channels --input-root "$INPUT_ROOT"
+
+# The final conversion writes btag_eff_Prompt2024.json.  The analysis selects
+# this file from each sample's metadata year; keep the year suffix.
 ```
 
 Compatibility uses independent T/LT/N categories and weighted-binomial

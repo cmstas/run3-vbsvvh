@@ -180,7 +180,7 @@ class BTagEfficiencyTests(unittest.TestCase):
     def test_failed_final_build_does_not_touch_output(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            output = root / "btag_eff.json"
+            output = root / "btag_eff_Prompt2024.json"
             output.write_text("original payload\n")
             previous_argv = sys.argv
             try:

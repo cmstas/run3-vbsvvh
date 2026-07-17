@@ -185,7 +185,7 @@ const std::unordered_map<std::string, correction::CorrectionSet> bTaggingScaleFa
 
 // Deliberately lazy: --btag_eff must be able to create this payload when it
 // does not yet exist in a fresh checkout or worker sandbox.
-correction::CorrectionSet loadBTagEfficiencyCorrectionSet();
+correction::CorrectionSet loadBTagEfficiencyCorrectionSet(const std::string &year);
 
 const std::unordered_map<std::string, std::string> bTaggingScaleFactors_HF_corrname = {
     {"2016preVFP", "UParTAK4_comb"},
