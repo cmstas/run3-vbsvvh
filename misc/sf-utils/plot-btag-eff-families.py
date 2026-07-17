@@ -12,7 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import mplhep as hep
 import numpy as np
 
-from btag_eff_families import DEFAULT_CONFIG, sample_family
+from btag_eff_families import load_config, sample_family
 
 
 EXCLUSIVE_CATEGORIES = ("T", "LT", "N")
@@ -46,12 +46,10 @@ def parse_args():
     parser.add_argument("--skip-pulls", action="store_true")
     parser.add_argument("--job-manifest", type=Path,
                         help="Optional Slurm manifest.json: reject incomplete batch output")
-    parser.add_argument("--family-config", type=Path, default=DEFAULT_CONFIG,
-                        help="Shared preliminary/final grouping YAML")
     return parser.parse_args()
 
 
-def collect_samples(conv, input_dir, year, channel, job_manifest=None, family_config=DEFAULT_CONFIG):
+def collect_samples(conv, input_dir, year, channel, job_manifest=None, config=None):
     completeness = (conv.validate_job_manifest(input_dir, job_manifest) if job_manifest else None)
     if completeness is None:
         print("WARNING: b-tag input completeness was not verified (no --job-manifest supplied)")
@@ -61,7 +59,7 @@ def collect_samples(conv, input_dir, year, channel, job_manifest=None, family_co
         if not roots:
             continue
         sample = sample_dir.name
-        family = sample_family(sample, family_config)
+        family = sample_family(sample, config)
         counts, variances, edges = conv.read_merged_histograms(roots, year, channel, sample)
         samples[sample] = (family, counts, variances, edges)
         family_counts.setdefault(family, {})
@@ -207,6 +205,7 @@ def summary_json(groups, results, args):
         "minimum_valid_bins": 3,
         "note": "Compatibility is a diagnostic, not a formal hypothesis test.",
         "input_completeness_verified": getattr(args, "input_completeness_verified", False),
+        "ignored_source_channels": getattr(args, "ignored_source_channels", []),
         "converter_fallback_bins": {
             name: {flavor: np.argwhere(mask).tolist() for flavor, mask in result[3].items() if np.any(mask)}
             for name, result in results.items()
@@ -256,7 +255,7 @@ def main():
                           f"{args.year}_{args.channel}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     _, counts, variances, _, families, completeness = collect_samples(
-        conv, args.input_dir, args.year, args.channel, args.job_manifest, args.family_config)
+        conv, args.input_dir, args.year, args.channel, args.job_manifest, load_config())
     args.input_completeness_verified = completeness is not None
     results = {}
     for family in families:

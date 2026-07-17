@@ -37,20 +37,33 @@ def counts(den=10., tight=2., loose=5., lt=3., untagged=5.):
 
 
 class BTagEfficiencyTests(unittest.TestCase):
-    def test_sample_lookup_prefers_family_then_exact(self):
-        sample = "VBSWZH_c2v1p0"
-        self.assertEqual(conv.select_efficiency_sample_key(sample, {"VBS_VVH", sample}), "VBS_VVH")
-        self.assertEqual(conv.select_efficiency_sample_key(sample, {sample}), sample)
-        with self.assertRaises(KeyError):
-            conv.select_efficiency_sample_key(sample, set())
-
-    def test_yaml_controls_preliminary_and_final_groups(self):
+    def test_yaml_controls_strict_final_groups(self):
         sample = "VBSWZH_c2v1p0"
         self.assertEqual(families.sample_family(sample), "VBS_VVH")
         self.assertEqual(families.final_sample_family(sample), "VBS_VVH")
         self.assertEqual(families.final_channel("1lep_1FJ"), "leptonic")
+        self.assertNotIn("0lep_1FJ_met", families.retained_source_channels())
+        self.assertIn("0lep_1FJ_met", families.excluded_source_channels())
         with self.assertRaises(ValueError):
             families.final_channel("all_events")
+
+    def test_yaml_rejects_incomplete_or_duplicate_final_groups(self):
+        config = families.load_config()
+        bad = json.loads(json.dumps(config))
+        bad["final_merges"]["samples"]["VBS_VVH"] = []
+        with self.assertRaises(ValueError):
+            families.validate_config(bad)
+        bad = json.loads(json.dumps(config))
+        bad["final_merges"]["channels"]["0lep_0FJ"].append("1lep_1FJ")
+        with self.assertRaises(ValueError):
+            families.validate_config(bad)
+
+    def test_runtime_lookup_uses_final_keys_without_exact_fallback(self):
+        sample = "WplusH-Wto2Q-Hto2B_Par-M-125"
+        self.assertEqual(families.final_runtime_keys("2024Prompt", "1lep_1FJ", sample),
+                         ("btag_2024Prompt_leptonic", "VH"))
+        with self.assertRaises(ValueError):
+            families.final_runtime_keys("2024Prompt", "1lep_1FJ", "not_a_configured_sample")
 
     def test_unweighted_category_uncertainty(self):
         uncertainty = conv.mcstat_efficiency_uncertainty(
@@ -96,6 +109,39 @@ class BTagEfficiencyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 conv.validate_job_manifest(root / "outputs", manifest)
 
+    def test_final_input_discovery_requires_all_channels_and_manifests(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with self.assertRaises(ValueError):
+                conv.discover_final_inputs(root)
+            for channel in families.retained_source_channels():
+                directory = root / channel
+                directory.mkdir()
+                (directory / "manifest.json").write_text(json.dumps({"jobs": {}}))
+            (root / "0lep_1FJ_met").mkdir()
+            inputs, manifests, ignored = conv.discover_final_inputs(root)
+            self.assertEqual(set(inputs), set(families.retained_source_channels()))
+            self.assertEqual(set(manifests), set(inputs))
+            self.assertEqual(ignored, ["0lep_1FJ_met"])
+            (root / "1lep_1FJ" / "manifest.json").unlink()
+            with self.assertRaises(ValueError):
+                conv.discover_final_inputs(root)
+
+    def test_failed_final_build_does_not_touch_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output = root / "btag_eff.json"
+            output.write_text("original payload\n")
+            previous_argv = sys.argv
+            try:
+                sys.argv = ["bEff-convert-to-correction.py", "--final", "--input-root", str(root),
+                            "--year", "2024Prompt", "--output", str(output)]
+                with self.assertRaises(ValueError):
+                    conv.main()
+            finally:
+                sys.argv = previous_argv
+            self.assertEqual(output.read_text(), "original payload\n")
+
     def test_sparse_summary_is_unavailable(self):
         values = {(flavor, wp): np.array([[.2]]) for flavor in conv.FLAVORS for wp in conv.WORKING_POINTS}
         errors = {(flavor, wp): np.array([[.1]]) for flavor in conv.FLAVORS for wp in conv.WORKING_POINTS}
@@ -111,9 +157,16 @@ class BTagEfficiencyTests(unittest.TestCase):
             self.assertFalse(entry["available"])
             self.assertIsNone(entry["fraction_gt2"])
 
-    def test_overlapping_channels_rejected(self):
-        with self.assertRaises(ValueError):
-            global_plots.reject_overlapping_channels(["0lep_1FJ", "0lep_1FJ_met"])
+    def test_global_diagnostics_accept_only_final_input_root_cli(self):
+        parser = global_plots.parse_args
+        previous_argv = sys.argv
+        try:
+            sys.argv = ["plot-btag-eff-global.py", "--input-root", "/tmp/inputs", "--year", "2024Prompt",
+                        "--mode", "families", "--final"]
+            args = parser()
+        finally:
+            sys.argv = previous_argv
+        self.assertEqual(args.input_root, Path("/tmp/inputs"))
 
     def test_matrix_plots_use_module_categories(self):
         raw = counts()

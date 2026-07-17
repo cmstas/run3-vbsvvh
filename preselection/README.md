@@ -78,13 +78,15 @@ command is shown, commented out, in `run_wrapper.sh`:
 The shared configuration is
 `corrections/scalefactors/btagging/btag_eff_families.yaml`. Its ordered
 `preliminary_families` rules define the semantic first-pass grouping used by
-conversion and compatibility plots. Its `final_merges` block is intentionally
-an identity mapping initially: update it only after inspecting the plots.
+conversion and compatibility plots. Its `final_merges` block defines the only
+runtime sample/channel keys: update it only after inspecting the plots.
 
 Preliminary conversion writes `btag_eff_prelim.json`; it is diagnostic-only.
 Normal MC processing loads the final `btag_eff.json`, whose correction names
-and sample/channel keys are resolved through the YAML final block. Exact-sample
-payload entries remain a fallback when a configured family entry is absent.
+and sample/channel keys must exactly match the YAML final groups. There is no
+exact-sample or preliminary-family fallback at runtime. The `_met` trigger
+subset channels (`0lep_1FJ_met`, `0lep_2FJ_met`) and `all_events` are excluded
+from final construction and global diagnostics.
 The stored `*_mcstat_unc` efficiency uncertainties are informational diagnostics
 only; they are not consumed by the main analysis. (B-tagging SF variation
 branches are separate and remain part of the analysis weighting.)
@@ -97,40 +99,41 @@ branches are separate and remain part of the analysis weighting.)
 python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
   -c all -m slurm -r 3 -f 1 --btag-eff
 
-# 2. Produce preliminary payloads, once per channel; verify every Slurm output.
+# Raw outputs for final conversion must be arranged as:
+#   $INPUT_ROOT/<channel>/manifest.json
+#   $INPUT_ROOT/<channel>/<exact-sample>/output_<job-index>.root
+# The final converter validates every manifest job exactly once.
+
+# 2. Produce preliminary payloads, once per retained channel.
 python3 ../misc/sf-utils/bEff-convert-to-correction.py \
-  --input-dir /path/to/1lep_1FJ_outputs --job-manifest slurm/jobs/<task>/manifest.json \
+  --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
   --year 2024Prompt --channel 1lep_1FJ \
   --output corrections/scalefactors/btagging/btag_eff_prelim.json
 
 # 3. Inspect the preliminary family/channel compatibility plots.
 python3 ../misc/sf-utils/plot-btag-eff-families.py \
-  --input-dir /path/to/1lep_1FJ_outputs --year 2024Prompt --channel 1lep_1FJ
+  --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
+  --year 2024Prompt --channel 1lep_1FJ
 # Manually update final_merges in btag_eff_families.yaml after this review.
 
-# 4. Build the final payload from every source channel using the approved merges.
+# 4. Build the final payload.  All retained YAML channels are discovered
+# automatically; missing channels, manifests, jobs, duplicate outputs, or
+# unexpected samples are fatal.  The excluded _met subset channels are ignored.
 python3 ../misc/sf-utils/bEff-convert-to-correction.py --final --year 2024Prompt \
-  --channel-input 0lep_0FJ=/path/to/0lep_0FJ_outputs \
-  --channel-input 1lep_1FJ=/path/to/1lep_1FJ_outputs \
-  --channel-input 2lep_1FJ=/path/to/2lep_1FJ_outputs \
+  --input-root "$INPUT_ROOT" \
   --output corrections/scalefactors/btagging/btag_eff.json
 
 # 5. Optionally recheck only the two money plots using the final YAML merges.
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
-  --mode families --channel-input 0lep_0FJ=/path/to/0lep_0FJ_outputs \
-  --channel-input 1lep_1FJ=/path/to/1lep_1FJ_outputs \
+  --mode families --input-root "$INPUT_ROOT" \
   --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
-  --mode channels --channel-input 0lep_0FJ=/path/to/0lep_0FJ_outputs \
-  --channel-input 1lep_1FJ=/path/to/1lep_1FJ_outputs \
+  --mode channels --input-root "$INPUT_ROOT" \
   --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_samples_channels
 ```
 
-Repeat `--channel-input` (and optionally matching `--channel-manifest`) for
-every source channel assigned in `final_merges`. Compatibility uses independent
-T/LT/N categories and weighted-binomial MC-statistical uncertainties; it is a
-diagnostic, not a formal hypothesis test. Cross-channel family aggregation
-rejects known trigger-overlap pairs because their covariance is not modelled.
+Compatibility uses independent T/LT/N categories and weighted-binomial
+MC-statistical uncertainties; it is a diagnostic, not a formal hypothesis test.
 
 </details>
 

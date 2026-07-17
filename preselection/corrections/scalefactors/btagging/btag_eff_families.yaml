@@ -71,38 +71,54 @@ preliminary_families:
 # preliminary family/channel must occur in exactly one final group.
 final_merges:
   samples:
-    VBS_VVH: [VBS_VVH]
+    VBS_VVH:
+      - VBS_VVH
     WWJJ_VBSWW:
-     - WWJJ
-     - VBS_SSWW
-    ZZJJ: [ZZJJ]
-    ggZZ_continuum: [ggZZ_continuum]
-    ggH: [ggH]
-    VH: [VH]
-    ttH: [ttH]
-    ttV_rare: [ttV_rare]
-    ttbar: [ttbar]
-    tW: [tW]
-    single_top: [single_top]
-    triboson: [triboson]
+      - WWJJ
+      - VBS_SSWW
+    ZZJJ:
+      - ZZJJ
+    ggZZ_continuum:
+      - ggZZ_continuum
+    ggH:
+      - ggH
+    VH:
+      - VH
+    ttH:
+      - ttH
+    ttV_rare:
+      - ttV_rare
+    ttbar:
+      - ttbar
+    tW:
+      - tW
+    single_top:
+      - single_top
+    triboson:
+      - triboson
     VZ:
       - WZ
       - ZZ
-    WW: [WW]
-    DY: [DY]
-    W_leptonic: [W_leptonic]
-    W_hadronic: [W_hadronic]
-    Z_hadronic: [Z_hadronic]
+    WW:
+      - WW
+    DY:
+      - DY
+    W_leptonic:
+      - W_leptonic
+    W_hadronic:
+      - W_hadronic
+    Z_hadronic:
+      - Z_hadronic
     QCD:
       - QCD_HT
       - QCD_PT
   channels:
-    0lep_0FJ: [0lep_0FJ]
-    0lep_1FJ: [0lep_1FJ]
-    0lep_1FJ_met: [0lep_1FJ_met]
+    0lep_0FJ:
+      - 0lep_0FJ
+    0lep_1FJ:
+      - 0lep_1FJ
     0lep_2FJ+:
       - 0lep_2FJ
-      - 0lep_2FJ_met
       - 0lep_3FJ
     leptonic:
       - 1lep_1FJ
@@ -111,3 +127,10 @@ final_merges:
       - 2lep_2FJ
       - 3lep
       - 4lep
+
+# These are stored outputs from subset/inclusive bookkeeping selections, not
+# independent inputs to the final efficiency payload or diagnostics.
+excluded_source_channels:
+  - all_events
+  - 0lep_1FJ_met
+  - 0lep_2FJ_met

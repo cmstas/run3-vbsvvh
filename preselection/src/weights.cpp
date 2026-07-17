@@ -5,6 +5,7 @@
 #include <cmath>
 #include <fstream>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <vector>
 
@@ -20,6 +21,7 @@ struct BTagFamilyConfig {
     std::vector<std::pair<std::string, std::vector<std::string>>> preliminary;
     std::map<std::string, std::vector<std::string>> final_samples;
     std::map<std::string, std::vector<std::string>> final_channels;
+    std::vector<std::string> excluded_channels;
 };
 
 std::string trim(std::string value) {
@@ -29,66 +31,91 @@ std::string trim(std::string value) {
     return value.substr(begin, end - begin + 1);
 }
 
-void appendInlineMembers(std::vector<std::string> &members, std::string value) {
-    value = trim(value);
-    if (value.empty()) return;
-    if (value.front() != '[' || value.back() != ']')
-        throw std::runtime_error("Invalid inline member list in " + std::string(kBTagFamilyConfig));
-    value = value.substr(1, value.size() - 2);
-    std::size_t start = 0;
-    while (start <= value.size()) {
-        const auto comma = value.find(',', start);
-        const auto member = trim(value.substr(start, comma - start));
-        if (!member.empty()) members.push_back(member);
-        if (comma == std::string::npos) break;
-        start = comma + 1;
-    }
-}
-
 const BTagFamilyConfig &bTagFamilyConfig() {
     static const BTagFamilyConfig config = [] {
         std::ifstream input(kBTagFamilyConfig);
         if (!input) throw std::runtime_error("Cannot read b-tag family configuration " + std::string(kBTagFamilyConfig));
         BTagFamilyConfig parsed;
+        std::set<std::string> preliminary_names, excluded_names;
         std::string line, section, final_kind, current_group;
+        const auto fail = [](const std::string &message) {
+            throw std::runtime_error("Invalid canonical b-tag family YAML: " + message);
+        };
         while (std::getline(input, line)) {
+            if (line.find('\t') != std::string::npos) fail("tabs are not supported");
             const auto comment = line.find('#');
             if (comment != std::string::npos) line.erase(comment);
             const auto content = trim(line);
             if (content.empty()) continue;
             const auto indent = line.find_first_not_of(" \t");
             if (indent == 0) {
-                section = content.substr(0, content.find(':'));
+                if (content != "preliminary_families:" && content != "final_merges:" &&
+                    content != "excluded_source_channels:") fail("unknown top-level key " + content);
+                section = content.substr(0, content.size() - 1);
                 final_kind.clear();
+                current_group.clear();
                 continue;
             }
             if (section == "preliminary_families") {
                 if (indent == 2 && content.back() == ':') {
                     current_group = content.substr(0, content.size() - 1);
+                    if (current_group.empty() || !preliminary_names.insert(current_group).second)
+                        fail("duplicate or empty preliminary family");
                     parsed.preliminary.emplace_back(current_group, std::vector<std::string>{});
-                } else if (indent >= 4 && content.rfind("- ", 0) == 0 && !parsed.preliminary.empty()) {
+                } else if (indent == 4 && content.rfind("- ", 0) == 0 && !parsed.preliminary.empty()) {
                     parsed.preliminary.back().second.push_back(trim(content.substr(2)));
-                }
+                } else fail("invalid preliminary_families indentation or syntax");
                 continue;
             }
-            if (section != "final_merges") continue;
+            if (section == "excluded_source_channels") {
+                if (indent != 2 || content.rfind("- ", 0) != 0) fail("invalid excluded_source_channels entry");
+                const auto channel = trim(content.substr(2));
+                if (channel.empty() || !excluded_names.insert(channel).second) fail("duplicate or empty excluded channel");
+                parsed.excluded_channels.push_back(channel);
+                continue;
+            }
+            if (section != "final_merges") fail("content outside a supported YAML section");
             if (indent == 2 && content.back() == ':') {
                 final_kind = content.substr(0, content.size() - 1);
+                if (final_kind != "samples" && final_kind != "channels") fail("unknown final_merges kind " + final_kind);
                 current_group.clear();
-            } else if (indent == 4) {
-                const auto colon = content.find(':');
-                if (colon == std::string::npos) continue;
-                current_group = trim(content.substr(0, colon));
+            } else if (indent == 4 && content.back() == ':' && !final_kind.empty()) {
+                current_group = trim(content.substr(0, content.size() - 1));
                 auto &groups = final_kind == "samples" ? parsed.final_samples : parsed.final_channels;
-                auto &members = groups[current_group];
-                appendInlineMembers(members, content.substr(colon + 1));
-            } else if (indent >= 6 && content.rfind("- ", 0) == 0 && !current_group.empty()) {
+                if (current_group.empty() || !groups.emplace(current_group, std::vector<std::string>{}).second)
+                    fail("duplicate or empty final group");
+            } else if (indent == 6 && content.rfind("- ", 0) == 0 && !current_group.empty()) {
                 auto &groups = final_kind == "samples" ? parsed.final_samples : parsed.final_channels;
-                groups[current_group].push_back(trim(content.substr(2)));
-            }
+                const auto member = trim(content.substr(2));
+                if (member.empty()) fail("empty final group member");
+                groups.at(current_group).push_back(member);
+            } else fail("invalid final_merges indentation or syntax");
         }
-        if (parsed.preliminary.empty() || parsed.final_samples.empty() || parsed.final_channels.empty())
-            throw std::runtime_error("Incomplete b-tag family configuration " + std::string(kBTagFamilyConfig));
+        if (parsed.preliminary.empty() || parsed.final_samples.empty() || parsed.final_channels.empty() ||
+            parsed.excluded_channels.empty()) fail("missing required non-empty mapping");
+        for (const auto &[family, needles] : parsed.preliminary)
+            if (needles.empty() || std::any_of(needles.begin(), needles.end(), [](const auto &x) { return x.empty(); }))
+                fail("empty preliminary family " + family);
+        const auto validate_groups = [&fail](const auto &groups, const std::set<std::string> &expected, const char *kind) {
+            std::map<std::string, unsigned int> membership;
+            for (const auto &[group, members] : groups) {
+                if (members.empty()) fail(std::string("empty final ") + kind + " group " + group);
+                for (const auto &member : members) ++membership[member];
+            }
+            std::set<std::string> observed;
+            for (const auto &[member, count] : membership) {
+                if (count != 1) fail(std::string("duplicate final ") + kind + " member " + member);
+                observed.insert(member);
+            }
+            if (observed != expected) fail(std::string("final ") + kind + " membership does not match canonical sources");
+        };
+        validate_groups(parsed.final_samples, preliminary_names, "sample");
+        std::set<std::string> retained_channels;
+        for (const auto &[_, members] : parsed.final_channels)
+            retained_channels.insert(members.begin(), members.end());
+        validate_groups(parsed.final_channels, retained_channels, "channel");
+        for (const auto &channel : parsed.excluded_channels)
+            if (retained_channels.count(channel)) fail("excluded channel is also retained: " + channel);
         return parsed;
     }();
     return config;
@@ -412,51 +439,47 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
         if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end())
             throw std::runtime_error("B-tag SF or efficiency correction set is unavailable for year " + year);
 
-        const std::string efficiency_channel = bTagEfficiencyChannel(channel);
-        const std::string efficiency_name = "btag_" + year + "_" + efficiency_channel;
-        const std::string legacy_efficiency_name = "btag_" + year;
-        bool use_legacy_efficiency = false;
-        std::string efficiency_sample = sample;
-        decltype(cset_eff_it->second.at(efficiency_name)) efficiency;
-        try {
-            efficiency = cset_eff_it->second.at(efficiency_name);
-        } catch (const std::exception &) {
+        const bool is_legacy_year = (year == "2016preVFP" || year == "2016postVFP" ||
+                                     year == "2017" || year == "2018");
+        std::string efficiency_channel;
+        if (!is_legacy_year) {
             try {
-                efficiency = cset_eff_it->second.at(legacy_efficiency_name);
-                use_legacy_efficiency = true;
-            } catch (const std::exception &) {
-                throw std::runtime_error("B-tag efficiency map " + efficiency_name +
-                                         " is unavailable; run --btag_eff and convert the matching MC sample first");
+                efficiency_channel = bTagEfficiencyChannel(channel);
+            } catch (const std::exception &error) {
+                throw std::runtime_error("B-tag final channel mapping is unavailable for year=" + year +
+                                         ", requested_channel=" + channel + ": " + error.what());
             }
         }
+        const std::string efficiency_name = "btag_" + year + "_" + efficiency_channel;
+        const std::string legacy_efficiency_name = "btag_" + year;
+        const bool use_legacy_efficiency = is_legacy_year;
+        std::string efficiency_sample;
         if (!use_legacy_efficiency) {
-            std::string family_key;
             try {
-                family_key = bTagEfficiencyFamily(sample);
-            } catch (const std::exception &) {
-                // Exact-sample payloads are valid even when no family has been
-                // configured.  Do not substitute an inclusive default.
+                efficiency_sample = bTagEfficiencyFamily(sample);
+            } catch (const std::exception &error) {
+                throw std::runtime_error("B-tag final sample mapping is unavailable for year=" + year +
+                                         ", requested_channel=" + channel + ", sample=" + sample +
+                                         ": " + error.what());
             }
-            const auto has_entry = [&](const std::string &key) {
-                try {
-                    // Any in-range point tests the sample category; the maps
-                    // clamp kinematics and all entries share the same binning.
-                    (void) efficiency->evaluate({key, "B", "T", 30., 0.});
-                    return true;
-                } catch (const std::exception &) {
-                    return false;
-                }
-            };
-            if (!family_key.empty() && has_entry(family_key)) {
-                efficiency_sample = family_key;
-            } else if (has_entry(sample)) {
-                efficiency_sample = sample;
-            } else {
-                throw std::runtime_error("B-tag efficiency entries are unavailable for " +
-                                         year + ":" + channel + ":" + sample +
-                                         "; attempted family key " +
-                                         (family_key.empty() ? std::string("<unconfigured>") : family_key) +
-                                         " and exact key " + sample);
+        }
+        decltype(cset_eff_it->second.at(efficiency_name)) efficiency;
+        try {
+            efficiency = cset_eff_it->second.at(use_legacy_efficiency ? legacy_efficiency_name : efficiency_name);
+        } catch (const std::exception &) {
+            throw std::runtime_error("B-tag efficiency correction is unavailable for year=" + year +
+                                     ", requested_channel=" + channel + ", final_channel=" + efficiency_channel +
+                                     ", requested_correction=" + (use_legacy_efficiency ? legacy_efficiency_name : efficiency_name));
+        }
+        if (!use_legacy_efficiency) {
+            try {
+                // Strict final-payload contract: no preliminary/exact/inclusive fallback.
+                (void) efficiency->evaluate({efficiency_sample, "B", "T", 30., 0.});
+            } catch (const std::exception &) {
+                throw std::runtime_error("B-tag efficiency sample key is unavailable for year=" + year +
+                                         ", requested_channel=" + channel + ", final_channel=" + efficiency_channel +
+                                         ", sample=" + sample + ", final_sample=" + efficiency_sample +
+                                         ", correction=" + efficiency_name);
             }
         }
 
