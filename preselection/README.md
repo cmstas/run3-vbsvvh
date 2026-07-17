@@ -136,9 +136,9 @@ python3 ../misc/sf-utils/bEff-convert-to-correction.py --final --year 2024Prompt
 # 5. Recheck the two money plots after applying final sample/channel merges.
 # defaults to diagnostics/diagnostic_2024Prompt_final_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
-  --mode families --input-root "$INPUT_ROOT"
+  --mode families --input-root "$INPUT_ROOT" --year 2024Prompt
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
-  --mode channels --input-root "$INPUT_ROOT"
+  --mode channels --input-root "$INPUT_ROOT" --year 2024Prompt
 
 # The final conversion writes btag_eff_2024Prompt.json.  The analysis selects
 # this file from each sample's metadata year; keep the year suffix.
