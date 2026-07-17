@@ -76,17 +76,26 @@ command is shown, commented out, in `run_wrapper.sh`:
 ```
 
 The converter can discover a Slurm output directory and merge its exact
-samples into conservative physics families before writing the central and
-`*_poisson_unc` maps expected by the analysis:
+samples into the existing conservative physics families before writing central
+and `*_mcstat_unc` maps:
 
 ```bash
 python3 ../misc/sf-utils/bEff-convert-to-correction.py \
   --input-dir /path/to/btag_eff_outputs --year 2024Prompt --channel 1lep_1FJ \
+  --job-manifest slurm/jobs/<task>/manifest.json \
   --output corrections/scalefactors/btagging/btag_eff.json
 ```
 
-It writes a family-membership manifest and records any sparse signed-weight
-bins replaced with the inclusive-MC bin. Inspect family compatibility before
+With `--job-manifest`, conversion requires every expected `sample/job_idx`
+output exactly once; without it, the converter prominently warns that input
+completeness was not verified. It writes a family-membership manifest and
+records any sparse signed-weight bins replaced with the inclusive-MC bin.
+Exact-sample conversion remains supported: application first uses a matching
+family entry, then falls back to an exact sample entry when no family entry is
+present.
+Compatibility pulls use only the independent tight, loose-not-tight, and
+untagged categories and their weighted-binomial MC-statistical uncertainties;
+they are diagnostics, not formal hypothesis tests. Inspect them before
 combining families further with:
 
 ```bash
@@ -98,7 +107,9 @@ python3 ../misc/sf-utils/plot-btag-eff-families.py \
 `../misc/sf-utils/plot-btag-eff-global.py` accepts repeated
 `--channel-input CHANNEL=DIR` arguments. Use `--mode families` to compare
 sample families after summing all channels, or `--mode channels` to compare
-channels after summing all samples.
+channels after summing all samples. The former accepts only mutually exclusive
+channels: trigger-overlap pairs such as `0lep_1FJ`/`0lep_1FJ_met` and
+`0lep_2FJ`/`0lep_2FJ_met` are rejected because their covariance is not modelled.
 
 ---
 ## Details on the condor batch submission

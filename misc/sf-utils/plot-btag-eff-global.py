@@ -9,6 +9,14 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 
 
+# These selections differ only in trigger paths and can share events.  Their
+# covariance is not modelled by the histogram-level diagnostic.
+OVERLAPPING_CHANNEL_PAIRS = {
+    frozenset(("0lep_1FJ", "0lep_1FJ_met")),
+    frozenset(("0lep_2FJ", "0lep_2FJ_met")),
+}
+
+
 def load_module(filename, name):
     path = Path(__file__).with_name(filename)
     spec = importlib.util.spec_from_file_location(name, path)
@@ -21,6 +29,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--channel-input", action="append", required=True, metavar="CHANNEL=DIR",
                         help="One completed b-tag output directory per channel; repeat this option")
+    parser.add_argument("--channel-manifest", action="append", metavar="CHANNEL=PATH",
+                        help="Optional Slurm manifest for the matching --channel-input; repeat this option")
     parser.add_argument("--year", required=True)
     parser.add_argument("--mode", choices=("families", "channels"), required=True,
                         help="families: sum each family over channels; channels: sum all samples per channel")
@@ -51,14 +61,31 @@ def add_all(conv, target, source):
     conv.add_counts(target["variances"], source[1])
 
 
+def reject_overlapping_channels(channels):
+    selected = set(channels)
+    overlaps = [sorted(pair) for pair in OVERLAPPING_CHANNEL_PAIRS if pair <= selected]
+    if overlaps:
+        raise ValueError("Cannot sum overlapping analysis channels without covariance modelling: " +
+                         ", ".join(" + ".join(pair) for pair in overlaps))
+
+
 def main():
     args = parse_args()
     conv = load_module("bEff-convert-to-correction.py", "btag_converter")
     plots = load_module("plot-btag-eff-families.py", "btag_plots")
     inputs = channel_inputs(args.channel_input)
+    manifests = channel_inputs(args.channel_manifest or [])
+    unknown_manifests = set(manifests) - set(inputs)
+    if unknown_manifests:
+        raise ValueError(f"Manifest supplied for unknown channel(s): {sorted(unknown_manifests)}")
+    if args.mode == "families":
+        reject_overlapping_channels(inputs)
     grouped = {}
+    completeness = []
     for channel, directory in inputs.items():
-        _, family_counts, family_variances, _, families = plots.collect_samples(conv, directory, args.year, channel)
+        _, family_counts, family_variances, _, families, complete = plots.collect_samples(
+            conv, directory, args.year, channel, manifests.get(channel))
+        completeness.append(complete is not None)
         if args.mode == "families":
             for family in families:
                 add_all(conv, grouped.setdefault(family, {}),
@@ -75,6 +102,7 @@ def main():
                          "scalefactors" / "btagging" / "diagnostics" / f"{args.year}_{suffix}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     args.channel = "all channels" if args.mode == "families" else "all samples"
+    args.input_completeness_verified = bool(completeness) and all(completeness)
     lumi = args.lumi if args.lumi is not None else plots.LUMI_FB.get(args.year)
     energy = 13.6 if args.year.startswith("202") else 13
     plt.style.use(hep.style.CMS)

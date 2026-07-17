@@ -41,10 +41,15 @@ def parse_args():
     parser.add_argument("--sources", nargs="+", help="Only write detail PDFs for these source families")
     parser.add_argument("--skip-matrices", action="store_true")
     parser.add_argument("--skip-pulls", action="store_true")
+    parser.add_argument("--job-manifest", type=Path,
+                        help="Optional Slurm manifest.json: reject incomplete batch output")
     return parser.parse_args()
 
 
-def collect_samples(conv, input_dir, year, channel):
+def collect_samples(conv, input_dir, year, channel, job_manifest=None):
+    completeness = (conv.validate_job_manifest(input_dir, job_manifest) if job_manifest else None)
+    if completeness is None:
+        print("WARNING: b-tag input completeness was not verified (no --job-manifest supplied)")
     samples, family_counts, family_vars, family_edges, members = {}, {}, {}, {}, {}
     for sample_dir in sorted(path for path in input_dir.iterdir() if path.is_dir()):
         roots = sorted(sample_dir.glob("*.root"))
@@ -63,27 +68,27 @@ def collect_samples(conv, input_dir, year, channel):
             raise ValueError(f"Binning mismatch in family {family}")
         family_edges[family] = edges
         members.setdefault(family, []).append(sample)
-    return samples, family_counts, family_vars, family_edges, members
+    return samples, family_counts, family_vars, family_edges, members, completeness
 
 
 def efficiencies(conv, counts, variances):
     values, uncertainties, valid = {}, {}, {}
+    pathological = conv.invalid_count_bins(counts)
     for flavor in conv.FLAVORS:
         den = counts[(flavor, "den")]
         for wp in conv.WORKING_POINTS:
             num = counts[(flavor, wp)]
-            ok = (den > 0) & (num >= 0) & (num <= den)
+            ok = ~pathological[flavor] & (den > 0) & (num >= 0) & (num <= den)
             values[flavor, wp] = np.divide(num, den, out=np.full_like(den, np.nan), where=ok)
-            uncertainties[flavor, wp] = np.divide(
-                np.sqrt(np.maximum(variances[(flavor, wp)], 0.0)), den,
-                out=np.full_like(den, np.nan), where=ok)
-            valid[flavor, wp] = ok
-    return values, uncertainties, valid
+            uncertainties[flavor, wp] = conv.mcstat_efficiency_uncertainty(
+                num, den, variances[(flavor, wp)], variances[(flavor, "den")])
+            valid[flavor, wp] = ok & np.isfinite(uncertainties[flavor, wp])
+    return values, uncertainties, valid, pathological
 
 
 def pulls(reference, other, flavor, wp):
-    values_a, errors_a, valid_a = reference
-    values_b, errors_b, valid_b = other
+    values_a, errors_a, valid_a, _ = reference
+    values_b, errors_b, valid_b, _ = other
     variance = errors_a[flavor, wp] ** 2 + errors_b[flavor, wp] ** 2
     valid = valid_a[flavor, wp] & valid_b[flavor, wp] & (variance > 0)
     result = np.full(values_a[flavor, wp].shape, np.nan)
@@ -100,7 +105,7 @@ def cms_label(ax, lumi, energy):
 def matrix_plots(groups, results, args, lumi, energy, group_label="family"):
     names = sorted(groups)
     for flavor in ("b", "c", "light"):
-        for wp in ("T", "L", "LT", "N"):
+        for wp in conv.EXCLUSIVE_CATEGORIES:
             matrix = np.full((len(names), len(names)), np.nan)
             for row, left in enumerate(names):
                 for col, right in enumerate(names):
@@ -109,7 +114,7 @@ def matrix_plots(groups, results, args, lumi, energy, group_label="family"):
                         continue
                     pull = pulls(results[left], results[right], flavor, wp)
                     finite = np.isfinite(pull)
-                    if finite.any():
+                    if np.count_nonzero(finite) >= 3:
                         matrix[row, col] = np.mean(np.abs(pull[finite]) > 2.)
             fig, ax = plt.subplots(figsize=(max(10, 0.65 * len(names)), max(8, 0.55 * len(names))))
             image = ax.imshow(matrix, vmin=0, vmax=1, cmap="magma", interpolation="nearest")
@@ -127,7 +132,7 @@ def matrix_plots(groups, results, args, lumi, energy, group_label="family"):
 
 
 def money_plot(groups, results, args, lumi, energy, group_label="family"):
-    """One compatibility matrix pooled over every flavor, WP, and kinematic bin."""
+    """One diagnostic matrix pooled over independent category pulls only."""
     names = sorted(groups)
     matrix = np.full((len(names), len(names)), np.nan)
     for row, left in enumerate(names):
@@ -137,11 +142,11 @@ def money_plot(groups, results, args, lumi, energy, group_label="family"):
                 continue
             values = []
             for flavor in ("b", "c", "light"):
-                for wp in ("T", "L", "LT", "N"):
+                for wp in ("T", "LT", "N"):
                     pull = pulls(results[left], results[right], flavor, wp)
                     values.append(np.abs(pull[np.isfinite(pull)]))
             pooled = np.concatenate(values) if values else np.array([])
-            if pooled.size:
+            if pooled.size >= 3:
                 matrix[row, col] = np.mean(pooled > 2.)
     fig, ax = plt.subplots(figsize=(max(10, 0.65 * len(names)), max(8, 0.55 * len(names))))
     image = ax.imshow(matrix, vmin=0, vmax=1, cmap="magma", interpolation="nearest")
@@ -154,7 +159,7 @@ def money_plot(groups, results, args, lumi, energy, group_label="family"):
             value = matrix[row, col]
             if np.isfinite(value) and value < 0.2:
                 ax.text(col, row, f"{value:.2f}", color="white", ha="center", va="center", fontsize=6)
-    fig.colorbar(image, ax=ax, label=r"Pooled fraction of valid bins with $|$pull$|>2$")
+    fig.colorbar(image, ax=ax, label=r"Diagnostic fraction of valid bins with $|$pull$|>2$ (T, LT, N)")
     cms_label(ax, lumi, energy)
     fig.tight_layout()
     stem = args.plot_dir / "compatibility_all_flavours_all_wps"
@@ -173,8 +178,8 @@ def family_pull_pdfs(groups, results, args, lumi, energy, group_label="family"):
         others = [name for name in names if name != source]
         with PdfPages(args.plot_dir / f"pulls_{source}.pdf") as pdf:
             for flavor in ("b", "c", "light"):
-                fig, axes = plt.subplots(1, 4, figsize=(22, max(7, 0.42 * len(others) + 3)), sharey=True)
-                for ax, wp in zip(axes, ("T", "L", "LT", "N")):
+                fig, axes = plt.subplots(1, 3, figsize=(18, max(7, 0.42 * len(others) + 3)), sharey=True)
+                for ax, wp in zip(axes, ("T", "LT", "N")):
                     rows = [np.clip(pulls(results[source], results[other], flavor, wp).reshape(-1), -5, 5)
                             for other in others]
                     image = ax.imshow(rows, aspect="auto", cmap="coolwarm", vmin=-5, vmax=5,
@@ -191,20 +196,48 @@ def family_pull_pdfs(groups, results, args, lumi, energy, group_label="family"):
 
 
 def summary_json(groups, results, args):
-    summary = {}
+    summary = {"_metadata": {
+        "categories": ["T", "LT", "N"],
+        "minimum_valid_bins": 3,
+        "note": "Compatibility is a diagnostic, not a formal hypothesis test.",
+        "input_completeness_verified": getattr(args, "input_completeness_verified", False),
+        "converter_fallback_bins": {
+            name: {flavor: np.argwhere(mask).tolist() for flavor, mask in result[3].items() if np.any(mask)}
+            for name, result in results.items()
+        },
+    }}
     for left in sorted(groups):
         for right in sorted(groups):
             if left == right:
                 continue
+            pooled = []
+            candidates = excluded_total = 0
             for flavor in ("b", "c", "light"):
-                for wp in ("T", "L", "LT", "N"):
+                for wp in ("T", "LT", "N"):
                     pull = pulls(results[left], results[right], flavor, wp)
                     finite = np.abs(pull[np.isfinite(pull)])
+                    excluded = results[left][3][flavor] | results[right][3][flavor]
+                    pooled.append(finite)
+                    candidates += pull.size
+                    excluded_total += int(np.count_nonzero(excluded))
                     key = f"{left}__vs__{right}/{flavor}/{wp}"
-                    summary[key] = {"valid_bins": int(finite.size),
-                                    "fraction_gt2": float(np.mean(finite > 2.)) if finite.size else None,
-                                    "fraction_gt3": float(np.mean(finite > 3.)) if finite.size else None,
-                                    "max_abs_pull": float(np.max(finite)) if finite.size else None}
+                    available = finite.size >= 3
+                    summary[key] = {"candidate_bins": int(pull.size),
+                                    "valid_bins": int(finite.size),
+                                    "excluded_pathological_bins": int(np.count_nonzero(excluded)),
+                                    "available": available,
+                                    "fraction_gt2": float(np.mean(finite > 2.)) if available else None,
+                                    "fraction_gt3": float(np.mean(finite > 3.)) if available else None,
+                                    "max_abs_pull": float(np.max(finite)) if available else None}
+            pooled = np.concatenate(pooled) if pooled else np.array([])
+            available = pooled.size >= 3
+            summary[f"{left}__vs__{right}/all_flavours_all_categories"] = {
+                "candidate_bins": int(candidates), "valid_bins": int(pooled.size),
+                "excluded_pathological_bins": excluded_total, "available": available,
+                "fraction_gt2": float(np.mean(pooled > 2.)) if available else None,
+                "fraction_gt3": float(np.mean(pooled > 3.)) if available else None,
+                "max_abs_pull": float(np.max(pooled)) if available else None,
+            }
     (args.plot_dir / "compatibility_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
 
 
@@ -216,7 +249,9 @@ def main():
                           "scalefactors" / "btagging" / "diagnostics" /
                           f"{args.year}_{args.channel}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
-    _, counts, variances, _, families = collect_samples(conv, args.input_dir, args.year, args.channel)
+    _, counts, variances, _, families, completeness = collect_samples(
+        conv, args.input_dir, args.year, args.channel, args.job_manifest)
+    args.input_completeness_verified = completeness is not None
     results = {}
     for family in families:
         # Sparse signed-weight bins are intentionally masked in comparisons;

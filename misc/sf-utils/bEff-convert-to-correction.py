@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Convert merged weighted b-tag efficiency histograms into correctionlib JSON.
 
-The legacy mode adds one exact MC sample.  Family mode discovers sample
+Exact-sample mode adds one MC sample. Family mode discovers sample
 directories, merges raw weighted yields into conservative physics families,
 and writes one correction entry per family.
 """
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,7 @@ from btag_eff_families import sample_family
 
 FLAVORS = ("b", "c", "light")
 WORKING_POINTS = ("T", "L", "LT", "N")
+EXCLUSIVE_CATEGORIES = ("T", "LT", "N")
 HISTOGRAM_NAMES = {"T": "T", "L": "L", "LT": "LT", "N": "N"}
 
 
@@ -31,11 +33,13 @@ def parse_args():
                         help="Directory containing one raw-output directory per exact sample")
     parser.add_argument("--year", required=True, help="Metadata year, e.g. 2024Prompt")
     parser.add_argument("--channel", required=True, help="Preselection channel, e.g. 0lep_0FJ")
-    parser.add_argument("--sample", help="Exact RDataFrame sample name from the input JSON (legacy mode)")
+    parser.add_argument("--sample", help="Exact RDataFrame sample name from the input JSON (exact-sample mode)")
     parser.add_argument("--output", required=True, type=Path,
                         help="CorrectionSet JSON to create or update")
     parser.add_argument("--manifest", type=Path,
                         help="Family membership manifest (defaults beside --output in family mode)")
+    parser.add_argument("--job-manifest", type=Path,
+                        help="Optional Slurm manifest.json: require exactly its expected sample/job outputs")
     return parser.parse_args()
 
 
@@ -109,10 +113,67 @@ def add_counts(destination, source):
         destination[key] = destination.get(key, np.zeros_like(values, dtype=float)) + values
 
 
-def discover_family_histograms(input_dir, year, channel):
+def select_efficiency_sample_key(sample, available_keys):
+    """New-schema lookup contract: family first, then an exact sample entry."""
+    try:
+        family_key = sample_family(sample)
+    except ValueError:
+        family_key = None
+    if family_key in available_keys:
+        return family_key
+    if sample in available_keys:
+        return sample
+    raise KeyError("No b-tag efficiency entry for sample {!r}; attempted family key {!r} and exact key {!r}".format(
+        sample, family_key or "<unconfigured>", sample))
+
+
+def output_job_index(path):
+    match = re.fullmatch(r"output_(\d+)\.root", path.name)
+    if not match:
+        raise ValueError(f"Unexpected b-tag output filename {path}; expected output_<job index>.root")
+    return int(match.group(1))
+
+
+def validate_job_manifest(input_dir, manifest_path):
+    """Validate that every Slurm task in *manifest_path* produced one ROOT file."""
+    manifest = json.loads(manifest_path.read_text())
+    jobs = manifest.get("jobs")
+    if not isinstance(jobs, dict) or not jobs:
+        raise ValueError(f"{manifest_path} has no jobs")
+    expected = {}
+    for job in jobs.values():
+        sample, index = job.get("sample"), job.get("job_idx")
+        if not isinstance(sample, str) or not isinstance(index, int):
+            raise ValueError(f"{manifest_path} has a job without sample/job_idx metadata")
+        if index in expected.setdefault(sample, set()):
+            raise ValueError(f"{manifest_path} has duplicate expected job index {sample}:{index}")
+        expected[sample].add(index)
+
+    discovered = {}
+    directories = {path.name for path in input_dir.iterdir() if path.is_dir()}
+    unexpected_dirs = directories - set(expected)
+    if unexpected_dirs:
+        raise ValueError(f"Unexpected sample directories not in {manifest_path}: {sorted(unexpected_dirs)}")
+    for sample, indices in expected.items():
+        sample_dir = input_dir / sample
+        roots = sorted(sample_dir.glob("*.root")) if sample_dir.is_dir() else []
+        found = [output_job_index(path) for path in roots]
+        if len(found) != len(set(found)):
+            raise ValueError(f"Duplicate ROOT outputs for {sample}: {found}")
+        found_set = set(found)
+        if found_set != indices:
+            raise ValueError(f"Incomplete outputs for {sample}: expected {sorted(indices)}, found {sorted(found_set)}")
+        discovered[sample] = {"expected_jobs": len(indices), "discovered_jobs": len(found_set)}
+    return discovered
+
+
+def discover_family_histograms(input_dir, year, channel, job_manifest=None):
     """Read every exact sample directory and return raw yields grouped by family."""
     if not input_dir.is_dir():
         raise ValueError(f"--input-dir is not a directory: {input_dir}")
+    completeness = (validate_job_manifest(input_dir, job_manifest) if job_manifest else None)
+    if completeness is None:
+        print("WARNING: b-tag input completeness was not verified (no --job-manifest supplied)")
     grouped_counts, grouped_variances, grouped_edges, members = {}, {}, {}, {}
     for sample_dir in sorted(path for path in input_dir.iterdir() if path.is_dir()):
         roots = sorted(sample_dir.glob("*.root"))
@@ -135,7 +196,7 @@ def discover_family_histograms(input_dir, year, channel):
         members.setdefault(family, []).append(sample)
     if not members:
         raise ValueError(f"No sample directories found in {input_dir}")
-    return grouped_counts, grouped_variances, grouped_edges, members
+    return grouped_counts, grouped_variances, grouped_edges, members, completeness
 
 
 def invalid_count_bins(counts):
@@ -203,17 +264,30 @@ def efficiency(values, denominator):
     return output
 
 
-def poisson_efficiency_uncertainty(numerator_variance, denominator):
-    """Poisson-style uncertainty sqrt(sumw2_numerator) / sumw_denominator.
+def mcstat_efficiency_uncertainty(numerator, denominator, numerator_variance, denominator_variance):
+    """Weighted-binomial/delta-method uncertainty for a category fraction X/D."""
+    output = np.full_like(denominator, np.nan, dtype=float)
+    valid = denominator > 0
+    epsilon = np.divide(numerator, denominator, out=np.zeros_like(denominator, dtype=float), where=valid)
+    raw_variance = np.divide((1. - 2. * epsilon) * numerator_variance + epsilon ** 2 * denominator_variance,
+                             denominator ** 2, out=np.full_like(denominator, np.nan, dtype=float), where=valid)
+    scale = np.divide(np.abs((1. - 2. * epsilon) * numerator_variance) +
+                      np.abs(epsilon ** 2 * denominator_variance), denominator ** 2,
+                      out=np.zeros_like(denominator, dtype=float), where=valid)
+    tiny_negative = (raw_variance < 0.) & (raw_variance >= -1.e-12 * np.maximum(1., scale))
+    raw_variance[tiny_negative] = 0.
+    valid &= np.isfinite(raw_variance) & (raw_variance >= 0.)
+    output[valid] = np.sqrt(raw_variance[valid])
+    return output
 
-    The producer stores signed nominal-weight yields and their Sumw2 values.
-    For unit weights this is sqrt(N_tag) / N_all; with event weights, Sumw2
-    provides the corresponding weighted Poisson variance.  Keep the raw ROOT
-    histograms as well when exact future sample/channel merging is required.
-    """
-    output = np.zeros_like(numerator_variance, dtype=float)
-    np.divide(np.sqrt(np.maximum(numerator_variance, 0.0)), denominator,
-              out=output, where=denominator > 0)
+
+def compute_mcstat_uncertainties(counts, variances):
+    output = {(flavor, wp): mcstat_efficiency_uncertainty(
+        counts[(flavor, wp)], counts[(flavor, "den")], variances[(flavor, wp)], variances[(flavor, "den")])
+              for flavor in FLAVORS for wp in WORKING_POINTS}
+    for (flavor, wp), values in output.items():
+        if not np.all(np.isfinite(values)):
+            raise ValueError(f"Invalid weighted-binomial MC-statistical variance for {flavor}/{wp}")
     return output
 
 
@@ -301,8 +375,8 @@ def main():
     args = parse_args()
     prefix = f"btag_{args.year}_{args.channel}"
     if args.input_dir:
-        grouped_counts, grouped_variances, grouped_edges, members = discover_family_histograms(
-            args.input_dir, args.year, args.channel)
+        grouped_counts, grouped_variances, grouped_edges, members, completeness = discover_family_histograms(
+            args.input_dir, args.year, args.channel, args.job_manifest)
         inclusive_counts, inclusive_variances = {}, {}
         for family in members:
             add_counts(inclusive_counts, grouped_counts[family])
@@ -320,15 +394,13 @@ def main():
             edges = grouped_edges[family]
             efficiency_values = {(flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
                                  for flavor in FLAVORS for wp in WORKING_POINTS}
-            poisson_uncertainties = {(flavor, wp): poisson_efficiency_uncertainty(
-                variances[(flavor, wp)], counts[(flavor, "den")])
-                                   for flavor in FLAVORS for wp in WORKING_POINTS}
+            mcstat_uncertainties = compute_mcstat_uncertainties(counts, variances)
             specs.extend([
                 (prefix, sample_category(family, efficiency_values, edges),
                  "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
-                (f"{prefix}_poisson_unc", sample_category(family, poisson_uncertainties, edges),
-                 "Poisson uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
-                 "Poisson-style MC tagging-efficiency uncertainty"),
+                (f"{prefix}_mcstat_unc", sample_category(family, mcstat_uncertainties, edges),
+                 "Weighted-binomial MC-statistical uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+                 "Weighted-binomial MC tagging-efficiency uncertainty"),
             ])
         update_output(args.output, specs, replace_entries=True)
         manifest = args.manifest or args.output.with_name(
@@ -337,6 +409,8 @@ def main():
             "year": args.year, "channel": args.channel,
             "input_dir": str(args.input_dir), "families": members,
             "inclusive_fallback_bins": fallbacks,
+            "input_completeness_verified": completeness is not None,
+            "job_counts": completeness or {},
         }, indent=2) + "\n")
         print(f"Wrote {len(members)} family entries and manifest {manifest}")
         return
@@ -347,15 +421,13 @@ def main():
     validate_counts(counts)
     efficiency_values = {(flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
                          for flavor in FLAVORS for wp in WORKING_POINTS}
-    poisson_uncertainties = {(flavor, wp): poisson_efficiency_uncertainty(
-        variances[(flavor, wp)], counts[(flavor, "den")])
-                           for flavor in FLAVORS for wp in WORKING_POINTS}
+    mcstat_uncertainties = compute_mcstat_uncertainties(counts, variances)
     update_output(args.output, [
         (prefix, sample_category(args.sample, efficiency_values, edges),
          "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
-        (f"{prefix}_poisson_unc", sample_category(args.sample, poisson_uncertainties, edges),
-         "Poisson uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
-         "Poisson-style MC tagging-efficiency uncertainty"),
+        (f"{prefix}_mcstat_unc", sample_category(args.sample, mcstat_uncertainties, edges),
+         "Weighted-binomial MC-statistical uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+         "Weighted-binomial MC tagging-efficiency uncertainty"),
     ])
 
 

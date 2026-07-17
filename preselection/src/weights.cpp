@@ -347,7 +347,36 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                          " is unavailable; run --btag_eff and convert the matching MC sample first");
             }
         }
-        if (!use_legacy_efficiency) efficiency_sample = bTagEfficiencyFamily(sample);
+        if (!use_legacy_efficiency) {
+            std::string family_key;
+            try {
+                family_key = bTagEfficiencyFamily(sample);
+            } catch (const std::exception &) {
+                // Exact-sample payloads are valid even when no family has been
+                // configured.  Do not substitute an inclusive default.
+            }
+            const auto has_entry = [&](const std::string &key) {
+                try {
+                    // Any in-range point tests the sample category; the maps
+                    // clamp kinematics and all entries share the same binning.
+                    (void) efficiency->evaluate({key, "B", "T", 30., 0.});
+                    return true;
+                } catch (const std::exception &) {
+                    return false;
+                }
+            };
+            if (!family_key.empty() && has_entry(family_key)) {
+                efficiency_sample = family_key;
+            } else if (has_entry(sample)) {
+                efficiency_sample = sample;
+            } else {
+                throw std::runtime_error("B-tag efficiency entries are unavailable for " +
+                                         year + ":" + channel + ":" + sample +
+                                         "; attempted family key " +
+                                         (family_key.empty() ? std::string("<unconfigured>") : family_key) +
+                                         " and exact key " + sample);
+            }
+        }
 
         const auto &sf_correction = cset_it->second.at(correction_name);
         auto jet_weight = [&](double sf_tight, double sf_loose, double eff_tight,
