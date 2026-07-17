@@ -40,9 +40,10 @@ DEFAULT_TIME = "04:00:00"
 class JobManifest:
     """Tracks job submissions and their status."""
 
-    def __init__(self, task_dir: Path):
+    def __init__(self, task_dir: Path, published_path: Optional[Path] = None):
         self.task_dir = task_dir
         self.manifest_path = task_dir / "manifest.json"
+        self.published_path = published_path
         self.data = {
             "task_name": task_dir.name,
             "created": datetime.now().isoformat(),
@@ -51,17 +52,35 @@ class JobManifest:
             "analysis": "",
             "run_number": 0,
             "output_dir": "",
+            "btag_eff": False,
+            "samples": {},
             "jobs": {}
         }
 
-    def set_metadata(self, config: str, analysis: str, run_number: int, output_dir: str):
+    def set_metadata(self, config: str, analysis: str, run_number: int, output_dir: str,
+                     btag_eff: bool = False):
         self.data["config"] = config
         self.data["analysis"] = analysis
         self.data["run_number"] = run_number
         self.data["output_dir"] = output_dir
+        self.data["btag_eff"] = btag_eff
+
+    def add_sample(self, sample_name: str, n_files: int, status: str = "prepared",
+                   reason: Optional[str] = None):
+        if sample_name in self.data["samples"]:
+            raise ValueError(f"Sample {sample_name} was added to the manifest more than once")
+        self.data["samples"][sample_name] = {
+            "status": status,
+            "reason": reason,
+            "n_files": n_files,
+            "job_indices": [],
+        }
 
     def add_job(self, job_id: str, sample_name: str, job_idx: int,
                 input_files: List[str], job_dir: str):
+        if sample_name not in self.data["samples"]:
+            raise ValueError(f"Job {job_id} refers to unregistered sample {sample_name}")
+        self.data["samples"][sample_name]["job_indices"].append(job_idx)
         self.data["jobs"][job_id] = {
             "sample": sample_name,
             "job_idx": job_idx,
@@ -81,8 +100,12 @@ class JobManifest:
             job["submit_time"] = datetime.now().isoformat()
 
     def save(self):
-        with open(self.manifest_path, 'w') as f:
-            json.dump(self.data, f, indent=2)
+        for path in (self.manifest_path, self.published_path):
+            if path is None:
+                continue
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, 'w') as f:
+                json.dump(self.data, f, indent=2)
 
     @classmethod
     def load(cls, task_dir: Path) -> 'JobManifest':
@@ -336,6 +359,19 @@ def create_tarball(preselection_dir: Path) -> Path:
     return tarball_path
 
 
+def prepare_output_directory(output_path: Path, btag_eff: bool) -> Optional[Path]:
+    """Create an output directory without permitting b-tag batch mixing."""
+    if not btag_eff:
+        output_path.mkdir(parents=True, exist_ok=True)
+        return None
+    if output_path.exists() and any(output_path.iterdir()):
+        raise ValueError(
+            f"Refusing to mix a new b-tag efficiency submission into existing channel output "
+            f"{output_path}. Choose a new --output-dir or remove the previous complete submission.")
+    output_path.mkdir(parents=True, exist_ok=True)
+    return output_path / "manifest.json"
+
+
 # ============================================================================
 # Main
 # ============================================================================
@@ -353,10 +389,6 @@ def main():
     if not config_path.exists():
         print(f"ERROR: Config file not found: {config_path}")
         sys.exit(1)
-
-    # Create tarball of analysis code
-    print("Creating tarball...")
-    create_tarball(preselection_dir)
 
     # Load config
     with open(config_path) as f:
@@ -388,7 +420,22 @@ def main():
         print("Please remove it or use a different --tag")
         sys.exit(1)
 
+    # B-tag efficiency outputs are consumed directly by the converter as
+    # OUTPUT_ROOT/CHANNEL/{manifest.json,SAMPLE/output_N.root}.  Do this
+    # check before creating a task directory or tarball so a rejected rerun
+    # leaves no misleading submission artifacts behind.
+    output_path = Path(args.output_dir)
+    try:
+        published_manifest = prepare_output_directory(output_path, args.btag_eff)
+    except ValueError as error:
+        print(f"ERROR: {error}")
+        sys.exit(1)
+
     task_dir.mkdir(parents=True)
+
+    # Create the package only after the submission/output checks passed.
+    print("Creating tarball...")
+    create_tarball(preselection_dir)
 
     # Copy executable and tarball to task dir
     subprocess.run(["cp", str(script_dir / "executable.sh"),
@@ -397,12 +444,8 @@ def main():
                     str(task_dir / "package.tar.gz")], check=True)
 
     # Initialize manifest
-    manifest = JobManifest(task_dir)
-    manifest.set_metadata(args.config, args.analysis, args.run_number, args.output_dir)
-
-    # Create output directory
-    output_path = Path(args.output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
+    manifest = JobManifest(task_dir, published_manifest)
+    manifest.set_metadata(args.config, args.analysis, args.run_number, args.output_dir, args.btag_eff)
 
     print(f"\n{'='*60}")
     print(f"SLURM Job Submission for run3-vbsvvh")
@@ -438,7 +481,10 @@ def main():
 
         if not all_files:
             print(f"  Skipping {sample_name}: no files found")
+            manifest.add_sample(sample_name, 0, "skipped_no_files", "no_files_found")
             continue
+
+        manifest.add_sample(sample_name, len(all_files))
 
         # Split files into chunks
         if args.events_per_job:
@@ -485,6 +531,9 @@ def main():
             total_jobs += 1
 
     if not job_entries:
+        # Preserve the complete configured-sample record for diagnostics and
+        # make a later final conversion reject this incomplete production.
+        manifest.save()
         print("ERROR: No jobs to submit (all samples had no files)")
         sys.exit(1)
 

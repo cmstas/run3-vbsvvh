@@ -129,17 +129,44 @@ def output_job_index(path):
 def validate_job_manifest(input_dir, manifest_path):
     """Validate that every Slurm task in *manifest_path* produced one ROOT file."""
     manifest = json.loads(manifest_path.read_text())
+    samples = manifest.get("samples")
+    if not isinstance(samples, dict) or not samples:
+        raise ValueError(f"{manifest_path} has no configured-sample completeness metadata")
     jobs = manifest.get("jobs")
-    if not isinstance(jobs, dict) or not jobs:
+    if not isinstance(jobs, dict):
         raise ValueError(f"{manifest_path} has no jobs")
     expected = {}
+    for sample, metadata in samples.items():
+        if not isinstance(sample, str) or not isinstance(metadata, dict):
+            raise ValueError(f"{manifest_path} has invalid configured-sample metadata")
+        indices = metadata.get("job_indices")
+        if (metadata.get("status") == "skipped_no_files" or not isinstance(indices, list) or
+                not indices):
+            raise ValueError(
+                f"{manifest_path} is incomplete: configured sample {sample!r} has "
+                f"status={metadata.get('status')!r}, jobs={indices!r}, reason={metadata.get('reason')!r}")
+        if any(not isinstance(index, int) for index in indices) or len(indices) != len(set(indices)):
+            raise ValueError(f"{manifest_path} has invalid expected job indices for {sample}")
+        expected[sample] = set(indices)
+    seen = {}
     for job in jobs.values():
         sample, index = job.get("sample"), job.get("job_idx")
         if not isinstance(sample, str) or not isinstance(index, int):
             raise ValueError(f"{manifest_path} has a job without sample/job_idx metadata")
-        if index in expected.setdefault(sample, set()):
+        if sample not in expected:
+            raise ValueError(f"{manifest_path} has a job for unconfigured sample {sample!r}")
+        if index not in expected[sample]:
+            raise ValueError(f"{manifest_path} has unexpected job index {sample}:{index}")
+        # Build independently from the declared sample index list, so each
+        # Slurm task is still required exactly once.
+        if index in seen.setdefault(sample, set()):
             raise ValueError(f"{manifest_path} has duplicate expected job index {sample}:{index}")
-        expected[sample].add(index)
+        seen[sample].add(index)
+    if set(seen) != set(expected):
+        raise ValueError(f"{manifest_path} jobs do not cover every configured sample")
+    for sample, indices in expected.items():
+        if seen[sample] != indices:
+            raise ValueError(f"{manifest_path} jobs do not match declared indices for {sample}")
 
     discovered = {}
     directories = {path.name for path in input_dir.iterdir() if path.is_dir()}
@@ -425,31 +452,46 @@ def discover_final_inputs(input_root, config=None):
     return inputs, manifests, ignored
 
 
-def discover_final_histograms(input_root, year, config=None):
-    """Merge all YAML-retained raw outputs into final channel/sample groups."""
+def discover_source_histograms(input_root, year, config=None):
+    """Load complete retained source channels before final YAML merging."""
     config = load_config() if config is None else config
     channel_inputs, channel_manifests, ignored = discover_final_inputs(input_root, config)
-    grouped_counts, grouped_variances, grouped_edges, members, completeness = {}, {}, {}, {}, {}
+    source_counts, source_variances, source_edges, members, completeness = {}, {}, {}, {}, {}
     for channel, input_dir in channel_inputs.items():
         counts, variances, edges, preliminary_members, checked = discover_family_histograms(
             input_dir, year, channel, channel_manifests[channel], config)
-        target_channel = final_channel(channel, config)
         completeness[channel] = checked
-        for preliminary_family, samples in preliminary_members.items():
-            target_sample = final_group("samples", preliminary_family, config)
-            target = (target_channel, target_sample)
-            if target in grouped_edges and not (
-                np.array_equal(edges[preliminary_family][0], grouped_edges[target][0]) and
-                np.array_equal(edges[preliminary_family][1], grouped_edges[target][1])
-            ):
-                raise ValueError(f"Histogram binning differs within final group {target}")
-            grouped_edges[target] = edges[preliminary_family]
-            grouped_counts.setdefault(target, {})
-            grouped_variances.setdefault(target, {})
-            add_counts(grouped_counts[target], counts[preliminary_family])
-            add_counts(grouped_variances[target], variances[preliminary_family])
-            members.setdefault(target_channel, {}).setdefault(target_sample, []).extend(
-                [f"{channel}:{sample}" for sample in samples])
+        for family, samples in preliminary_members.items():
+            key = (channel, family)
+            source_counts[key] = counts[family]
+            source_variances[key] = variances[family]
+            source_edges[key] = edges[family]
+            members[key] = samples
+    return source_counts, source_variances, source_edges, members, completeness, ignored
+
+
+def discover_final_histograms(input_root, year, config=None):
+    """Merge all YAML-retained raw outputs into final channel/sample groups."""
+    config = load_config() if config is None else config
+    source_counts, source_variances, source_edges, source_members, completeness, ignored = discover_source_histograms(
+        input_root, year, config)
+    grouped_counts, grouped_variances, grouped_edges, members = {}, {}, {}, {}
+    for (channel, preliminary_family), counts in source_counts.items():
+        target_channel = final_channel(channel, config)
+        target_sample = final_group("samples", preliminary_family, config)
+        target = (target_channel, target_sample)
+        if target in grouped_edges and not (
+            np.array_equal(source_edges[channel, preliminary_family][0], grouped_edges[target][0]) and
+            np.array_equal(source_edges[channel, preliminary_family][1], grouped_edges[target][1])
+        ):
+            raise ValueError(f"Histogram binning differs within final group {target}")
+        grouped_edges[target] = source_edges[channel, preliminary_family]
+        grouped_counts.setdefault(target, {})
+        grouped_variances.setdefault(target, {})
+        add_counts(grouped_counts[target], counts)
+        add_counts(grouped_variances[target], source_variances[channel, preliminary_family])
+        members.setdefault(target_channel, {}).setdefault(target_sample, []).extend(
+            [f"{channel}:{sample}" for sample in source_members[channel, preliminary_family]])
     return grouped_counts, grouped_variances, grouped_edges, members, completeness, ignored
 
 

@@ -95,14 +95,16 @@ branches are separate and remain part of the analysis weighting.)
 <summary>Full b-tag efficiency derivation tutorial</summary>
 
 ```bash
-# 1. Produce raw weighted yields on MC with Slurm (see run_wrapper.sh for the batch form).
+# 1. Produce raw weighted yields on MC with Slurm.  This directly creates
+#    $OUT_DIR/<channel>/{manifest.json,<exact-sample>/output_<job-index>.root}.
+#    Use a new/empty $OUT_DIR for each submission; mixed reruns are rejected.
 python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
   -c all -m slurm -r 3 -f 1 --btag-eff
 
-# Raw outputs for final conversion must be arranged as:
-#   $INPUT_ROOT/<channel>/manifest.json
-#   $INPUT_ROOT/<channel>/<exact-sample>/output_<job-index>.root
-# The final converter validates every manifest job exactly once.
+# The later commands consume INPUT_ROOT=$OUT_DIR directly.  Every configured
+# sample, including a no-file skip, is recorded in each manifest; final steps
+# reject incomplete manifests and validate every expected job exactly once.
+INPUT_ROOT="$OUT_DIR"
 
 # 2. Produce preliminary payloads, once per retained channel.
 python3 ../misc/sf-utils/bEff-convert-to-correction.py \
@@ -110,11 +112,19 @@ python3 ../misc/sf-utils/bEff-convert-to-correction.py \
   --year 2024Prompt --channel 1lep_1FJ \
   --output corrections/scalefactors/btagging/btag_eff_prelim.json
 
-# 3. Inspect the preliminary family/channel compatibility plots.
+# 3. Inspect preliminary compatibility.  The first command compares families
+#    within one source channel; the next two compare retained source channels
+#    before final YAML channel merges.  all_events and the _met subsets are excluded.
 python3 ../misc/sf-utils/plot-btag-eff-families.py \
   --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
   --year 2024Prompt --channel 1lep_1FJ
 # Manually update final_merges in btag_eff_families.yaml after this review.
+python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
+  --mode families --input-root "$INPUT_ROOT" --year 2024Prompt \
+  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_prelim_all_channels_families
+python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
+  --mode channels --input-root "$INPUT_ROOT" --year 2024Prompt \
+  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_prelim_all_samples_channels
 
 # 4. Build the final payload.  All retained YAML channels are discovered
 # automatically; missing channels, manifests, jobs, duplicate outputs, or
@@ -123,7 +133,7 @@ python3 ../misc/sf-utils/bEff-convert-to-correction.py --final --year 2024Prompt
   --input-root "$INPUT_ROOT" \
   --output corrections/scalefactors/btagging/btag_eff.json
 
-# 5. Optionally recheck only the two money plots using the final YAML merges.
+# 5. Recheck the two money plots after applying final sample/channel merges.
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
   --mode families --input-root "$INPUT_ROOT" \
   --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_channels_families

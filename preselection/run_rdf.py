@@ -87,6 +87,13 @@ def check_inputs(merged_json_dict, mode, btag_eff=False):
             raise Exception("Error, more than one kind of input is specified, not able to run runAnalysis over multiple kinds")
 
 
+def output_dir_for_channel(outpath, outname, channel, mode, btag_eff):
+    """Return the stable output location for one channel/backend invocation."""
+    if btag_eff and mode == "slurm":
+        return os.path.join(outpath, channel)
+    return os.path.join(outpath, f"{channel}_{outname}")
+
+
 
 ################### Main function ###################
 def main():
@@ -160,9 +167,14 @@ def main():
         with open(merged_json_name, 'w') as outfile:
             json.dump(merged_json_dict, outfile, indent=4)
 
-        # Make an output directory out of outpath/outname
-        outdir = os.path.join(args.outpath,outname)
-        if not os.path.isdir(outdir): os.makedirs(outdir)
+        # B-tag Slurm production writes the converter's documented layout
+        # directly: INPUT_ROOT/CHANNEL/{manifest.json,SAMPLE/output_N.root}.
+        # The submitter creates it only after checking that it cannot mix with
+        # a previous submission.  Keep the historical outname layout for all
+        # other workflows.
+        outdir = output_dir_for_channel(args.outpath, args.outname, chan_name, args.mode, args.btag_eff)
+        if not (args.btag_eff and args.mode == "slurm") and not os.path.isdir(outdir):
+            os.makedirs(outdir)
         print(f"  -> RDF output will be located in: {outdir}")
 
         # Construct the bash run command
@@ -192,4 +204,5 @@ def main():
 
         print("Done!")
 
-main()
+if __name__ == "__main__":
+    main()

@@ -23,6 +23,8 @@ conv = load("btag_converter_test", "bEff-convert-to-correction.py")
 plots = load("btag_plots_test", "plot-btag-eff-families.py")
 global_plots = load("btag_global_test", "plot-btag-eff-global.py")
 families = load("btag_families_test", "btag_eff_families.py")
+slurm_submit = load("btag_slurm_submit_test", "../../preselection/slurm/submit.py")
+run_rdf = load("btag_run_rdf_test", "../../preselection/run_rdf.py")
 
 
 def counts(den=10., tight=2., loose=5., lt=3., untagged=5.):
@@ -94,7 +96,9 @@ class BTagEfficiencyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             manifest = root / "manifest.json"
-            manifest.write_text(json.dumps({"jobs": {
+            manifest.write_text(json.dumps({"samples": {
+                "sample": {"status": "prepared", "reason": None, "n_files": 2, "job_indices": [0, 1]},
+            }, "jobs": {
                 "sample_0": {"sample": "sample", "job_idx": 0},
                 "sample_1": {"sample": "sample", "job_idx": 1},
             }}))
@@ -109,6 +113,50 @@ class BTagEfficiencyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 conv.validate_job_manifest(root / "outputs", manifest)
 
+    def test_skipped_sample_is_manifested_and_rejects_final_completeness(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task = root / "task"
+            output = root / "outputs"
+            task.mkdir()
+            output.mkdir()
+            manifest = slurm_submit.JobManifest(task, output / "manifest.json")
+            manifest.add_sample("empty", 0, "skipped_no_files", "no_files_found")
+            manifest.save()
+            published = json.loads((output / "manifest.json").read_text())
+            self.assertEqual(published["samples"]["empty"]["status"], "skipped_no_files")
+            with self.assertRaises(ValueError):
+                conv.validate_job_manifest(output, output / "manifest.json")
+            manifest = {
+                "samples": {"unsubmitted": {
+                    "status": "prepared", "reason": None, "n_files": 1, "job_indices": [],
+                }},
+                "jobs": {},
+            }
+            (output / "manifest.json").write_text(json.dumps(manifest))
+            with self.assertRaises(ValueError):
+                conv.validate_job_manifest(output, output / "manifest.json")
+
+    def test_btag_slurm_channel_layout_is_documented_and_colocated(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outdir = root / "btag_outputs" / "0lep_0FJ"
+            self.assertEqual(run_rdf.output_dir_for_channel(
+                str(root / "btag_outputs"), "ignored_tag", "0lep_0FJ", "slurm", True), str(outdir))
+            published = slurm_submit.prepare_output_directory(outdir, True)
+            self.assertEqual(published, outdir / "manifest.json")
+            task = root / "task"
+            task.mkdir()
+            manifest = slurm_submit.JobManifest(task, published)
+            manifest.add_sample("sample", 1)
+            manifest.add_job("sample", "sample", 0, ["input.root"], str(task / "sample"))
+            manifest.save()
+            sample_dir = outdir / "sample"
+            sample_dir.mkdir()
+            (sample_dir / "output_0.root").touch()
+            self.assertTrue((outdir / "manifest.json").is_file())
+            self.assertEqual(conv.validate_job_manifest(outdir, outdir / "manifest.json")["sample"]["discovered_jobs"], 1)
+
     def test_final_input_discovery_requires_all_channels_and_manifests(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -119,10 +167,12 @@ class BTagEfficiencyTests(unittest.TestCase):
                 directory.mkdir()
                 (directory / "manifest.json").write_text(json.dumps({"jobs": {}}))
             (root / "0lep_1FJ_met").mkdir()
+            (root / "0lep_2FJ_met").mkdir()
+            (root / "all_events").mkdir()
             inputs, manifests, ignored = conv.discover_final_inputs(root)
             self.assertEqual(set(inputs), set(families.retained_source_channels()))
             self.assertEqual(set(manifests), set(inputs))
-            self.assertEqual(ignored, ["0lep_1FJ_met"])
+            self.assertEqual(ignored, ["0lep_1FJ_met", "0lep_2FJ_met", "all_events"])
             (root / "1lep_1FJ" / "manifest.json").unlink()
             with self.assertRaises(ValueError):
                 conv.discover_final_inputs(root)
@@ -157,16 +207,37 @@ class BTagEfficiencyTests(unittest.TestCase):
             self.assertFalse(entry["available"])
             self.assertIsNone(entry["fraction_gt2"])
 
-    def test_global_diagnostics_accept_only_final_input_root_cli(self):
+    def test_global_diagnostics_accept_source_and_final_input_root_cli(self):
         parser = global_plots.parse_args
         previous_argv = sys.argv
         try:
             sys.argv = ["plot-btag-eff-global.py", "--input-root", "/tmp/inputs", "--year", "2024Prompt",
-                        "--mode", "families", "--final"]
+                        "--mode", "families"]
             args = parser()
         finally:
             sys.argv = previous_argv
         self.assertEqual(args.input_root, Path("/tmp/inputs"))
+
+    def test_source_and_final_global_grouping_are_distinct(self):
+        raw = counts()
+        variances = {key: value.copy() for key, value in raw.items()}
+        source = {
+            ("0lep_2FJ", "DY"): raw,
+            ("0lep_3FJ", "DY"): raw,
+        }
+        final = {("0lep_2FJ+", "EWK"): raw}
+        original_source = conv.discover_source_histograms
+        original_final = conv.discover_final_histograms
+        try:
+            conv.discover_source_histograms = lambda *args: (source, {key: variances for key in source}, {}, {}, {"x": {}}, [])
+            conv.discover_final_histograms = lambda *args: (final, {key: variances for key in final}, {}, {}, {"x": {}}, [])
+            grouped_source, _, _ = global_plots.grouped_inputs(conv, Path("unused"), "2024Prompt", "channels", False, {})
+            grouped_final, _, _ = global_plots.grouped_inputs(conv, Path("unused"), "2024Prompt", "channels", True, {})
+        finally:
+            conv.discover_source_histograms = original_source
+            conv.discover_final_histograms = original_final
+        self.assertEqual(set(grouped_source), {"0lep_2FJ", "0lep_3FJ"})
+        self.assertEqual(set(grouped_final), {"0lep_2FJ+"})
 
     def test_matrix_plots_use_module_categories(self):
         raw = counts()
