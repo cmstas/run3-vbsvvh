@@ -112,7 +112,7 @@ def main():
     args = parser.parse_args()
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
-    if args.channels == ["all"]: channels_to_run = [*ANA_CHANNELS.keys(), "all_events"]
+    if args.channels == ["all"]: channels_to_run = ANA_CHANNELS.keys()
     else: channels_to_run = args.channels
 
     # Run RDF once for each specified channel

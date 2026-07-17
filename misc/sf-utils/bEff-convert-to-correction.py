@@ -33,9 +33,8 @@ def parse_args():
     return parser.parse_args()
 
 
-def histogram_values_in_application_range(hist, path, hist_name):
+def fold_pt_flow(values, path, hist_name):
     """Fold pT flow into edge bins, matching correctionlib's pT clamp flow."""
-    values, pt_edges, eta_edges = hist.to_numpy(flow=True)
     # The producer rejects |eta| >= 2.5, so eta flow would indicate a
     # producer/application mismatch rather than information to clamp.
     if np.any(values[:, 0] != 0) or np.any(values[:, -1] != 0):
@@ -43,12 +42,24 @@ def histogram_values_in_application_range(hist, path, hist_name):
     central = values[1:-1, 1:-1].astype(float, copy=True)
     central[0, :] += values[0, 1:-1]
     central[-1, :] += values[-1, 1:-1]
-    return central, pt_edges[1:-1], eta_edges[1:-1]
+    return central
+
+
+def histogram_arrays_in_application_range(hist, path, hist_name):
+    """Return weighted yields and their Sumw2 variances in application bins."""
+    values, pt_edges, eta_edges = hist.to_numpy(flow=True)
+    variances = hist.variances(flow=True)
+    if variances is None:
+        raise ValueError(f"{path}:{hist_name} has no Sumw2 information")
+    return (fold_pt_flow(values, path, hist_name),
+            fold_pt_flow(variances, path, hist_name),
+            pt_edges[1:-1], eta_edges[1:-1])
 
 
 def read_merged_histograms(paths, expected_year, expected_channel, expected_sample):
-    """Return signed nominal-weight sums and common pT/eta edges for all flavors."""
+    """Return weighted yields, Sumw2 variances, and common pT/eta edges."""
     merged = {}
+    merged_variances = {}
     edges = None
     for path in paths:
         with uproot.open(path) as root_file:
@@ -75,7 +86,7 @@ def read_merged_histograms(paths, expected_year, expected_channel, expected_samp
                     hist_name = f"btag_{flavor}_{state}"
                     if hist_name not in root_file:
                         raise ValueError(f"{path} does not contain {hist_name}")
-                    values, pt_edges, eta_edges = histogram_values_in_application_range(
+                    values, variances, pt_edges, eta_edges = histogram_arrays_in_application_range(
                         root_file[hist_name], path, hist_name)
                     if edges is None:
                         edges = (pt_edges, eta_edges)
@@ -83,7 +94,8 @@ def read_merged_histograms(paths, expected_year, expected_channel, expected_samp
                         raise ValueError(f"Histogram binning in {path} differs from the other inputs")
                     key = (flavor, state)
                     merged[key] = merged.get(key, np.zeros_like(values, dtype=float)) + values
-    return merged, edges
+                    merged_variances[key] = merged_variances.get(key, np.zeros_like(variances, dtype=float)) + variances
+    return merged, merged_variances, edges
 
 
 def validate_counts(counts):
@@ -129,6 +141,20 @@ def efficiency(values, denominator):
     return output
 
 
+def poisson_efficiency_uncertainty(numerator_variance, denominator):
+    """Poisson-style uncertainty sqrt(sumw2_numerator) / sumw_denominator.
+
+    The producer stores signed nominal-weight yields and their Sumw2 values.
+    For unit weights this is sqrt(N_tag) / N_all; with event weights, Sumw2
+    provides the corresponding weighted Poisson variance.  Keep the raw ROOT
+    histograms as well when exact future sample/channel merging is required.
+    """
+    output = np.zeros_like(numerator_variance, dtype=float)
+    np.divide(np.sqrt(np.maximum(numerator_variance, 0.0)), denominator,
+              out=output, where=denominator > 0)
+    return output
+
+
 def multibinning(values, pt_edges, eta_edges):
     return {
         "nodetype": "multibinning",
@@ -139,16 +165,15 @@ def multibinning(values, pt_edges, eta_edges):
     }
 
 
-def sample_category(sample, counts, edges):
+def sample_category(sample, values, edges):
     pt_edges, eta_edges = edges
     flavor_entries = []
     for flavor in FLAVORS:
-        denominator = counts[(flavor, "den")]
         wp_entries = []
         for wp in WORKING_POINTS:
             wp_entries.append({
                 "key": wp,
-                "value": multibinning(efficiency(counts[(flavor, wp)], denominator), pt_edges, eta_edges),
+                "value": multibinning(values[(flavor, wp)], pt_edges, eta_edges),
             })
         flavor_entries.append({
             "key": {"b": "B", "c": "C", "light": "L"}[flavor],
@@ -160,10 +185,10 @@ def sample_category(sample, counts, edges):
     }
 
 
-def make_correction(name, sample_entry):
+def make_correction(name, sample_entry, description, output_name, output_description):
     return {
         "name": name,
-        "description": "Selected-AK4 UParTAK4 b-tag efficiency",
+        "description": description,
         "version": 1,
         "inputs": [
             {"name": "sample", "type": "string", "description": "exact RDataFrame sample name"},
@@ -172,23 +197,26 @@ def make_correction(name, sample_entry):
             {"name": "pt", "type": "real", "description": "selected AK4 jet pT"},
             {"name": "eta", "type": "real", "description": "selected AK4 jet eta"},
         ],
-        "output": {"name": "efficiency", "type": "real", "description": "MC tagging efficiency"},
+        "output": {"name": output_name, "type": "real", "description": output_description},
         "data": {"nodetype": "category", "input": "sample", "content": [sample_entry]},
     }
 
 
-def update_output(path, correction_name, sample_entry):
+def update_output(path, correction_specs):
     if path.exists():
         payload = json.loads(path.read_text())
     else:
         payload = {"schema_version": 2, "description": "VBS VVH b-tag efficiencies", "corrections": [], "compound_corrections": []}
 
-    correction = next((item for item in payload["corrections"] if item["name"] == correction_name), None)
-    if correction is None:
-        payload["corrections"].append(make_correction(correction_name, sample_entry))
-    else:
-        expected_inputs = ["sample", "flavor", "WP", "pt", "eta"]
-        if [item["name"] for item in correction["inputs"]] != expected_inputs:
+    expected_inputs = ["sample", "flavor", "WP", "pt", "eta"]
+    for correction_name, sample_entry, description, output_name, output_description in correction_specs:
+        correction = next((item for item in payload["corrections"] if item["name"] == correction_name), None)
+        if correction is None:
+            payload["corrections"].append(
+                make_correction(correction_name, sample_entry, description, output_name, output_description))
+            continue
+        if ([item["name"] for item in correction["inputs"]] != expected_inputs or
+                correction["output"]["name"] != output_name):
             raise ValueError(f"Existing {correction_name} has an incompatible schema; write a new output file")
         entries = correction["data"]["content"]
         correction["data"]["content"] = [entry for entry in entries if entry["key"] != sample_entry["key"]]
@@ -202,10 +230,25 @@ def update_output(path, correction_name, sample_entry):
 
 def main():
     args = parse_args()
-    counts, edges = read_merged_histograms(args.input, args.year, args.channel, args.sample)
+    counts, variances, edges = read_merged_histograms(args.input, args.year, args.channel, args.sample)
     validate_counts(counts)
-    update_output(args.output, f"btag_{args.year}_{args.channel}",
-                  sample_category(args.sample, counts, edges))
+    efficiency_values = {
+        (flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
+        for flavor in FLAVORS for wp in WORKING_POINTS
+    }
+    poisson_uncertainties = {
+        (flavor, wp): poisson_efficiency_uncertainty(
+            variances[(flavor, wp)], counts[(flavor, "den")])
+        for flavor in FLAVORS for wp in WORKING_POINTS
+    }
+    prefix = f"btag_{args.year}_{args.channel}"
+    update_output(args.output, [
+        (prefix, sample_category(args.sample, efficiency_values, edges),
+         "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
+        (f"{prefix}_poisson_unc", sample_category(args.sample, poisson_uncertainties, edges),
+         "Poisson uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+         "Poisson-style MC tagging-efficiency uncertainty"),
+    ])
 
 
 if __name__ == "__main__":

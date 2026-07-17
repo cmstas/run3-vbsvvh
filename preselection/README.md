@@ -77,8 +77,11 @@ command is shown, commented out, in `run_wrapper.sh`:
 
 Merge worker ROOT files separately for each exact sample, then use
 `../misc/sf-utils/bEff-convert-to-correction.py` to append its validated
-efficiency map to `corrections/scalefactors/btagging/btag_eff.json`.  Regenerate
-older unweighted pilot files before converting them.
+central efficiency map and matching `*_poisson_unc` map to
+`corrections/scalefactors/btagging/btag_eff.json`.  The producer ROOT
+histograms retain both weighted yields and Sumw2, so keep them when combining
+samples or channels later. Regenerate older unweighted pilot files before
+converting them.
 
 ---
 ## Details on the condor batch submission
