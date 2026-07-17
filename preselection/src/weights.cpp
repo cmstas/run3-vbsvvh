@@ -14,6 +14,36 @@ double unityForInvalidBTagWeight(std::atomic<unsigned long long> &counter) {
     ++counter;
     return 1.;
 }
+
+std::string bTagEfficiencyFamily(const std::string &sample) {
+    const auto contains = [&sample](const std::string &needle) {
+        return sample.find(needle) != std::string::npos;
+    };
+    // Keep this ordered consistently with misc/sf-utils/btag_eff_families.py.
+    if (contains("VBSWWH_") || contains("VBSWZH_") || contains("VBSZZH_")) return "VBS_VVH";
+    if (contains("VBS-SSWW")) return "VBS_SSWW";
+    if (contains("WWJJ")) return "WWJJ";
+    if (contains("ZZJJ")) return "ZZJJ";
+    if (contains("GluGluToContinto2Z") || contains("GluGlutoContinto2Z")) return "ggZZ_continuum";
+    if (contains("GluGluH-")) return "ggH";
+    if (contains("GluGluZH") || contains("WplusH") || contains("WminusH") || contains("ZH-")) return "VH";
+    if (contains("TTH-")) return "ttH";
+    if (contains("TTWW") || contains("TTWZ") || contains("TTW-") || contains("TZQB")) return "ttV_rare";
+    if (contains("TTto") || contains("TTLL") || contains("TTLNu")) return "ttbar";
+    if (contains("TWminus") || contains("TbarWplus")) return "tW";
+    if (contains("TBbarQ") || contains("TbarBQ") || contains("TBbarto") || contains("TbarBto")) return "single_top";
+    if (contains("WWW-") || contains("WWZ-") || contains("WZZ-") || contains("ZZZ-")) return "triboson";
+    if (contains("WZ_") || contains("WZto")) return "WZ";
+    if (contains("WW_") || contains("WWto")) return "WW";
+    if (contains("ZZ_") || contains("ZZto")) return "ZZ";
+    if (contains("DYto")) return "DY";
+    if (contains("WtoLNu")) return "W_leptonic";
+    if (contains("Wto2Q")) return "W_hadronic";
+    if (contains("Zto2Q")) return "Z_hadronic";
+    if (contains("QCD-4Jets")) return "QCD_HT";
+    if (contains("QCD_Bin")) return "QCD_PT";
+    throw std::runtime_error("No b-tag efficiency family is configured for sample " + sample);
+}
 } // namespace
 
 void resetBTagDiagnostics() {
@@ -304,6 +334,7 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
         const std::string efficiency_name = "btag_" + year + "_" + channel;
         const std::string legacy_efficiency_name = "btag_" + year;
         bool use_legacy_efficiency = false;
+        std::string efficiency_sample = sample;
         decltype(cset_eff_it->second.at(efficiency_name)) efficiency;
         try {
             efficiency = cset_eff_it->second.at(efficiency_name);
@@ -316,6 +347,7 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                          " is unavailable; run --btag_eff and convert the matching MC sample first");
             }
         }
+        if (!use_legacy_efficiency) efficiency_sample = bTagEfficiencyFamily(sample);
 
         const auto &sf_correction = cset_it->second.at(correction_name);
         auto jet_weight = [&](double sf_tight, double sf_loose, double eff_tight,
@@ -373,8 +405,8 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                     eff_tight = efficiency->evaluate({flavor_label, "T", pt[i], eta[i]});
                     eff_loose = efficiency->evaluate({flavor_label, "L", pt[i], eta[i]});
                 } else {
-                    eff_tight = efficiency->evaluate({sample, flavor_label, "T", pt[i], eta[i]});
-                    eff_loose = efficiency->evaluate({sample, flavor_label, "L", pt[i], eta[i]});
+                    eff_tight = efficiency->evaluate({efficiency_sample, flavor_label, "T", pt[i], eta[i]});
+                    eff_loose = efficiency->evaluate({efficiency_sample, flavor_label, "L", pt[i], eta[i]});
                 }
             } catch (const std::exception &) {
                 throw std::runtime_error("B-tag efficiency entries are unavailable for " +

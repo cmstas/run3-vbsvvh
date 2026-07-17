@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Convert merged weighted b-tag efficiency histograms into correctionlib JSON.
 
-Each invocation adds (or replaces) one exact MC sample in one
-year/channel correction.  Pass every worker ROOT file for that sample; raw
-counts are summed before efficiencies are calculated.
+The legacy mode adds one exact MC sample.  Family mode discovers sample
+directories, merges raw weighted yields into conservative physics families,
+and writes one correction entry per family.
 """
 
 import argparse
@@ -14,6 +14,8 @@ import numpy as np
 import uproot
 import correctionlib.schemav2 as cs
 
+from btag_eff_families import sample_family
+
 
 FLAVORS = ("b", "c", "light")
 WORKING_POINTS = ("T", "L", "LT", "N")
@@ -22,14 +24,18 @@ HISTOGRAM_NAMES = {"T": "T", "L": "L", "LT": "LT", "N": "N"}
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", nargs="+", required=True,
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--input", nargs="+",
                         help="All raw ROOT files for one sample (local paths or root:// URLs)")
+    inputs.add_argument("--input-dir", type=Path,
+                        help="Directory containing one raw-output directory per exact sample")
     parser.add_argument("--year", required=True, help="Metadata year, e.g. 2024Prompt")
     parser.add_argument("--channel", required=True, help="Preselection channel, e.g. 0lep_0FJ")
-    parser.add_argument("--sample", required=True,
-                        help="Exact RDataFrame sample name from the input JSON")
+    parser.add_argument("--sample", help="Exact RDataFrame sample name from the input JSON (legacy mode)")
     parser.add_argument("--output", required=True, type=Path,
                         help="CorrectionSet JSON to create or update")
+    parser.add_argument("--manifest", type=Path,
+                        help="Family membership manifest (defaults beside --output in family mode)")
     return parser.parse_args()
 
 
@@ -98,8 +104,43 @@ def read_merged_histograms(paths, expected_year, expected_channel, expected_samp
     return merged, merged_variances, edges
 
 
-def validate_counts(counts):
-    """Validate signed weighted yields before constructing an efficiency map."""
+def add_counts(destination, source):
+    for key, values in source.items():
+        destination[key] = destination.get(key, np.zeros_like(values, dtype=float)) + values
+
+
+def discover_family_histograms(input_dir, year, channel):
+    """Read every exact sample directory and return raw yields grouped by family."""
+    if not input_dir.is_dir():
+        raise ValueError(f"--input-dir is not a directory: {input_dir}")
+    grouped_counts, grouped_variances, grouped_edges, members = {}, {}, {}, {}
+    for sample_dir in sorted(path for path in input_dir.iterdir() if path.is_dir()):
+        roots = sorted(sample_dir.glob("*.root"))
+        if not roots:
+            # Allow diagnostics/manifests to live beside the sample directories.
+            continue
+        sample = sample_dir.name
+        family = sample_family(sample)
+        counts, variances, edges = read_merged_histograms(roots, year, channel, sample)
+        if family in grouped_edges and not (
+            np.array_equal(edges[0], grouped_edges[family][0]) and
+            np.array_equal(edges[1], grouped_edges[family][1])
+        ):
+            raise ValueError(f"Histogram binning for {sample} differs within family {family}")
+        grouped_edges[family] = edges
+        grouped_counts.setdefault(family, {})
+        grouped_variances.setdefault(family, {})
+        add_counts(grouped_counts[family], counts)
+        add_counts(grouped_variances[family], variances)
+        members.setdefault(family, []).append(sample)
+    if not members:
+        raise ValueError(f"No sample directories found in {input_dir}")
+    return grouped_counts, grouped_variances, grouped_edges, members
+
+
+def invalid_count_bins(counts):
+    """Return per-flavor masks for bins that cannot form physical efficiencies."""
+    masks = {}
     for flavor in FLAVORS:
         denominator = counts[(flavor, "den")]
         tight = counts[(flavor, "T")]
@@ -111,28 +152,49 @@ def validate_counts(counts):
             np.abs(loose), np.abs(loose_not_tight), np.abs(untagged),
         ])
         identity_tolerance = 1e-10 * identity_scale
-        if np.any(np.abs(loose - (tight + loose_not_tight)) > identity_tolerance):
-            raise ValueError(f"L != T + LT for flavor {flavor}")
-        if np.any(np.abs(denominator - (tight + loose_not_tight + untagged)) > identity_tolerance):
-            raise ValueError(f"denominator != T + LT + N for flavor {flavor}")
+        identity_invalid = ((np.abs(loose - (tight + loose_not_tight)) > identity_tolerance) |
+                            (np.abs(denominator - (tight + loose_not_tight + untagged)) > identity_tolerance))
 
         # Signed generator weights can make a small MC bin statistically
         # pathological.  Do not silently turn it into an unweighted result:
         # reject it so the bin can be merged or supplied with more MC.
         tolerance = 1e-10 * identity_scale
         nonempty = np.abs(denominator) > tolerance
-        invalid = ((nonempty & ((denominator <= 0) | (tight < -tolerance) |
+        invalid = identity_invalid | ((nonempty & ((denominator <= 0) | (tight < -tolerance) |
                                 (loose < -tolerance) | (tight > loose + tolerance) |
                                 (loose > denominator + tolerance))) |
                    (~nonempty & ((np.abs(tight) > tolerance) |
                                  (np.abs(loose_not_tight) > tolerance) |
                                  (np.abs(untagged) > tolerance))))
+        masks[flavor] = invalid
+    return masks
+
+
+def validate_counts(counts):
+    """Validate signed weighted yields before constructing an efficiency map."""
+    for flavor, invalid in invalid_count_bins(counts).items():
         if np.any(invalid):
             bad_bins = np.argwhere(invalid).tolist()
             raise ValueError(
                 f"Signed-weight b-tag yields are unphysical for flavor {flavor} in bins {bad_bins}; "
                 "merge those bins or provide more MC before conversion"
             )
+
+
+def repair_with_inclusive(counts, variances, inclusive_counts, inclusive_variances):
+    """Replace only pathological family bins with the validated all-MC bin."""
+    repaired = {key: values.copy() for key, values in counts.items()}
+    repaired_variances = {key: values.copy() for key, values in variances.items()}
+    replacements = {}
+    for flavor, invalid in invalid_count_bins(counts).items():
+        if not np.any(invalid):
+            continue
+        for state in ("den", *WORKING_POINTS):
+            repaired[flavor, state][invalid] = inclusive_counts[flavor, state][invalid]
+            repaired_variances[flavor, state][invalid] = inclusive_variances[flavor, state][invalid]
+        replacements[flavor] = np.argwhere(invalid).tolist()
+    validate_counts(repaired)
+    return repaired, repaired_variances, replacements
 
 
 def efficiency(values, denominator):
@@ -202,25 +264,32 @@ def make_correction(name, sample_entry, description, output_name, output_descrip
     }
 
 
-def update_output(path, correction_specs):
+def update_output(path, correction_specs, replace_entries=False):
     if path.exists():
         payload = json.loads(path.read_text())
     else:
         payload = {"schema_version": 2, "description": "VBS VVH b-tag efficiencies", "corrections": [], "compound_corrections": []}
 
     expected_inputs = ["sample", "flavor", "WP", "pt", "eta"]
+    replaced = set()
     for correction_name, sample_entry, description, output_name, output_description in correction_specs:
         correction = next((item for item in payload["corrections"] if item["name"] == correction_name), None)
         if correction is None:
             payload["corrections"].append(
                 make_correction(correction_name, sample_entry, description, output_name, output_description))
-            continue
+            correction = payload["corrections"][-1]
         if ([item["name"] for item in correction["inputs"]] != expected_inputs or
                 correction["output"]["name"] != output_name):
             raise ValueError(f"Existing {correction_name} has an incompatible schema; write a new output file")
         entries = correction["data"]["content"]
-        correction["data"]["content"] = [entry for entry in entries if entry["key"] != sample_entry["key"]]
-        correction["data"]["content"].append(sample_entry)
+        if replace_entries and correction_name not in replaced:
+            correction["data"]["content"] = []
+            replaced.add(correction_name)
+        if replace_entries:
+            correction["data"]["content"].append(sample_entry)
+        else:
+            correction["data"]["content"] = [entry for entry in entries if entry["key"] != sample_entry["key"]]
+            correction["data"]["content"].append(sample_entry)
 
     # Validate with correctionlib before touching the output file.
     cs.CorrectionSet.model_validate(payload)
@@ -230,18 +299,57 @@ def update_output(path, correction_specs):
 
 def main():
     args = parse_args()
+    prefix = f"btag_{args.year}_{args.channel}"
+    if args.input_dir:
+        grouped_counts, grouped_variances, grouped_edges, members = discover_family_histograms(
+            args.input_dir, args.year, args.channel)
+        inclusive_counts, inclusive_variances = {}, {}
+        for family in members:
+            add_counts(inclusive_counts, grouped_counts[family])
+            add_counts(inclusive_variances, grouped_variances[family])
+        validate_counts(inclusive_counts)
+        specs = []
+        fallbacks = {}
+        for family in sorted(members):
+            counts, variances, fallback_bins = repair_with_inclusive(
+                grouped_counts[family], grouped_variances[family],
+                inclusive_counts, inclusive_variances)
+            if fallback_bins:
+                fallbacks[family] = fallback_bins
+                print(f"{family}: replaced {sum(len(bins) for bins in fallback_bins.values())} pathological bins with all-MC yields")
+            edges = grouped_edges[family]
+            efficiency_values = {(flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
+                                 for flavor in FLAVORS for wp in WORKING_POINTS}
+            poisson_uncertainties = {(flavor, wp): poisson_efficiency_uncertainty(
+                variances[(flavor, wp)], counts[(flavor, "den")])
+                                   for flavor in FLAVORS for wp in WORKING_POINTS}
+            specs.extend([
+                (prefix, sample_category(family, efficiency_values, edges),
+                 "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
+                (f"{prefix}_poisson_unc", sample_category(family, poisson_uncertainties, edges),
+                 "Poisson uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+                 "Poisson-style MC tagging-efficiency uncertainty"),
+            ])
+        update_output(args.output, specs, replace_entries=True)
+        manifest = args.manifest or args.output.with_name(
+            f"btag_eff_{args.year}_{args.channel}_families.json")
+        manifest.write_text(json.dumps({
+            "year": args.year, "channel": args.channel,
+            "input_dir": str(args.input_dir), "families": members,
+            "inclusive_fallback_bins": fallbacks,
+        }, indent=2) + "\n")
+        print(f"Wrote {len(members)} family entries and manifest {manifest}")
+        return
+
+    if not args.sample:
+        raise ValueError("--sample is required with --input")
     counts, variances, edges = read_merged_histograms(args.input, args.year, args.channel, args.sample)
     validate_counts(counts)
-    efficiency_values = {
-        (flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
-        for flavor in FLAVORS for wp in WORKING_POINTS
-    }
-    poisson_uncertainties = {
-        (flavor, wp): poisson_efficiency_uncertainty(
-            variances[(flavor, wp)], counts[(flavor, "den")])
-        for flavor in FLAVORS for wp in WORKING_POINTS
-    }
-    prefix = f"btag_{args.year}_{args.channel}"
+    efficiency_values = {(flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
+                         for flavor in FLAVORS for wp in WORKING_POINTS}
+    poisson_uncertainties = {(flavor, wp): poisson_efficiency_uncertainty(
+        variances[(flavor, wp)], counts[(flavor, "den")])
+                           for flavor in FLAVORS for wp in WORKING_POINTS}
     update_output(args.output, [
         (prefix, sample_category(args.sample, efficiency_values, edges),
          "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),

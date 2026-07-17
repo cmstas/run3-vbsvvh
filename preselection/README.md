@@ -75,13 +75,30 @@ command is shown, commented out, in `run_wrapper.sh`:
 #   -c all -m "$MODE" -r 3 -f 1 --btag-eff
 ```
 
-Merge worker ROOT files separately for each exact sample, then use
-`../misc/sf-utils/bEff-convert-to-correction.py` to append its validated
-central efficiency map and matching `*_poisson_unc` map to
-`corrections/scalefactors/btagging/btag_eff.json`.  The producer ROOT
-histograms retain both weighted yields and Sumw2, so keep them when combining
-samples or channels later. Regenerate older unweighted pilot files before
-converting them.
+The converter can discover a Slurm output directory and merge its exact
+samples into conservative physics families before writing the central and
+`*_poisson_unc` maps expected by the analysis:
+
+```bash
+python3 ../misc/sf-utils/bEff-convert-to-correction.py \
+  --input-dir /path/to/btag_eff_outputs --year 2024Prompt --channel 1lep_1FJ \
+  --output corrections/scalefactors/btagging/btag_eff.json
+```
+
+It writes a family-membership manifest and records any sparse signed-weight
+bins replaced with the inclusive-MC bin. Inspect family compatibility before
+combining families further with:
+
+```bash
+# By default, plots go to corrections/scalefactors/btagging/diagnostics/2024Prompt_1lep_1FJ.
+python3 ../misc/sf-utils/plot-btag-eff-families.py \
+  --input-dir /path/to/btag_eff_outputs --year 2024Prompt --channel 1lep_1FJ
+```
+
+`../misc/sf-utils/plot-btag-eff-global.py` accepts repeated
+`--channel-input CHANNEL=DIR` arguments. Use `--mode families` to compare
+sample families after summing all channels, or `--mode channels` to compare
+channels after summing all samples.
 
 ---
 ## Details on the condor batch submission
