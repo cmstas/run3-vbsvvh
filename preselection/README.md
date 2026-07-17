@@ -75,41 +75,64 @@ command is shown, commented out, in `run_wrapper.sh`:
 #   -c all -m "$MODE" -r 3 -f 1 --btag-eff
 ```
 
-The converter can discover a Slurm output directory and merge its exact
-samples into the existing conservative physics families before writing central
-and `*_mcstat_unc` maps:
+The shared configuration is
+`corrections/scalefactors/btagging/btag_eff_families.yaml`. Its ordered
+`preliminary_families` rules define the semantic first-pass grouping used by
+conversion and compatibility plots. Its `final_merges` block is intentionally
+an identity mapping initially: update it only after inspecting the plots.
+
+Preliminary conversion writes `btag_eff_prelim.json`; it is diagnostic-only.
+Normal MC processing loads the final `btag_eff.json`, whose correction names
+and sample/channel keys are resolved through the YAML final block. Exact-sample
+payload entries remain a fallback when a configured family entry is absent.
+The stored `*_mcstat_unc` efficiency uncertainties are informational diagnostics
+only; they are not consumed by the main analysis. (B-tagging SF variation
+branches are separate and remain part of the analysis weighting.)
+
+<details>
+<summary>Full b-tag efficiency derivation tutorial</summary>
 
 ```bash
+# 1. Produce raw weighted yields on MC with Slurm (see run_wrapper.sh for the batch form).
+python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
+  -c all -m slurm -r 3 -f 1 --btag-eff
+
+# 2. Produce preliminary payloads, once per channel; verify every Slurm output.
 python3 ../misc/sf-utils/bEff-convert-to-correction.py \
-  --input-dir /path/to/btag_eff_outputs --year 2024Prompt --channel 1lep_1FJ \
-  --job-manifest slurm/jobs/<task>/manifest.json \
-  --output corrections/scalefactors/btagging/btag_eff.json
-```
+  --input-dir /path/to/1lep_1FJ_outputs --job-manifest slurm/jobs/<task>/manifest.json \
+  --year 2024Prompt --channel 1lep_1FJ \
+  --output corrections/scalefactors/btagging/btag_eff_prelim.json
 
-With `--job-manifest`, conversion requires every expected `sample/job_idx`
-output exactly once; without it, the converter prominently warns that input
-completeness was not verified. It writes a family-membership manifest and
-records any sparse signed-weight bins replaced with the inclusive-MC bin.
-Exact-sample conversion remains supported: application first uses a matching
-family entry, then falls back to an exact sample entry when no family entry is
-present.
-Compatibility pulls use only the independent tight, loose-not-tight, and
-untagged categories and their weighted-binomial MC-statistical uncertainties;
-they are diagnostics, not formal hypothesis tests. Inspect them before
-combining families further with:
-
-```bash
-# By default, plots go to corrections/scalefactors/btagging/diagnostics/2024Prompt_1lep_1FJ.
+# 3. Inspect the preliminary family/channel compatibility plots.
 python3 ../misc/sf-utils/plot-btag-eff-families.py \
-  --input-dir /path/to/btag_eff_outputs --year 2024Prompt --channel 1lep_1FJ
+  --input-dir /path/to/1lep_1FJ_outputs --year 2024Prompt --channel 1lep_1FJ
+# Manually update final_merges in btag_eff_families.yaml after this review.
+
+# 4. Build the final payload from every source channel using the approved merges.
+python3 ../misc/sf-utils/bEff-convert-to-correction.py --final --year 2024Prompt \
+  --channel-input 0lep_0FJ=/path/to/0lep_0FJ_outputs \
+  --channel-input 1lep_1FJ=/path/to/1lep_1FJ_outputs \
+  --channel-input 2lep_1FJ=/path/to/2lep_1FJ_outputs \
+  --output corrections/scalefactors/btagging/btag_eff.json
+
+# 5. Optionally recheck only the two money plots using the final YAML merges.
+python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
+  --mode families --channel-input 0lep_0FJ=/path/to/0lep_0FJ_outputs \
+  --channel-input 1lep_1FJ=/path/to/1lep_1FJ_outputs \
+  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_channels_families
+python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
+  --mode channels --channel-input 0lep_0FJ=/path/to/0lep_0FJ_outputs \
+  --channel-input 1lep_1FJ=/path/to/1lep_1FJ_outputs \
+  --plot-dir corrections/scalefactors/btagging/diagnostics/2024Prompt_final_all_samples_channels
 ```
 
-`../misc/sf-utils/plot-btag-eff-global.py` accepts repeated
-`--channel-input CHANNEL=DIR` arguments. Use `--mode families` to compare
-sample families after summing all channels, or `--mode channels` to compare
-channels after summing all samples. The former accepts only mutually exclusive
-channels: trigger-overlap pairs such as `0lep_1FJ`/`0lep_1FJ_met` and
-`0lep_2FJ`/`0lep_2FJ_met` are rejected because their covariance is not modelled.
+Repeat `--channel-input` (and optionally matching `--channel-manifest`) for
+every source channel assigned in `final_merges`. Compatibility uses independent
+T/LT/N categories and weighted-binomial MC-statistical uncertainties; it is a
+diagnostic, not a formal hypothesis test. Cross-channel family aggregation
+rejects known trigger-overlap pairs because their covariance is not modelled.
+
+</details>
 
 ---
 ## Details on the condor batch submission

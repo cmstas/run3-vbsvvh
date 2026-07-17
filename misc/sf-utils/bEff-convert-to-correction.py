@@ -15,7 +15,7 @@ import numpy as np
 import uproot
 import correctionlib.schemav2 as cs
 
-from btag_eff_families import sample_family
+from btag_eff_families import DEFAULT_CONFIG, final_channel, final_group, sample_family
 
 
 FLAVORS = ("b", "c", "light")
@@ -31,8 +31,10 @@ def parse_args():
                         help="All raw ROOT files for one sample (local paths or root:// URLs)")
     inputs.add_argument("--input-dir", type=Path,
                         help="Directory containing one raw-output directory per exact sample")
+    inputs.add_argument("--channel-input", action="append", metavar="CHANNEL=DIR",
+                        help="Final mode: one preliminary channel output directory; repeat this option")
     parser.add_argument("--year", required=True, help="Metadata year, e.g. 2024Prompt")
-    parser.add_argument("--channel", required=True, help="Preselection channel, e.g. 0lep_0FJ")
+    parser.add_argument("--channel", help="Preliminary conversion channel, e.g. 0lep_0FJ")
     parser.add_argument("--sample", help="Exact RDataFrame sample name from the input JSON (exact-sample mode)")
     parser.add_argument("--output", required=True, type=Path,
                         help="CorrectionSet JSON to create or update")
@@ -40,6 +42,12 @@ def parse_args():
                         help="Family membership manifest (defaults beside --output in family mode)")
     parser.add_argument("--job-manifest", type=Path,
                         help="Optional Slurm manifest.json: require exactly its expected sample/job outputs")
+    parser.add_argument("--channel-manifest", action="append", metavar="CHANNEL=PATH",
+                        help="Final mode: optional Slurm manifest matching --channel-input; repeat this option")
+    parser.add_argument("--family-config", type=Path, default=DEFAULT_CONFIG,
+                        help="Shared preliminary/final grouping YAML")
+    parser.add_argument("--final", action="store_true",
+                        help="Build final grouped efficiencies from --channel-input using final_merges in the YAML")
     return parser.parse_args()
 
 
@@ -113,10 +121,10 @@ def add_counts(destination, source):
         destination[key] = destination.get(key, np.zeros_like(values, dtype=float)) + values
 
 
-def select_efficiency_sample_key(sample, available_keys):
+def select_efficiency_sample_key(sample, available_keys, family_config=DEFAULT_CONFIG):
     """New-schema lookup contract: family first, then an exact sample entry."""
     try:
-        family_key = sample_family(sample)
+        family_key = sample_family(sample, family_config)
     except ValueError:
         family_key = None
     if family_key in available_keys:
@@ -167,7 +175,7 @@ def validate_job_manifest(input_dir, manifest_path):
     return discovered
 
 
-def discover_family_histograms(input_dir, year, channel, job_manifest=None):
+def discover_family_histograms(input_dir, year, channel, job_manifest=None, family_config=DEFAULT_CONFIG):
     """Read every exact sample directory and return raw yields grouped by family."""
     if not input_dir.is_dir():
         raise ValueError(f"--input-dir is not a directory: {input_dir}")
@@ -181,7 +189,7 @@ def discover_family_histograms(input_dir, year, channel, job_manifest=None):
             # Allow diagnostics/manifests to live beside the sample directories.
             continue
         sample = sample_dir.name
-        family = sample_family(sample)
+        family = sample_family(sample, family_config)
         counts, variances, edges = read_merged_histograms(roots, year, channel, sample)
         if family in grouped_edges and not (
             np.array_equal(edges[0], grouped_edges[family][0]) and
@@ -268,6 +276,9 @@ def mcstat_efficiency_uncertainty(numerator, denominator, numerator_variance, de
     """Weighted-binomial/delta-method uncertainty for a category fraction X/D."""
     output = np.full_like(denominator, np.nan, dtype=float)
     valid = denominator > 0
+    empty = ((denominator == 0) & (numerator == 0) &
+             (numerator_variance == 0) & (denominator_variance == 0))
+    output[empty] = 0.
     epsilon = np.divide(numerator, denominator, out=np.zeros_like(denominator, dtype=float), where=valid)
     raw_variance = np.divide((1. - 2. * epsilon) * numerator_variance + epsilon ** 2 * denominator_variance,
                              denominator ** 2, out=np.full_like(denominator, np.nan, dtype=float), where=valid)
@@ -338,13 +349,19 @@ def make_correction(name, sample_entry, description, output_name, output_descrip
     }
 
 
-def update_output(path, correction_specs, replace_entries=False):
+def update_output(path, correction_specs, replace_entries=False, replace_correction_prefix=None):
     if path.exists():
         payload = json.loads(path.read_text())
     else:
         payload = {"schema_version": 2, "description": "VBS VVH b-tag efficiencies", "corrections": [], "compound_corrections": []}
 
     expected_inputs = ["sample", "flavor", "WP", "pt", "eta"]
+    if replace_correction_prefix is not None:
+        expected_names = {spec[0] for spec in correction_specs}
+        payload["corrections"] = [
+            item for item in payload["corrections"]
+            if not (item["name"].startswith(replace_correction_prefix) and item["name"] not in expected_names)
+        ]
     replaced = set()
     for correction_name, sample_entry, description, output_name, output_description in correction_specs:
         correction = next((item for item in payload["corrections"] if item["name"] == correction_name), None)
@@ -371,42 +388,122 @@ def update_output(path, correction_specs, replace_entries=False):
     path.write_text(json.dumps(payload, indent=2) + "\n")
 
 
+def parse_channel_paths(items):
+    parsed = {}
+    for item in items or []:
+        if "=" not in item:
+            raise ValueError(f"Invalid CHANNEL=PATH value: {item!r}")
+        channel, path = item.split("=", 1)
+        if channel in parsed:
+            raise ValueError(f"Duplicate channel input: {channel}")
+        parsed[channel] = Path(path)
+    return parsed
+
+
+def grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, members):
+    inclusive_counts, inclusive_variances = {}, {}
+    for group in members:
+        add_counts(inclusive_counts, grouped_counts[group])
+        add_counts(inclusive_variances, grouped_variances[group])
+    validate_counts(inclusive_counts)
+    specs, fallbacks = [], {}
+    for group in sorted(members):
+        counts, variances, fallback_bins = repair_with_inclusive(
+            grouped_counts[group], grouped_variances[group], inclusive_counts, inclusive_variances)
+        if fallback_bins:
+            fallbacks[group] = fallback_bins
+            print(f"{group}: replaced {sum(len(bins) for bins in fallback_bins.values())} pathological bins with all-MC yields")
+        efficiency_values = {(flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
+                             for flavor in FLAVORS for wp in WORKING_POINTS}
+        mcstat_uncertainties = compute_mcstat_uncertainties(counts, variances)
+        specs.extend([
+            (prefix, sample_category(group, efficiency_values, grouped_edges[group]),
+             "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
+            (f"{prefix}_mcstat_unc", sample_category(group, mcstat_uncertainties, grouped_edges[group]),
+             "Weighted-binomial MC-statistical uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+             "Weighted-binomial MC tagging-efficiency uncertainty"),
+        ])
+    return specs, fallbacks
+
+
+def discover_final_histograms(channel_inputs, channel_manifests, year, family_config):
+    """Merge preliminary raw outputs into configured final channel/sample groups."""
+    grouped_counts, grouped_variances, grouped_edges, members, completeness = {}, {}, {}, {}, {}
+    for channel, input_dir in channel_inputs.items():
+        counts, variances, edges, preliminary_members, checked = discover_family_histograms(
+            input_dir, year, channel, channel_manifests.get(channel), family_config)
+        target_channel = final_channel(channel, family_config)
+        completeness[channel] = checked
+        for preliminary_family, samples in preliminary_members.items():
+            target_sample = final_group("samples", preliminary_family, family_config)
+            target = (target_channel, target_sample)
+            if target in grouped_edges and not (
+                np.array_equal(edges[preliminary_family][0], grouped_edges[target][0]) and
+                np.array_equal(edges[preliminary_family][1], grouped_edges[target][1])
+            ):
+                raise ValueError(f"Histogram binning differs within final group {target}")
+            grouped_edges[target] = edges[preliminary_family]
+            grouped_counts.setdefault(target, {})
+            grouped_variances.setdefault(target, {})
+            add_counts(grouped_counts[target], counts[preliminary_family])
+            add_counts(grouped_variances[target], variances[preliminary_family])
+            members.setdefault(target_channel, {}).setdefault(target_sample, []).extend(
+                [f"{channel}:{sample}" for sample in samples])
+    return grouped_counts, grouped_variances, grouped_edges, members, completeness
+
+
 def main():
     args = parse_args()
+    if args.final:
+        if not args.channel_input:
+            raise ValueError("--final requires one or more --channel-input CHANNEL=DIR arguments")
+        if args.input or args.input_dir or args.sample or args.channel or args.job_manifest:
+            raise ValueError("--final accepts --channel-input/--channel-manifest, not single-channel input options")
+        channel_inputs = parse_channel_paths(args.channel_input)
+        channel_manifests = parse_channel_paths(args.channel_manifest)
+        unknown = set(channel_manifests) - set(channel_inputs)
+        if unknown:
+            raise ValueError(f"--channel-manifest supplied for unknown channels: {sorted(unknown)}")
+        counts, variances, edges, members, completeness = discover_final_histograms(
+            channel_inputs, channel_manifests, args.year, args.family_config)
+        specs, fallbacks = [], {}
+        for channel, final_members in sorted(members.items()):
+            keys = {(channel, sample) for sample in final_members}
+            channel_counts = {sample: counts[channel, sample] for _, sample in keys}
+            channel_variances = {sample: variances[channel, sample] for _, sample in keys}
+            channel_edges = {sample: edges[channel, sample] for _, sample in keys}
+            channel_specs, channel_fallbacks = grouped_specs(
+                f"btag_{args.year}_{channel}", channel_counts, channel_variances, channel_edges, final_members)
+            specs.extend(channel_specs)
+            fallbacks[channel] = channel_fallbacks
+        update_output(args.output, specs, replace_entries=True,
+                      replace_correction_prefix=f"btag_{args.year}_")
+        manifest = args.manifest or args.output.with_name(f"btag_eff_{args.year}_final_families.json")
+        manifest.write_text(json.dumps({
+            "mode": "final", "year": args.year, "family_config": str(args.family_config),
+            "channel_inputs": {channel: str(path) for channel, path in channel_inputs.items()},
+            "final_members": members, "inclusive_fallback_bins": fallbacks,
+            "input_completeness_verified": all(value is not None for value in completeness.values()),
+            "job_counts": {channel: value or {} for channel, value in completeness.items()},
+        }, indent=2) + "\n")
+        print(f"Wrote final efficiencies for {len(members)} channel groups and manifest {manifest}")
+        return
+
+    if not args.channel:
+        raise ValueError("--channel is required unless --final is used")
+    if "_prelim" not in args.output.stem:
+        raise ValueError("Preliminary conversion output must be named *_prelim.json; reserve btag_eff.json for --final")
     prefix = f"btag_{args.year}_{args.channel}"
     if args.input_dir:
         grouped_counts, grouped_variances, grouped_edges, members, completeness = discover_family_histograms(
-            args.input_dir, args.year, args.channel, args.job_manifest)
-        inclusive_counts, inclusive_variances = {}, {}
-        for family in members:
-            add_counts(inclusive_counts, grouped_counts[family])
-            add_counts(inclusive_variances, grouped_variances[family])
-        validate_counts(inclusive_counts)
-        specs = []
-        fallbacks = {}
-        for family in sorted(members):
-            counts, variances, fallback_bins = repair_with_inclusive(
-                grouped_counts[family], grouped_variances[family],
-                inclusive_counts, inclusive_variances)
-            if fallback_bins:
-                fallbacks[family] = fallback_bins
-                print(f"{family}: replaced {sum(len(bins) for bins in fallback_bins.values())} pathological bins with all-MC yields")
-            edges = grouped_edges[family]
-            efficiency_values = {(flavor, wp): efficiency(counts[(flavor, wp)], counts[(flavor, "den")])
-                                 for flavor in FLAVORS for wp in WORKING_POINTS}
-            mcstat_uncertainties = compute_mcstat_uncertainties(counts, variances)
-            specs.extend([
-                (prefix, sample_category(family, efficiency_values, edges),
-                 "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
-                (f"{prefix}_mcstat_unc", sample_category(family, mcstat_uncertainties, edges),
-                 "Weighted-binomial MC-statistical uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
-                 "Weighted-binomial MC tagging-efficiency uncertainty"),
-            ])
+            args.input_dir, args.year, args.channel, args.job_manifest, args.family_config)
+        specs, fallbacks = grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, members)
         update_output(args.output, specs, replace_entries=True)
         manifest = args.manifest or args.output.with_name(
             f"btag_eff_{args.year}_{args.channel}_families.json")
         manifest.write_text(json.dumps({
             "year": args.year, "channel": args.channel,
+            "mode": "preliminary", "family_config": str(args.family_config),
             "input_dir": str(args.input_dir), "families": members,
             "inclusive_fallback_bins": fallbacks,
             "input_completeness_verified": completeness is not None,

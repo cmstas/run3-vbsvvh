@@ -12,7 +12,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 import mplhep as hep
 import numpy as np
 
-from btag_eff_families import sample_family
+from btag_eff_families import DEFAULT_CONFIG, sample_family
+
+
+EXCLUSIVE_CATEGORIES = ("T", "LT", "N")
 
 
 LUMI_FB = {
@@ -43,10 +46,12 @@ def parse_args():
     parser.add_argument("--skip-pulls", action="store_true")
     parser.add_argument("--job-manifest", type=Path,
                         help="Optional Slurm manifest.json: reject incomplete batch output")
+    parser.add_argument("--family-config", type=Path, default=DEFAULT_CONFIG,
+                        help="Shared preliminary/final grouping YAML")
     return parser.parse_args()
 
 
-def collect_samples(conv, input_dir, year, channel, job_manifest=None):
+def collect_samples(conv, input_dir, year, channel, job_manifest=None, family_config=DEFAULT_CONFIG):
     completeness = (conv.validate_job_manifest(input_dir, job_manifest) if job_manifest else None)
     if completeness is None:
         print("WARNING: b-tag input completeness was not verified (no --job-manifest supplied)")
@@ -56,7 +61,7 @@ def collect_samples(conv, input_dir, year, channel, job_manifest=None):
         if not roots:
             continue
         sample = sample_dir.name
-        family = sample_family(sample)
+        family = sample_family(sample, family_config)
         counts, variances, edges = conv.read_merged_histograms(roots, year, channel, sample)
         samples[sample] = (family, counts, variances, edges)
         family_counts.setdefault(family, {})
@@ -98,14 +103,14 @@ def pulls(reference, other, flavor, wp):
 
 def cms_label(ax, lumi, energy):
     rounded_lumi = round(lumi, 2 - int(math.floor(math.log10(abs(lumi))))) if lumi else lumi
-    hep.cms.label("Preliminary", data=True, lumi=rounded_lumi, lumi_format="{0:g}",
+    hep.cms.label("Sim. Prelim.", data=True, lumi=rounded_lumi, lumi_format="{0:g}",
                   com=energy, ax=ax)
 
 
 def matrix_plots(groups, results, args, lumi, energy, group_label="family"):
     names = sorted(groups)
     for flavor in ("b", "c", "light"):
-        for wp in conv.EXCLUSIVE_CATEGORIES:
+        for wp in EXCLUSIVE_CATEGORIES:
             matrix = np.full((len(names), len(names)), np.nan)
             for row, left in enumerate(names):
                 for col, right in enumerate(names):
@@ -148,10 +153,11 @@ def money_plot(groups, results, args, lumi, energy, group_label="family"):
             pooled = np.concatenate(values) if values else np.array([])
             if pooled.size >= 3:
                 matrix[row, col] = np.mean(pooled > 2.)
-    fig, ax = plt.subplots(figsize=(max(10, 0.65 * len(names)), max(8, 0.55 * len(names))))
+    # Keep the authoritative money plot legible and comparable across modes.
+    fig, ax = plt.subplots(figsize=(14.3, 12.1))
     image = ax.imshow(matrix, vmin=0, vmax=1, cmap="magma", interpolation="nearest")
-    ax.set_xticks(range(len(names)), names, rotation=60, ha="right", fontsize=8)
-    ax.set_yticks(range(len(names)), names, fontsize=8)
+    ax.set_xticks(range(len(names)), names, rotation=60, ha="right", fontsize=11)
+    ax.set_yticks(range(len(names)), names, fontsize=11)
     ax.set_xlabel(f"Comparison {group_label}")
     ax.set_ylabel(f"Comparison {group_label}")
     for row in range(len(names)):
@@ -250,7 +256,7 @@ def main():
                           f"{args.year}_{args.channel}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     _, counts, variances, _, families, completeness = collect_samples(
-        conv, args.input_dir, args.year, args.channel, args.job_manifest)
+        conv, args.input_dir, args.year, args.channel, args.job_manifest, args.family_config)
     args.input_completeness_verified = completeness is not None
     results = {}
     for family in families:

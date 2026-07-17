@@ -8,6 +8,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import mplhep as hep
 
+from btag_eff_families import DEFAULT_CONFIG, final_channel, final_group
+
 
 # These selections differ only in trigger paths and can share events.  Their
 # covariance is not modelled by the histogram-level diagnostic.
@@ -39,6 +41,10 @@ def parse_args():
     parser.add_argument("--sources", nargs="+", help="Only write detail PDFs for these groups")
     parser.add_argument("--skip-matrices", action="store_true")
     parser.add_argument("--skip-pulls", action="store_true")
+    parser.add_argument("--family-config", type=Path, default=DEFAULT_CONFIG,
+                        help="Shared preliminary/final grouping YAML")
+    parser.add_argument("--final", action="store_true",
+                        help="Apply final_merges from the shared YAML before plotting")
     return parser.parse_args()
 
 
@@ -78,26 +84,29 @@ def main():
     unknown_manifests = set(manifests) - set(inputs)
     if unknown_manifests:
         raise ValueError(f"Manifest supplied for unknown channel(s): {sorted(unknown_manifests)}")
-    if args.mode == "families":
+    if args.mode == "families" and not args.final:
         reject_overlapping_channels(inputs)
     grouped = {}
     completeness = []
     for channel, directory in inputs.items():
         _, family_counts, family_variances, _, families, complete = plots.collect_samples(
-            conv, directory, args.year, channel, manifests.get(channel))
+            conv, directory, args.year, channel, manifests.get(channel), args.family_config)
         completeness.append(complete is not None)
+        sample_groups = {family: final_group("samples", family, args.family_config)
+                         for family in families} if args.final else {family: family for family in families}
+        channel_group = final_channel(channel, args.family_config) if args.final else channel
         if args.mode == "families":
             for family in families:
-                add_all(conv, grouped.setdefault(family, {}),
+                add_all(conv, grouped.setdefault(sample_groups[family], {}),
                         (family_counts[family], family_variances[family]))
         else:
             for family in families:
-                add_all(conv, grouped.setdefault(channel, {}),
+                add_all(conv, grouped.setdefault(channel_group, {}),
                         (family_counts[family], family_variances[family]))
     results = {name: plots.efficiencies(conv, data["counts"], data["variances"])
                for name, data in grouped.items()}
     if args.plot_dir is None:
-        suffix = "all_channels_families" if args.mode == "families" else "all_samples_channels"
+        suffix = ("final_all_channels_families" if args.mode == "families" else "final_all_samples_channels") if args.final else ("all_channels_families" if args.mode == "families" else "all_samples_channels")
         args.plot_dir = (Path(__file__).parents[2] / "preselection" / "corrections" /
                          "scalefactors" / "btagging" / "diagnostics" / f"{args.year}_{suffix}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)

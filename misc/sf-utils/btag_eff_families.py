@@ -1,35 +1,40 @@
-"""Conservative MC sample families used for b-tag efficiency production."""
+"""Shared b-tag efficiency grouping configuration."""
 
-# Keep this list ordered: specific samples must precede broad process prefixes.
-FAMILY_RULES = (
-    ("VBS_VVH", ("VBSWWH_", "VBSWZH_", "VBSZZH_")),
-    ("VBS_SSWW", ("VBS-SSWW",)),
-    ("WWJJ", ("WWJJ",)),
-    ("ZZJJ", ("ZZJJ",)),
-    ("ggZZ_continuum", ("GluGluToContinto2Z", "GluGlutoContinto2Z")),
-    ("ggH", ("GluGluH-",)),
-    ("VH", ("GluGluZH", "WplusH", "WminusH", "ZH-")),
-    ("ttH", ("TTH-",)),
-    ("ttV_rare", ("TTWW", "TTWZ", "TTW-", "TZQB")),
-    ("ttbar", ("TTto", "TTLL", "TTLNu")),
-    ("tW", ("TWminus", "TbarWplus")),
-    ("single_top", ("TBbarQ", "TbarBQ", "TBbarto", "TbarBto")),
-    ("triboson", ("WWW-", "WWZ-", "WZZ-", "ZZZ-")),
-    ("WZ", ("WZ_", "WZto")),
-    ("WW", ("WW_", "WWto")),
-    ("ZZ", ("ZZ_", "ZZto")),
-    ("DY", ("DYto",)),
-    ("W_leptonic", ("WtoLNu",)),
-    ("W_hadronic", ("Wto2Q",)),
-    ("Z_hadronic", ("Zto2Q",)),
-    ("QCD_HT", ("QCD-4Jets",)),
-    ("QCD_PT", ("QCD_Bin",)),
-)
+from pathlib import Path
+
+import yaml
 
 
-def sample_family(sample):
-    """Return the first matching family; rule order resolves intentional overlaps."""
-    for family, needles in FAMILY_RULES:
+DEFAULT_CONFIG = (Path(__file__).resolve().parents[2] / "preselection" / "corrections" /
+                  "scalefactors" / "btagging" / "btag_eff_families.yaml")
+
+
+def load_config(path=DEFAULT_CONFIG):
+    config = yaml.safe_load(Path(path).read_text())
+    if not isinstance(config, dict) or "preliminary_families" not in config or "final_merges" not in config:
+        raise ValueError(f"Invalid b-tag family configuration: {path}")
+    return config
+
+
+def sample_family(sample, config_path=DEFAULT_CONFIG):
+    """Return the first preliminary family match; YAML order resolves overlaps."""
+    for family, needles in load_config(config_path)["preliminary_families"].items():
         if any(needle in sample for needle in needles):
             return family
-    raise ValueError(f"No b-tag efficiency family is configured for sample {sample!r}")
+    raise ValueError(f"No preliminary b-tag efficiency family is configured for sample {sample!r}")
+
+
+def final_group(kind, preliminary_name, config_path=DEFAULT_CONFIG):
+    groups = load_config(config_path)["final_merges"][kind]
+    matches = [name for name, members in groups.items() if preliminary_name in members]
+    if len(matches) != 1:
+        raise ValueError(f"{preliminary_name!r} must occur in exactly one final {kind} group; found {matches}")
+    return matches[0]
+
+
+def final_sample_family(sample, config_path=DEFAULT_CONFIG):
+    return final_group("samples", sample_family(sample, config_path), config_path)
+
+
+def final_channel(channel, config_path=DEFAULT_CONFIG):
+    return final_group("channels", channel, config_path)

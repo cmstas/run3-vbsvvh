@@ -22,6 +22,7 @@ def load(name, filename):
 conv = load("btag_converter_test", "bEff-convert-to-correction.py")
 plots = load("btag_plots_test", "plot-btag-eff-families.py")
 global_plots = load("btag_global_test", "plot-btag-eff-global.py")
+families = load("btag_families_test", "btag_eff_families.py")
 
 
 def counts(den=10., tight=2., loose=5., lt=3., untagged=5.):
@@ -42,6 +43,14 @@ class BTagEfficiencyTests(unittest.TestCase):
         self.assertEqual(conv.select_efficiency_sample_key(sample, {sample}), sample)
         with self.assertRaises(KeyError):
             conv.select_efficiency_sample_key(sample, set())
+
+    def test_yaml_controls_preliminary_and_final_groups(self):
+        sample = "VBSWZH_c2v1p0"
+        self.assertEqual(families.sample_family(sample), "VBS_VVH")
+        self.assertEqual(families.final_sample_family(sample), "VBS_VVH")
+        self.assertEqual(families.final_channel("1lep_1FJ"), "leptonic")
+        with self.assertRaises(ValueError):
+            families.final_channel("all_events")
 
     def test_unweighted_category_uncertainty(self):
         uncertainty = conv.mcstat_efficiency_uncertainty(
@@ -105,6 +114,14 @@ class BTagEfficiencyTests(unittest.TestCase):
     def test_overlapping_channels_rejected(self):
         with self.assertRaises(ValueError):
             global_plots.reject_overlapping_channels(["0lep_1FJ", "0lep_1FJ_met"])
+
+    def test_matrix_plots_use_module_categories(self):
+        raw = counts()
+        result = plots.efficiencies(conv, raw, {key: value.copy() for key, value in raw.items()})
+        with tempfile.TemporaryDirectory() as tmp:
+            args = type("Args", (), {"plot_dir": Path(tmp)})()
+            plots.matrix_plots({"a": None}, {"a": result}, args, 1., 13.)
+            self.assertTrue((Path(tmp) / "compatibility_b_T.pdf").exists())
 
 
 if __name__ == "__main__":

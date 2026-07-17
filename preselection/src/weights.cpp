@@ -1,8 +1,12 @@
 #include "weights.h"
 
+#include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <fstream>
+#include <map>
 #include <stdexcept>
+#include <vector>
 
 namespace {
 constexpr double kBTagDenominatorEpsilon = 1.e-8;
@@ -10,39 +14,116 @@ std::atomic<unsigned long long> g_btag_negative_intermediate{0};
 std::atomic<unsigned long long> g_btag_tiny_denominator{0};
 std::atomic<unsigned long long> g_btag_invalid_probability{0};
 
+constexpr const char *kBTagFamilyConfig = "corrections/scalefactors/btagging/btag_eff_families.yaml";
+
+struct BTagFamilyConfig {
+    std::vector<std::pair<std::string, std::vector<std::string>>> preliminary;
+    std::map<std::string, std::vector<std::string>> final_samples;
+    std::map<std::string, std::vector<std::string>> final_channels;
+};
+
+std::string trim(std::string value) {
+    const auto begin = value.find_first_not_of(" \t");
+    if (begin == std::string::npos) return "";
+    const auto end = value.find_last_not_of(" \t");
+    return value.substr(begin, end - begin + 1);
+}
+
+void appendInlineMembers(std::vector<std::string> &members, std::string value) {
+    value = trim(value);
+    if (value.empty()) return;
+    if (value.front() != '[' || value.back() != ']')
+        throw std::runtime_error("Invalid inline member list in " + std::string(kBTagFamilyConfig));
+    value = value.substr(1, value.size() - 2);
+    std::size_t start = 0;
+    while (start <= value.size()) {
+        const auto comma = value.find(',', start);
+        const auto member = trim(value.substr(start, comma - start));
+        if (!member.empty()) members.push_back(member);
+        if (comma == std::string::npos) break;
+        start = comma + 1;
+    }
+}
+
+const BTagFamilyConfig &bTagFamilyConfig() {
+    static const BTagFamilyConfig config = [] {
+        std::ifstream input(kBTagFamilyConfig);
+        if (!input) throw std::runtime_error("Cannot read b-tag family configuration " + std::string(kBTagFamilyConfig));
+        BTagFamilyConfig parsed;
+        std::string line, section, final_kind, current_group;
+        while (std::getline(input, line)) {
+            const auto comment = line.find('#');
+            if (comment != std::string::npos) line.erase(comment);
+            const auto content = trim(line);
+            if (content.empty()) continue;
+            const auto indent = line.find_first_not_of(" \t");
+            if (indent == 0) {
+                section = content.substr(0, content.find(':'));
+                final_kind.clear();
+                continue;
+            }
+            if (section == "preliminary_families") {
+                if (indent == 2 && content.back() == ':') {
+                    current_group = content.substr(0, content.size() - 1);
+                    parsed.preliminary.emplace_back(current_group, std::vector<std::string>{});
+                } else if (indent >= 4 && content.rfind("- ", 0) == 0 && !parsed.preliminary.empty()) {
+                    parsed.preliminary.back().second.push_back(trim(content.substr(2)));
+                }
+                continue;
+            }
+            if (section != "final_merges") continue;
+            if (indent == 2 && content.back() == ':') {
+                final_kind = content.substr(0, content.size() - 1);
+                current_group.clear();
+            } else if (indent == 4) {
+                const auto colon = content.find(':');
+                if (colon == std::string::npos) continue;
+                current_group = trim(content.substr(0, colon));
+                auto &groups = final_kind == "samples" ? parsed.final_samples : parsed.final_channels;
+                auto &members = groups[current_group];
+                appendInlineMembers(members, content.substr(colon + 1));
+            } else if (indent >= 6 && content.rfind("- ", 0) == 0 && !current_group.empty()) {
+                auto &groups = final_kind == "samples" ? parsed.final_samples : parsed.final_channels;
+                groups[current_group].push_back(trim(content.substr(2)));
+            }
+        }
+        if (parsed.preliminary.empty() || parsed.final_samples.empty() || parsed.final_channels.empty())
+            throw std::runtime_error("Incomplete b-tag family configuration " + std::string(kBTagFamilyConfig));
+        return parsed;
+    }();
+    return config;
+}
+
 double unityForInvalidBTagWeight(std::atomic<unsigned long long> &counter) {
     ++counter;
     return 1.;
 }
 
+std::string finalGroup(const std::map<std::string, std::vector<std::string>> &groups,
+                       const std::string &name, const std::string &kind) {
+    std::string match;
+    for (const auto &[group, members] : groups) {
+        if (std::find(members.begin(), members.end(), name) == members.end()) continue;
+        if (!match.empty()) throw std::runtime_error(name + " occurs in multiple final b-tag " + kind + " groups");
+        match = group;
+    }
+    if (match.empty()) throw std::runtime_error(name + " is not assigned to a final b-tag " + kind + " group");
+    return match;
+}
+
 std::string bTagEfficiencyFamily(const std::string &sample) {
-    const auto contains = [&sample](const std::string &needle) {
-        return sample.find(needle) != std::string::npos;
-    };
-    // Keep this ordered consistently with misc/sf-utils/btag_eff_families.py.
-    if (contains("VBSWWH_") || contains("VBSWZH_") || contains("VBSZZH_")) return "VBS_VVH";
-    if (contains("VBS-SSWW")) return "VBS_SSWW";
-    if (contains("WWJJ")) return "WWJJ";
-    if (contains("ZZJJ")) return "ZZJJ";
-    if (contains("GluGluToContinto2Z") || contains("GluGlutoContinto2Z")) return "ggZZ_continuum";
-    if (contains("GluGluH-")) return "ggH";
-    if (contains("GluGluZH") || contains("WplusH") || contains("WminusH") || contains("ZH-")) return "VH";
-    if (contains("TTH-")) return "ttH";
-    if (contains("TTWW") || contains("TTWZ") || contains("TTW-") || contains("TZQB")) return "ttV_rare";
-    if (contains("TTto") || contains("TTLL") || contains("TTLNu")) return "ttbar";
-    if (contains("TWminus") || contains("TbarWplus")) return "tW";
-    if (contains("TBbarQ") || contains("TbarBQ") || contains("TBbarto") || contains("TbarBto")) return "single_top";
-    if (contains("WWW-") || contains("WWZ-") || contains("WZZ-") || contains("ZZZ-")) return "triboson";
-    if (contains("WZ_") || contains("WZto")) return "WZ";
-    if (contains("WW_") || contains("WWto")) return "WW";
-    if (contains("ZZ_") || contains("ZZto")) return "ZZ";
-    if (contains("DYto")) return "DY";
-    if (contains("WtoLNu")) return "W_leptonic";
-    if (contains("Wto2Q")) return "W_hadronic";
-    if (contains("Zto2Q")) return "Z_hadronic";
-    if (contains("QCD-4Jets")) return "QCD_HT";
-    if (contains("QCD_Bin")) return "QCD_PT";
-    throw std::runtime_error("No b-tag efficiency family is configured for sample " + sample);
+    const auto &config = bTagFamilyConfig();
+    for (const auto &[family, needles] : config.preliminary) {
+        for (const auto &needle : needles) {
+            if (sample.find(needle) != std::string::npos)
+                return finalGroup(config.final_samples, family, "sample");
+        }
+    }
+    throw std::runtime_error("No preliminary b-tag efficiency family is configured for sample " + sample);
+}
+
+std::string bTagEfficiencyChannel(const std::string &channel) {
+    return finalGroup(bTagFamilyConfig().final_channels, channel, "channel");
 }
 } // namespace
 
@@ -331,7 +412,8 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
         if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end())
             throw std::runtime_error("B-tag SF or efficiency correction set is unavailable for year " + year);
 
-        const std::string efficiency_name = "btag_" + year + "_" + channel;
+        const std::string efficiency_channel = bTagEfficiencyChannel(channel);
+        const std::string efficiency_name = "btag_" + year + "_" + efficiency_channel;
         const std::string legacy_efficiency_name = "btag_" + year;
         bool use_legacy_efficiency = false;
         std::string efficiency_sample = sample;
