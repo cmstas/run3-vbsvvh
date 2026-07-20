@@ -103,17 +103,8 @@ int main(int argc, char** argv) {
 
     if (args.ana == "all_events" && !args.skipBTagScaleFactors) {
         throw std::runtime_error(
-            "all_events has no b-tag efficiency payload; rerun with --skip-btag-sf");
-    }
-    if (!args.skipBTagScaleFactors) {
-        const std::set<std::string> supported_btag_years = {
-            "2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"};
-        for (const auto &year : getMCYearsFromConfig(input_spec)) {
-            if (!supported_btag_years.count(year))
-                throw std::runtime_error(
-                    "B-tag SF application is unsupported for " + year +
-                    "; rerun with --skip-btag-sf");
-        }
+            "all_events has no channel-specific b-tag efficiency payload. "
+            "Specify an analysis channel, or rerun with --skip-btag-sf.");
     }
 
     // UParTAK4 has no matching fixed-WP calibration for the NanoAODv12
@@ -240,11 +231,14 @@ int main(int argc, char** argv) {
             std::cout << " -> B-tag SF application disabled by --skip-btag-sf" << std::endl;
         else
             std::cout << " -> Applying b-tag SFs" << std::endl;
-        const auto years = getMCYearsFromConfig(input_spec);
-        const std::set<std::string> unique_years(years.begin(), years.end());
-        if (unique_years.size() != 1)
-            throw std::runtime_error("B-tag nuisance branch naming requires exactly one MC year per job");
-        df = applyMCWeights(df, args.ana, *unique_years.begin(), !args.skipBTagScaleFactors);
+        const auto metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
+        const std::set<std::string> supported_btag_years = {
+            "2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"};
+        if (!args.skipBTagScaleFactors && !supported_btag_years.count(metadata.year))
+            throw std::runtime_error(
+                "B-tag SF application is unsupported for " + metadata.year +
+                "; rerun with --skip-btag-sf");
+        df = applyMCWeights(df, args.ana, metadata.year, !args.skipBTagScaleFactors);
     }
 
     Cutflow::Add(df, "After SFs and corrections");

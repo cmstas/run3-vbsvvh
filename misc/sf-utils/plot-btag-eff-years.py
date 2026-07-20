@@ -3,7 +3,6 @@
 
 import argparse
 import importlib.util
-import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -42,8 +41,13 @@ def output_year(root):
 
 def discover_year_roots(input_base, requested_years=None):
     """Discover only complete-layout production roots, keyed by ROOT metadata year."""
-    candidates = sorted(path for path in input_base.iterdir()
-                        if path.is_dir() and re.fullmatch(r"run[23]_btag_eff_.+", path.name))
+    # A production root is identified by its content, not a user-chosen tag.
+    # Cover ROOT/YEAR, legacy run*_btag_eff_TAG, and TAG/YEAR without walking
+    # an unbounded tree.
+    candidates = [input_base]
+    children = sorted(path for path in input_base.iterdir() if path.is_dir())
+    candidates += children
+    candidates += [path for child in children for path in sorted(child.iterdir()) if path.is_dir()]
     found, skipped = {}, []
     for root in candidates:
         try:

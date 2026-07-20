@@ -1,4 +1,5 @@
 #include "btag_efficiencies.h"
+#include "btag_settings.h"
 
 #include <array>
 #include <cmath>
@@ -45,11 +46,12 @@ struct HistogramSet {
         }
     }
 
-    void fill(float pt, float eta, int hadron_flavor, bool tight, bool loose, double weight) {
+    void fill(float pt, float eta, int hadron_flavor, bool tight, bool loose, double weight,
+              double max_abs_eta) {
         // BTV AK4 calibrations are defined in the central-jet region.  The
         // selected collection can include forward jets, which must not enter
         // these efficiencies or their SF application.
-        if (std::abs(eta) >= 2.5f) return;
+        if (std::abs(eta) >= max_abs_eta) return;
         const int flavor = flavorIndex(hadron_flavor);
         histograms[flavor][0]->Fill(pt, eta, weight); // denominator
         if (tight) {
@@ -95,7 +97,7 @@ void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
         slot_histograms.emplace_back(std::make_unique<HistogramSet>("slot" + std::to_string(slot) + "_"));
 
     df.ForeachSlot(
-        [&slot_histograms](unsigned int slot, const ROOT::VecOps::RVec<float> &pt,
+        [&slot_histograms, &year](unsigned int slot, const ROOT::VecOps::RVec<float> &pt,
                            const ROOT::VecOps::RVec<float> &eta,
                            const ROOT::VecOps::RVec<unsigned char> &hadron_flavor,
                            const ROOT::VecOps::RVec<bool> &tight,
@@ -107,7 +109,8 @@ void saveBTagEfficiencyHistograms(RNode df, const std::string &output_dir,
                 pt.size() != tight.size() || pt.size() != loose.size())
                 throw std::runtime_error("Selected AK4 jet branches have inconsistent sizes");
             for (std::size_t jet = 0; jet < pt.size(); ++jet)
-                slot_histograms[slot]->fill(pt[jet], eta[jet], hadron_flavor[jet], tight[jet], loose[jet], baseweight);
+                slot_histograms[slot]->fill(pt[jet], eta[jet], hadron_flavor[jet], tight[jet], loose[jet],
+                                            baseweight, bTagMaxAbsEta(year));
         },
         {"jet_pt", "jet_eta", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag", "baseweight"});
 

@@ -76,17 +76,7 @@ def apply_prefix(in_dict,prefix):
 def check_inputs(merged_json_dict, mode, btag_eff=False):
     if len(merged_json_dict["samples"]) == 0:
         raise Exception("Error, no samples specified")
-    if mode == "local":
-        if btag_eff and len(merged_json_dict["samples"]) != 1:
-            raise Exception(
-                "Local --btag-eff requires exactly one MC sample in the input JSON. "
-                "Use a single-sample JSON, or submit with Condor/Slurm, which splits samples per job."
-            )
-        kind_lst = []
-        for ds in merged_json_dict["samples"].keys():
-            kind_lst.append(merged_json_dict["samples"][ds]["metadata"]["kind"])
-        if len(set(kind_lst)) != 1:
-            raise Exception("Error, more than one kind of input is specified, not able to run runAnalysis over multiple kinds")
+    # Local mode is split into one runAnalysis invocation per sample below.
 
 
 def select_btag_year(merged_json_dict, year):
@@ -134,6 +124,8 @@ def main():
         parser.error("--btag-eff requires --year (for example, --year 2024Prompt)")
     if args.btag_eff and args.year not in SUPPORTED_BTAG_EFF_YEARS:
         parser.error(f"--btag-eff is unsupported for {args.year}")
+    if args.btag_eff and args.sample:
+        parser.error("--sample cannot be used with --btag-eff because the final payload requires every configured sample.")
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
     if args.channels == ["all"]:
@@ -148,6 +140,10 @@ def main():
         # Make sure this is a channel RDF knows about
         if (chan_name not in ANA_CHANNELS.keys()) and (chan_name != "all_events"):
             raise Exception(f"Error unknown channel: {chan_name}")
+        if chan_name == "all_events" and not args.skip_btag_sf:
+            raise Exception(
+                "all_events has no channel-specific b-tag efficiency payload. "
+                "Specify an analysis channel, or rerun with --skip-btag-sf.")
         if args.btag_eff and chan_name in B_TAG_EFF_EXCLUDED_CHANNELS:
             raise Exception(f"--btag-eff production is excluded for {chan_name}")
 
@@ -180,55 +176,64 @@ def main():
         # Validate before creating output artifacts or invoking a backend.
         check_inputs(merged_json_dict, args.mode, args.btag_eff)
 
-        # Construct the output name, given the channel and output tag
-        outname = f"{chan_name}_{args.outname}"
-
-        # Dump the merged content to a json file in merged_jsons/
-        if not os.path.exists("merged_jsons"): os.mkdir("merged_jsons")
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        merged_json_name = os.path.join("merged_jsons",f"merged_{outname}_{timestamp}.json")
-        print(f"  -> Writing merged file \"{merged_json_name}\"")
-        with open(merged_json_name, 'w') as outfile:
-            json.dump(merged_json_dict, outfile, indent=4)
-
         # B-tag Slurm production writes the converter's documented layout
         # directly: INPUT_ROOT/CHANNEL/{manifest.json,SAMPLE/output_N.root}.
         # The submitter creates it only after checking that it cannot mix with
         # a previous submission.  Keep the historical outname layout for all
         # other workflows.
-        outdir = output_dir_for_channel(args.outpath, args.outname, chan_name, args.mode,
-                                        args.btag_eff, args.year)
-        if not (args.btag_eff and args.mode == "slurm") and not os.path.isdir(outdir):
-            os.makedirs(outdir)
-        print(f"  -> RDF output will be located in: {outdir}")
-
-        # Construct the bash run command
-        hlt_flag = " --store_hlt" if args.store_hlt else ""
-        btag_eff_flag = " --btag-eff" if args.btag_eff else ""
-        skip_btag_sf_flag = " --skip-btag-sf" if args.skip_btag_sf else ""
-        sample_flag = f" --sample '{args.sample}'" if args.sample else ""
+        # A local invocation cannot mix samples/years in one RDataFrame.  The
+        # batch backends already split samples themselves.
+        jobs = [(None, merged_json_dict)]
         if args.mode == "local":
-            command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {args.outname} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}{' --btag_eff' if args.btag_eff else ''}{' --skip-btag-sf' if args.skip_btag_sf else ''}"
-            print(f"  -> Now running command \"{command}\"...\n")
-            if not args.dry_run:
-                subprocess.run(command, shell=True, check=True)
-        elif args.mode == "condor":
-            dry_run_flag = " --dry-run" if args.dry_run else ""
-            ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
-            command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{sample_flag}{dry_run_flag}"
-            print(f"  -> Running command \"{command}\"...\n")
-            subprocess.run(command, shell=True, check=True)
-        elif args.mode == "slurm":
-            dry_run_flag = " --dry-run" if args.dry_run else ""
-            memory_flag = f" --memory {args.memory}" if args.memory else ""
-            time_flag = f" --time {args.time}" if args.time else ""
-            ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
-            year_flag = f" --year {args.year}" if args.btag_eff else ""
-            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{year_flag}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
-            print(f"  -> Running command \"{command}\"...\n")
-            subprocess.run(command, shell=True, check=True)
+            jobs = [(sample, {"samples": {sample: info}})
+                    for sample, info in merged_json_dict["samples"].items()]
 
-        print("Done!")
+        for sample_name, job_config in jobs:
+            outname = f"{chan_name}_{args.outname}"
+            suffix = f"_{sample_name}" if sample_name else ""
+            if not os.path.exists("merged_jsons"): os.mkdir("merged_jsons")
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+            merged_json_name = os.path.join("merged_jsons", f"merged_{outname}{suffix}_{timestamp}.json")
+            print(f"  -> Writing merged file \"{merged_json_name}\"")
+            with open(merged_json_name, 'w') as outfile:
+                json.dump(job_config, outfile, indent=4)
+
+            outdir = output_dir_for_channel(args.outpath, args.outname, chan_name, args.mode,
+                                            args.btag_eff, args.year)
+            if sample_name:
+                outdir = os.path.join(outdir, sample_name)
+            if not (args.btag_eff and args.mode == "slurm") and not os.path.isdir(outdir):
+                os.makedirs(outdir)
+            print(f"  -> RDF output will be located in: {outdir}")
+
+            # Construct the backend command.
+            hlt_flag = " --store_hlt" if args.store_hlt else ""
+            btag_eff_flag = " --btag-eff" if args.btag_eff else ""
+            skip_btag_sf_flag = " --skip-btag-sf" if args.skip_btag_sf else ""
+            sample_flag = f" --sample '{args.sample}'" if args.sample else ""
+            if args.mode == "local":
+                local_name = f"{args.outname}_{sample_name}" if sample_name else args.outname
+                command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {local_name} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}{' --btag_eff' if args.btag_eff else ''}{' --skip-btag-sf' if args.skip_btag_sf else ''}"
+                print(f"  -> Now running command \"{command}\"...\n")
+                if not args.dry_run:
+                    subprocess.run(command, shell=True, check=True)
+            elif args.mode == "condor":
+                dry_run_flag = " --dry-run" if args.dry_run else ""
+                ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
+                command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{sample_flag}{dry_run_flag}"
+                print(f"  -> Running command \"{command}\"...\n")
+                subprocess.run(command, shell=True, check=True)
+            elif args.mode == "slurm":
+                dry_run_flag = " --dry-run" if args.dry_run else ""
+                memory_flag = f" --memory {args.memory}" if args.memory else ""
+                time_flag = f" --time {args.time}" if args.time else ""
+                ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
+                year_flag = f" --year {args.year}" if args.btag_eff else ""
+                command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{year_flag}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
+                print(f"  -> Running command \"{command}\"...\n")
+                subprocess.run(command, shell=True, check=True)
+
+            print("Done!")
 
 if __name__ == "__main__":
     main()

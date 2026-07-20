@@ -26,7 +26,7 @@ cd preselection/
 make -j8
 
 # Run examples in `run_wrapper.sh`, e.g., for running over locally over one signal sample on UAF:
-python run_rdf.py etc/input_sample_jsons/run2/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix /ceph/cms/ -o some_dir -n test_small -a all_events -m local -r 2
+python run_rdf.py -i etc/input_sample_jsons/run2/sig_c2v1p0_c3_1p0/all_events/2017_VBSWZH_c2v1p0_c3_1p0.json --prefix /ceph/cms/ -o some_dir -n test_small -c 1lep_1FJ -m local -r 2
 ```
 
 ## Prerequisites
@@ -100,10 +100,12 @@ year-decorrelated branches are `weight_btagging_sf_HF_uncorrelated_<year>` and
 `statistic`, `pileup`, `isrdef`, `fsrdef`, `muf`, `mur`, `pdfas`, `jes`,
 `jer`, `type3`, `bfragmentation`, `topmass`, and `hdamp`.  Unavailable source
 vectors are central/central/central.  `weight_pileup`, `weight_PSISR`,
-`weight_PSFSR`, `weight_muF`, and `weight_muR` include their matching HF
-source; their original values remain in `*_raw` branches.  The broad HF
-correlated branch is retained only for compatibility/closure, not as an
-additional fine-grained nuisance.
+`weight_PSFSR`, `weight_muF`, and `weight_muR` already include their matching
+HF source.  There are no public `*_raw` columns or separate public HF
+pileup/isrdef/fsrdef/muf/mur branches.  The broad HF correlated branch is
+retained only for compatibility/closure and must not be combined with the
+fine-source decomposition in a statistical model; uncorrelated and statistic
+are intentionally both retained.
 
 <details>
 <summary>Full b-tag efficiency derivation tutorial</summary>
@@ -167,6 +169,9 @@ Compatibility uses independent T/LT/N categories and weighted-binomial
 MC-statistical uncertainties; it is a diagnostic, not a formal hypothesis test.
 The converter sums the four producer eta bins into one central-jet `[-2.5, 2.5]`
 payload bin; pT binning is unchanged.
+Run-2 UParTAK4 fixed-WP payloads are valid only for |eta| < 2.4; their
+efficiency production must use the same acceptance.  The 2024 payload uses
+|eta| < 2.5.
 
 </details>
 

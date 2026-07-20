@@ -401,6 +401,9 @@ def main():
     if args.btag_eff and args.year not in SUPPORTED_BTAG_EFF_YEARS:
         print(f"ERROR: --btag-eff is unsupported for {args.year}")
         sys.exit(1)
+    if args.btag_eff and args.sample:
+        print("ERROR: --sample cannot be used with --btag-eff because the final payload requires every configured sample.")
+        sys.exit(1)
 
     # Determine paths
     script_dir = Path(__file__).parent.resolve()
