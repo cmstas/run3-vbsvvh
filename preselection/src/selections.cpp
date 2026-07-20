@@ -248,7 +248,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     df = AK4JetsSelection(df, /*cleanAgainstFJ=*/true, "jet");
     df = AK4JetsSelection(df, /*cleanAgainstFJ=*/false, "jetNoFJClean");
 
-    // Get the relevant lepton SFs (choose which ones to actually apply in each channel)
+    // Get ahold of the relevant lepton SFs (will choose which ones to actually apply in each channel)
     df = applyMuonWorkingPointSFs(df, isData, {
         "weight_muon_looseid_looseiso",
         "weight_muon_mediumid_tightiso",
@@ -381,6 +381,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
+        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "weight_electron_reco_tightid", /*muo_sf_name=*/ "weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
+
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
@@ -399,6 +401,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
+
+        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "weight_electron_reco_tightid", /*muo_sf_name=*/ "weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
 
         df = df.Define("nElectron_Tight", "Sum(electron_isTight)")
             .Define("nMuon_Tight", "Sum(muon_isTight)");
@@ -422,6 +426,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
+        df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_looseid_looseiso");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2)",
             //TODO implement a same sign requirement
@@ -438,31 +444,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
+        df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_mediumid_tightiso");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2) &&"
             "(nFatJets == 1)",
             "C2: 2lep_1FJ"
         );
-
-        if (not isData) {
-            // 1
-            df = combineTwoLeptonSFWeightsIntoOne(df,
-                "weight_electron_reco_looseid",
-                "weight_muon_mediumid_tightiso",
-                "weighttest_lepSF1");
-
-            // 2
-            df = combineTwoLeptonSFWeightsIntoOne(df,
-                "weight_electron_reco_looseid",
-                "weight_muon_looseid_looseiso",
-                "weighttest_lepSF2");
-
-            // 3
-            df = combineTwoLeptonSFWeightsIntoOne(df,
-                "weight_electron_reco_tightid",
-                "weight_muon_tightid_tightiso",
-                "weighttest_lepSF3");
-        }
 
     }
 
@@ -474,6 +462,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
+
+        df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_looseid_looseiso");
 
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 2) &&"
@@ -492,29 +482,12 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
 
+        df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_mediumid_tightiso");
+
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 3)",
             "C2: 3lep"
         );
-
-
-        // 1
-        df = combineTwoLeptonSFWeightsIntoOne(df,
-            "weight_electron_reco_looseid",
-            "weight_muon_mediumid_tightiso",
-            "weighttest_lepSF1");
-
-        // 2
-        df = combineTwoLeptonSFWeightsIntoOne(df,
-            "weight_electron_reco_looseid",
-            "weight_muon_looseid_looseiso",
-            "weighttest_lepSF2");
-
-        // 3
-        df = combineTwoLeptonSFWeightsIntoOne(df,
-            "weight_electron_reco_tightid",
-            "weight_muon_tightid_tightiso",
-            "weighttest_lepSF3");
 
     }
 
@@ -526,6 +499,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = TriggerSelections(df,trigger_logic_string_multilep);
         Cutflow::Add(df, "C1: Trigger selection");
+
+        df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_looseid_looseiso");
 
         df = df.Filter(
             "((nMuon_Loose + nElectron_Loose) == 4)",

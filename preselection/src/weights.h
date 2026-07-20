@@ -63,18 +63,20 @@ const std::unordered_map<std::string, std::string> pileupScaleFactors_yearmap = 
 };
 RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df);
 
-// REMOVE PILEUP ID SINCE NO LONGER NEEDED FOR PUPPI
 
 /*
 ############################################
-Lepton SFs (putting e and m together)
+Lepton SFs wrapper (putting e and m together)
 ############################################
 */
 
-RNode combineTwoLeptonSFWeightsIntoOne(RNode df,
-    const std::string& ele_key,
-    const std::string& mu_key,
-    const std::string& output_key = "weight_lepSF");
+RNode lepSFWrapper(RNode df,
+    bool isData,
+    const std::string& ele_sf_name,
+    const std::string& muo_sf_name,
+    bool include_trigger_sf = false,
+    const std::string& ele_output_name = "weightsyst_eleSF",
+    const std::string& muo_output_name = "weightsyst_muoSF");
 
 /*
 ############################################

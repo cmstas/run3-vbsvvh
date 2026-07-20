@@ -46,15 +46,57 @@ Lepton SFs (putting e and m together)
 ############################################
 */
 
-RNode combineTwoLeptonSFWeightsIntoOne(RNode df,
-    const std::string& ele_key,
-    const std::string& mu_key,
-    const std::string& output_key)
+// In weights.cpp - update the function:
+RNode lepSFWrapper(RNode df,
+    bool isData,
+    const std::string& ele_sf_name,
+    const std::string& muo_sf_name,
+    bool include_trigger_sf,
+    const std::string& ele_output_name,
+    const std::string& muo_output_name)
 {
-    auto combine = [](const RVec<double>& w_ele, const RVec<double>& w_mu) {
-        return RVec<double>{ w_ele[0]*w_mu[0], w_ele[1]*w_mu[1], w_ele[2]*w_mu[2] };
+    // Early return for data - no SFs needed
+    if (isData) return df;
+
+    std::string final_ele_sf = ele_sf_name;
+    std::string final_muo_sf = muo_sf_name;
+
+    // Optionally include trigger SFs
+    if (include_trigger_sf) {
+        // Apply trigger SFs if not already present
+        auto colNames = df.GetColumnNames();
+        bool has_ele_trigger = std::find(colNames.begin(), colNames.end(), "weight_electrontrigger") != colNames.end();
+        bool has_mu_trigger = std::find(colNames.begin(), colNames.end(), "weight_muon_trigger") != colNames.end();
+        
+        if (!has_ele_trigger) {
+            df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
+        }
+        if (!has_mu_trigger) {
+            df = applyMuonWorkingPointSFs(df, false, {"weight_muon_trigger"});
+        }
+        
+        // Multiply base SFs by trigger SFs
+        auto multiply_sf = [](const RVec<double>& base_sf, const RVec<double>& trig_sf) {
+            return RVec<double>{ base_sf[0]*trig_sf[0], base_sf[1]*trig_sf[1], base_sf[2]*trig_sf[2] };
+        };
+        df = df.Define(ele_output_name + "_ele_with_trigger", multiply_sf, {ele_sf_name, "weight_electrontrigger"});
+        df = df.Define(muo_output_name + "_muo_with_trigger", multiply_sf, {muo_sf_name, "weight_muon_trigger"});
+        
+        final_ele_sf = ele_output_name + "_ele_with_trigger";  // FIXED: use ele_output_name
+        final_muo_sf = muo_output_name + "_muo_with_trigger";
+    }
+
+    // Create the separate electron and muon SF outputs with custom names
+    df = df.Define(ele_output_name, final_ele_sf);
+    df = df.Define(muo_output_name, final_muo_sf);
+
+    // Optionally update main weight
+    auto update_weight = [](double current_weight, const RVec<double>& ele_sf, const RVec<double>& muo_sf) {
+        return current_weight * ele_sf[0] * muo_sf[0];
     };
-    return df.Define(output_key, combine, {ele_key, mu_key});
+    df = df.Redefine("weight", update_weight, {"weight", final_ele_sf, final_muo_sf});
+
+    return df;
 }
 
 /*
