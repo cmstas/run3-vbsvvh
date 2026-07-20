@@ -4,7 +4,7 @@ REGION=${REGION:-all}
 NSCAN=${NSCAN:-50}
 
 data_pred_file() {
-    ls "$1"/predictions_single*_data.csv 2>/dev/null | tail -1
+    ls "$1"/predictions_single*_data.parquet 2>/dev/null | tail -1
 }
 
 latest() {
@@ -17,7 +17,7 @@ latest() {
 run() {
     BASE=$(latest "output/$1/single")
     if [ -z "$BASE" ]; then
-        echo "[skip] $1: no version_* with predictions_single*_data.csv + regions.yaml" >&2
+        echo "[skip] $1: no version_* with predictions_single*_data.parquet + regions.yaml" >&2
         return
     fi
     DATA=$(data_pred_file "$BASE")

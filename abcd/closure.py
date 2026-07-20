@@ -4,36 +4,19 @@ import argparse
 import os
 
 import numpy as np
-import pandas as pd
 import yaml
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# Per-channel kinematic preselection: how the tagger scores are combined and
-# which regions.yaml key holds each cut. Mirrors {1,2,3}fj_analysis.py.
-CHANNELS = {
-    "1fj": {"combine": "or",  "kin": [("boosted_h_candidate_score", "h_cut"),
-                                       ("boosted_v_candidate_score", "v_cut")]},
-    "2fj": {"combine": "and", "kin": [("boosted_h_candidate_score", "h_cut"),
-                                       ("boosted_v_candidate_score", "v_cut")]},
-    "3fj": {"combine": "and", "kin": [("boosted_h_candidate_score", "h_cut"),
-                                       ("boosted_v1_candidate_score", "v1_cut"),
-                                       ("boosted_v2_candidate_score", "v2_cut")]},
-}
+# Per-channel kinematic preselection (taggers + how their cuts combine) is
+# shared with run_analysis.py via channels.py.
+from channels import CHANNELS
+from predictions import read_predictions
 
 DNN_COL = "dnn_score"
 BDT_COL = "bdt_score"
-
-
-def kinematic_mask(df, channel, cuts):
-    cfg = CHANNELS[channel]
-    parts = [df[col].to_numpy() >= float(cuts[key]) for col, key in cfg["kin"]]
-    mask = parts[0].copy()
-    for p in parts[1:]:
-        mask = (mask & p) if cfg["combine"] == "and" else (mask | p)
-    return mask
 
 
 def region_box(region, dnn_cut, vbs_cut, dnn_vals, bdt_vals):
@@ -187,7 +170,7 @@ def load_scan_cuts(args):
     if args.dnn_cut is None or args.vbs_cut is None:
         raise SystemExit("Provide --regions, or both --dnn-cut and --vbs-cut (plus kinematic cuts).")
     cuts = {"dnn_cut": args.dnn_cut, "vbs_cut": args.vbs_cut}
-    for col, key in CHANNELS[args.channel]["kin"]:
+    for col, key in CHANNELS[args.channel].taggers:
         val = getattr(args, key.replace("_cut", "") + "_cut", None)
         cuts[key] = 0.0 if val is None else val
     return {"Scan1": cuts}
@@ -196,16 +179,16 @@ def load_scan_cuts(args):
 def main():
     global DNN_COL, BDT_COL
     parser = argparse.ArgumentParser(description="ABCD closure systematic from the data control region")
-    parser.add_argument("-i", "--input", required=True, help="Path to the data predictions CSV")
+    parser.add_argument("-i", "--input", required=True, help="Path to the data predictions file (.parquet)")
     parser.add_argument("--channel", required=True, choices=list(CHANNELS), help="Analysis channel (sets kinematic preselection)")
     parser.add_argument("--regions", help="regions.yaml with per-scan cuts (as written by the analysis scripts)")
     parser.add_argument("--region", default="D", choices=["D", "CD", "BD", "all"], help="Closure region orientation (default: D)")
     parser.add_argument("-n", "--n-scan", type=int, default=50, help="Number of scan points per axis (default: 50)")
-    parser.add_argument("--min-count", type=int, default=5, help="Minimum raw events required in each of A',B',C',D' (default: 1)")
+    parser.add_argument("--min-count", type=int, default=5, help="Minimum raw events required in each of A',B',C',D' (default: 5)")
     parser.add_argument("--orthogonal", action="store_true", help="With --regions, remove earlier scans' kinematic regions before each scan (matches the optimization)")
     parser.add_argument("-o", "--outdir", default=None, help="Output directory for plots/summary (default: alongside --input)")
     parser.add_argument("--dnn-col", default=DNN_COL, help=f"DNN score column (default: {DNN_COL})")
-    parser.add_argument("--bdt-col", default=BDT_COL, help=f"Second-discriminant column (default: {BDT_COL}; older CSVs use 'vbs_score')")
+    parser.add_argument("--bdt-col", default=BDT_COL, help=f"Second-discriminant column (default: {BDT_COL})")
     # Explicit-cut fallback (when --regions is not given)
     parser.add_argument("--dnn-cut", type=float, default=None)
     parser.add_argument("--vbs-cut", type=float, default=None)
@@ -221,14 +204,14 @@ def main():
     out_dir = args.outdir or (os.path.dirname(args.input) or ".")
     os.makedirs(out_dir, exist_ok=True)
 
-    df = pd.read_csv(args.input)
+    df = read_predictions(args.input)
     regions = ["D", "CD", "BD"] if args.region == "all" else [args.region]
     scan_cuts = load_scan_cuts(args)
 
     prev_kin = np.zeros(len(df), dtype=bool)
     summary = {}
     for scan_name, cuts in scan_cuts.items():
-        this_kin = kinematic_mask(df, args.channel, cuts)
+        this_kin = CHANNELS[args.channel].kinematic_mask(df, cuts)
         eff_kin = this_kin & ~prev_kin if args.orthogonal else this_kin
         if args.orthogonal:
             prev_kin |= this_kin

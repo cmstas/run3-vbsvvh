@@ -1,8 +1,7 @@
-sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
-bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
-data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+input_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r3*3fj_sig*/*1p5*/*.root"]
+sig_path: ["*r3*3fj_sig*/*/*.root"]
+sig_infer_path: ["*r3*3fj_sig*/*1p5*/*.root"]
 bkg_path: ["*r3*3fj_bkg*/*/*.root"]
 data_path: ["*r3*3fj_data*/*/*.root"]
 
@@ -12,19 +11,16 @@ training_features:
   - boosted_h_candidate_pt: log
   - boosted_h_candidate_eta: minmax
   - boosted_h_candidate_phi: minmax
-  - boosted_h_candidate_part_mass: log
   - boosted_h_candidate_msoftdrop: log
   - boosted_h_candidate_tau21: none
   - boosted_v1_candidate_pt: log
   - boosted_v1_candidate_eta: minmax
   - boosted_v1_candidate_phi: minmax
-  - boosted_v1_candidate_part_mass: log
   - boosted_v1_candidate_msoftdrop: log
   - boosted_v1_candidate_tau21: none
   - boosted_v2_candidate_pt: log
   - boosted_v2_candidate_eta: minmax
   - boosted_v2_candidate_phi: minmax
-  - boosted_v2_candidate_part_mass: log
   - boosted_v2_candidate_msoftdrop: log
   - boosted_v2_candidate_tau21: none
 
@@ -63,12 +59,6 @@ bdt:
   reg_lambda: 10.0
   reg_alpha: 0.0
   early_stopping_rounds: 40
-
-qcd_resampling:
-  enabled: true
-  template_path: "/home/users/aaarora/phys/run3/cmstas-run3-vbsvvh/resampling_pdfs.root"
-  qcd_shortname_prefix: "QCD"
-  seed: 42
 
 preselection: "(boosted_h_candidate_score >= 0.1) & (boosted_v1_candidate_score >= 0.1) & (boosted_v2_candidate_score >= 0.1)"
 

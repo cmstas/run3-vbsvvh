@@ -3,6 +3,7 @@
 Script to extract and sum cutflow tables from job stdout files.
 """
 
+import math
 import re
 import gzip
 from collections import defaultdict
@@ -10,8 +11,9 @@ from pathlib import Path
 from argparse import ArgumentParser
 from multiprocessing import Pool, cpu_count
 
-# Pre-compile the regex pattern for performance
-CUTFLOW_PATTERN = re.compile(r'\|\s+(\d+)\s+\|\s+(.+?)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|')
+# Pre-compile the regex pattern for performance. Columns:
+# | # | Cut name | Sum(w) | +/- stat | rel. eff. | abs. eff. |
+CUTFLOW_PATTERN = re.compile(r'\|\s+(\d+)\s+\|\s+(.+?)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|\s+([\d.]+)\s+\|')
 
 
 def extract_cutflow_table(file_path):
@@ -38,8 +40,9 @@ def extract_cutflow_table(file_path):
                 'cut_num': int(match[0]),
                 'cut_name': match[1].strip(),
                 'sum_w': float(match[2]),
-                'rel_eff': float(match[3]),
-                'abs_eff': float(match[4]),
+                'err': float(match[3]),
+                'rel_eff': float(match[4]),
+                'abs_eff': float(match[5]),
             })
     
     except (FileNotFoundError, IOError) as e:
@@ -56,6 +59,7 @@ def aggregate_cutflows(job_stdout_files):
     aggregated = defaultdict(lambda: {
         'cut_name': None,
         'sum_w': 0.0,
+        'sumw2': 0.0,
         'count': 0,
         'rel_eff_sum': 0.0,
         'abs_eff_sum': 0.0,
@@ -75,6 +79,9 @@ def aggregate_cutflows(job_stdout_files):
                 cut_num = entry['cut_num']
                 aggregated[cut_num]['cut_name'] = entry['cut_name']
                 aggregated[cut_num]['sum_w'] += entry['sum_w']
+                # Errors add in quadrature: the summed yield's error is
+                # sqrt(sum of per-job Sum(w^2)) = sqrt(sum of per-job err^2).
+                aggregated[cut_num]['sumw2'] += entry['err'] ** 2
                 aggregated[cut_num]['rel_eff_sum'] += entry['rel_eff']
                 aggregated[cut_num]['abs_eff_sum'] += entry['abs_eff']
                 aggregated[cut_num]['count'] += 1
@@ -97,15 +104,16 @@ def print_cutflow_table(aggregated, file_count):
     print("\n" + "="*120)
     print(f"AGGREGATED CUTFLOW TABLE (from {file_count} job files)")
     print("="*120)
-    print(f"{'#':<3} | {'Cut name':<50} | {'Sum(w)':<15} | {'Avg rel. eff.':<15} | {'Avg abs. eff.':<15}")
+    print(f"{'#':<3} | {'Cut name':<50} | {'Sum(w)':<15} | {'+/- stat':<15} | {'Avg rel. eff.':<15} | {'Avg abs. eff.':<15}")
     print("-"*120)
-    
+
     # Print rows
     for cut_num, data in sorted_cuts:
         avg_rel_eff = data['rel_eff_sum'] / data['count'] if data['count'] > 0 else 0.0
         avg_abs_eff = data['abs_eff_sum'] / data['count'] if data['count'] > 0 else 0.0
-        
-        print(f"{cut_num:<3} | {data['cut_name']:<50} | {data['sum_w']:<15.1f} | {avg_rel_eff:<15.4f} | {avg_abs_eff:<15.4f}")
+        err = math.sqrt(data['sumw2'])
+
+        print(f"{cut_num:<3} | {data['cut_name']:<50} | {data['sum_w']:<15.1f} | {err:<15.1f} | {avg_rel_eff:<15.4f} | {avg_abs_eff:<15.4f}")
     
     print("="*120 + "\n")
 

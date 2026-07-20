@@ -1,12 +1,19 @@
 validation/
 **/CMSSW*
-datacard/
 env/
 output/
+plotter
+
+datacard/*
+!datacard/datacard.py
+!datacard/make_datacards.sh
+!datacard/run.sh
+!datacard/table.py
 
 .vscode/
 .DS_Store
 
+*.png
 *.log
 *.pyc
 *.pyo

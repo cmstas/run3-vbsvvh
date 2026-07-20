@@ -1,8 +1,7 @@
-sig_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
-bkg_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
-data_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+input_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
 
-sig_path: ["*r2*2fj_sig*/*1p5*/*.root"]
+sig_path: ["*r2*2fj_sig*/*/*.root"]
+sig_infer_path: ["*r2*2fj_sig*/*1p5*/*.root"]
 bkg_path: ["*r2*2fj_bkg*/*/*.root"]
 data_path: ["*r2*2fj_data*/*/*.root"]
 

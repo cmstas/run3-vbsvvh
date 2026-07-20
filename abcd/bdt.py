@@ -23,9 +23,7 @@ from sklearn.model_selection import train_test_split
 
 import xgboost as xgb
 
-# Kept in sync with main.MISSING_VALUE. Defined locally to keep this module
-# decoupled from main (main imports bdt, so bdt must not import main).
-MISSING_VALUE = -999.0
+from common import MISSING_VALUE, to_flat_float_column
 
 BDT_SCORE_NAME = "bdt_score"
 
@@ -49,18 +47,8 @@ def parse_bdt_features(bdt_features_cfg):
     return list(dict.fromkeys(features))
 
 
-def _flatten_awkward_cell(value):
-    if np.isscalar(value):
-        return value
-    return value[0] if len(value) > 0 else MISSING_VALUE
-
-
 def _clean_column(arr):
-    arr = np.asarray(arr)
-    if arr.dtype == object:
-        arr = np.asarray([_flatten_awkward_cell(v) for v in arr], dtype=np.float64)
-    else:
-        arr = arr.astype(np.float64, copy=False)
+    arr = to_flat_float_column(arr)
     # Route sentinel/non-finite values to NaN so XGBoost's native missing-value
     # handling deals with them instead of treating -999 as a real number.
     return np.where(np.isfinite(arr) & (arr != MISSING_VALUE), arr, np.nan)

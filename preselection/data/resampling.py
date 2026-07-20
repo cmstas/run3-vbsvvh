@@ -54,6 +54,7 @@ Sampling recipe (per QCD-MC fat jet with a given pT, |eta|)
 """
 
 import os
+import shutil
 import sys
 from glob import glob
 from array import array
@@ -411,6 +412,15 @@ for ipt in range(1, n_pt + 1):
     joint[ipt].Write()  # raw counts; GetRandom uses the integral
 
 print(f"[resampling] wrote {OUT_ROOT}")
+
+# Mirror the templates into the preselection tree so the C++ QCD score resampling
+# (preselection/src/utils.cpp applyQCDScoreResampling) and the condor tarball pick
+# them up at the relative path data/resampling_pdfs*.root.
+_PRESEL_DATA = os.path.join(_HERE, "preselection", "data")
+os.makedirs(_PRESEL_DATA, exist_ok=True)
+_presel_copy = os.path.join(_PRESEL_DATA, os.path.basename(OUT_ROOT))
+shutil.copyfile(OUT_ROOT, _presel_copy)
+print(f"[resampling] copied templates to {_presel_copy}")
 
 # ---------------------------------------------------------------------------
 # Summaries: statistics per (pT, |eta|) bin, and H-V correlation per pT bin
