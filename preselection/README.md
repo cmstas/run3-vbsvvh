@@ -167,6 +167,9 @@ python3 ../misc/sf-utils/plot-btag-eff-years.py \
 
 Compatibility uses independent T/LT/N categories and weighted-binomial
 MC-statistical uncertainties; it is a diagnostic, not a formal hypothesis test.
+During conversion, a pathological signed-weight pT bin is merged with its
+immediately lower neighbor and the merged efficiency is assigned to both bins;
+an irreparable first-bin pathology still uses the validated all-MC fallback.
 The converter sums the four producer eta bins into one central-jet `[-2.5, 2.5]`
 payload bin; pT binning is unchanged.
 The 2016 pre/post-VFP UParTAK4 fixed-WP payloads use |eta| < 2.4; 2017,

@@ -290,6 +290,42 @@ def repair_with_inclusive(counts, variances, inclusive_counts, inclusive_varianc
     return repaired, repaired_variances, replacements
 
 
+def merge_invalid_bins_downward(counts, variances):
+    """Merge pathological pT bins into the immediately lower bin.
+
+    The merged yield is copied back into the original upper bin so both bins
+    receive the same efficiency.  This preserves the published pT schema while
+    avoiding signed-weight pathologies in sparse high-pT bins.
+    """
+    merged = {key: values.copy() for key, values in counts.items()}
+    merged_variances = {key: values.copy() for key, values in variances.items()}
+    merged_bins = {}
+    invalid = invalid_count_bins(merged)
+    for flavor in FLAVORS:
+        indices = [int(index[0]) for index in np.argwhere(invalid[flavor]) if int(index[0]) > 0]
+        if not indices:
+            continue
+        merged_bins[flavor] = []
+        groups = []
+        for index in indices:
+            if not groups or index != groups[-1][-1] + 1:
+                groups.append([index])
+            else:
+                groups[-1].append(index)
+        for group in groups:
+            lower = group[0] - 1
+            for index in group:
+                for state in ("den", *WORKING_POINTS):
+                    merged[flavor, state][lower, :] += merged[flavor, state][index, :]
+                    merged_variances[flavor, state][lower, :] += merged_variances[flavor, state][index, :]
+            for index in group:
+                for state in ("den", *WORKING_POINTS):
+                    merged[flavor, state][index, :] = merged[flavor, state][lower, :]
+                    merged_variances[flavor, state][index, :] = merged_variances[flavor, state][lower, :]
+            merged_bins[flavor].extend([ [index, lower] for index in group ])
+    return merged, merged_variances, merged_bins
+
+
 def efficiency(values, denominator):
     output = np.zeros_like(values, dtype=float)
     np.divide(values, denominator, out=output, where=denominator > 0)
@@ -417,11 +453,19 @@ def grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, memb
     for group in members:
         add_counts(inclusive_counts, grouped_counts[group])
         add_counts(inclusive_variances, grouped_variances[group])
+    inclusive_counts, inclusive_variances, inclusive_merged_bins = merge_invalid_bins_downward(
+        inclusive_counts, inclusive_variances)
+    if inclusive_merged_bins:
+        print(f"inclusive: merged pathological pT bins into their lower neighbors: {inclusive_merged_bins}")
     validate_counts(inclusive_counts)
     specs, fallbacks = [], {}
     for group in sorted(members):
+        counts, variances, merged_bins = merge_invalid_bins_downward(
+            grouped_counts[group], grouped_variances[group])
+        if merged_bins:
+            print(f"{group}: merged pathological pT bins into their lower neighbors: {merged_bins}")
         counts, variances, fallback_bins = repair_with_inclusive(
-            grouped_counts[group], grouped_variances[group], inclusive_counts, inclusive_variances)
+            counts, variances, inclusive_counts, inclusive_variances)
         if fallback_bins:
             fallbacks[group] = fallback_bins
             print(f"{group}: replaced {sum(len(bins) for bins in fallback_bins.values())} pathological bins with all-MC yields")
