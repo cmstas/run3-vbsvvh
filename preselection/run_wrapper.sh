@@ -58,7 +58,7 @@ for RUN in 2 3; do
     RUN_BASE="etc/input_sample_jsons/run${RUN}"
 
     # Signal (three variants under the all_events pass-through channel)
-    python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1
+    python3 run_rdf.py -i ${RUN_BASE}/sig/all_events/  -p $PREFIX -o $OUT_DIR -n r${RUN}_sig_sm  -c all_events -m $MODE -r $RUN -f 1 --skip-btag-sf
 
     # Sig + bkg + data per channel
     python3 run_rdf.py -p $PREFIX -o $OUT_DIR -n r${RUN} -c "${CHANNELS[@]}" -m $MODE -r $RUN -f 1

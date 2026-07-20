@@ -169,9 +169,9 @@ Compatibility uses independent T/LT/N categories and weighted-binomial
 MC-statistical uncertainties; it is a diagnostic, not a formal hypothesis test.
 The converter sums the four producer eta bins into one central-jet `[-2.5, 2.5]`
 payload bin; pT binning is unchanged.
-Run-2 UParTAK4 fixed-WP payloads are valid only for |eta| < 2.4; their
-efficiency production must use the same acceptance.  The 2024 payload uses
-|eta| < 2.5.
+The 2016 pre/post-VFP UParTAK4 fixed-WP payloads use |eta| < 2.4; 2017,
+2018, and 2024Prompt use |eta| < 2.5.  Efficiency production and SF
+application use the same year-dependent boundary.
 
 </details>
 

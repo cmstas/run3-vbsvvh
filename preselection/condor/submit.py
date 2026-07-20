@@ -626,6 +626,12 @@ def monitor_and_resubmit(
 
 def main():
     args = parse_args()
+    if args.btag_eff:
+        if args.sample:
+            print("ERROR: --sample cannot be used with --btag-eff because the final payload requires every configured sample.")
+        else:
+            print("ERROR: Direct Condor --btag-eff production is unsupported; use the year-pure Slurm workflow.")
+        sys.exit(1)
     user = get_user()
 
     # Determine paths
