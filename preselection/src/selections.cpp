@@ -23,9 +23,23 @@ inline std::string ak8GoodJetSelectionExpr(const std::string& ptCol) {
            "FatJet_jetId > 0";
 }
 
+// Kinematic-variation suffixes (JES + JER) whose varied jet columns actually exist in
+// this graph. Presence-checked rather than assumed: variations are MC-only (and only
+// with systematics enabled), so on data or with --no_systs this returns empty and the
+// selection stays nominal-only. Deriving the set from the columns the correction path
+// actually defined means there is no flag to keep in sync with that path.
+inline std::vector<std::string> activeKinVariations(RNode df) {
+    std::vector<std::string> out;
+    for (const auto& sfx : kinematicVariationSuffixes()) {
+        if (df.HasColumn("Jet_pt_" + sfx) && df.HasColumn("FatJet_pt_" + sfx))
+            out.push_back(sfx);
+    }
+    return out;
+}
+
 // Per-variation channel-pass-flag generation. Each channel filter that depends on a
 // jet-multiplicity cut emits a boolean per event for each variation v ∈ {nom} ∪
-// jesVariationSuffixes() — passes_<channel>_<v> — then the channel filter is OR over
+// activeKinVariations() — passes_<channel>_<v> — then the channel filter is OR over
 // those flags. This keeps events that pass the channel under ANY variation, which is
 // the only way a single output file can carry per-variation histograms downstream.
 //
@@ -34,15 +48,15 @@ inline std::string ak8GoodJetSelectionExpr(const std::string& ptCol) {
 template <typename F>
 RNode definePerVariationPassFlags(RNode df, const std::string& channel, F&& expr_for) {
     df = df.Define("passes_" + channel + "_nom", expr_for(std::string{}));
-    for (const auto& sfx : jesVariationSuffixes()) {
+    for (const auto& sfx : activeKinVariations(df)) {
         df = df.Define("passes_" + channel + "_" + sfx, expr_for(sfx));
     }
     return df;
 }
 
-inline std::string orPassExpr(const std::string& channel) {
+inline std::string orPassExpr(RNode df, const std::string& channel) {
     std::string out = "passes_" + channel + "_nom";
-    for (const auto& sfx : jesVariationSuffixes()) {
+    for (const auto& sfx : activeKinVariations(df)) {
         out += " || passes_" + channel + "_" + sfx;
     }
     return out;
@@ -227,7 +241,7 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
     // applyObjectMaskNewAffix, also FJ-cleaned) and feeds the per-variation channel-pass flags.
     if (affix == "jet") {
         df = df.Define("Jet_isGood", "_good_ak4jets");
-        for (const auto& sfx : jesVariationSuffixes()) {
+        for (const auto& sfx : activeKinVariations(df)) {
             df = df.Define("_fatjet_eta_" + sfx, "FatJet_eta[FatJet_isGood_" + sfx + "]");
             df = df.Define("_fatjet_phi_" + sfx, "FatJet_phi[FatJet_isGood_" + sfx + "]");
             df = df.Define("_dR_ak4_fatjet_" + sfx, VVdR,
@@ -266,9 +280,9 @@ RNode AK8JetsSelection(RNode df_)
     df = df.Define("FatJet_isGood", "_good_ak8jets");
     df = df.Define("nFatJets",      "Sum(FatJet_isGood)");
 
-    // Per-variation good-fatjet masks. JES affects FatJet_pt only; FatJet_msoftdrop is
+    // Per-variation good-fatjet masks. JES/JER affect FatJet_pt only; FatJet_msoftdrop is
     // unchanged. Defined AFTER applyObjectMaskNewAffix for the same reason as the AK4 case.
-    for (const auto& sfx : jesVariationSuffixes()) {
+    for (const auto& sfx : activeKinVariations(df)) {
         df = df.Define("FatJet_isGood_" + sfx, ak8GoodJetSelectionExpr("FatJet_pt_" + sfx));
         df = df.Define("nFatJets_" + sfx, "Sum(FatJet_isGood_" + sfx + ")");
     }
@@ -344,7 +358,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 0)";
         });
-        df = df.Filter(orPassExpr("0lep_0FJ"), "C2: 0lep_0FJ");
+        df = df.Filter(orPassExpr(df, "0lep_0FJ"), "C2: 0lep_0FJ");
 
         df = df.Define("met_significance", "PuppiMET_significance")
                 .Define("met_uncorrPt", "PuppiMET_pt")
@@ -364,7 +378,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 1)";
         });
-        df = df.Filter(orPassExpr("0lep_1FJ"), "C2: 0lep_1FJ");
+        df = df.Filter(orPassExpr(df, "0lep_1FJ"), "C2: 0lep_1FJ");
 
         df = df.DefaultValueFor("Pileup_nTrueInt", (float)-1.f)
                 .Define("met_significance", "PuppiMET_significance")
@@ -388,7 +402,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 1)";
         });
-        df = df.Filter(orPassExpr("0lep_1FJ_met"), "C2: 0lep_1FJ");
+        df = df.Filter(orPassExpr(df, "0lep_1FJ_met"), "C2: 0lep_1FJ");
     }
 
     // 0lep_2FJ
@@ -404,7 +418,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 2)";
         });
-        df = df.Filter(orPassExpr("0lep_2FJ"), "C2: 0lep_2FJ");
+        df = df.Filter(orPassExpr(df, "0lep_2FJ"), "C2: 0lep_2FJ");
 
         df = df.DefaultValueFor("Pileup_nTrueInt", (float)-1.f)
                 .Define("met_significance", "PuppiMET_significance")
@@ -427,7 +441,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 2)";
         });
-        df = df.Filter(orPassExpr("0lep_2FJ_met"), "C2: 0lep_2FJ");
+        df = df.Filter(orPassExpr(df, "0lep_2FJ_met"), "C2: 0lep_2FJ");
     }
 
     // 0lep_3FJ
@@ -443,7 +457,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 3)";
         });
-        df = df.Filter(orPassExpr("0lep_3FJ"), "C2: 0lep_3FJ");
+        df = df.Filter(orPassExpr(df, "0lep_3FJ"), "C2: 0lep_3FJ");
     }
 
     // 1lep_1FJ — fatjet + njet cuts must combine inside a single per-variation pass flag,
@@ -468,7 +482,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string j  = sfx.empty() ? "njet"     : "njet_"     + sfx;
             return "(" + fj + " == 1) && (" + j + " >= 4)";
         });
-        df = df.Filter(orPassExpr("1lep_1FJ"), "C3: jet selection (any variation)");
+        df = df.Filter(orPassExpr(df, "1lep_1FJ"), "C3: jet selection (any variation)");
     }
 
     // 1lep_2FJ — same caveat as 1lep_1FJ (C3 + C4 collapsed).
@@ -494,7 +508,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string j  = sfx.empty() ? "njet"     : "njet_"     + sfx;
             return "(" + fj + " >= 2) && (" + j + " >= 2)";
         });
-        df = df.Filter(orPassExpr("1lep_2FJ"), "C3: jet selection (any variation)");
+        df = df.Filter(orPassExpr(df, "1lep_2FJ"), "C3: jet selection (any variation)");
     }
 
     // 2lepSS
@@ -526,7 +540,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose + nElectron_Loose) == 2) && (" + n + " == 1)";
         });
-        df = df.Filter(orPassExpr("2lep_1FJ"), "C2: 2lep_1FJ");
+        df = df.Filter(orPassExpr(df, "2lep_1FJ"), "C2: 2lep_1FJ");
     }
 
     // 2lep_2FJ
@@ -542,7 +556,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
             return "((nMuon_Loose + nElectron_Loose) == 2) && (" + n + " == 2)";
         });
-        df = df.Filter(orPassExpr("2lep_2FJ"), "C2: 2lep_2FJ");
+        df = df.Filter(orPassExpr(df, "2lep_2FJ"), "C2: 2lep_2FJ");
     }
 
 
