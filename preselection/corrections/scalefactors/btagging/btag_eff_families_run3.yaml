@@ -8,37 +8,57 @@ preliminary_families:
     - VBS-SSWW
   WWJJ:
     - WWJJ
+    - EWKW
   ZZJJ:
     - ZZJJ
+    - EWKZ
   ggZZ_continuum:
     - GluGluToContinto2Z
     - GluGlutoContinto2Z
+    - GluGluToContin
   ggH:
     - GluGluH-
+    - GluGluH
   VH:
     - GluGluZH
+    - ggZH
     - WplusH
     - WminusH
     - ZH-
+    - ZH_
+    - VBFWH
+    - VHToNonbb
   ttH:
     - TTH-
+    - ttHT
+    - ttHTo
   ttV_rare:
     - TTWW
     - TTWZ
     - TTW-
     - TZQB
+    - TTWJets
+    - TTZTo
+    - ttWJets
+    - ttZJets
+    - TWZTo
+    - tZq_
   ttbar:
     - TTto
     - TTLL
     - TTLNu
+    - TTTo
   tW:
     - TWminus
     - TbarWplus
+    - ST_tW_
   single_top:
     - TBbarQ
     - TbarBQ
     - TBbarto
     - TbarBto
+    - ST_s-channel
+    - ST_t-channel
   triboson:
     - WWW-
     - WWZ-
@@ -47,22 +67,31 @@ preliminary_families:
   WZ:
     - WZ_
     - WZto
+    - WZTo
+    - WZJJ
   WW:
     - WW_
     - WWto
+    - WWTo
   ZZ:
     - ZZ_
     - ZZto
+    - ZZTo
   DY:
     - DYto
+    - DYJetsTo
   W_leptonic:
     - WtoLNu
+    - WJetsToLNu
   W_hadronic:
     - Wto2Q
+    - WJetsToQQ
   Z_hadronic:
     - Zto2Q
+    - ZJetsToQQ
   QCD_HT:
     - QCD-4Jets
+    - QCD_HT
   QCD_PT:
     - QCD_Bin
 

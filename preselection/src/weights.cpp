@@ -16,7 +16,8 @@ std::atomic<unsigned long long> g_btag_negative_intermediate{0};
 std::atomic<unsigned long long> g_btag_tiny_denominator{0};
 std::atomic<unsigned long long> g_btag_invalid_probability{0};
 
-constexpr const char *kBTagFamilyConfig = "corrections/scalefactors/btagging/btag_eff_families.yaml";
+constexpr const char *kBTagRun2FamilyConfig = "corrections/scalefactors/btagging/btag_eff_families_run2.yaml";
+constexpr const char *kBTagRun3FamilyConfig = "corrections/scalefactors/btagging/btag_eff_families_run3.yaml";
 
 struct BTagFamilyConfig {
     std::vector<std::pair<std::string, std::vector<std::string>>> preliminary;
@@ -32,11 +33,16 @@ std::string trim(std::string value) {
     return value.substr(begin, end - begin + 1);
 }
 
-const BTagFamilyConfig &bTagFamilyConfig() {
-    static const BTagFamilyConfig config = [] {
-        std::ifstream input(kBTagFamilyConfig);
-        if (!input) throw std::runtime_error("Cannot read b-tag family configuration " + std::string(kBTagFamilyConfig));
-        BTagFamilyConfig parsed;
+const BTagFamilyConfig &bTagFamilyConfig(const std::string &year) {
+    const bool run2 = year == "2016preVFP" || year == "2016postVFP" || year == "2017" || year == "2018";
+    const std::string path = run2 ? kBTagRun2FamilyConfig : kBTagRun3FamilyConfig;
+    static std::map<std::string, BTagFamilyConfig> configs;
+    const auto existing = configs.find(path);
+    if (existing != configs.end()) return existing->second;
+    BTagFamilyConfig parsed;
+    {
+        std::ifstream input(path);
+        if (!input) throw std::runtime_error("Cannot read b-tag family configuration " + path);
         std::set<std::string> preliminary_names, excluded_names;
         std::string line, section, final_kind, current_group;
         const auto fail = [](const std::string &message) {
@@ -117,9 +123,8 @@ const BTagFamilyConfig &bTagFamilyConfig() {
         validate_groups(parsed.final_channels, retained_channels, "channel");
         for (const auto &channel : parsed.excluded_channels)
             if (retained_channels.count(channel)) fail("excluded channel is also retained: " + channel);
-        return parsed;
-    }();
-    return config;
+    }
+    return configs.emplace(path, std::move(parsed)).first->second;
 }
 
 double unityForInvalidBTagWeight(std::atomic<unsigned long long> &counter) {
@@ -139,8 +144,8 @@ std::string finalGroup(const std::map<std::string, std::vector<std::string>> &gr
     return match;
 }
 
-std::string bTagEfficiencyFamily(const std::string &sample) {
-    const auto &config = bTagFamilyConfig();
+std::string bTagEfficiencyFamily(const std::string &sample, const std::string &year) {
+    const auto &config = bTagFamilyConfig(year);
     for (const auto &[family, needles] : config.preliminary) {
         for (const auto &needle : needles) {
             if (sample.find(needle) != std::string::npos)
@@ -150,8 +155,8 @@ std::string bTagEfficiencyFamily(const std::string &sample) {
     throw std::runtime_error("No preliminary b-tag efficiency family is configured for sample " + sample);
 }
 
-std::string bTagEfficiencyChannel(const std::string &channel) {
-    return finalGroup(bTagFamilyConfig().final_channels, channel, "channel");
+std::string bTagEfficiencyChannel(const std::string &channel, const std::string &year) {
+    return finalGroup(bTagFamilyConfig(year).final_channels, channel, "channel");
 }
 } // namespace
 
@@ -441,48 +446,37 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
         if (cset_it == cset_btag.end() || cset_eff_it == cset_btag.end())
             throw std::runtime_error("B-tag SF or efficiency correction set is unavailable for year " + year);
 
-        const bool is_legacy_year = (year == "2016preVFP" || year == "2016postVFP" ||
-                                     year == "2017" || year == "2018");
         std::string efficiency_channel;
-        if (!is_legacy_year) {
-            try {
-                efficiency_channel = bTagEfficiencyChannel(channel);
-            } catch (const std::exception &error) {
-                throw std::runtime_error("B-tag final channel mapping is unavailable for year=" + year +
-                                         ", requested_channel=" + channel + ": " + error.what());
-            }
+        try {
+            efficiency_channel = bTagEfficiencyChannel(channel, year);
+        } catch (const std::exception &error) {
+            throw std::runtime_error("B-tag final channel mapping is unavailable for year=" + year +
+                                     ", requested_channel=" + channel + ": " + error.what());
         }
         const std::string efficiency_name = "btag_" + year + "_" + efficiency_channel;
-        const std::string legacy_efficiency_name = "btag_" + year;
-        const bool use_legacy_efficiency = is_legacy_year;
         std::string efficiency_sample;
-        if (!use_legacy_efficiency) {
-            try {
-                efficiency_sample = bTagEfficiencyFamily(sample);
-            } catch (const std::exception &error) {
-                throw std::runtime_error("B-tag final sample mapping is unavailable for year=" + year +
-                                         ", requested_channel=" + channel + ", sample=" + sample +
-                                         ": " + error.what());
-            }
+        try {
+            efficiency_sample = bTagEfficiencyFamily(sample, year);
+        } catch (const std::exception &error) {
+            throw std::runtime_error("B-tag final sample mapping is unavailable for year=" + year +
+                                     ", requested_channel=" + channel + ", sample=" + sample +
+                                     ": " + error.what());
         }
         decltype(cset_eff_it->second.at(efficiency_name)) efficiency;
         try {
-            efficiency = cset_eff_it->second.at(use_legacy_efficiency ? legacy_efficiency_name : efficiency_name);
+            efficiency = cset_eff_it->second.at(efficiency_name);
         } catch (const std::exception &) {
             throw std::runtime_error("B-tag efficiency correction is unavailable for year=" + year +
                                      ", requested_channel=" + channel + ", final_channel=" + efficiency_channel +
-                                     ", requested_correction=" + (use_legacy_efficiency ? legacy_efficiency_name : efficiency_name));
+                                     ", requested_correction=" + efficiency_name);
         }
-        if (!use_legacy_efficiency) {
-            try {
-                // Strict final-payload contract: no preliminary/exact/inclusive fallback.
-                (void) efficiency->evaluate({efficiency_sample, "B", "T", 30., 0.});
-            } catch (const std::exception &) {
-                throw std::runtime_error("B-tag efficiency sample key is unavailable for year=" + year +
-                                         ", requested_channel=" + channel + ", final_channel=" + efficiency_channel +
-                                         ", sample=" + sample + ", final_sample=" + efficiency_sample +
-                                         ", correction=" + efficiency_name);
-            }
+        try {
+            (void) efficiency->evaluate({efficiency_sample, "B", "T", 30., 0.});
+        } catch (const std::exception &) {
+            throw std::runtime_error("B-tag efficiency sample key is unavailable for year=" + year +
+                                     ", requested_channel=" + channel + ", final_channel=" + efficiency_channel +
+                                     ", sample=" + sample + ", final_sample=" + efficiency_sample +
+                                     ", correction=" + efficiency_name);
         }
 
         const auto &sf_correction = cset_it->second.at(correction_name);
@@ -537,13 +531,8 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             double eff_tight = 0.;
             double eff_loose = 0.;
             try {
-                if (use_legacy_efficiency) {
-                    eff_tight = efficiency->evaluate({flavor_label, "T", pt[i], eta[i]});
-                    eff_loose = efficiency->evaluate({flavor_label, "L", pt[i], eta[i]});
-                } else {
-                    eff_tight = efficiency->evaluate({efficiency_sample, flavor_label, "T", pt[i], eta[i]});
-                    eff_loose = efficiency->evaluate({efficiency_sample, flavor_label, "L", pt[i], eta[i]});
-                }
+                eff_tight = efficiency->evaluate({efficiency_sample, flavor_label, "T", pt[i], eta[i]});
+                eff_loose = efficiency->evaluate({efficiency_sample, flavor_label, "L", pt[i], eta[i]});
             } catch (const std::exception &) {
                 throw std::runtime_error("B-tag efficiency entries are unavailable for " +
                                          year + ":" + channel + ":" + sample);
