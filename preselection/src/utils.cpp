@@ -1,8 +1,18 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <memory>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 #include "TFile.h"
 #include "TTree.h"
+#include "TH2.h"
+#include "TH3.h"
 
 /*
 ############################################
@@ -505,4 +515,205 @@ void saveSpanetSnapshot(RNode df, const std::string &outputDir, const std::strin
     }
 
     std::cout << " -> Stored output file: " << outputFile << std::endl;
+}
+
+/*
+############################################
+QCD GloParT SCORE RESAMPLING
+############################################
+*/
+
+namespace {
+
+std::vector<double> cdfFromCounts(const std::vector<double>& counts) {
+    double total = 0.0;
+    for (double c : counts) total += c;
+    if (total <= 0.0) return {};
+    std::vector<double> cdf(counts.size());
+    double running = 0.0;
+    for (std::size_t i = 0; i < counts.size(); ++i) {
+        running += counts[i];
+        cdf[i] = running / total;
+    }
+    return cdf;
+}
+
+int binIndex(double value, const std::vector<double>& edges) {
+    const int nbins = static_cast<int>(edges.size()) - 1;
+    int idx = static_cast<int>(std::upper_bound(edges.begin(), edges.end(), value) - edges.begin()) - 1;
+    return std::clamp(idx, 0, nbins - 1);
+}
+
+double invertCdf(const std::vector<double>& cdf, const std::vector<double>& edges, double u, bool use_upper) {
+    const int nb = static_cast<int>(cdf.size());
+    int k = use_upper
+        ? static_cast<int>(std::upper_bound(cdf.begin(), cdf.end(), u) - cdf.begin())
+        : static_cast<int>(std::lower_bound(cdf.begin(), cdf.end(), u) - cdf.begin());
+    k = std::clamp(k, 0, nb - 1);
+    const double lo = (k > 0) ? cdf[k - 1] : 0.0;
+    const double hi = cdf[k];
+    const double denom = std::max(hi - lo, 1e-12);
+    const double frac = std::clamp((u - lo) / denom, 0.0, 1.0);
+    return edges[k] + frac * (edges[k + 1] - edges[k]);
+}
+
+std::string ptLabel(double lo, double hi) {
+    const std::string his = (hi >= 1.0e5) ? std::string("Inf")
+                                           : std::to_string(static_cast<long long>(std::llround(hi)));
+    return std::to_string(static_cast<long long>(std::llround(lo))) + "to" + his;
+}
+
+std::vector<double> axisEdges(const TAxis* ax) {
+    const int nb = ax->GetNbins();
+    std::vector<double> edges(nb + 1);
+    for (int i = 1; i <= nb; ++i) edges[i - 1] = ax->GetBinLowEdge(i);
+    edges[nb] = ax->GetBinUpEdge(nb);
+    return edges;
+}
+
+class QCDScoreResampler {
+public:
+    explicit QCDScoreResampler(const std::string& template_path, std::string qcd_prefix = "QCD")
+        : qcd_prefix_(std::move(qcd_prefix)) {
+        std::unique_ptr<TFile> f(TFile::Open(template_path.c_str(), "READ"));
+        if (!f || f->IsZombie()) {
+            throw std::runtime_error("QCDScoreResampler: could not open template file " + template_path);
+        }
+
+        auto* h3 = dynamic_cast<TH3*>(f->Get("h3_HvsQCD"));
+        if (!h3) throw std::runtime_error("QCDScoreResampler: missing h3_HvsQCD in " + template_path);
+        score_edges_ = axisEdges(h3->GetXaxis());
+        pt_edges_ = axisEdges(h3->GetYaxis());
+        eta_edges_ = axisEdges(h3->GetZaxis());
+        n_score_ = static_cast<int>(score_edges_.size()) - 1;
+        n_pt_ = static_cast<int>(pt_edges_.size()) - 1;
+        n_eta_ = static_cast<int>(eta_edges_.size()) - 1;
+
+        // P(H | pT, |eta|) and the pT-marginal fallback for empty cells.
+        h_cdf_.assign(n_pt_, std::vector<std::vector<double>>(n_eta_));
+        h_cdf_pt_.assign(n_pt_, {});
+        for (int ipt = 0; ipt < n_pt_; ++ipt) {
+            std::vector<double> pt_counts(n_score_, 0.0);
+            for (int ieta = 0; ieta < n_eta_; ++ieta) {
+                std::vector<double> counts(n_score_);
+                for (int is = 0; is < n_score_; ++is) {
+                    const double c = h3->GetBinContent(is + 1, ipt + 1, ieta + 1);
+                    counts[is] = c;
+                    pt_counts[is] += c;
+                }
+                h_cdf_[ipt][ieta] = cdfFromCounts(counts);
+            }
+            h_cdf_pt_[ipt] = cdfFromCounts(pt_counts);
+        }
+
+        // P(V | H*, pT) from the eta-integrated joint TH2 per pT bin.
+        v_cdf_.assign(n_pt_, {});
+        for (int ipt = 0; ipt < n_pt_; ++ipt) {
+            const std::string name = "joint_HV_pt" + ptLabel(pt_edges_[ipt], pt_edges_[ipt + 1]);
+            auto* hj = dynamic_cast<TH2*>(f->Get(name.c_str()));
+            if (!hj) throw std::runtime_error("QCDScoreResampler: missing " + name + " in " + template_path);
+            if (joint_hedges_.empty()) {
+                joint_hedges_ = axisEdges(hj->GetXaxis());
+                joint_vedges_ = axisEdges(hj->GetYaxis());
+            }
+            const int n_h = static_cast<int>(joint_hedges_.size()) - 1;
+            const int n_v = static_cast<int>(joint_vedges_.size()) - 1;
+
+            std::vector<double> v_marg_counts(n_v, 0.0);
+            std::vector<std::vector<double>> rows(n_h, std::vector<double>(n_v));
+            for (int ih = 0; ih < n_h; ++ih) {
+                for (int iv = 0; iv < n_v; ++iv) {
+                    const double c = hj->GetBinContent(ih + 1, iv + 1);
+                    rows[ih][iv] = c;
+                    v_marg_counts[iv] += c;
+                }
+            }
+            const std::vector<double> v_marg = cdfFromCounts(v_marg_counts);
+
+            v_cdf_[ipt].assign(n_h, {});
+            for (int ih = 0; ih < n_h; ++ih) {
+                std::vector<double> cdf = cdfFromCounts(rows[ih]);
+                if (cdf.empty()) cdf = v_marg;                  // fall back to the V marginal
+                if (cdf.empty()) {                              // ... else a uniform CDF
+                    cdf.resize(n_v);
+                    for (int iv = 0; iv < n_v; ++iv) cdf[iv] = (n_v > 1) ? static_cast<double>(iv) / (n_v - 1) : 1.0;
+                }
+                v_cdf_[ipt][ih] = std::move(cdf);
+            }
+        }
+        f->Close();
+    }
+
+    bool isQCD(const std::string& shortname) const {
+        return shortname.rfind(qcd_prefix_, 0) == 0;
+    }
+
+    RVec<RVec<float>> resample(bool isData, const std::string& shortname, unsigned long long seed,
+                               const RVec<float>& pt, const RVec<float>& eta,
+                               const RVec<float>& h_orig, const RVec<float>& v_orig) const {
+        if (isData || !isQCD(shortname)) return {h_orig, v_orig};
+
+        const std::size_t n = pt.size();
+        RVec<float> H(n), V(n);
+        std::mt19937_64 gen(seed);
+        std::uniform_real_distribution<double> unif(0.0, 1.0);
+
+        for (std::size_t i = 0; i < n; ++i) {
+            const double u_h = unif(gen);
+            const double u_v = unif(gen);
+
+            const int ipt = binIndex(pt[i], pt_edges_);
+            const int ieta = binIndex(std::abs(static_cast<double>(eta[i])), eta_edges_);
+
+            const std::vector<double>& h_cell = h_cdf_[ipt][ieta];
+            const std::vector<double>& h_cdf = !h_cell.empty() ? h_cell : h_cdf_pt_[ipt];
+            double h_score = 0.0;
+            if (!h_cdf.empty()) h_score = invertCdf(h_cdf, score_edges_, u_h, /*use_upper=*/true);
+
+            const int jh = binIndex(h_score, joint_hedges_);
+            const double v_score = invertCdf(v_cdf_[ipt][jh], joint_vedges_, u_v, /*use_upper=*/false);
+
+            H[i] = static_cast<float>(h_score);
+            V[i] = static_cast<float>(v_score);
+        }
+        return {H, V};
+    }
+
+private:
+    std::string qcd_prefix_;
+    std::vector<double> score_edges_, pt_edges_, eta_edges_;
+    std::vector<double> joint_hedges_, joint_vedges_;
+    int n_score_ = 0, n_pt_ = 0, n_eta_ = 0;
+    std::vector<std::vector<std::vector<double>>> h_cdf_;
+    std::vector<std::vector<double>> h_cdf_pt_;          
+    std::vector<std::vector<std::vector<double>>> v_cdf_;
+};
+
+}  // namespace
+
+RNode applyQCDScoreResampling(RNode df, const std::string& run_number) {
+    const std::string template_path = (run_number == "2")
+        ? "data/resampling_pdfs_run2.root"
+        : "data/resampling_pdfs.root";
+    auto resampler = std::make_shared<QCDScoreResampler>(template_path);
+    std::cout << " -> QCD GloParT score resampling ENABLED (templates: " << template_path << ")" << std::endl;
+
+    df = df.Define("_qcd_resample_seed",
+                   "(ULong64_t)0x9E3779B97F4A7C15ull "
+                   "^ ((ULong64_t)run * 0xD1B54A32D192ED03ull) "
+                   "^ ((ULong64_t)luminosityBlock * 0xC2B2AE3D27D4EB4Full) "
+                   "^ ((ULong64_t)event * 0x165667B19E3779F9ull)");
+
+    df = df.Define("_qcd_resampled_hv",
+                   [resampler](bool isData, const std::string& shortname, unsigned long long seed,
+                               const RVec<float>& pt, const RVec<float>& eta,
+                               const RVec<float>& h_orig, const RVec<float>& v_orig) {
+                       return resampler->resample(isData, shortname, seed, pt, eta, h_orig, v_orig);
+                   },
+                   {"isData", "shortname", "_qcd_resample_seed", "fatjet_pt", "fatjet_eta",
+                    "fatjet_HvsQCD", "fatjet_VvsQCD"});
+
+    df = df.Redefine("fatjet_HvsQCD", [](const RVec<RVec<float>>& hv) { return hv[0]; }, {"_qcd_resampled_hv"});
+    df = df.Redefine("fatjet_VvsQCD", [](const RVec<RVec<float>>& hv) { return hv[1]; }, {"_qcd_resampled_hv"});
+    return df;
 }

@@ -58,6 +58,8 @@ RNode removeDuplicates(RNode df);
 RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName);
 RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::string &objectName, const std::string &newAffix);
 
+RNode applyQCDScoreResampling(RNode df, const std::string& run_number);
+
 // Define or redefine a column depending on whether it already exists in the dataframe.
 // Useful when a function may be called multiple times with different arguments (e.g. AK4JetsSelection).
 template <typename F>

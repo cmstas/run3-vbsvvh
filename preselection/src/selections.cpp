@@ -217,9 +217,8 @@ RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 }
 
 ///////////////// Main channel selection block /////////////////
-RNode runPreselection(RNode df_, std::string channel, bool noCut)
+RNode runPreselection(RNode df_, std::string channel, bool noCut, std::string run_number)
 {
-
     Cutflow::Add(df_, "All events");
 
     // Standard MET filters
@@ -338,15 +337,14 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
         
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nfatjet >= 3)",
-            "C2: 0lep_3FJ"
-        );
+        df = df.Filter("((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (nfatjet >= 3)");
+        Cutflow::Add(df, "C2: 0lep_3FJ");
         
         df = df.Filter("njet >= 2", "C3: at-least 2 jets");
         Cutflow::Add(df, "C3: at-least 2 jets");
-        
+
+        df = applyQCDScoreResampling(df, run_number);
+
         df = df.Define("_best_h_idx", "fatjet_HvsQCD.size() != 0 ? ArgMax(fatjet_HvsQCD) : 999.0")
             .Define("boosted_h_candidate_score", "_best_h_idx != 999.0 ? fatjet_HvsQCD[_best_h_idx] : -999.0f")
             .Define("boosted_h_candidate_found", "boosted_h_candidate_score > 0")
@@ -685,5 +683,6 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         );
     }
 
+    df = df.Filter("weight < 10000", "C99: weight sanity check");
     return df;
 }
