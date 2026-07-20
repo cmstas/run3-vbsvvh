@@ -20,6 +20,8 @@ ANA_CHANNELS = {
         "3lep"         : "3lep",
         "4lep"         : "4lep",
 }
+B_TAG_EFF_EXCLUDED_CHANNELS = {"0lep_1FJ_met", "0lep_2FJ_met", "all_events"}
+SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
 
 # Merge the input jsons into one dictionary
 def merge_jsons(input_paths_lst):
@@ -87,10 +89,20 @@ def check_inputs(merged_json_dict, mode, btag_eff=False):
             raise Exception("Error, more than one kind of input is specified, not able to run runAnalysis over multiple kinds")
 
 
-def output_dir_for_channel(outpath, outname, channel, mode, btag_eff):
+def select_btag_year(merged_json_dict, year):
+    """Retain exactly one metadata year for a b-tag efficiency production."""
+    samples = merged_json_dict["samples"]
+    selected = {name: info for name, info in samples.items()
+                if info["metadata"].get("year") == year}
+    if not selected:
+        raise Exception(f"No samples with metadata.year={year!r} were found for --btag-eff")
+    merged_json_dict["samples"] = selected
+
+
+def output_dir_for_channel(outpath, outname, channel, mode, btag_eff, year=None):
     """Return the stable output location for one channel/backend invocation."""
     if btag_eff and mode == "slurm":
-        return os.path.join(outpath, channel)
+        return os.path.join(outpath, year, channel)
     return os.path.join(outpath, f"{channel}_{outname}")
 
 
@@ -115,11 +127,18 @@ def main():
     parser.add_argument('--time',                      help = 'Time limit per job for slurm submission (default: 04:00:00)', default=None)
     parser.add_argument('--sample',                    help = 'Regex to filter which samples to submit (slurm/condor only)', default=None)
     parser.add_argument('--btag-eff',                  help = 'Write raw selected-AK4 b-tag efficiency histograms (MC only)', action='store_true')
+    parser.add_argument('--year',                      help = 'Required metadata year for --btag-eff production')
     parser.add_argument('--skip-btag-sf',              help = 'Skip b-tag SF application (normally enabled)', action='store_true')
     args = parser.parse_args()
+    if args.btag_eff and not args.year:
+        parser.error("--btag-eff requires --year (for example, --year 2024Prompt)")
+    if args.btag_eff and args.year not in SUPPORTED_BTAG_EFF_YEARS:
+        parser.error(f"--btag-eff is unsupported for {args.year}")
 
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
-    if args.channels == ["all"]: channels_to_run = ANA_CHANNELS.keys()
+    if args.channels == ["all"]:
+        channels_to_run = [channel for channel in ANA_CHANNELS
+                           if not args.btag_eff or channel not in B_TAG_EFF_EXCLUDED_CHANNELS]
     else: channels_to_run = args.channels
 
     # Run RDF once for each specified channel
@@ -129,6 +148,8 @@ def main():
         # Make sure this is a channel RDF knows about
         if (chan_name not in ANA_CHANNELS.keys()) and (chan_name != "all_events"):
             raise Exception(f"Error unknown channel: {chan_name}")
+        if args.btag_eff and chan_name in B_TAG_EFF_EXCLUDED_CHANNELS:
+            raise Exception(f"--btag-eff production is excluded for {chan_name}")
 
         # Merge the input jsons
         if args.jsons is not None:
@@ -153,6 +174,9 @@ def main():
         if args.prefix is not None:
             apply_prefix(merged_json_dict,args.prefix)
 
+        if args.btag_eff:
+            select_btag_year(merged_json_dict, args.year)
+
         # Validate before creating output artifacts or invoking a backend.
         check_inputs(merged_json_dict, args.mode, args.btag_eff)
 
@@ -172,7 +196,8 @@ def main():
         # The submitter creates it only after checking that it cannot mix with
         # a previous submission.  Keep the historical outname layout for all
         # other workflows.
-        outdir = output_dir_for_channel(args.outpath, args.outname, chan_name, args.mode, args.btag_eff)
+        outdir = output_dir_for_channel(args.outpath, args.outname, chan_name, args.mode,
+                                        args.btag_eff, args.year)
         if not (args.btag_eff and args.mode == "slurm") and not os.path.isdir(outdir):
             os.makedirs(outdir)
         print(f"  -> RDF output will be located in: {outdir}")
@@ -198,7 +223,8 @@ def main():
             memory_flag = f" --memory {args.memory}" if args.memory else ""
             time_flag = f" --time {args.time}" if args.time else ""
             ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
-            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
+            year_flag = f" --year {args.year}" if args.btag_eff else ""
+            command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} -o {outdir}{year_flag}{hlt_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
             print(f"  -> Running command \"{command}\"...\n")
             subprocess.run(command, shell=True, check=True)
 

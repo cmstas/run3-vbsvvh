@@ -76,9 +76,13 @@ def histogram_arrays_in_application_range(hist, path, hist_name):
     variances = hist.variances(flow=True)
     if variances is None:
         raise ValueError(f"{path}:{hist_name} has no Sumw2 information")
-    return (fold_pt_flow(values, path, hist_name),
-            fold_pt_flow(variances, path, hist_name),
-            pt_edges[1:-1], eta_edges[1:-1])
+    values = fold_pt_flow(values, path, hist_name)
+    variances = fold_pt_flow(variances, path, hist_name)
+    # The payload and compatibility diagnostics use one inclusive central-jet
+    # eta bin; retain the pT dependence but sum the mutually exclusive eta bins.
+    values = np.sum(values, axis=1, keepdims=True)
+    variances = np.sum(variances, axis=1, keepdims=True)
+    return values, variances, pt_edges[1:-1], np.asarray([eta_edges[1], eta_edges[-2]])
 
 
 def read_merged_histograms(paths, expected_year, expected_channel, expected_sample):
@@ -434,9 +438,9 @@ def grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, memb
     return specs, fallbacks
 
 
-def discover_final_inputs(input_root, config=None):
+def discover_final_inputs(input_root, year, config=None):
     """Return every required final source channel and its colocated manifest."""
-    config = load_config() if config is None else config
+    config = load_config(year) if config is None else config
     if not input_root.is_dir():
         raise ValueError(f"--input-root is not a directory: {input_root}")
     retained = retained_source_channels(config)
@@ -463,8 +467,8 @@ def discover_final_inputs(input_root, config=None):
 
 def discover_source_histograms(input_root, year, config=None):
     """Load complete retained source channels before final YAML merging."""
-    config = load_config() if config is None else config
-    channel_inputs, channel_manifests, ignored = discover_final_inputs(input_root, config)
+    config = load_config(year) if config is None else config
+    channel_inputs, channel_manifests, ignored = discover_final_inputs(input_root, year, config)
     source_counts, source_variances, source_edges, members, completeness = {}, {}, {}, {}, {}
     for channel, input_dir in channel_inputs.items():
         counts, variances, edges, preliminary_members, checked = discover_family_histograms(
@@ -481,7 +485,7 @@ def discover_source_histograms(input_root, year, config=None):
 
 def discover_final_histograms(input_root, year, config=None):
     """Merge all YAML-retained raw outputs into final channel/sample groups."""
-    config = load_config() if config is None else config
+    config = load_config(year) if config is None else config
     source_counts, source_variances, source_edges, source_members, completeness, ignored = discover_source_histograms(
         input_root, year, config)
     grouped_counts, grouped_variances, grouped_edges, members = {}, {}, {}, {}
@@ -516,7 +520,7 @@ def main():
             raise ValueError("--final requires --input-root")
         if args.input or args.input_dir or args.sample or args.channel or args.job_manifest:
             raise ValueError("--final accepts only --input-root, --year, --output, and optional --manifest")
-        config = load_config()
+        config = load_config(year=args.year)
         counts, variances, edges, members, completeness, ignored = discover_final_histograms(
             args.input_root, args.year, config)
         specs, fallbacks = [], {}
@@ -551,7 +555,7 @@ def main():
     prefix = f"btag_{args.year}_{args.channel}"
     if args.input_dir:
         grouped_counts, grouped_variances, grouped_edges, members, completeness = discover_family_histograms(
-            args.input_dir, args.year, args.channel, args.job_manifest, load_config())
+            args.input_dir, args.year, args.channel, args.job_manifest, load_config(year=args.year))
         specs, fallbacks = grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, members)
         update_output(args.output, specs, replace_entries=True)
         manifest = args.manifest or args.output.with_name(

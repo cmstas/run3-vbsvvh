@@ -5,8 +5,19 @@ from pathlib import Path
 import yaml
 
 
-DEFAULT_CONFIG = (Path(__file__).resolve().parents[2] / "preselection" / "corrections" /
-                  "scalefactors" / "btagging" / "btag_eff_families.yaml")
+CONFIG_DIR = (Path(__file__).resolve().parents[2] / "preselection" / "corrections" /
+              "scalefactors" / "btagging")
+RUN2_CONFIG = CONFIG_DIR / "btag_eff_families_run2.yaml"
+RUN3_CONFIG = CONFIG_DIR / "btag_eff_families_run3.yaml"
+
+
+def config_path_for_year(year):
+    """Select the canonical family map for the framework's era spelling."""
+    if str(year) in {"2016preVFP", "2016postVFP", "2017", "2018"}:
+        return RUN2_CONFIG
+    if str(year) == "2024Prompt":
+        return RUN3_CONFIG
+    raise ValueError(f"Unsupported year for b-tag family configuration: {year}")
 
 
 def _nonempty_string_list(value, context):
@@ -102,23 +113,24 @@ def _validate_canonical_layout(text):
             raise ValueError("content outside the canonical b-tag family YAML sections")
 
 
-def load_config(path=DEFAULT_CONFIG):
+def load_config(year, path=None):
+    path = config_path_for_year(year) if path is None else path
     text = Path(path).read_text()
     _validate_canonical_layout(text)
     return validate_config(yaml.safe_load(text))
 
 
-def sample_family(sample, config=None):
+def sample_family(sample, config=None, year=None):
     """Return the first preliminary family match; YAML order resolves overlaps."""
-    config = load_config() if config is None else config
+    config = load_config(year) if config is None else config
     for family, needles in config["preliminary_families"].items():
         if any(needle in sample for needle in needles):
             return family
     raise ValueError(f"No preliminary b-tag efficiency family is configured for sample {sample!r}")
 
 
-def final_group(kind, preliminary_name, config=None):
-    config = load_config() if config is None else config
+def final_group(kind, preliminary_name, config=None, year=None):
+    config = load_config(year) if config is None else config
     matches = [name for name, members in config["final_merges"][kind].items()
                if preliminary_name in members]
     if len(matches) != 1:
@@ -126,24 +138,25 @@ def final_group(kind, preliminary_name, config=None):
     return matches[0]
 
 
-def final_sample_family(sample, config=None):
-    config = load_config() if config is None else config
+def final_sample_family(sample, config=None, year=None):
+    config = load_config(year) if config is None else config
     return final_group("samples", sample_family(sample, config), config)
 
 
-def final_channel(channel, config=None):
-    return final_group("channels", channel, config)
+def final_channel(channel, config=None, year=None):
+    return final_group("channels", channel, config, year)
 
 
-def retained_source_channels(config=None):
-    config = load_config() if config is None else config
+def retained_source_channels(config=None, year=None):
+    config = load_config(year) if config is None else config
     return tuple(channel for members in config["final_merges"]["channels"].values() for channel in members)
 
 
-def excluded_source_channels(config=None):
-    config = load_config() if config is None else config
+def excluded_source_channels(config=None, year=None):
+    config = load_config(year) if config is None else config
     return tuple(config["excluded_source_channels"])
 
 def final_runtime_keys(year, channel, sample, config=None):
     """The strict new-schema keys required by the C++ runtime lookup."""
+    config = load_config(year) if config is None else config
     return f"btag_{year}_{final_channel(channel, config)}", final_sample_family(sample, config)

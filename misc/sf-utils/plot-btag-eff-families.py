@@ -100,9 +100,13 @@ def pulls(reference, other, flavor, wp):
 
 
 def cms_label(ax, lumi, energy):
-    rounded_lumi = round(lumi, 2 - int(math.floor(math.log10(abs(lumi))))) if lumi else lumi
-    hep.cms.label("Sim. Prelim.", data=True, lumi=rounded_lumi, lumi_format="{0:g}",
-                  com=energy, ax=ax)
+    kwargs = {"data": True, "ax": ax}
+    if lumi:
+        kwargs["lumi"] = round(lumi, 2 - int(math.floor(math.log10(abs(lumi)))))
+        kwargs["lumi_format"] = "{0:g}"
+    if energy:
+        kwargs["com"] = energy
+    hep.cms.label("Sim. Prelim.", **kwargs)
 
 
 def matrix_plots(groups, results, args, lumi, energy, group_label="family"):
@@ -255,7 +259,7 @@ def main():
                           f"diagnostic_{args.year}_{args.channel}")
     args.plot_dir.mkdir(parents=True, exist_ok=True)
     _, counts, variances, _, families, completeness = collect_samples(
-        conv, args.input_dir, args.year, args.channel, args.job_manifest, load_config())
+        conv, args.input_dir, args.year, args.channel, args.job_manifest, load_config(year=args.year))
     args.input_completeness_verified = completeness is not None
     results = {}
     for family in families:

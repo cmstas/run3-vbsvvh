@@ -64,7 +64,7 @@ def main():
     args = parse_args()
     conv = load_module("bEff-convert-to-correction.py", "btag_converter")
     plots = load_module("plot-btag-eff-families.py", "btag_plots")
-    config = load_config()
+    config = load_config(year=args.year)
     grouped, completeness, ignored = grouped_inputs(
         conv, args.input_root, args.year, args.mode, args.final, config)
     results = {name: plots.efficiencies(conv, data["counts"], data["variances"])

@@ -16,6 +16,7 @@
 #include "btag_efficiencies.h"
 
 #include <optional>
+#include <set>
 
 
 struct MyArgs : public argparse::Args {
@@ -96,11 +97,23 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Create output directory
-    std::string output_dir = setOutputDirectory(args.outdir, args.makeSpanetTrainingdata);
-    
     if (args.run_number != "2" && args.run_number != "3") {
         throw std::runtime_error("Invalid run_number: must be 2 or 3");
+    }
+
+    if (args.ana == "all_events" && !args.skipBTagScaleFactors) {
+        throw std::runtime_error(
+            "all_events has no b-tag efficiency payload; rerun with --skip-btag-sf");
+    }
+    if (!args.skipBTagScaleFactors) {
+        const std::set<std::string> supported_btag_years = {
+            "2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"};
+        for (const auto &year : getMCYearsFromConfig(input_spec)) {
+            if (!supported_btag_years.count(year))
+                throw std::runtime_error(
+                    "B-tag SF application is unsupported for " + year +
+                    "; rerun with --skip-btag-sf");
+        }
     }
 
     // UParTAK4 has no matching fixed-WP calibration for the NanoAODv12
@@ -118,6 +131,9 @@ int main(int argc, char** argv) {
                 "Use a supported tagger with a matched implementation, or run 2024/2025 production.");
         }
     }
+
+    // Create output only after validating the requested b-tag workflow.
+    std::string output_dir = setOutputDirectory(args.outdir, args.makeSpanetTrainingdata);
     std::cout << " -> Running analysis for Run " << args.run_number << std::endl;
     
     std::unique_ptr<SPANet::SPANetInference> spanet_inference;
@@ -224,7 +240,11 @@ int main(int argc, char** argv) {
             std::cout << " -> B-tag SF application disabled by --skip-btag-sf" << std::endl;
         else
             std::cout << " -> Applying b-tag SFs" << std::endl;
-        df = applyMCWeights(df, args.ana, !args.skipBTagScaleFactors);
+        const auto years = getMCYearsFromConfig(input_spec);
+        const std::set<std::string> unique_years(years.begin(), years.end());
+        if (unique_years.size() != 1)
+            throw std::runtime_error("B-tag nuisance branch naming requires exactly one MC year per job");
+        df = applyMCWeights(df, args.ana, *unique_years.begin(), !args.skipBTagScaleFactors);
     }
 
     Cutflow::Add(df, "After SFs and corrections");

@@ -72,11 +72,12 @@ command is shown, commented out, in `run_wrapper.sh`:
 
 ```bash
 # python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
-#   -c all -m "$MODE" -r 3 -f 1 --btag-eff
+#   -c all -m "$MODE" -r 3 -f 1 --btag-eff --year 2024Prompt
 ```
 
 The shared configuration is
-`corrections/scalefactors/btagging/btag_eff_families.yaml`. Its ordered
+the era-specific canonical map (`btag_eff_families_run2.yaml` for 2016–2018,
+or `btag_eff_families_run3.yaml` for 2024Prompt). Its ordered
 `preliminary_families` rules define the semantic first-pass grouping used by
 conversion and compatibility plots. Its `final_merges` block defines the only
 runtime sample/channel keys: update it only after inspecting the plots.
@@ -91,20 +92,33 @@ The stored `*_mcstat_unc` efficiency uncertainties are informational diagnostics
 only; they are not consumed by the main analysis. (B-tagging SF variation
 branches are separate and remain part of the analysis weighting.)
 
+HF calibration SFs are written as `{central,up,down}` vectors.  The canonical
+year-decorrelated branches are `weight_btagging_sf_HF_uncorrelated_<year>` and
+`weight_btagging_sf_HF_statistic_<year>`; the other source branches use
+`weight_btagging_sf_HF_<source>`.  Run 2 provides `statistic`, `pileup`,
+`isrdef`, `fsrdef`, `muf`, `mur`, `pdf`, `as`, and `ttbar`; 2024 provides
+`statistic`, `pileup`, `isrdef`, `fsrdef`, `muf`, `mur`, `pdfas`, `jes`,
+`jer`, `type3`, `bfragmentation`, `topmass`, and `hdamp`.  Unavailable source
+vectors are central/central/central.  `weight_pileup`, `weight_PSISR`,
+`weight_PSFSR`, `weight_muF`, and `weight_muR` include their matching HF
+source; their original values remain in `*_raw` branches.  The broad HF
+correlated branch is retained only for compatibility/closure, not as an
+additional fine-grained nuisance.
+
 <details>
 <summary>Full b-tag efficiency derivation tutorial</summary>
 
 ```bash
 # 1. Produce raw weighted yields on MC with Slurm.  This directly creates
-#    $OUT_DIR/<channel>/{manifest.json,<exact-sample>/output_<job-index>.root}.
+#    $OUT_DIR/2024Prompt/<channel>/{manifest.json,<exact-sample>/output_<job-index>.root}.
 #    Use a new/empty $OUT_DIR for each submission; mixed reruns are rejected.
 python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff \
-  -c all -m slurm -r 3 -f 1 --btag-eff
+  -c all -m slurm -r 3 -f 1 --btag-eff --year 2024Prompt
 
-# The later commands consume INPUT_ROOT=$OUT_DIR directly.  Every configured
+# The later commands consume the year root directly.  Every configured
 # sample, including a no-file skip, is recorded in each manifest; final steps
 # reject incomplete manifests and validate every expected job exactly once.
-INPUT_ROOT="$OUT_DIR"
+INPUT_ROOT="$OUT_DIR/2024Prompt"
 
 # 2. Produce preliminary payloads, once per retained channel.  The ROOT dump
 #    directory and metadata year are explicit; the output name is automatic:
@@ -119,7 +133,7 @@ python3 ../misc/sf-utils/bEff-convert-to-correction.py \
 python3 ../misc/sf-utils/plot-btag-eff-families.py \
   --input-dir "$INPUT_ROOT/1lep_1FJ" --job-manifest "$INPUT_ROOT/1lep_1FJ/manifest.json" \
   --year 2024Prompt --channel 1lep_1FJ
-# Manually update final_merges in btag_eff_families.yaml after this review.
+# Manually update final_merges in the selected era YAML after this review.
 # defaults to diagnostics/diagnostic_2024Prompt_prelim_all_channels_families
 python3 ../misc/sf-utils/plot-btag-eff-global.py --skip-matrices \
   --mode families --input-root "$INPUT_ROOT" --year 2024Prompt
@@ -140,12 +154,19 @@ python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
 python3 ../misc/sf-utils/plot-btag-eff-global.py --final --skip-matrices \
   --mode channels --input-root "$INPUT_ROOT" --year 2024Prompt
 
+# Optional: compare the all-channel/all-sample weighted efficiencies between
+# every complete era layout discovered under the common output directory.
+python3 ../misc/sf-utils/plot-btag-eff-years.py \
+  --input-base /path/to/preselection/slurm/outputs
+
 # The final conversion writes btag_eff_2024Prompt.json.  The analysis selects
 # this file from each sample's metadata year; keep the year suffix.
 ```
 
 Compatibility uses independent T/LT/N categories and weighted-binomial
 MC-statistical uncertainties; it is a diagnostic, not a formal hypothesis test.
+The converter sums the four producer eta bins into one central-jet `[-2.5, 2.5]`
+payload bin; pT binning is unchanged.
 
 </details>
 

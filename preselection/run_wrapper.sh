@@ -52,7 +52,7 @@ CHANNELS=(0lep_1FJ 0lep_2FJ)
 #CHANNELS=(all)
 
 # Run-3 MC-only b-tag efficiency production for every channel and sample:
-# python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff -c all -m "$MODE" -r 3 -f 1 --btag-eff
+# python3 run_rdf.py -p "$PREFIX" -o "$OUT_DIR" -n run3_btag_eff -c all -m "$MODE" -r 3 -f 1 --btag-eff --year 2024Prompt
 
 for RUN in 2 3; do
     RUN_BASE="etc/input_sample_jsons/run${RUN}"

@@ -31,6 +31,7 @@ DEFAULT_NCPUS = 4
 DEFAULT_MEMORY = "8gb"
 DEFAULT_PARTITION = "hpg-default"
 DEFAULT_TIME = "04:00:00"
+SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
 
 
 # ============================================================================
@@ -53,17 +54,19 @@ class JobManifest:
             "run_number": 0,
             "output_dir": "",
             "btag_eff": False,
+            "btag_eff_year": None,
             "samples": {},
             "jobs": {}
         }
 
     def set_metadata(self, config: str, analysis: str, run_number: int, output_dir: str,
-                     btag_eff: bool = False):
+                     btag_eff: bool = False, btag_eff_year: Optional[str] = None):
         self.data["config"] = config
         self.data["analysis"] = analysis
         self.data["run_number"] = run_number
         self.data["output_dir"] = output_dir
         self.data["btag_eff"] = btag_eff
+        self.data["btag_eff_year"] = btag_eff_year
 
     def add_sample(self, sample_name: str, n_files: int, status: str = "prepared",
                    reason: Optional[str] = None):
@@ -169,6 +172,8 @@ Examples:
                         help="Store HLT trigger branches in output")
     parser.add_argument("--btag-eff", action="store_true",
                         help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
+    parser.add_argument("--year",
+                        help="Required metadata year for --btag-eff production")
     parser.add_argument("--skip-btag-sf", action="store_true",
                         help="Skip b-tag SF application (normally enabled)")
     return parser.parse_args()
@@ -359,12 +364,24 @@ def create_tarball(preselection_dir: Path) -> Path:
     return tarball_path
 
 
-def prepare_output_directory(output_path: Path, btag_eff: bool) -> Optional[Path]:
+def prepare_output_directory(output_path: Path, btag_eff: bool, year: Optional[str]) -> Optional[Path]:
     """Create an output directory without permitting b-tag batch mixing."""
     if not btag_eff:
         output_path.mkdir(parents=True, exist_ok=True)
         return None
     if output_path.exists() and any(output_path.iterdir()):
+        manifest = output_path / "manifest.json"
+        if not manifest.is_file():
+            raise ValueError(
+                f"Refusing to mix a new b-tag efficiency submission into existing channel output "
+                f"{output_path}. Choose a new --output-dir or remove the previous complete submission.")
+        try:
+            existing = json.loads(manifest.read_text())
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Existing b-tag manifest is unreadable: {manifest}: {error}")
+        if existing.get("btag_eff_year") != year:
+            raise ValueError(
+                f"Refusing to mix b-tag years in {output_path}: existing={existing.get('btag_eff_year')!r}, requested={year!r}")
         raise ValueError(
             f"Refusing to mix a new b-tag efficiency submission into existing channel output "
             f"{output_path}. Choose a new --output-dir or remove the previous complete submission.")
@@ -378,6 +395,12 @@ def prepare_output_directory(output_path: Path, btag_eff: bool) -> Optional[Path
 
 def main():
     args = parse_args()
+    if args.btag_eff and not args.year:
+        print("ERROR: --btag-eff requires --year")
+        sys.exit(1)
+    if args.btag_eff and args.year not in SUPPORTED_BTAG_EFF_YEARS:
+        print(f"ERROR: --btag-eff is unsupported for {args.year}")
+        sys.exit(1)
 
     # Determine paths
     script_dir = Path(__file__).parent.resolve()
@@ -398,6 +421,13 @@ def main():
     if not samples:
         print("ERROR: No samples found in config")
         sys.exit(1)
+
+    if args.btag_eff:
+        mismatched = [name for name, info in samples.items()
+                      if info.get("metadata", {}).get("year") != args.year]
+        if mismatched:
+            print(f"ERROR: --btag-eff year {args.year!r} does not match samples: {mismatched}")
+            sys.exit(1)
 
     # Filter samples if --sample specified
     if args.sample:
@@ -426,7 +456,7 @@ def main():
     # leaves no misleading submission artifacts behind.
     output_path = Path(args.output_dir)
     try:
-        published_manifest = prepare_output_directory(output_path, args.btag_eff)
+        published_manifest = prepare_output_directory(output_path, args.btag_eff, args.year)
     except ValueError as error:
         print(f"ERROR: {error}")
         sys.exit(1)
@@ -445,7 +475,8 @@ def main():
 
     # Initialize manifest
     manifest = JobManifest(task_dir, published_manifest)
-    manifest.set_metadata(args.config, args.analysis, args.run_number, args.output_dir, args.btag_eff)
+    manifest.set_metadata(args.config, args.analysis, args.run_number, args.output_dir,
+                          args.btag_eff, args.year)
 
     print(f"\n{'='*60}")
     print(f"SLURM Job Submission for run3-vbsvvh")

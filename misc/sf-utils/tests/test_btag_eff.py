@@ -41,16 +41,16 @@ def counts(den=10., tight=2., loose=5., lt=3., untagged=5.):
 class BTagEfficiencyTests(unittest.TestCase):
     def test_yaml_controls_strict_final_groups(self):
         sample = "VBSWZH_c2v1p0"
-        self.assertEqual(families.sample_family(sample), "VBS_VVH")
-        self.assertEqual(families.final_sample_family(sample), "VBS_VVH")
-        self.assertEqual(families.final_channel("1lep_1FJ"), "leptonic")
-        self.assertNotIn("0lep_1FJ_met", families.retained_source_channels())
-        self.assertIn("0lep_1FJ_met", families.excluded_source_channels())
+        self.assertEqual(families.sample_family(sample, year="2024Prompt"), "VBS_VVH")
+        self.assertEqual(families.final_sample_family(sample, year="2024Prompt"), "VBS_VVH")
+        self.assertEqual(families.final_channel("1lep_1FJ", year="2024Prompt"), "leptonic")
+        self.assertNotIn("0lep_1FJ_met", families.retained_source_channels(year="2024Prompt"))
+        self.assertIn("0lep_1FJ_met", families.excluded_source_channels(year="2024Prompt"))
         with self.assertRaises(ValueError):
-            families.final_channel("all_events")
+            families.final_channel("all_events", year="2024Prompt")
 
     def test_yaml_rejects_incomplete_or_duplicate_final_groups(self):
-        config = families.load_config()
+        config = families.load_config("2024Prompt")
         bad = json.loads(json.dumps(config))
         bad["final_merges"]["samples"]["VBS_VVH"] = []
         with self.assertRaises(ValueError):
@@ -140,10 +140,10 @@ class BTagEfficiencyTests(unittest.TestCase):
     def test_btag_slurm_channel_layout_is_documented_and_colocated(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            outdir = root / "btag_outputs" / "0lep_0FJ"
+            outdir = root / "btag_outputs" / "2024Prompt" / "0lep_0FJ"
             self.assertEqual(run_rdf.output_dir_for_channel(
-                str(root / "btag_outputs"), "ignored_tag", "0lep_0FJ", "slurm", True), str(outdir))
-            published = slurm_submit.prepare_output_directory(outdir, True)
+                str(root / "btag_outputs"), "ignored_tag", "0lep_0FJ", "slurm", True, "2024Prompt"), str(outdir))
+            published = slurm_submit.prepare_output_directory(outdir, True, "2024Prompt")
             self.assertEqual(published, outdir / "manifest.json")
             task = root / "task"
             task.mkdir()
@@ -161,21 +161,21 @@ class BTagEfficiencyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             with self.assertRaises(ValueError):
-                conv.discover_final_inputs(root)
-            for channel in families.retained_source_channels():
+                conv.discover_final_inputs(root, "2024Prompt")
+            for channel in families.retained_source_channels(year="2024Prompt"):
                 directory = root / channel
                 directory.mkdir()
                 (directory / "manifest.json").write_text(json.dumps({"jobs": {}}))
             (root / "0lep_1FJ_met").mkdir()
             (root / "0lep_2FJ_met").mkdir()
             (root / "all_events").mkdir()
-            inputs, manifests, ignored = conv.discover_final_inputs(root)
-            self.assertEqual(set(inputs), set(families.retained_source_channels()))
+            inputs, manifests, ignored = conv.discover_final_inputs(root, "2024Prompt")
+            self.assertEqual(set(inputs), set(families.retained_source_channels(year="2024Prompt")))
             self.assertEqual(set(manifests), set(inputs))
             self.assertEqual(ignored, ["0lep_1FJ_met", "0lep_2FJ_met", "all_events"])
             (root / "1lep_1FJ" / "manifest.json").unlink()
             with self.assertRaises(ValueError):
-                conv.discover_final_inputs(root)
+                conv.discover_final_inputs(root, "2024Prompt")
 
     def test_failed_final_build_does_not_touch_output(self):
         with tempfile.TemporaryDirectory() as tmp:

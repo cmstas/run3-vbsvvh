@@ -1,20 +1,76 @@
 #include "weights.h"
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <fstream>
 #include <filesystem>
 #include <map>
+#include <mutex>
 #include <set>
+#include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 namespace {
 constexpr double kBTagDenominatorEpsilon = 1.e-8;
+constexpr double kBTagSFMaxAbsEta = 2.4;
 std::atomic<unsigned long long> g_btag_negative_intermediate{0};
 std::atomic<unsigned long long> g_btag_tiny_denominator{0};
 std::atomic<unsigned long long> g_btag_invalid_probability{0};
+std::mutex g_btag_diagnostic_mutex;
+std::map<std::string, unsigned long long> g_btag_failure_details;
+
+constexpr std::array<std::string_view, 18> kBTagHFSources = {
+    "correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
+    "muf", "mur", "pdf", "as", "pdfas", "ttbar", "jes", "jer", "type3",
+    "bfragmentation", "topmass", "hdamp"
+};
+
+const std::map<std::string, std::set<std::string>> kBTagHFAvailableSources = {
+    {"2016preVFP", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
+                     "muf", "mur", "pdf", "as", "ttbar"}},
+    {"2016postVFP", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
+                      "muf", "mur", "pdf", "as", "ttbar"}},
+    {"2017", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
+              "muf", "mur", "pdf", "as", "ttbar"}},
+    {"2018", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
+              "muf", "mur", "pdf", "as", "ttbar"}},
+    {"2024Prompt", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
+                     "muf", "mur", "pdfas", "jes", "jer", "type3", "bfragmentation",
+                     "topmass", "hdamp"}}
+};
+
+bool bTagHFSourceAvailable(const std::string &year, std::string_view source) {
+    const auto year_it = kBTagHFAvailableSources.find(year);
+    return year_it != kBTagHFAvailableSources.end() && year_it->second.count(std::string(source));
+}
+
+std::string bTagHFBranchName(std::string_view source, const std::string &year) {
+    std::string name = "weight_btagging_sf_HF_" + std::string(source);
+    if (source == "uncorrelated" || source == "statistic") name += "_" + year;
+    return name;
+}
+
+void recordBTagFailure(const char *reason, std::string_view source, const char *direction,
+                       const char *flavor, const char *category) {
+    std::ostringstream key;
+    key << reason << " source=" << source << " direction=" << direction
+        << " flavor=" << flavor << " category=" << category;
+    std::lock_guard<std::mutex> lock(g_btag_diagnostic_mutex);
+    ++g_btag_failure_details[key.str()];
+}
+
+template <typename T>
+RVec<T> correlateWeightWithBTagSource(const RVec<T> &raw, const RVec<double> &btag) {
+    if (raw.size() != 3 || btag.size() != 3 || !std::isfinite(btag[0]) ||
+        std::abs(btag[0]) < kBTagDenominatorEpsilon)
+        throw std::runtime_error("Cannot correlate analysis weight with an invalid central HF b-tag factor");
+    return RVec<T>{raw[0], static_cast<T>(raw[1] * btag[1] / btag[0]),
+                   static_cast<T>(raw[2] * btag[2] / btag[0])};
+}
 
 constexpr const char *kBTagRun2FamilyConfig = "corrections/scalefactors/btagging/btag_eff_families_run2.yaml";
 constexpr const char *kBTagRun3FamilyConfig = "corrections/scalefactors/btagging/btag_eff_families_run3.yaml";
@@ -33,12 +89,7 @@ std::string trim(std::string value) {
     return value.substr(begin, end - begin + 1);
 }
 
-const BTagFamilyConfig &bTagFamilyConfig(const std::string &year) {
-    const bool run2 = year == "2016preVFP" || year == "2016postVFP" || year == "2017" || year == "2018";
-    const std::string path = run2 ? kBTagRun2FamilyConfig : kBTagRun3FamilyConfig;
-    static std::map<std::string, BTagFamilyConfig> configs;
-    const auto existing = configs.find(path);
-    if (existing != configs.end()) return existing->second;
+BTagFamilyConfig loadBTagFamilyConfig(const std::string &path) {
     BTagFamilyConfig parsed;
     {
         std::ifstream input(path);
@@ -124,7 +175,19 @@ const BTagFamilyConfig &bTagFamilyConfig(const std::string &year) {
         for (const auto &channel : parsed.excluded_channels)
             if (retained_channels.count(channel)) fail("excluded channel is also retained: " + channel);
     }
-    return configs.emplace(path, std::move(parsed)).first->second;
+    return parsed;
+}
+
+const BTagFamilyConfig &bTagFamilyConfig(const std::string &year) {
+    if (year == "2016preVFP" || year == "2016postVFP" || year == "2017" || year == "2018") {
+        static const BTagFamilyConfig run2 = loadBTagFamilyConfig(kBTagRun2FamilyConfig);
+        return run2;
+    }
+    if (year == "2024Prompt") {
+        static const BTagFamilyConfig run3 = loadBTagFamilyConfig(kBTagRun3FamilyConfig);
+        return run3;
+    }
+    throw std::runtime_error("No b-tag efficiency YAML is configured for unsupported year " + year);
 }
 
 double unityForInvalidBTagWeight(std::atomic<unsigned long long> &counter) {
@@ -156,7 +219,12 @@ std::string bTagEfficiencyFamily(const std::string &sample, const std::string &y
 }
 
 std::string bTagEfficiencyChannel(const std::string &channel, const std::string &year) {
-    return finalGroup(bTagFamilyConfig(year).final_channels, channel, "channel");
+    const std::string canonical_channel =
+        channel == "0lep_1FJ_met" ? "0lep_1FJ" :
+        channel == "0lep_2FJ_met" ? "0lep_2FJ" : channel;
+    if (canonical_channel == "all_events")
+        throw std::runtime_error("all_events has no b-tag efficiency payload; rerun with --skip-btag-sf");
+    return finalGroup(bTagFamilyConfig(year).final_channels, canonical_channel, "channel");
 }
 } // namespace
 
@@ -164,16 +232,22 @@ void resetBTagDiagnostics() {
     g_btag_negative_intermediate = 0;
     g_btag_tiny_denominator = 0;
     g_btag_invalid_probability = 0;
+    std::lock_guard<std::mutex> lock(g_btag_diagnostic_mutex);
+    g_btag_failure_details.clear();
 }
 
 void printBTagDiagnostics(std::ostream &out) {
     const auto negative = g_btag_negative_intermediate.load();
     const auto tiny_denominator = g_btag_tiny_denominator.load();
     const auto invalid_probability = g_btag_invalid_probability.load();
-    if (negative == 0 && tiny_denominator == 0 && invalid_probability == 0) return;
+    std::lock_guard<std::mutex> lock(g_btag_diagnostic_mutex);
+    if (negative == 0 && tiny_denominator == 0 && invalid_probability == 0 &&
+        g_btag_failure_details.empty()) return;
     out << "[BTag SF diagnostics] negative intermediate probabilities=" << negative
         << ", tiny denominators=" << tiny_denominator
         << ", invalid efficiencies/probabilities=" << invalid_probability << '\n';
+    for (const auto &[detail, count] : g_btag_failure_details)
+        out << "  " << count << " × " << detail << '\n';
 }
 
 correction::CorrectionSet loadBTagEfficiencyCorrectionSet(const std::string &year) {
@@ -218,7 +292,7 @@ RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::Correc
         pileup_weights.push_back(correctionset->evaluate({ntrueint, "down"}));
         return pileup_weights;
     };
-    return df.Define("weight_pileup", eval_correction, {"year", "Pileup_nTrueInt"});
+    return df.Define("weight_pileup_raw", eval_correction, {"year", "Pileup_nTrueInt"});
 }
 
 /*
@@ -428,14 +502,15 @@ BTAG SFs
 RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_btag,
                                  std::unordered_map<std::string, std::string> corrname_map_HF,
                                  std::unordered_map<std::string, std::string> corrname_map_LF,
-                                 const std::string &channel, RNode df) {
+                                 const std::string &channel, const std::string &nuisance_year, RNode df) {
 
     auto calc_btag_sf = [cset_btag, channel] (const std::string &year, const std::string &sample,
                                                const RVec<float> &eta, const RVec<float> &pt,
                                                const RVec<unsigned char> &jetflavor, const RVec<bool> &is_tight,
                                                const RVec<bool> &is_loose, const std::string &correction_name,
-                                               bool is_heavy_flavor) {
-        RVec<double> btag_sf_weights = {1., 1., 1., 1., 1.};
+                                               bool is_heavy_flavor, const std::string &source,
+                                               bool source_available) {
+        RVec<double> btag_sf_weights = {1., 1., 1.};
         if (eta.empty()) return btag_sf_weights;
         if (eta.size() != pt.size() || eta.size() != jetflavor.size() ||
             eta.size() != is_tight.size() || eta.size() != is_loose.size())
@@ -481,30 +556,45 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
 
         const auto &sf_correction = cset_it->second.at(correction_name);
         auto jet_weight = [&](double sf_tight, double sf_loose, double eff_tight,
-                              double eff_loose, bool tight, bool loose) {
+                              double eff_loose, bool tight, bool loose, const char *direction,
+                              const char *flavor, const char *category) {
             if (!std::isfinite(sf_tight) || !std::isfinite(sf_loose) ||
                 !std::isfinite(eff_tight) || !std::isfinite(eff_loose) ||
-                !(0. <= eff_tight && eff_tight <= eff_loose && eff_loose <= 1.))
+                !(0. <= eff_tight && eff_tight <= eff_loose && eff_loose <= 1.)) {
+                recordBTagFailure("invalid_probability", source, direction, flavor, category);
                 return unityForInvalidBTagWeight(g_btag_invalid_probability);
+            }
             const double q_tight = sf_tight * eff_tight;
             const double q_loose = sf_loose * eff_loose;
             if (!std::isfinite(q_tight) || !std::isfinite(q_loose) ||
-                !(0. <= q_tight && q_tight <= q_loose && q_loose <= 1.))
+                !(0. <= q_tight && q_tight <= q_loose && q_loose <= 1.)) {
+                recordBTagFailure("invalid_probability", source, direction, flavor, category);
                 return unityForInvalidBTagWeight(g_btag_invalid_probability);
+            }
             if (tight) return sf_tight;
             if (loose) {
                 const double denominator = eff_loose - eff_tight;
                 const double numerator = q_loose - q_tight;
-                if (numerator < 0.) return unityForInvalidBTagWeight(g_btag_negative_intermediate);
-                if (std::abs(denominator) < kBTagDenominatorEpsilon)
+                if (numerator < 0.) {
+                    recordBTagFailure("negative_intermediate", source, direction, flavor, category);
+                    return unityForInvalidBTagWeight(g_btag_negative_intermediate);
+                }
+                if (std::abs(denominator) < kBTagDenominatorEpsilon) {
+                    recordBTagFailure("tiny_denominator", source, direction, flavor, category);
                     return unityForInvalidBTagWeight(g_btag_tiny_denominator);
+                }
                 return numerator / denominator;
             }
             const double denominator = 1. - eff_loose;
             const double numerator = 1. - q_loose;
-            if (numerator < 0.) return unityForInvalidBTagWeight(g_btag_invalid_probability);
-            if (std::abs(denominator) < kBTagDenominatorEpsilon)
+            if (numerator < 0.) {
+                recordBTagFailure("invalid_probability", source, direction, flavor, category);
+                return unityForInvalidBTagWeight(g_btag_invalid_probability);
+            }
+            if (std::abs(denominator) < kBTagDenominatorEpsilon) {
+                recordBTagFailure("tiny_denominator", source, direction, flavor, category);
                 return unityForInvalidBTagWeight(g_btag_tiny_denominator);
+            }
             return numerator / denominator;
         };
 
@@ -522,8 +612,10 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                 process_jet = true;
                 flavor_label = "L";
             }
-            if (!process_jet || std::abs(eta[i]) >= 2.5f) continue;
+            // UParTAK4 fixed-WP SF payloads are calibrated for |eta| < 2.4.
+            if (!process_jet || std::abs(eta[i]) >= kBTagSFMaxAbsEta) continue;
             if (is_tight[i] && !is_loose[i]) {
+                recordBTagFailure("tight_not_loose", source, "central", flavor_label, "invalid");
                 unityForInvalidBTagWeight(g_btag_invalid_probability);
                 continue;
             }
@@ -538,61 +630,84 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                                          year + ":" + channel + ":" + sample);
             }
             const double abs_eta = std::abs(eta[i]);
-            const auto evaluate_sf = [&](const char *variation, const char *wp) {
-                return sf_correction->evaluate({variation, wp, flavor, abs_eta, pt[i]});
+            const char *category = is_tight[i] ? "T" : (is_loose[i] ? "LnotT" : "untagged");
+            const auto evaluate_sf = [&](const char *direction, const char *wp) {
+                double central = 0.;
+                try {
+                    central = sf_correction->evaluate({"central", wp, flavor, abs_eta, pt[i]});
+                    if (std::string_view(direction) == "central" || !source_available) return central;
+                    const std::string variation = std::string(direction) + "_" + source;
+                    const double shifted = sf_correction->evaluate({variation, wp, flavor, abs_eta, pt[i]});
+                    // The HF calibration uncertainty for charm is doubled at the per-jet SF level.
+                    return flavor == 4 ? central + 2. * (shifted - central) : shifted;
+                } catch (const std::exception &error) {
+                    throw std::runtime_error("B-tag SF evaluation failed for year=" + year +
+                                             ", source=" + source + ", direction=" + direction +
+                                             ", flavor=" + std::to_string(flavor) + ", wp=" + wp +
+                                             ": " + error.what());
+                }
             };
 
             btag_sf_weights[0] *= jet_weight(evaluate_sf("central", "T"), evaluate_sf("central", "L"),
-                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
-            btag_sf_weights[1] *= jet_weight(evaluate_sf("up_uncorrelated", "T"), evaluate_sf("up_uncorrelated", "L"),
-                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
-            btag_sf_weights[2] *= jet_weight(evaluate_sf("down_uncorrelated", "T"), evaluate_sf("down_uncorrelated", "L"),
-                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
-            btag_sf_weights[3] *= jet_weight(evaluate_sf("up_correlated", "T"), evaluate_sf("up_correlated", "L"),
-                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
-            btag_sf_weights[4] *= jet_weight(evaluate_sf("down_correlated", "T"), evaluate_sf("down_correlated", "L"),
-                                              eff_tight, eff_loose, is_tight[i], is_loose[i]);
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i], "central", flavor_label, category);
+            btag_sf_weights[1] *= jet_weight(evaluate_sf("up", "T"), evaluate_sf("up", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i], "up", flavor_label, category);
+            btag_sf_weights[2] *= jet_weight(evaluate_sf("down", "T"), evaluate_sf("down", "L"),
+                                              eff_tight, eff_loose, is_tight[i], is_loose[i], "down", flavor_label, category);
         }
         return btag_sf_weights;
-    };
-
-    auto eval_HF = [cset_btag, corrname_map_HF, calc_btag_sf] (const std::string& year, const std::string &sample,
-                                                                 const RVec<float>& eta, const RVec<float>& pt,
-                                                                 const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
-                                                                 const RVec<bool> &is_loose) {
-        auto corrname_it = corrname_map_HF.find(year);
-        if (corrname_it == corrname_map_HF.end())
-            throw std::runtime_error("No UParTAK4 HF b-tag SF payload is configured for year " + year);
-        return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, true);
     };
 
     auto eval_LF = [cset_btag, corrname_map_LF, calc_btag_sf] (const std::string& year, const std::string &sample,
                                                                  const RVec<float>& eta, const RVec<float>& pt,
                                                                  const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
-                                                                 const RVec<bool> &is_loose) {
+                                                                 const RVec<bool> &is_loose, const std::string &source) {
         auto corrname_it = corrname_map_LF.find(year);
         if (corrname_it == corrname_map_LF.end())
             throw std::runtime_error("No UParTAK4 LF b-tag SF payload is configured for year " + year);
-        return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, false);
+        return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose, corrname_it->second, false, source, true);
     };
 
-    auto select_uncorrelated = [] (const RVec<double> &weights) {
-        return RVec<double>{weights[0], weights[1], weights[2]};
-    };
-    auto select_correlated = [] (const RVec<double> &weights) {
-        return RVec<double>{weights[0], weights[3], weights[4]};
-    };
-    return df.Define("btagging_sf_HF_all", eval_HF,
-                     {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
-             .Define("btagging_sf_LF_all", eval_LF,
-                     {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
-             .Define("weight_btagging_sf_HF_uncorrelated", select_uncorrelated, {"btagging_sf_HF_all"})
-             .Define("weight_btagging_sf_HF_correlated", select_correlated, {"btagging_sf_HF_all"})
-             .Define("weight_btagging_sf_LF_uncorrelated", select_uncorrelated, {"btagging_sf_LF_all"})
-             .Define("weight_btagging_sf_LF_correlated", select_correlated, {"btagging_sf_LF_all"})
-             // Keep the historical names as aliases for the uncorrelated variation.
-             .Define("weight_btagging_sf_HF", select_uncorrelated, {"btagging_sf_HF_all"})
-             .Define("weight_btagging_sf_LF", select_uncorrelated, {"btagging_sf_LF_all"});
+    RNode result = df;
+    for (const auto source_view : kBTagHFSources) {
+        const std::string source(source_view);
+        const bool available = bTagHFSourceAvailable(nuisance_year, source);
+        auto eval_HF = [corrname_map_HF, calc_btag_sf, source, available] (const std::string& year, const std::string &sample,
+                                                                              const RVec<float>& eta, const RVec<float>& pt,
+                                                                              const RVec<unsigned char>& jetflavor, const RVec<bool> &is_tight,
+                                                                              const RVec<bool> &is_loose) {
+            const auto corrname_it = corrname_map_HF.find(year);
+            if (corrname_it == corrname_map_HF.end())
+                throw std::runtime_error("No UParTAK4 HF b-tag SF payload is configured for year " + year);
+            return calc_btag_sf(year, sample, eta, pt, jetflavor, is_tight, is_loose,
+                                corrname_it->second, true, source, available);
+        };
+        result = result.Define(bTagHFBranchName(source, nuisance_year), eval_HF,
+                               {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"});
+    }
+
+    const std::string hf_uncorrelated = bTagHFBranchName("uncorrelated", nuisance_year);
+    const std::string lf_uncorrelated = "weight_btagging_sf_LF_uncorrelated_" + nuisance_year;
+    result = result.Define("_btagging_sf_LF_uncorrelated", [eval_LF] (const std::string &year, const std::string &sample,
+                                                                        const RVec<float> &eta, const RVec<float> &pt,
+                                                                        const RVec<unsigned char> &flavor, const RVec<bool> &tight,
+                                                                        const RVec<bool> &loose) {
+                               return eval_LF(year, sample, eta, pt, flavor, tight, loose, "uncorrelated");
+                           }, {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
+                   .Define("_btagging_sf_LF_correlated", [eval_LF] (const std::string &year, const std::string &sample,
+                                                                      const RVec<float> &eta, const RVec<float> &pt,
+                                                                      const RVec<unsigned char> &flavor, const RVec<bool> &tight,
+                                                                      const RVec<bool> &loose) {
+                               return eval_LF(year, sample, eta, pt, flavor, tight, loose, "correlated");
+                           }, {"year", "name", "jet_eta", "jet_pt", "jet_hadronFlavour", "jet_isTightBTag", "jet_isLooseBTag"})
+                   .Define(lf_uncorrelated, "_btagging_sf_LF_uncorrelated")
+                   .Define("weight_btagging_sf_LF_correlated", "_btagging_sf_LF_correlated")
+                   // Legacy aliases retain the historical uncorrelated vector.
+                   .Define("weight_btagging_sf_HF_uncorrelated", hf_uncorrelated)
+                   .Define("weight_btagging_sf_LF_uncorrelated", lf_uncorrelated)
+                   .Define("weight_btagging_sf_HF", hf_uncorrelated)
+                   .Define("weight_btagging_sf_LF", lf_uncorrelated);
+    return result;
 }
 
 /*
@@ -658,35 +773,35 @@ RNode applyPSWeight_FSR(RNode df) {
     auto eval_correction = [] (const RVec<float> PSWeight) {
         return RVec<float>{1., PSWeight[1], PSWeight[3]};
     };
-    return df.Define("weight_PSFSR", eval_correction, {"PSWeight"});
+    return df.Define("weight_PSFSR_raw", eval_correction, {"PSWeight"});
 }
 
 RNode applyPSWeight_ISR(RNode df) {
     auto eval_correction = [] (const RVec<float> PSWeight) {
         return RVec<float>{1., PSWeight[0], PSWeight[2]};
     };
-    return df.Define("weight_PSISR", eval_correction, {"PSWeight"});
+    return df.Define("weight_PSISR_raw", eval_correction, {"PSWeight"});
 }
 
 RNode applyLHEScaleWeight_muF(RNode df) {
     auto eval_correction = [] (const RVec<float> LHEScaleWeight) {
         return RVec<float>{1., LHEScaleWeight[5], LHEScaleWeight[3]};
     };
-    return df.Define("weight_muF", eval_correction, {"LHEScaleWeight"});
+    return df.Define("weight_muF_raw", eval_correction, {"LHEScaleWeight"});
 }
 
 RNode applyLHEScaleWeight_muR(RNode df) {
     auto eval_correction = [] (const RVec<float> LHEScaleWeight) {
         return RVec<float>{1., LHEScaleWeight[7], LHEScaleWeight[1]};
     };
-    return df.Define("weight_muR", eval_correction, {"LHEScaleWeight"});
+    return df.Define("weight_muR_raw", eval_correction, {"LHEScaleWeight"});
 }
 
 RNode applyDataWeights(RNode df_) {
     return applyGoldenJSONWeight(LumiMask, df_);
 }
 
-RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf) {
+RNode applyMCWeights(RNode df_, const std::string &channel, const std::string &nuisance_year, bool apply_btag_sf) {
     // Check for LHE branches (not present in all samples, e.g. QCD)
     auto colNames = df_.GetColumnNames();
     auto hasColumn = [&colNames](const std::string& name) {
@@ -717,15 +832,19 @@ RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf) 
                 btag_corrections.emplace("eff_" + std::string(year), loadBTagEfficiencyCorrectionSet(year));
         }
         resetBTagDiagnostics();
-        df = applyBTaggingScaleFactors(std::move(btag_corrections), bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, df);
+        df = applyBTaggingScaleFactors(std::move(btag_corrections), bTaggingScaleFactors_HF_corrname, bTaggingScaleFactors_LF_corrname, channel, nuisance_year, df);
     } else {
         auto unit_btag_weight = [] () { return RVec<double>{1., 1., 1.}; };
-        df = df.Define("weight_btagging_sf_HF", unit_btag_weight)
-               .Define("weight_btagging_sf_LF", unit_btag_weight)
-               .Define("weight_btagging_sf_HF_uncorrelated", unit_btag_weight)
-               .Define("weight_btagging_sf_HF_correlated", unit_btag_weight)
-               .Define("weight_btagging_sf_LF_uncorrelated", unit_btag_weight)
-               .Define("weight_btagging_sf_LF_correlated", unit_btag_weight);
+        for (const auto source : kBTagHFSources)
+            df = df.Define(bTagHFBranchName(source, nuisance_year), unit_btag_weight);
+        const std::string hf_uncorrelated = bTagHFBranchName("uncorrelated", nuisance_year);
+        const std::string lf_uncorrelated = "weight_btagging_sf_LF_uncorrelated_" + nuisance_year;
+        df = df.Define(lf_uncorrelated, unit_btag_weight)
+               .Define("weight_btagging_sf_LF_correlated", unit_btag_weight)
+               .Define("weight_btagging_sf_HF_uncorrelated", hf_uncorrelated)
+               .Define("weight_btagging_sf_LF_uncorrelated", lf_uncorrelated)
+               .Define("weight_btagging_sf_HF", hf_uncorrelated)
+               .Define("weight_btagging_sf_LF", lf_uncorrelated);
     }
 
     if (hasLHEPart) {
@@ -742,9 +861,22 @@ RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf) 
         df = applyLHEScaleWeight_muF(df);
         df = applyLHEScaleWeight_muR(df);
     } else {
-        df = df.Define("weight_muF", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
-        df = df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        df = df.Define("weight_muF_raw", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        df = df.Define("weight_muR_raw", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
+
+    // The nominal event weight already contains the central HF b-tag factor.
+    // Couple matching analysis variations to the corresponding HF source once.
+    df = df.Define("weight_pileup", correlateWeightWithBTagSource<double>,
+                   {"weight_pileup_raw", bTagHFBranchName("pileup", nuisance_year)})
+           .Define("weight_PSISR", correlateWeightWithBTagSource<float>,
+                   {"weight_PSISR_raw", bTagHFBranchName("isrdef", nuisance_year)})
+           .Define("weight_PSFSR", correlateWeightWithBTagSource<float>,
+                   {"weight_PSFSR_raw", bTagHFBranchName("fsrdef", nuisance_year)})
+           .Define("weight_muF", correlateWeightWithBTagSource<float>,
+                   {"weight_muF_raw", bTagHFBranchName("muf", nuisance_year)})
+           .Define("weight_muR", correlateWeightWithBTagSource<float>,
+                   {"weight_muR_raw", bTagHFBranchName("mur", nuisance_year)});
 
     return df.Redefine("weight",
         "weight *"
@@ -755,8 +887,8 @@ RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf) 
         "weight_electronid[0] * "
         "weight_electronreco[0] * "
         "weight_electrontrigger[0] * "
-        "weight_btagging_sf_HF[0] * "
-        "weight_btagging_sf_LF[0] * "
+        "weight_btagging_sf_HF_uncorrelated_" + nuisance_year + "[0] * "
+        "weight_btagging_sf_LF_uncorrelated_" + nuisance_year + "[0] * "
         "weight_ewk * "
         // "weight_l1prefiring[0] * "
         "weight_PSISR[0] * "
