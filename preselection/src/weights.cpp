@@ -594,14 +594,15 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
             const double eff_l = efficiency->evaluate({efficiency_sample, label, "L", pt[jet], eta[jet]});
             const int sf_flavor = heavy ? flavor : 0;
             const auto &sf = heavy ? hf_sf : lf_sf;
-            const auto central = [&](const char *wp) { return sf->evaluate({"central", wp, sf_flavor, std::abs(eta[jet]), pt[jet]}); };
+            const double sf_eta = bTagSFAbsEta(year, eta[jet]);
+            const auto central = [&](const char *wp) { return sf->evaluate({"central", wp, sf_flavor, sf_eta, pt[jet]}); };
             const double central_t = central("T"), central_l = central("L");
             const double central_weight = category_weight(central_t, central_l, eff_t, eff_l, is_tight[jet], is_loose[jet],
                                                           "central", "central", label, category);
             if (!heavy) {
                 for (const auto source : {std::string("uncorrelated"), std::string("correlated")}) {
                     const auto shifted = [&](const char *direction, const char *wp, double central_sf) {
-                        return sf->evaluate({std::string(direction) + "_" + source, wp, sf_flavor, std::abs(eta[jet]), pt[jet]});
+                        return sf->evaluate({std::string(direction) + "_" + source, wp, sf_flavor, sf_eta, pt[jet]});
                     };
                     auto &weights = source == "uncorrelated" ? bundle.lf_uncorrelated : bundle.lf_correlated;
                     weights[0] *= central_weight;
@@ -620,7 +621,7 @@ RNode applyBTaggingScaleFactors(std::unordered_map<std::string, correction::Corr
                 const auto shifted = [&](const char *direction, const char *wp, double central_sf) {
                     try {
                         const double payload = hf_sf->evaluate({std::string(direction) + "_" + source, wp, flavor,
-                                                                 std::abs(eta[jet]), pt[jet]});
+                                                                 sf_eta, pt[jet]});
                         return flavor == 4 ? central_sf + 2. * (payload - central_sf) : payload;
                     } catch (const std::exception &error) {
                         throw std::runtime_error("B-tag SF evaluation failed for year=" + year + ", source=" + source +

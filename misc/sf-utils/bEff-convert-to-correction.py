@@ -70,7 +70,16 @@ def fold_pt_flow(values, path, hist_name):
     return central
 
 
-def histogram_arrays_in_application_range(hist, path, hist_name):
+def btag_max_abs_eta(year):
+    """Eta acceptance used by both production and the correction payload."""
+    if year in ("2016preVFP", "2016postVFP"):
+        return 2.4
+    if year in ("2017", "2018", "2024Prompt"):
+        return 2.5
+    raise ValueError(f"Unsupported b-tag efficiency year: {year}")
+
+
+def histogram_arrays_in_application_range(hist, path, hist_name, year):
     """Return weighted yields and their Sumw2 variances in application bins."""
     values, pt_edges, eta_edges = hist.to_numpy(flow=True)
     variances = hist.variances(flow=True)
@@ -82,7 +91,10 @@ def histogram_arrays_in_application_range(hist, path, hist_name):
     # eta bin; retain the pT dependence but sum the mutually exclusive eta bins.
     values = np.sum(values, axis=1, keepdims=True)
     variances = np.sum(variances, axis=1, keepdims=True)
-    return values, variances, pt_edges[1:-1], np.asarray([eta_edges[1], eta_edges[-2]])
+    # Eta is merged into one bin.  Its correction-domain boundary must still
+    # match the year-dependent jet acceptance used during production.
+    eta_max = btag_max_abs_eta(year)
+    return values, variances, pt_edges[1:-1], np.asarray([-eta_max, eta_max])
 
 
 def read_merged_histograms(paths, expected_year, expected_channel, expected_sample):
@@ -116,7 +128,7 @@ def read_merged_histograms(paths, expected_year, expected_channel, expected_samp
                     if hist_name not in root_file:
                         raise ValueError(f"{path} does not contain {hist_name}")
                     values, variances, pt_edges, eta_edges = histogram_arrays_in_application_range(
-                        root_file[hist_name], path, hist_name)
+                        root_file[hist_name], path, hist_name, expected_year)
                     if edges is None:
                         edges = (pt_edges, eta_edges)
                     elif not (np.array_equal(pt_edges, edges[0]) and np.array_equal(eta_edges, edges[1])):

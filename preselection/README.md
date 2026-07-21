@@ -170,8 +170,9 @@ MC-statistical uncertainties; it is a diagnostic, not a formal hypothesis test.
 During conversion, a pathological signed-weight pT bin is merged with its
 immediately lower neighbor and the merged efficiency is assigned to both bins;
 an irreparable first-bin pathology still uses the validated all-MC fallback.
-The converter sums the four producer eta bins into one central-jet `[-2.5, 2.5]`
-payload bin; pT binning is unchanged.
+The converter sums the four producer eta bins into one central-jet payload bin;
+its edges are `[-2.4, 2.4]` for 2016 pre/post-VFP and `[-2.5, 2.5]` otherwise.
+pT binning is unchanged.
 The 2016 pre/post-VFP UParTAK4 fixed-WP payloads use |eta| < 2.4; 2017,
 2018, and 2024Prompt use |eta| < 2.5.  Efficiency production and SF
 application use the same year-dependent boundary.
