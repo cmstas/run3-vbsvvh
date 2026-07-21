@@ -69,10 +69,6 @@ RNode ElectronSelections(RNode df_)
         "Electron_cutBased >= 2"
     );
 
-    // Define the counts of each
-    df = df.Define("nElectron_Veto", "nElectron == 0 ? 0 : Sum(_vetoElectrons)");
-    df = df.Define("nElectron_Loose", "nElectron_Veto == 0 ? 0 : Sum(_looseElectrons)");
-
     // We will write out the electron object
     df = applyObjectMaskNewAffix(df, "_vetoElectrons", "Electron", "electron");
 
@@ -80,6 +76,11 @@ RNode ElectronSelections(RNode df_)
     df = df.Define("electron_isLoose",  "electron_cutBased >=2");
     df = df.Define("electron_isMedium", "electron_cutBased >=3");
     df = df.Define("electron_isTight",  "electron_cutBased >=4");
+
+    // Define the counts of each
+    df = df.Define("nElectron_Veto", "nElectron == 0 ? 0 : Sum(_vetoElectrons)");
+    df = df.Define("nElectron_Loose", "Sum(electron_isLoose)");
+    df = df.Define("nElectron_Tight", "Sum(electron_isTight)");
 
     return df;
 }
@@ -108,10 +109,6 @@ RNode MuonSelections(RNode df_)
         "Muon_mediumId"
     );
 
-    // Define the counts of each
-    df = df.Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)");
-    df = df.Define("nMuon_Medium", "nMuon_Loose == 0 ? 0 : Sum(_mediumMuons)");
-
     // We will write out the muon object
     df = applyObjectMaskNewAffix(df, "_looseMuons", "Muon", "muon");
 
@@ -119,6 +116,11 @@ RNode MuonSelections(RNode df_)
     df = df.Define("muon_isMedium",    "muon_mediumId && (muon_pfIsoId >=3)");
     df = df.Define("muon_isTight",     "muon_mediumId && (muon_pfIsoId >=4)");
     df = df.Define("muon_isVeryTight", "muon_mediumId && (muon_pfIsoId >=5)");
+
+    // Define the counts of each
+    df = df.Define("nMuon_Loose", "nMuon == 0 ? 0 : Sum(_looseMuons)");
+    df = df.Define("nMuon_Medium", "Sum(muon_isMedium)");
+    df = df.Define("nMuon_Tight", "Sum(muon_isTight)");
 
     return df;
 }
@@ -139,6 +141,8 @@ RNode LeptonSelections(RNode df_)
     df = df.Define("_electronSel_pt",     "electron_pt[electron_isLoose]")
            .Define("_electronSel_eta",    "electron_eta[electron_isLoose]")
            .Define("_electronSel_SC_eta", "electron_SC_eta[electron_isLoose]");
+    // Counter for these selection level leptons
+    df = df.Define("nLep_Sel", "nMuon_Loose + nElectron_Loose");
 
     return df.Define("lepton_pt", "Concatenate(electron_pt, muon_pt)")
             .Define("_leptonSorted", "Argsort(-lepton_pt)")
@@ -194,8 +198,7 @@ RNode AK8JetsSelection(RNode df_)
                                            "FatJet_pt > 250 && "
                                            "abs(FatJet_eta) <= 2.5 && "
                                            "FatJet_msoftdrop > 40 && "
-                                           "FatJet_jetId > 0")
-                  .Define("nFatJets", "Sum(_good_ak8jets)");
+                                           "FatJet_jetId > 0");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -269,6 +272,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         );
     }
 
+    ////////// Each channel selections //////////
+
     // 0lep_0FJ
     else if (channel == "0lep_0FJ"){
 
@@ -278,11 +283,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_0lep0FJ);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 0)",
-            "C2: 0lep_0FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter( "(nLep_Sel == 0) && (nfatjet == 0)", "C2: 0lep_0FJ");
+
         df = df.Define("met_significance", "PuppiMET_significance")
                 .Define("met_uncorrPt", "PuppiMET_pt")
                 .Define("met_uncorrPhi", "PuppiMET_phi");
@@ -297,11 +300,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_0lep1FJ);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 1)",
-            "C2: 0lep_1FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 0) && (nfatjet == 1)", "C2: 0lep_1FJ");
+
         df = df.Define("met_significance", "PuppiMET_significance")
                 .Define("met_uncorrPt", "PuppiMET_pt")
                 .Define("met_uncorrPhi", "PuppiMET_phi");
@@ -317,11 +318,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_met);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 1)",
-            "C2: 0lep_1FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 0) && (nfatjet == 1)", "C2: 0lep_1FJ");
+
     }
 
     // 0lep_2FJ
@@ -333,11 +332,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 2)",
-            "C2: 0lep_2FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 0) && (nfatjet == 2)", "C2: 0lep_2FJ");
+
     }
 
     // 0lep_2FJ_met
@@ -349,11 +346,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_met);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 2)",
-            "C2: 0lep_2FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 0) && (nfatjet == 2)", "C2: 0lep_2FJ");
+
     }
 
     // 0lep_3FJ
@@ -365,11 +360,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter(
-            "((nMuon_Loose == 0) && (nElectron_Loose == 0)) &&"
-            "(nFatJets == 3)",
-            "C2: 0lep_3FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 0) && (nfatjet == 3)", "C2: 0lep_3FJ");
+
     }
 
     // 1lep_1FJ
@@ -382,6 +375,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "weight_electron_reco_tightid", /*muo_sf_name=*/ "weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
+
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 1) && (nfatjet == 1)", "C2: 1lep_1FJ");
 
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
@@ -404,8 +400,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "weight_electron_reco_tightid", /*muo_sf_name=*/ "weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
 
-        df = df.Define("nElectron_Tight", "Sum(electron_isTight)")
-            .Define("nMuon_Tight", "Sum(muon_isTight)");
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 1) && (nfatjet == 2)", "C2: 1lep_2FJ");
 
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
@@ -428,11 +424,10 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_looseid_looseiso");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2)",
-            //TODO implement a same sign requirement
-            "C2: 2lepSS"
-        );
+        // Channel orthogonality selection
+        //TODO implement a same sign requirement
+        df = df.Filter("(nLep_Sel == 2)", "C2: 2lepSS");
+
     }
 
     // 2lep_1FJ (currently shared between OF and SF)
@@ -446,11 +441,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_mediumid_tightiso");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
-            "(nFatJets == 1)",
-            "C2: 2lep_1FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 2) && (nfatjet == 1)", "C2: 2lep_1FJ");
 
     }
 
@@ -465,11 +457,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_looseid_looseiso");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 2) &&"
-            "(nFatJets == 2)",
-            "C2: 2lep_2FJ"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 2) && (nfatjet == 2)", "C2: 2lep_2FJ");
+
     }
 
 
@@ -484,10 +474,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_mediumid_tightiso");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 3)",
-            "C2: 3lep"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 3)", "C2: 3lep");
 
     }
 
@@ -502,10 +490,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
         df = lepSFWrapper(df, isData, /*ele_sf_name=*/ "weight_electron_reco_looseid", /*muo_sf_name=*/ "weight_muon_looseid_looseiso");
 
-        df = df.Filter(
-            "((nMuon_Loose + nElectron_Loose) == 4)",
-            "C2: 4lep"
-        );
+        // Channel orthogonality selection
+        df = df.Filter("(nLep_Sel == 4)", "C2: 4lep");
+
     }
 
     return df;

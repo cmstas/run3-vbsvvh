@@ -72,7 +72,7 @@ RNode lepSFWrapper(RNode df,
             df = applyElectronTriggerScaleFactors(electronTriggerScaleFactors, electronTriggerScaleFactors_yearmap, df);
         }
         if (!has_mu_trigger) {
-            df = applyMuonWorkingPointSFs(df, false, {"weight_muon_trigger"});
+            df= applyMuonScaleFactors(muonScaleFactors, "weight_muon_trigger", muonSFConfigs.at("weight_muon_trigger"), df);
         }
         
         // Multiply base SFs by trigger SFs
