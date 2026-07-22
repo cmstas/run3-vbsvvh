@@ -7,6 +7,8 @@ Orchestrates the three run modes; the heavy lifting lives in the focused modules
     score sig/bkg MC with the best and last checkpoints.
   * --infer: skip training, score sig/bkg MC with the latest (or given) checkpoint.
   * --infer --data: score real data with the latest (or given) checkpoint.
+  * --plots-only: skip everything, redraw the plots from a prediction file that
+    an earlier run already wrote (add --data for the data prediction file).
 """
 
 import logging
@@ -19,7 +21,7 @@ import checkpoints
 import plots
 from common import concat_sig_bkg, data_length
 from config import RunConfig, load_yaml
-from inference import prepare_inference_data, run_inference
+from inference import default_predictions_path, plots_from_predictions, prepare_inference_data, run_inference
 from model import ABCDLightningModule
 from preprocessing import apply_derived_vars, normalize_class_weights, preprocess_data
 from root_io import apply_preselection, load_data
@@ -31,11 +33,12 @@ def parse_args():
     parser.add_argument("--flavor", choices=["single", "double"], default=None, help="Training flavor: single (one output) or double (two outputs)")
     parser.add_argument("--data", action="store_true", help="Run inference data (without training) using the latest checkpoint from config")
     parser.add_argument("--infer", action="store_true", help="Skip training and run inference only")
+    parser.add_argument("--plots-only", action="store_true", help="Skip training and inference; remake the plots from an already-written predictions file")
     parser.add_argument("--checkpoint", default=None, help="Path to model checkpoint (.ckpt) for inference. If omitted, auto-picks newest checkpoint.")
-    parser.add_argument("--output-path", default=None, help="Output predictions path (.parquet)")
+    parser.add_argument("--output-path", default=None, help="Output predictions path (.parquet). With --plots-only, the predictions file to read.")
     args = parser.parse_args()
-    if args.data and not args.infer:
-        parser.error("--data can only be used with --infer")
+    if args.data and not (args.infer or args.plots_only):
+        parser.error("--data can only be used with --infer or --plots-only")
     return args, parser
 
 
@@ -68,6 +71,15 @@ def main():
     logging.info("Using flavor=%s", flavor)
 
     run_cfg = RunConfig(cfg, flavor)
+
+    if args.plots_only:
+        predictions_path = args.output_path
+        if predictions_path is None:
+            checkpoint_path = args.checkpoint or checkpoints.latest_checkpoint(run_cfg.output_dir, run_cfg.flavor)
+            predictions_path = default_predictions_path(run_cfg, checkpoint_path, is_data=args.data)
+        logging.info("Skipping training and inference. Remaking plots only...")
+        plots_from_predictions(run_cfg, predictions_path, is_data=args.data)
+        return
 
     if args.data:
         infer_on_data(args, parser, run_cfg)

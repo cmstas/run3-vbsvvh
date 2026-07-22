@@ -121,7 +121,7 @@ def plot_input_feature_distributions(
 
         fig, ax = plt.subplots(figsize=(8, 6))
 
-        subsets = [
+        backgrounds = [
             ("bkg", "train", (plot_labels == 0) & plot_train_mask, "Background train"),
             ("bkg", "val",   (plot_labels == 0) & plot_val_mask,   "Background val"),
             ("sig", "train", (plot_labels == 1) & plot_train_mask, "Signal train"),
@@ -129,7 +129,7 @@ def plot_input_feature_distributions(
         ]
 
         drew_any = False
-        for cls_name, split_name, mask, legend_label in subsets:
+        for cls_name, split_name, mask, legend_label in backgrounds:
             vals = plot_vals[mask]
             wts = plot_weights[mask]
             if len(vals) == 0 or np.sum(wts) <= 0:
@@ -148,7 +148,7 @@ def plot_input_feature_distributions(
 
         if not drew_any:
             plt.close(fig)
-            logging.info("Skipping feature '%s' because no drawable subsets were found", feat)
+            logging.info("Skipping feature '%s' because no drawable backgrounds were found", feat)
             continue
 
         ax.set_title(feat)
@@ -327,23 +327,19 @@ def plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
     dnn_range = (0, 1)
     constrain_var_range = (0, max(np.asarray(data[constraint_var])))
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-    for ax, subset, title, cmap in [
-        (axes[0], background, 'Background', 'Blues'),
-        (axes[1], signal, 'Signal', 'Reds'),
-    ]:
-        h = ax.hist2d(subset[score_col], subset[constraint_var], bins=bins,
-                      range=[dnn_range, constrain_var_range], cmap=cmap,
-                      norm=matplotlib.colors.LogNorm())
-        plt.colorbar(h[3], ax=ax, label='Counts')
-        ax.set_title(title)
-        ax.set_xlabel('DNN Score')
-        ax.set_ylabel(constraint_var)
-        _profile_overlay(ax, subset[score_col], subset[constraint_var], bins[0], dnn_range)
-        _profile_overlay(ax, subset[score_col], subset[constraint_var], bins[0], dnn_range,
-                         weights=subset["weight"] if "weight" in subset else None,
-                         color='orange', label='Profile mean (weighted)')
+    h = ax.hist2d(background[score_col], background[constraint_var], bins=bins,
+                    range=[dnn_range, constrain_var_range], cmap="Blues",
+                    norm=matplotlib.colors.LogNorm())
+    plt.colorbar(h[3], ax=ax, label='Counts')
+    ax.set_title("Background")
+    ax.set_xlabel('DNN Score')
+    ax.set_ylabel('BDT Score')
+    _profile_overlay(ax, background[score_col], background[constraint_var], bins[0], dnn_range)
+    _profile_overlay(ax, background[score_col], background[constraint_var], bins[0], dnn_range,
+                        weights=background["weight"] if "weight" in background else None,
+                        color='orange', label='Profile mean (weighted)')
 
     fig.suptitle(f'ABCD Plane{" - " + title_suffix if title_suffix else ""}')
     plt.tight_layout()
@@ -381,12 +377,7 @@ def plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_thresh
     )
     plt.colorbar(mesh, ax=ax, label='Counts')
 
-    # Profile exactly the cells left visible: the DNN columns left of the boundary, and
-    # within them only events below the constraint boundary. Blinding on either axis means
-    # even the low-DNN columns are truncated, so averaging every event there would fold in
-    # yields this plot is meant to hide. The result is E[constraint | constraint < cut],
-    # not the full mean -- a uniform cut across DNN bins, so a trend still reads as
-    # correlation, but the values sit below the unblinded signal/background profiles.
+    
     n_open = int(np.argmax(blind_x)) if blind_x.any() else bins[0]
     y_open = yedges[int(np.argmax(blind_y))] if blind_y.any() else yedges[-1]
     if n_open > 0:
@@ -419,10 +410,8 @@ def plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_thresh
     ax.set_xlim(dnn_range)
     ax.set_ylim(constrain_var_range)
     ax.set_xlabel('DNN Score')
-    ax.set_ylabel(constraint_var)
-    ax.set_title(f'ABCD Plane - Data{" - " + title_suffix if title_suffix else ""}\n'
-                 f'(blinded where either score > {blind_threshold}; profile over visible region only)',
-                 fontsize=10)
+    ax.set_ylabel('BDT Score')
+    ax.set_title("Data")
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)

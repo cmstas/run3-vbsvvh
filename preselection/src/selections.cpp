@@ -340,7 +340,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, std::string ru
         df = df.Filter("((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (nfatjet >= 3)");
         Cutflow::Add(df, "C2: 0lep_3FJ");
         
-        df = df.Filter("njet >= 2", "C3: at-least 2 jets");
+        df = df.Filter("njetNoFJClean >= 2", "C3: at-least 2 jets");
         Cutflow::Add(df, "C3: at-least 2 jets");
 
         df = applyQCDScoreResampling(df, run_number);
@@ -532,9 +532,9 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, std::string ru
         df = df.Filter("nfatjet >= 2");
         Cutflow::Add(df, "C3: at-least 2 fat jets");
 
-        df = df.Filter("njet >= 2");
+        df = df.Filter("njetNoFJClean >= 2");
         Cutflow::Add(df, "C4: at-least 2 jets");
-        
+
         df = df.Define("_best_h_idx", "fatjet_HvsQCD.size() != 0 ? ArgMax(fatjet_HvsQCD) : 999.0")
             .Define("boosted_h_candidate_score", "_best_h_idx != 999.0 ? fatjet_HvsQCD[_best_h_idx] : -999.0f")
             .Define("boosted_h_candidate_v_score", "_best_h_idx != 999.0 ? fatjet_VvsQCD[_best_h_idx] : -999.0f")

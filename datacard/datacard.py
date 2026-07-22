@@ -60,9 +60,8 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
     an acceptance-only effect (the signal cross section is the POI, so its
     normalization must not be constrained here too).
 
-    Returns ``{nuisance: {region: (kappa_dn, kappa_up)}}``, skipping any
-    systematic that is identically 1 in every region (e.g. muon SFs in a 0-lep
-    channel) so no-op nuisances stay out of the card.
+    Returns ``{nuisance: {region: (kappa_dn, kappa_up)}}`` for every systematic
+    whose columns are present, including ones that evaluate to exactly 1.
     """
     kappas = {}
     w_all = sig_df["weight"].to_numpy()
@@ -95,10 +94,12 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
                 continue
             per_region[region_id] = (k_dn, k_up)
 
-        values = [v for v in per_region.values() if v is not None]
-        if not values:
-            continue
-        if all(abs(dn - 1) < 5e-5 and abs(up - 1) < 5e-5 for dn, up in values):
+        # A systematic that comes out to exactly 1 everywhere (muR, or the lepton
+        # SFs in a 0-lepton channel) is still written. It constrains nothing in
+        # combine, but keeping it makes the nuisance list identical across cards
+        # and distinguishes "evaluated, no effect" from "never computed" -- an
+        # omitted line cannot tell you which.
+        if not any(v is not None for v in per_region.values()):
             continue
 
         kappas[nuisance_name(branch, proc_name, scan_name)] = per_region

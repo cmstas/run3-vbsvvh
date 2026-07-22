@@ -13,7 +13,7 @@ import plots
 from checkpoints import load_scaler_params, run_dir_for_checkpoint
 from common import apply_mask, data_length
 from model import ABCDLightningModule
-from predictions import SUFFIX, write_predictions
+from predictions import SUFFIX, read_predictions, write_predictions
 from preprocessing import apply_derived_vars, preprocess_data
 
 
@@ -98,6 +98,94 @@ def prepare_inference_data(run_cfg, inference_data):
     return data
 
 
+def default_predictions_path(run_cfg, checkpoint_path, is_data=False):
+    """Where run_inference writes (and --plots-only reads) a prediction file."""
+    checkpoint_path = Path(checkpoint_path)
+    tag = "_data" if is_data else ""
+    return (run_dir_for_checkpoint(checkpoint_path)
+            / f"predictions_{run_cfg.flavor}_{checkpoint_path.stem}{tag}{SUFFIX}")
+
+
+def make_inference_plots(run_cfg, data, output_path, is_data=False,
+                         model=None, feature_matrix=None, device=None):
+    """Draw every diagnostic for one prediction set.
+
+    ``model``/``feature_matrix``/``device`` are only needed for the permutation
+    importance, which is skipped without them (the --plots-only path, where the
+    scores are read back from disk and the model is never built).
+    """
+    flavor = run_cfg.flavor
+    constraint_var = run_cfg.constraint_var
+    output_path = Path(output_path)
+
+    if is_data:
+        abcd_data_path = output_path.with_name(f"{output_path.stem}_abcd_plane_data.png")
+        plots.plot_abcd_plane_data(data, flavor=flavor, constraint_var=constraint_var,
+                                   output_path=abcd_data_path)
+        logging.info("Saved ABCD plane plot to %s", abcd_data_path)
+        return
+
+    roc_path = output_path.with_name(f"{output_path.stem}_roc.png")
+    density_path = output_path.with_name(f"{output_path.stem}_score_density.png")
+    plots.plot_roc_curves(data, flavor=flavor, output_path=roc_path)
+    plots.plot_score_densities(data, flavor=flavor, output_path=density_path)
+    logging.info("Saved ROC plot to %s", roc_path)
+    logging.info("Saved score density plot to %s", density_path)
+
+    # Make ABCD plane and decorrelation plots (for all events, for train only, and for val only)
+    plot_subsets = [("all", data)]
+    if "split" in data:
+        split = np.asarray(data["split"])
+        for subset_name in ("train", "val"):
+            mask = split == subset_name
+            if mask.any():
+                plot_subsets.append((subset_name, apply_mask(data, mask)))
+
+    for subset_name, subset_data in plot_subsets:
+        abcd_path = output_path.with_name(f"{output_path.stem}_abcd_plane_{subset_name}.png")
+        plots.plot_abcd_plane(subset_data, flavor=flavor, constraint_var=constraint_var,
+                              output_path=abcd_path, title_suffix=subset_name)
+
+        decorr_path = output_path.with_name(f"{output_path.stem}_decorrelation_check_{subset_name}.png")
+        plots.plot_decorrelation_check(subset_data, flavor=flavor, constraint_var=constraint_var,
+                                       output_path=decorr_path, title_suffix=subset_name)
+
+    # Compute and save permutation importance to identify which features the model relies on most
+    if model is None or feature_matrix is None:
+        logging.info("Skipping permutation importance (needs the model; re-run without --plots-only).")
+        return
+
+    importance_path = output_path.with_name(f"{output_path.stem}_permutation_importance.png")
+    baseline_auc, importances = compute_permutation_importance(
+        model=model,
+        feature_matrix=feature_matrix,
+        labels=np.asarray(data["label"]),
+        weights=np.asarray(data["weight"]),
+        training_features=run_cfg.training_features,
+        device=device,
+        batch_size=run_cfg.batch_size,
+    )
+    plots.plot_permutation_importance(baseline_auc, importances, importance_path)
+    logging.info("Saved permutation importance plot to %s", importance_path)
+
+
+def plots_from_predictions(run_cfg, predictions_path, is_data=False):
+    """Redraw the diagnostics from a prediction file written by an earlier run."""
+    predictions_path = Path(predictions_path)
+    if not predictions_path.is_file():
+        raise FileNotFoundError(
+            f"No prediction file at {predictions_path}; run the inference first "
+            "(or point --output-path at an existing file)."
+        )
+
+    logging.info("Reading predictions from %s", predictions_path)
+    df = read_predictions(predictions_path)
+    data = {col: df[col].to_numpy() for col in df.columns}
+    logging.info("Read %d rows.", data_length(data))
+
+    make_inference_plots(run_cfg, data, predictions_path, is_data=is_data)
+
+
 def run_inference(run_cfg, checkpoint_path, inference_data, is_data=False,
                   train_idx=None, val_idx=None, output_path=None):
     """Score ``inference_data`` (already passed through prepare_inference_data)
@@ -142,8 +230,7 @@ def run_inference(run_cfg, checkpoint_path, inference_data, is_data=False,
     data["split"] = split_col
 
     if output_path is None:
-        tag = "_data" if is_data else ""
-        output_path = run_dir_for_checkpoint(checkpoint_path) / f"predictions_{flavor}_{checkpoint_path.stem}{tag}{SUFFIX}"
+        output_path = default_predictions_path(run_cfg, checkpoint_path, is_data=is_data)
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -151,47 +238,5 @@ def run_inference(run_cfg, checkpoint_path, inference_data, is_data=False,
     write_predictions(data, output_path)
     logging.info("Done. Wrote %d rows.", data_length(data))
 
-    constraint_var = run_cfg.constraint_var
-    if is_data:
-        abcd_data_path = output_path.with_name(f"{output_path.stem}_abcd_plane_data.png")
-        plots.plot_abcd_plane_data(data, flavor=flavor, constraint_var=constraint_var,
-                                   output_path=abcd_data_path)
-        return
-
-    roc_path = output_path.with_name(f"{output_path.stem}_roc.png")
-    density_path = output_path.with_name(f"{output_path.stem}_score_density.png")
-    plots.plot_roc_curves(data, flavor=flavor, output_path=roc_path)
-    plots.plot_score_densities(data, flavor=flavor, output_path=density_path)
-    logging.info("Saved ROC plot to %s", roc_path)
-    logging.info("Saved score density plot to %s", density_path)
-
-    # Make ABCD plane and decorrelation plots (for all events, for train only, and for val only)
-    plot_subsets = [("all", data)]
-    if train_idx is not None and val_idx is not None:
-        train_mask = np.asarray(data["split"]) == "train"
-        val_mask = np.asarray(data["split"]) == "val"
-        plot_subsets.append(("train", apply_mask(data, train_mask)))
-        plot_subsets.append(("val", apply_mask(data, val_mask)))
-
-    for subset_name, subset_data in plot_subsets:
-        abcd_path = output_path.with_name(f"{output_path.stem}_abcd_plane_{subset_name}.png")
-        plots.plot_abcd_plane(subset_data, flavor=flavor, constraint_var=constraint_var,
-                              output_path=abcd_path, title_suffix=subset_name)
-
-        decorr_path = output_path.with_name(f"{output_path.stem}_decorrelation_check_{subset_name}.png")
-        plots.plot_decorrelation_check(subset_data, flavor=flavor, constraint_var=constraint_var,
-                                       output_path=decorr_path, title_suffix=subset_name)
-
-    # Compute and save permutation importance to identify which features the model relies on most
-    importance_path = output_path.with_name(f"{output_path.stem}_permutation_importance.png")
-    baseline_auc, importances = compute_permutation_importance(
-        model=model,
-        feature_matrix=feature_matrix,
-        labels=np.asarray(data["label"]),
-        weights=np.asarray(data["weight"]),
-        training_features=run_cfg.training_features,
-        device=device,
-        batch_size=run_cfg.batch_size,
-    )
-    plots.plot_permutation_importance(baseline_auc, importances, importance_path)
-    logging.info("Saved permutation importance plot to %s", importance_path)
+    make_inference_plots(run_cfg, data, output_path, is_data=is_data,
+                         model=model, feature_matrix=feature_matrix, device=device)
