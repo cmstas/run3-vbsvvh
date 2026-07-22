@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
+#include <cstdlib>
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RDFHelpers.hxx"
@@ -38,8 +39,7 @@ const std::unordered_map <std::string, correction::CorrectionSet> btaggingCorrec
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
-    // Recomendation from: https://btv-wiki.docs.cern.ch/ScaleFactors/Run3Prompt25/
-    {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
+    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
 
 // 2. Map of Numbers: Put the actual numeric thresholds here
@@ -53,7 +53,7 @@ static std::unordered_map<std::string, float> btaggingWPMap_Loose = {
     {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"L"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"L"})},
-    {"2025",        btaggingCorrections.at("2025").at("UParTAK4_wp_values")->evaluate({"L"})}
+    {"2025Prompt",  btaggingCorrections.at("2025Prompt").at("UParTAK4_wp_values")->evaluate({"L"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
@@ -66,7 +66,7 @@ static std::unordered_map<std::string, float> btaggingWPMap_Medium = {
     {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"M"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"M"})},
-    {"2025",        btaggingCorrections.at("2025").at("UParTAK4_wp_values")->evaluate({"M"})}
+    {"2025Prompt",  btaggingCorrections.at("2025Prompt").at("UParTAK4_wp_values")->evaluate({"M"})}
 };
 
 static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
@@ -79,7 +79,7 @@ static std::unordered_map<std::string, float> btaggingWPMap_Tight = {
     {"2023PromptC", btaggingCorrections.at("2023PromptC").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2023PromptD", btaggingCorrections.at("2023PromptD").at("UParTAK4_wp_values")->evaluate({"T"})},
     {"2024Prompt",  btaggingCorrections.at("2024Prompt").at("UParTAK4_wp_values")->evaluate({"T"})},
-    {"2025",        btaggingCorrections.at("2025").at("UParTAK4_wp_values")->evaluate({"T"})}
+    {"2025Prompt",  btaggingCorrections.at("2025Prompt").at("UParTAK4_wp_values")->evaluate({"T"})}
 };
 
 /*
@@ -200,7 +200,8 @@ const std::unordered_map<std::string, correction::CorrectionSet> jetVetoMaps = {
     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/jetvetomaps.json.gz")},
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/jetvetomaps.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/jetvetomaps.json.gz")},
-    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jetvetomaps.json.gz")}
+    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jetvetomaps.json.gz")},
+    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-25Prompt-Winter25-NanoAODv15/latest/jetvetomaps.json.gz")}
 };
 
 const std::unordered_map<std::string, std::string> jetVetoMap_names = {
@@ -212,7 +213,8 @@ const std::unordered_map<std::string, std::string> jetVetoMap_names = {
     {"2022Re-recoE+PromptFG", "Summer22EE_23Sep2023_RunEFG_V1"},
     {"2023PromptC", "Summer23Prompt23_RunC_V1"},
     {"2023PromptD", "Summer23BPixPrompt23_RunD_V1"},
-    {"2024Prompt", "Summer24Prompt24_RunBCDEFGHI_V1"}
+    {"2024Prompt", "Summer24Prompt24_RunBCDEFGHI_V1"},
+    {"2025Prompt", "Winter25Prompt25_RunCDEFG_V1"}
 };
 
 RNode applyJetVetoMaps(RNode df);
@@ -231,7 +233,8 @@ const std::unordered_map<std::string, correction::CorrectionSet> electronSSCorre
     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23CSep23-Summer23-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
-    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")}
+    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")},
+    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-25Prompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")}
 };
 
 RNode applyElectronScaleAndSmearing(RNode df, bool isData);

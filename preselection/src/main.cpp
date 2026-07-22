@@ -38,7 +38,7 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
-    df = runPreselection(df, ana, makeSpanetTrainingdata);
+    df = runPreselection(df, ana, makeSpanetTrainingdata, run_number);
     
     if (isSignal) {
         df = GenSelections(df);
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
+        df = applyMCWeights(df, isSignal);
     }
 
     Cutflow::Add(df, "After SFs and corrections");

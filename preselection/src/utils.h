@@ -58,6 +58,8 @@ RNode removeDuplicates(RNode df);
 RNode applyObjectMask(RNode df, const std::string& maskName, const std::string& objectName);
 RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::string &objectName, const std::string &newAffix);
 
+RNode applyQCDScoreResampling(RNode df, const std::string& run_number);
+
 // Define or redefine a column depending on whether it already exists in the dataframe.
 // Useful when a function may be called multiple times with different arguments (e.g. AK4JetsSelection).
 template <typename F>
@@ -132,10 +134,15 @@ RVec<float> VInvariantMass(const RVec<float>& vec_pt, const RVec<float>& vec_eta
 RVec<float> VInvariantPt(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
 RVec<float> VInvariantPhi(const RVec<float>& vec_pt, const RVec<float>& vec_eta, const RVec<float>& vec_phi, const RVec<float>& vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass);
 RVec<float> VTransverseMass(const RVec<float>& vec_pt, const RVec<float>& vec_phi, float obj_pt, float obj_phi);
+RVec<float> VVInvariantPt(const RVec<float>& pt1, const RVec<float>& eta1, const RVec<float>& phi1, const RVec<float>& m1,
+                          const RVec<float>& pt2, const RVec<float>& eta2, const RVec<float>& phi2, const RVec<float>& m2);
+RVec<float> VVInvariantMass(const RVec<float>& pt1, const RVec<float>& eta1, const RVec<float>& phi1, const RVec<float>& m1,
+                          const RVec<float>& pt2, const RVec<float>& eta2, const RVec<float>& phi2, const RVec<float>& m2);
+RVec<float> VVDeltaR(const RVec<float>& eta1, const RVec<float>& phi1, const RVec<float>& eta2, const RVec<float>& phi2);
 RVec<float> dRfromClosestJet(const RVec<float>& ak4_eta, const RVec<float>& ak4_phi, const RVec<float>& ak8_eta, const RVec<float>& ak8_phi);
 
-RVec<RVec<int>> getVBSPairs(const RVec<int>& goodJets, const RVec<float>& jetPt);
-RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
+RVec<RVec<int>> getJetPairs(const RVec<float>& goodJets);
+RVec<int> findJetPairWithMaxDeltaEta(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
 
 RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass, bool isRun2);
 const static TMVA::Experimental::RBDT bdt("VBS BDT", "bdt/BDT_Weights.root");
