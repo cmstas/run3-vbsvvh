@@ -358,6 +358,10 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
+        // The 1FJ branch uses the skim's loose-lepton counts and derives the
+        // tight counts here, as is already done for 1lep_2FJ below.
+        df = df.Define("nElectron_Tight", "Sum(electron_isTight)")
+            .Define("nMuon_Tight", "Sum(muon_isTight)");
         df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
                        "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
