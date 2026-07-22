@@ -3,7 +3,9 @@ validation/
 env/
 output/
 plotter
+AN-26-009
 
+junk/
 datacard/*
 !datacard/datacard.py
 !datacard/make_datacards.sh

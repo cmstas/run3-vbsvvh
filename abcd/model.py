@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 import pytorch_lightning as pl
 
 from utilities import distance_corr
@@ -87,7 +86,7 @@ class ABCDLightningModule(pl.LightningModule):
         self.lr_scheduler_patience = lr_scheduler_patience
         self.lr_scheduler_factor = lr_scheduler_factor
         self.lr_scheduler_min_lr = lr_scheduler_min_lr
-
+        
         self.save_hyperparameters()
 
     def forward(self, x):
@@ -142,14 +141,14 @@ class ABCDLightningModule(pl.LightningModule):
                     bkg_score_0,
                     bkg_constraint,
                     bkg_weights,
-                    power=1,
+                    power=2,
                 )
         else:
             bkg_score_1 = bkg_scores[:, 1]
             if (torch.max(bkg_score_0) - torch.min(bkg_score_0) > 1e-8) and (
                 torch.max(bkg_score_1) - torch.min(bkg_score_1) > 1e-8
             ):
-                disco_term = distance_corr(bkg_score_0, bkg_score_1, bkg_weights, power=1)
+                disco_term = distance_corr(bkg_score_0, bkg_score_1, bkg_weights, power=2)
 
         total_loss = (
             self.bce_weight * bce + self.disco_lambda * disco_term

@@ -1,9 +1,8 @@
-input_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+sig_base_path: "~/ceph/vbsvvh/preselection/"
+bkg_base_path: "~/ceph/vbsvvh/preselection/"
 
 sig_path: ["*r2*1fj_sig*/*/*.root"]
-sig_infer_path: ["*r2*1fj_sig*/*1p5*/*.root"]
 bkg_path: ["*r2*1fj_bkg*/*/*.root"]
-data_path: ["*r2*1fj_data*/*/*.root"]
 
 training_features:
   - lepton_pt: log
@@ -15,14 +14,12 @@ training_features:
   - boosted_h_candidate_pt: log
   - boosted_h_candidate_eta: minmax
   - boosted_h_candidate_phi: minmax
-  - boosted_h_candidate_part_mass: log
-  - boosted_h_candidate_msoftdrop: log
+  - boosted_h_candidate_mass: log
   - boosted_h_candidate_tau21: none
   - boosted_v_candidate_pt: log
   - boosted_v_candidate_eta: minmax
   - boosted_v_candidate_phi: minmax
-  - boosted_v_candidate_part_mass: log
-  - boosted_v_candidate_msoftdrop: log
+  - boosted_v_candidate_mass: log
   - boosted_v_candidate_tau21: none
   - resolved_mjj_1: log
   - resolved_mjj_2: log
@@ -39,7 +36,16 @@ training_features:
   - resolved_dR_3: minmax
   - resolved_dR_4: minmax
   - resolved_dR_5: minmax
-  - mlb_min: log
+  - vbs_jet1_pt: log
+  - vbs_jet1_eta: minmax
+  - vbs_jet1_phi: minmax
+  - vbs_jet1_mass: log
+  - vbs_jet2_pt: log
+  - vbs_jet2_eta: minmax
+  - vbs_jet2_phi: minmax
+  - vbs_jet2_mass: log
+  - vbs_detajj: minmax
+  - vbs_mjj: log
 
 derived_vars:
   - resolved_mjj_1_residue_h: "np.where(resolved_mjj_1 > 0, np.abs(resolved_mjj_1 - 125.0), -999.0)"
@@ -61,49 +67,20 @@ derived_vars:
 auto_include_derived_vars: true
 auto_include_derived_vars_transform: log
 
+constraint_var: vbs_detajj
+
 extra_vars:
   - weight
   - boosted_h_candidate_score
   - boosted_v_candidate_score
-  - vbs_score
-  - shortname
-  - year
 
 preselection: "(boosted_h_candidate_score >= 0.1) | (boosted_v_candidate_score >= 0.1)"
 
-constraint_var: "vbs_detajj"
-
-bdt_features:
-  - vbs_mjj
-  - vbs_detajj
-  - vbs_jet1_pt
-  - vbs_jet1_eta
-  - vbs_jet1_phi
-  - vbs_jet1_mass
-  - vbs_jet2_pt
-  - vbs_jet2_eta
-  - vbs_jet2_phi
-  - vbs_jet2_mass
-
-use_bdt_as_constraint: true
-
-bdt:
-  n_estimators: 1000
-  max_depth: 6
-  learning_rate: 0.03
-  min_child_weight: 20
-  subsample: 0.8
-  colsample_bytree: 0.7
-  gamma: 1.0
-  reg_lambda: 10.0
-  reg_alpha: 0.0
-  early_stopping_rounds: 40
-
-batch_size: 16384
+batch_size: 8192
 learning_rate: 0.0001
 n_epochs: 1000
 
-architecture: [128, 64, 32, 16]
+architecture: [64, 32, 16]
 bce_weight: 1.0
 disco_lambda: 10.0
 
@@ -112,6 +89,6 @@ dropout: 0.2
 weight_decay: 0.01
 label_smoothing: 0.0
 
-devices: [4]
+devices: [1]
 
-output: "output/1LEP_1FJ_RUN2"
+output: "1FJ_NEW_RUN2"
