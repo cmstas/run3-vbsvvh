@@ -26,7 +26,8 @@ RUN_NUMBER=$6
 SAMPLE_NAME=$7
 JOB_IDX=$8
 shift 8
-EXTRA_FLAGS="$@"
+EXTRA_FLAGS=("$@")
+EXTRA_FLAGS_TEXT="${EXTRA_FLAGS[*]}"
 
 # Constants
 OUTPUTDIR="output"
@@ -48,7 +49,7 @@ echo "  ANALYSIS=$ANALYSIS"
 echo "  RUN_NUMBER=$RUN_NUMBER"
 echo "  SAMPLE_NAME=$SAMPLE_NAME"
 echo "  JOB_IDX=$JOB_IDX"
-echo "  EXTRA_FLAGS=$EXTRA_FLAGS"
+echo "  EXTRA_FLAGS=$EXTRA_FLAGS_TEXT"
 echo "  SLURM_JOB_ID=$SLURM_JOB_ID"
 echo "  HOSTNAME=$(hostname)"
 echo "=========================================="
@@ -178,12 +179,12 @@ ls -la bin/
 echo ""
 echo "=== Running analysis ==="
 
-if [[ "$EXTRA_FLAGS" == *"--spanet_infer"* ]]; then
-    echo "./bin/runAnalysis -b 518 -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS"
-    ./bin/runAnalysis -b 518 -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER "$EXTRA_FLAGS"
+if [[ "$EXTRA_FLAGS_TEXT" == *"--spanet_infer"* ]]; then
+    echo "./bin/runAnalysis -b 518 -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS_TEXT"
+    ./bin/runAnalysis -b 518 -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER "${EXTRA_FLAGS[@]}"
 else
-    echo "./bin/runAnalysis -j $N_CPUS -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS"
-    ./bin/runAnalysis -j $N_CPUS -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER "$EXTRA_FLAGS"
+    echo "./bin/runAnalysis -j $N_CPUS -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER $EXTRA_FLAGS_TEXT"
+    ./bin/runAnalysis -j $N_CPUS -i config.json -n $OUTPUTFILE --outdir $OUTPUTDIR --ana $ANALYSIS --run_number $RUN_NUMBER "${EXTRA_FLAGS[@]}"
 fi
 
 ANALYSIS_STATUS=$?
@@ -205,7 +206,9 @@ echo ""
 echo "=== Validating output ==="
 
 # Determine output file path
-if [[ "$EXTRA_FLAGS" == *"--spanet_training"* ]]; then
+if [[ "$EXTRA_FLAGS_TEXT" == *"--btag_eff"* ]]; then
+    OUTPUT_ROOT_FILE="$OUTPUTDIR/${OUTPUTFILE}_btag_eff.root"
+elif [[ "$EXTRA_FLAGS_TEXT" == *"--spanet_training"* ]]; then
     OUTPUT_ROOT_FILE="$OUTPUTDIR/${OUTPUTFILE}_spanet_training_data.root"
 else
     OUTPUT_ROOT_FILE="$OUTPUTDIR/$OUTPUTFILE.root"
@@ -223,7 +226,18 @@ echo "Output file found: $OUTPUT_ROOT_FILE ($(du -h $OUTPUT_ROOT_FILE | cut -f1)
 
 echo ""
 echo "=== Validating output ROOT file ==="
-validate_root_file "$OUTPUT_ROOT_FILE" "Events"
+if [[ "$EXTRA_FLAGS_TEXT" == *"--btag_eff"* ]]; then
+    python3 - << EOF
+import sys
+import ROOT
+f = ROOT.TFile.Open("$OUTPUT_ROOT_FILE")
+if not f or f.IsZombie() or not f.Get("btag_b_den"):
+    sys.exit(1)
+f.Close()
+EOF
+else
+    validate_root_file "$OUTPUT_ROOT_FILE" "Events"
+fi
 if [ $? -ne 0 ]; then
     echo "ERROR: Output ROOT file validation failed"
     echo "Removing corrupted file: $OUTPUT_ROOT_FILE"

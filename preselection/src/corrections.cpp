@@ -1,5 +1,7 @@
 #include "corrections.h"
 
+#include <stdexcept>
+
 /*
 ############################################
 B-TAGGING WORKING POINTS
@@ -7,15 +9,24 @@ B-TAGGING WORKING POINTS
 */
 
 RVec<bool> isbTagLoose(std::string year, RVec<float> btag_score) {
-    return btag_score > btaggingWPMap_Loose.at(year);
+    const auto threshold = btaggingWPMap_Loose.find(year);
+    if (threshold == btaggingWPMap_Loose.end())
+        throw std::runtime_error("No UParTAK4 loose working point is configured for year " + year);
+    return btag_score > threshold->second;
 }
 
 RVec<bool> isbTagMedium(std::string year, RVec<float> btag_score) {
-    return btag_score > btaggingWPMap_Medium.at(year);
+    const auto threshold = btaggingWPMap_Medium.find(year);
+    if (threshold == btaggingWPMap_Medium.end())
+        throw std::runtime_error("No UParTAK4 medium working point is configured for year " + year);
+    return btag_score > threshold->second;
 }
 
 RVec<bool> isbTagTight(std::string year, RVec<float> btag_score) {
-    return btag_score > btaggingWPMap_Tight.at(year);
+    const auto threshold = btaggingWPMap_Tight.find(year);
+    if (threshold == btaggingWPMap_Tight.end())
+        throw std::runtime_error("No UParTAK4 tight working point is configured for year " + year);
+    return btag_score > threshold->second;
 }
 
 // /*

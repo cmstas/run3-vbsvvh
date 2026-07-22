@@ -13,7 +13,10 @@
 
 #include "spanet.h"
 #include "spanet_run2.h"
+#include "btag_efficiencies.h"
 
+#include <optional>
+#include <set>
 
 
 struct MyArgs : public argparse::Args {
@@ -32,6 +35,8 @@ struct MyArgs : public argparse::Args {
     bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
     bool &storeHLT = flag("store_hlt", "Store HLT trigger branches in output").set_default(false);
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
+    bool &makeBTagEfficiencies = flag("btag_eff", "Write selected-AK4 b-tag efficiency histograms (MC only)").set_default(false);
+    bool &skipBTagScaleFactors = flag("skip_btag_sf,skip-btag-sf", "Skip b-tag SF application (normally enabled)").set_default(false);
 };
 
 RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSignal, SPANet::SPANetInference *spanet_inference, SPANetRun2::SPANetInference *spanet_inference_run2, bool runSPANetInference = false, bool makeSpanetTrainingdata = false)
@@ -92,12 +97,34 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Create output directory
-    std::string output_dir = setOutputDirectory(args.outdir, args.makeSpanetTrainingdata);
-    
     if (args.run_number != "2" && args.run_number != "3") {
         throw std::runtime_error("Invalid run_number: must be 2 or 3");
     }
+
+    if (args.ana == "all_events" && !args.skipBTagScaleFactors) {
+        throw std::runtime_error(
+            "all_events has no channel-specific b-tag efficiency payload. "
+            "Specify an analysis channel, or rerun with --skip-btag-sf.");
+    }
+
+    // UParTAK4 has no matching fixed-WP calibration for the NanoAODv12
+    // 2022/2023 eras.  Do not derive efficiencies from the unrelated 2024
+    // thresholds used by the legacy selection configuration.
+    std::optional<BTagEfficiencyMetadata> btag_efficiency_metadata;
+    if (args.makeBTagEfficiencies) {
+        btag_efficiency_metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
+        const auto &year = btag_efficiency_metadata->year;
+        if (year == "2022Re-recoBCD" || year == "2022Re-recoE+PromptFG" ||
+            year == "2023PromptC" || year == "2023PromptD") {
+            throw std::runtime_error(
+                "--btag_eff is not supported for " + year +
+                ": UParTAK4 fixed-WP thresholds/SFs are unavailable for NanoAODv12. "
+                "Use a supported tagger with a matched implementation, or run 2024/2025 production.");
+        }
+    }
+
+    // Create output only after validating the requested b-tag workflow.
+    std::string output_dir = setOutputDirectory(args.outdir, args.makeSpanetTrainingdata);
     std::cout << " -> Running analysis for Run " << args.run_number << std::endl;
     
     std::unique_ptr<SPANet::SPANetInference> spanet_inference;
@@ -165,6 +192,11 @@ int main(int argc, char** argv) {
         std::exit(EXIT_FAILURE);
     }
 
+    if (args.makeBTagEfficiencies && isData) {
+        std::cerr << "B-tag efficiencies can only be measured from MC samples" << std::endl;
+        return EXIT_FAILURE;
+    }
+
     bool makeSpanetTrainingdata = args.makeSpanetTrainingdata;
     if (!isSignal) {
         makeSpanetTrainingdata = false; // do not make training data for non-signal samples
@@ -188,7 +220,25 @@ int main(int argc, char** argv) {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
+        if (args.makeBTagEfficiencies) {
+            const int nslots = args.nthread > 1 ? args.nthread : 1;
+            std::cout << " -> Saving raw b-tag efficiency histograms" << std::endl;
+            saveBTagEfficiencyHistograms(df, output_dir, output_file, args.ana,
+                                         btag_efficiency_metadata->year, btag_efficiency_metadata->sample, nslots);
+            return 0;
+        }
+        if (args.skipBTagScaleFactors)
+            std::cout << " -> B-tag SF application disabled by --skip-btag-sf" << std::endl;
+        else
+            std::cout << " -> Applying b-tag SFs" << std::endl;
+        const auto metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
+        const std::set<std::string> supported_btag_years = {
+            "2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"};
+        if (!args.skipBTagScaleFactors && !supported_btag_years.count(metadata.year))
+            throw std::runtime_error(
+                "B-tag SF application is unsupported for " + metadata.year +
+                "; rerun with --skip-btag-sf");
+        df = applyMCWeights(df, args.ana, metadata.year, !args.skipBTagScaleFactors);
     }
 
     Cutflow::Add(df, "After SFs and corrections");
@@ -201,6 +251,7 @@ int main(int argc, char** argv) {
     }
 
     saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput, args.storeHLT);
+    if (!isData) printBTagDiagnostics();
     Cutflow::Print();
 
     return 0;

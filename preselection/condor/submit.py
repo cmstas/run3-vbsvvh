@@ -183,6 +183,12 @@ Examples:
                         help="Only make training data for SPANet (--spanet_training flag)")
     parser.add_argument("--spanet-infer", action="store_true",
                         help="Run SPANet inference (--spanet_infer flag)")
+    parser.add_argument("--btag-eff", action="store_true",
+                        help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
+    parser.add_argument("--store-hlt", "--store_hlt", dest="store_hlt", action="store_true",
+                        help="Store HLT trigger branches in output (--store_hlt flag)")
+    parser.add_argument("--skip-btag-sf", action="store_true",
+                        help="Skip b-tag SF application (normally enabled)")
     return parser.parse_args()
 
 
@@ -408,6 +414,12 @@ def generate_submit_file(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_training"
     if args.spanet_infer:
         extra_flags += " --spanet_infer"
+    if args.btag_eff:
+        extra_flags += " --btag_eff"
+    if args.store_hlt:
+        extra_flags += " --store_hlt"
+    if args.skip_btag_sf:
+        extra_flags += " --skip-btag-sf"
 
     # Arguments passed to executable:
     # USER N_CPUS CONFIG_FILE OUTPUT_NAME ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]
@@ -614,6 +626,12 @@ def monitor_and_resubmit(
 
 def main():
     args = parse_args()
+    if args.btag_eff:
+        if args.sample:
+            print("ERROR: --sample cannot be used with --btag-eff because the final payload requires every configured sample.")
+        else:
+            print("ERROR: Direct Condor --btag-eff production is unsupported; use the year-pure Slurm workflow.")
+        sys.exit(1)
     user = get_user()
 
     # Determine paths
