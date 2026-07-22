@@ -337,11 +337,31 @@ RVec<float> VBSBDTInfer(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet
     }
     auto max_score_idx = std::distance(scores.begin(), std::max_element(scores.begin(), scores.end()));
     if (scores.size() > 0) {
-        return RVec<float>{static_cast<float>(combination_idxs[0][max_score_idx]), 
+        return RVec<float>{static_cast<float>(combination_idxs[0][max_score_idx]),
                          static_cast<float>(combination_idxs[1][max_score_idx]),
                          scores[max_score_idx]};
     }
     return RVec<float>{-1, -1, -1};
+}
+
+// VBS tagging on the subset of jets selected by `isGood`, with the returned pair
+// indices mapped back into the all-jet (NanoAOD Jet_*) frame, so they dereference
+// Jet_pt_<sfx>/Jet_eta/... directly without needing the mask downstream.
+// Returns {jet1_JetIdx, jet2_JetIdx, score}; {-1, -1, -999} if fewer than 2 good jets
+// (score sentinel deliberately outside the BDT output range).
+RVec<float> VBSBDTInferMasked(const RVec<int>& isGood, const RVec<float>& Jet_pt, const RVec<float>& Jet_eta, const RVec<float>& Jet_phi, const RVec<float>& Jet_mass, bool isRun2) {
+    auto idx = ROOT::VecOps::Nonzero(isGood);
+    if (idx.size() < 2) {
+        return RVec<float>{-1, -1, -999};
+    }
+    auto pair = VBSBDTInfer(ROOT::VecOps::Take(Jet_pt, idx), ROOT::VecOps::Take(Jet_eta, idx),
+                            ROOT::VecOps::Take(Jet_phi, idx), ROOT::VecOps::Take(Jet_mass, idx), isRun2);
+    if (pair[0] < 0) {
+        return RVec<float>{-1, -1, -999};
+    }
+    return RVec<float>{static_cast<float>(idx[static_cast<size_t>(pair[0])]),
+                       static_cast<float>(idx[static_cast<size_t>(pair[1])]),
+                       pair[2]};
 }
 
 /*

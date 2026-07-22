@@ -252,6 +252,19 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
             df = df.Define("njet_" + sfx, "Sum(Jet_isGood_" + sfx + ")");
         }
     }
+    // Nominal + per-variation masks for the non-FJ-cleaned collection, used by
+    // VBSTagging in channels that tag on "jetNoFJClean" (1lep_2FJ). No FJ cleaning to
+    // re-evaluate, so the mask is just the pt-varied good-jet expression + veto map.
+    // The Jet_ prefix means the masks are written to the output (snapshot keeps all
+    // Jet_* columns), mirroring Jet_isGood / Jet_isGood_<sfx> for the cleaned set.
+    else if (affix == "jetNoFJClean") {
+        df = df.Define("Jet_isGoodNoFJClean", "_good_ak4jets");
+        for (const auto& sfx : activeKinVariations(df)) {
+            df = df.Define("Jet_isGoodNoFJClean_" + sfx,
+                           ak4GoodJetSelectionExpr("Jet_pt_" + sfx) + " && !Jet_vetoMap");
+            df = df.Define("njetNoFJClean_" + sfx, "Sum(Jet_isGoodNoFJClean_" + sfx + ")");
+        }
+    }
     return df;
 }
 
@@ -290,25 +303,51 @@ RNode AK8JetsSelection(RNode df_)
 }
 
 // Perform VBS jet tagging via VBSBDTInfer and compute VBS pair kinematics
-// Note this requires at least 2 jets (i.e., applies a njet >= 2 filter)
+// The nominal or a variation with < 2 taggable jets gets sentinel values instead (indices -1, score/kinematics -999).
 RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 {
-    return df_.Filter("n" + jetCollectionName + " >= 2", "At-least 2 overlap-removed (against FJ) jets")
+    // All-jet-level mask stem for the tagging collection. The per-variation masks are
+    // defined in AK4JetsSelection for both stems.
+    const bool fjCleaned = (jetCollectionName == "jet");
+    const std::string maskStem = fjCleaned ? "Jet_isGood" : "Jet_isGoodNoFJClean";
+
+    // Continue to store the full four vector of the two VBS candidates when running 
+    // on nominal for backwards compatibility.
+    auto df = df_
         .Define("_vbs_candidate_jet_pairs", VBSBDTInfer, {jetCollectionName + "_pt", jetCollectionName + "_eta", jetCollectionName + "_phi", jetCollectionName + "_mass", "isRun2"})
-        .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])")
+        .Define("vbs_jet1_idx", "static_cast<int>(_vbs_candidate_jet_pairs[0])") // indices in the "good jet" collection
         .Define("vbs_jet2_idx", "static_cast<int>(_vbs_candidate_jet_pairs[1])")
-        .Define("vbs_score", "_vbs_candidate_jet_pairs[2]")
-        .Define("vbs_jet1_pt",   jetCollectionName + "_pt[vbs_jet1_idx]")
-        .Define("vbs_jet1_eta",  jetCollectionName + "_eta[vbs_jet1_idx]")
-        .Define("vbs_jet1_phi",  jetCollectionName + "_phi[vbs_jet1_idx]")
-        .Define("vbs_jet1_mass", jetCollectionName + "_mass[vbs_jet1_idx]")
-        .Define("vbs_jet2_pt",   jetCollectionName + "_pt[vbs_jet2_idx]")
-        .Define("vbs_jet2_eta",  jetCollectionName + "_eta[vbs_jet2_idx]")
-        .Define("vbs_jet2_phi",  jetCollectionName + "_phi[vbs_jet2_idx]")
-        .Define("vbs_jet2_mass", jetCollectionName + "_mass[vbs_jet2_idx]")
-        .Define("vbs_mjj",    "(ROOT::Math::PtEtaPhiMVector(vbs_jet1_pt, vbs_jet1_eta, vbs_jet1_phi, vbs_jet1_mass) + "
-                              "ROOT::Math::PtEtaPhiMVector(vbs_jet2_pt, vbs_jet2_eta, vbs_jet2_phi, vbs_jet2_mass)).M()")
-        .Define("vbs_detajj", "abs(vbs_jet1_eta - vbs_jet2_eta)");
+        .Define("vbs_score", "vbs_jet1_idx >= 0 ? _vbs_candidate_jet_pairs[2] : -999.f")
+        .Define("vbs_jet1_pt",   "vbs_jet1_idx >= 0 ? " + jetCollectionName + "_pt[vbs_jet1_idx]   : -999.f")
+        .Define("vbs_jet1_eta",  "vbs_jet1_idx >= 0 ? " + jetCollectionName + "_eta[vbs_jet1_idx]  : -999.f")
+        .Define("vbs_jet1_phi",  "vbs_jet1_idx >= 0 ? " + jetCollectionName + "_phi[vbs_jet1_idx]  : -999.f")
+        .Define("vbs_jet1_mass", "vbs_jet1_idx >= 0 ? " + jetCollectionName + "_mass[vbs_jet1_idx] : -999.f")
+        .Define("vbs_jet2_pt",   "vbs_jet2_idx >= 0 ? " + jetCollectionName + "_pt[vbs_jet2_idx]   : -999.f")
+        .Define("vbs_jet2_eta",  "vbs_jet2_idx >= 0 ? " + jetCollectionName + "_eta[vbs_jet2_idx]  : -999.f")
+        .Define("vbs_jet2_phi",  "vbs_jet2_idx >= 0 ? " + jetCollectionName + "_phi[vbs_jet2_idx]  : -999.f")
+        .Define("vbs_jet2_mass", "vbs_jet2_idx >= 0 ? " + jetCollectionName + "_mass[vbs_jet2_idx] : -999.f")
+        .Define("vbs_mjj",    "vbs_jet1_idx >= 0 ? (ROOT::Math::PtEtaPhiMVector(vbs_jet1_pt, vbs_jet1_eta, vbs_jet1_phi, vbs_jet1_mass) + "
+                              "ROOT::Math::PtEtaPhiMVector(vbs_jet2_pt, vbs_jet2_eta, vbs_jet2_phi, vbs_jet2_mass)).M() : -999.")
+        .Define("vbs_detajj", "vbs_jet1_idx >= 0 ? abs(vbs_jet1_eta - vbs_jet2_eta) : -999.");
+
+    // Nominal VBS-jet indices in the all-jet (NanoAOD Jet_*) collection, corresponding 
+    // to the same physical jets as vbs_jet1/2_idx; stored so downstream
+    // handles nominal and variations uniformly via Jet_*[vbs_jet*_Jetidx*].
+    df = df.Define("vbs_jet1_Jetidx", "vbs_jet1_idx >= 0 ? static_cast<int>(ROOT::VecOps::Nonzero(" + maskStem + ")[vbs_jet1_idx]) : -1")
+           .Define("vbs_jet2_Jetidx", "vbs_jet2_idx >= 0 ? static_cast<int>(ROOT::VecOps::Nonzero(" + maskStem + ")[vbs_jet2_idx]) : -1");
+
+    // Per-variation VBS tagging: re-run the BDT on the variation's good-jet set with its
+    // varied pt/mass (eta/phi are JEC-invariant). Only the two all-jet-frame indices and
+    // the score are stored per variation — downstream can rebuild the kinematics from
+    // Jet_*[vbs_jet*_Jetidx*], keeping the branch count small.
+    for (const auto& sfx : activeKinVariations(df)) {
+        df = df.Define("_vbs_pair_" + sfx, VBSBDTInferMasked,
+                       {maskStem + "_" + sfx, "Jet_pt_" + sfx, "Jet_eta", "Jet_phi", "Jet_mass_" + sfx, "isRun2"});
+        df = df.Define("vbs_jet1_Jetidx_" + sfx, "static_cast<int>(_vbs_pair_" + sfx + "[0])");
+        df = df.Define("vbs_jet2_Jetidx_" + sfx, "static_cast<int>(_vbs_pair_" + sfx + "[1])");
+        df = df.Define("vbs_score_" + sfx, "_vbs_pair_" + sfx + "[2]");
+    }
+    return df;
 }
 
 
