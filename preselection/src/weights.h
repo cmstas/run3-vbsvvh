@@ -204,17 +204,16 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptD",           {"NUM_TightPFIso_DEN_TightID",          15.1}},
         {"2024Prompt",            {"NUM_TightPFIso_DEN_TightID",          10.1}},
     }}},
-    // Trigger SF (not yet moved to per-channel)
     {"weight_muon_trigger", {{
-        {"2016preVFP",            {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight", 15.1}},
-        {"2016postVFP",           {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight", 15.1}},
-        {"2017",                  {"NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
-        {"2018",                  {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
-        {"2022Re-recoBCD",        {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
-        {"2022Re-recoE+PromptFG", {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
-        {"2023PromptC",           {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
-        {"2023PromptD",           {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               15.1}},
-        {"2024Prompt",            {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               10.1}},
+        {"2016preVFP",            {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",  30.0}},
+        {"2016postVFP",           {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",  30.0}},
+        {"2017",                  {"NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}},
+        {"2018",                  {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}},
+        {"2022Re-recoBCD",        {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}},
+        {"2022Re-recoE+PromptFG", {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}},
+        {"2023PromptC",           {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}},
+        {"2023PromptD",           {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}},
+        //{"2024Prompt",            {"NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",               30.0}}, // This key is not in the 2024 json, skipping for now
     }}},
 };
 
