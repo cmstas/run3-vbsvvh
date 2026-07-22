@@ -9,7 +9,7 @@
 # The T2 path uses your lxplus username, which can differ from
 # the HPG login ($USER). Export CERN_USER in your shell or set
 # it on the line below; the expansion aborts the script if unset.
-CERN_USER="${CERN_USER:?spmondal}"
+CERN_USER="${CERN_USER:?Please set CERN_USER to your T2 username}"
 PREFIX="/cmsuf/data/"
 OUT_DIR="/cmsuf/data/store/user/$CERN_USER/vbs_vvh_rdf"
 
