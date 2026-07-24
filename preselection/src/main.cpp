@@ -39,7 +39,7 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
-    df = runPreselection(df, ana, makeSpanetTrainingdata);
+    df = runPreselection(df, ana, makeSpanetTrainingdata, run_number);
     
     if (isSignal) {
         df = GenSelections(df);
@@ -64,8 +64,6 @@ int main(int argc, char** argv) {
     auto args = argparse::parse<MyArgs>(argc, argv);
     std::string input_spec = args.spec;
     std::string output_file = args.name;
-
-    setStoreSysts(!args.no_systs);
 
     if (args.nthread > 64) {
         std::cerr << "Error: nthread cannot exceed 64 (requested: " << args.nthread << ")" << std::endl;
@@ -173,6 +171,8 @@ int main(int argc, char** argv) {
         makeSpanetTrainingdata = false; // do not make training data for non-signal samples
     }
 
+    setStoreSysts(isSignal);
+
     // Define metadata
     auto df = defineMetadata(df_, isData);
 
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
         std::cout << " -> Running MC analysis" << std::endl;
         df = applyMCCorrections(df);
         df = runAnalysis(df, args.ana, args.run_number, isSignal, spanet_inference.get(), spanet_inference_run2.get(), args.runSPANetInference, makeSpanetTrainingdata);
-        df = applyMCWeights(df);
+        df = applyMCWeights(df, isSignal);
     }
 
     Cutflow::Add(df, "After SFs and corrections");

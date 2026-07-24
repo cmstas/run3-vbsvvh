@@ -282,7 +282,10 @@ RNode AK4JetProperties(RNode df_)
 RNode AK8JetsSelection(RNode df_)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
-                  .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"));
+                  .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"))
+                  .Define("FatJet_globalParT3_mass", "FatJet_globalParT3_massCorrX2p * FatJet_mass * (1 - FatJet_rawFactor)")
+		          .Define("FatJet_HvsQCD", "FatJet_globalParT3_Xbb / (FatJet_globalParT3_Xbb + FatJet_globalParT3_QCD)")
+                  .Define("FatJet_VvsQCD", "(FatJet_globalParT3_Xqq/3 + FatJet_globalParT3_Xcs) / (FatJet_globalParT3_Xqq/3 + FatJet_globalParT3_Xcs + FatJet_globalParT3_QCD)");
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -353,7 +356,7 @@ RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 
 
 ///////////////// Main channel selection block /////////////////
-RNode runPreselection(RNode df_, std::string channel, bool noCut)
+RNode runPreselection(RNode df_, std::string channel, bool noCut, std::string run_number)
 {
 
     Cutflow::Add(df_, "All events");
@@ -489,14 +492,16 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        df = TriggerSelections(df, trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
         df = definePerVariationPassFlags(df, "0lep_3FJ", [](const std::string& sfx){
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
-            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " == 3)";
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " >= 3)";
         });
         df = df.Filter(orPassExpr(df, "0lep_3FJ"), "C2: 0lep_3FJ");
+
+        Cutflow::Add(df, "C2: 0 lepton + 3 fatjet selection");
     }
 
     // 1lep_1FJ — fatjet + njet cuts must combine inside a single per-variation pass flag,
@@ -511,8 +516,11 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+        df = df.Define("nElectron_Tight", "Sum(electron_isTight)")
+            .Define("nMuon_Tight", "Sum(muon_isTight)");
+
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
         Cutflow::Add(df, "C2: 1-lepton selection");
 
@@ -522,12 +530,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             return "(" + fj + " == 1) && (" + j + " >= 4)";
         });
         df = df.Filter(orPassExpr(df, "1lep_1FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
     }
 
     // 1lep_2FJ — same caveat as 1lep_1FJ (C3 + C4 collapsed).
     else if (channel == "1lep_2FJ"){
 
-        df = VBSTagging(df, "jetNoFJClean");
+        df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_singlelep);
@@ -548,6 +557,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
             return "(" + fj + " >= 2) && (" + j + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "1lep_2FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
+
     }
 
     // 2lepSS
@@ -629,5 +640,6 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut)
         );
     }
 
+    df = df.Filter("weight < 10000", "C99: weight sanity check");
     return df;
 }

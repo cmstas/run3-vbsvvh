@@ -48,7 +48,8 @@ const std::unordered_map<std::string, correction::CorrectionSet> pileupScaleFact
     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/puWeights.json.gz")},
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-23CSep23-Summer23-NanoAODv12/latest/puWeights.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/puWeights.json.gz")},
-    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/puWeights_BCDEFGHI.json.gz")}
+    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/puWeights_BCDEFGHI.json.gz")},
+    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-25Prompt-Summer24-NanoAODv15/latest/puWeights_2025pp_Golden_Summer24_25ns_69200ub.json.gz")}
 };
 const std::unordered_map<std::string, std::string> pileupScaleFactors_yearmap = {
     {"2016preVFP", "Collisions16_UltraLegacy_goldenJSON"},
@@ -59,9 +60,10 @@ const std::unordered_map<std::string, std::string> pileupScaleFactors_yearmap = 
     {"2022Re-recoE+PromptFG", "Collisions2022_359022_362760_eraEFG_GoldenJson"},
     {"2023PromptC", "Collisions2023_366403_369802_eraBC_GoldenJson"},
     {"2023PromptD", "Collisions2023_369803_370790_eraD_GoldenJson"},
-    {"2024Prompt", "Collisions24_BCDEFGHI_goldenJSON"}
+    {"2024Prompt", "Collisions24_BCDEFGHI_goldenJSON"},
+    {"2025Prompt", "Collisions25_goldenJSON"}
 };
-RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df);
+RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
 // REMOVE PILEUP ID SINCE NO LONGER NEEDED FOR PUPPI
 
@@ -79,7 +81,8 @@ const std::unordered_map<std::string, correction::CorrectionSet> muonScaleFactor
     {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/muon_Z.json.gz")},
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-23CSep23-Summer23-NanoAODv12/latest/muon_Z.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/muon_Z.json.gz")},
-    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/muon_Z.json.gz")}
+    {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/muon_Z.json.gz")},
+    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-25Prompt-Summer24-NanoAODv15/latest/muon_Z.json.gz")}
 };
 
 const std::unordered_map<std::string, std::string> muonIDScaleFactors_yearmap = {
@@ -91,9 +94,10 @@ const std::unordered_map<std::string, std::string> muonIDScaleFactors_yearmap = 
     {"2022Re-recoE+PromptFG", "NUM_TightID_DEN_TrackerMuons"},
     {"2023PromptC", "NUM_TightID_DEN_TrackerMuons"},
     {"2023PromptD", "NUM_TightID_DEN_TrackerMuons"},
-    {"2024Prompt", "NUM_TightID_DEN_TrackerMuons"}
+    {"2024Prompt", "NUM_TightID_DEN_TrackerMuons"},
+    {"2025Prompt", "NUM_TightID_DEN_TrackerMuons"}
 };
-RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
+RNode applyMuonIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
 const std::unordered_map<std::string, std::string> muonRecoScaleFactors_yearmap = {
     {"2016preVFP", "NUM_TightRelIso_DEN_TightIDandIPCut"},
@@ -104,9 +108,10 @@ const std::unordered_map<std::string, std::string> muonRecoScaleFactors_yearmap 
     {"2022Re-recoE+PromptFG", "NUM_TightPFIso_DEN_TightID"},
     {"2023PromptC", "NUM_TightPFIso_DEN_TightID"},
     {"2023PromptD", "NUM_TightPFIso_DEN_TightID"},
-    {"2024Prompt", "NUM_TightPFIso_DEN_TightID"}
+    {"2024Prompt", "NUM_TightPFIso_DEN_TightID"},
+    {"2025Prompt", "NUM_TightPFIso_DEN_TightID"}
 };
-RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
+RNode applyMuonRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
 const std::unordered_map<std::string, std::string> muonTriggerScaleFactors_yearmap = {
     {"2016preVFP", "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
@@ -117,9 +122,10 @@ const std::unordered_map<std::string, std::string> muonTriggerScaleFactors_yearm
     {"2022Re-recoE+PromptFG", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
     {"2023PromptC", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
     {"2023PromptD", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
-    {"2024Prompt", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"}
+    {"2024Prompt", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"},
+    {"2025Prompt", "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight"}
 };
-RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df);
+RNode applyMuonTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_muon, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
 /*
 ############################################
@@ -148,8 +154,8 @@ const std::unordered_map<std::string, std::string> electronScaleFactors_yearmap 
     {"2023PromptD", "Electron-ID-SF"}
     // {"2024Prompt", "Electron-ID-SF"}
 };
-RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df);
-RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df);
+RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
+RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
 const std::unordered_map<std::string, correction::CorrectionSet> electronTriggerScaleFactors = {
     {"2022Re-recoBCD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22CDSep23-Summer22-NanoAODv12/latest/electronHlt.json.gz")},
@@ -163,7 +169,7 @@ const std::unordered_map<std::string, std::string> electronTriggerScaleFactors_y
     {"2023PromptC", "Electron-HLT-SF"},
     {"2023PromptD", "Electron-HLT-SF"}
 };
-RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df);
+RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
 /*
 ############################################
@@ -211,13 +217,13 @@ RNode applyEWKCorrections(CorrectionSet cset_ewk, RNode df);
 const auto cset_ewk = *CorrectionSet::from_file("corrections/scalefactors/ewk/EWK.json");
 
 RNode applyL1PreFiringReweighting(RNode df);
-RNode applyPSWeight_FSR(RNode df);
-RNode applyPSWeight_ISR(RNode df);
-RNode applyLHEScaleWeight_muF(RNode df);
-RNode applyLHEScaleWeight_muR(RNode df);
+RNode applyPSWeight_FSR(RNode df, bool doVariations);
+RNode applyPSWeight_ISR(RNode df, bool doVariations);
+RNode applyLHEScaleWeight_muF(RNode df, bool doVariations);
+RNode applyLHEScaleWeight_muR(RNode df, bool doVariations);
 RNode applyLHEWeights_pdf(RNode df);
 
 RNode applyDataWeights(RNode df);
-RNode applyMCWeights(RNode df);
+RNode applyMCWeights(RNode df, bool doVariations);
 
 #endif //WEIGHTS

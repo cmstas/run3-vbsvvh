@@ -1,8 +1,23 @@
 validation/
+**/CMSSW*
+env/
+output/
+plotter
+
+datacard/*
+!datacard/datacard.py
+!datacard/make_datacards.sh
+!datacard/run.sh
+!datacard/table.py
+
+AN-26-009
+junk/
+postprocess/
 
 .vscode/
 .DS_Store
 
+*.png
 *.log
 *.pyc
 *.pyo
@@ -39,3 +54,4 @@ __pycache__/
 *.rar
 *.min.js
 *.map
+*.ipynb

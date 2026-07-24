@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "QCD-4Jets_Bin-HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep3FJ/QCD-4Jets_Bin-HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2024Prompt",
+                "type": "QCD",
+                "xsec": 883.7,
+                "lumi": 282.96000000000004,
+                "sumw": 1310016603143.1812,
+                "shortname": "QCD-4Jets_Bin-HT-1000to1200",
+                "do_ewk_corr": 0
+            }
+        }
+    }
+}
