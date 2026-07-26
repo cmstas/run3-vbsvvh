@@ -435,7 +435,7 @@ RNode applyL1PreFiringReweighting(RNode df){
 
 RNode applyPSWeight_FSR(RNode df, bool doVariations) {
     if (!doVariations) {
-        return df.Define("weight_PSFSR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        return df.Define("weightsyst_PSFSR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
     auto eval_correction = [] (const RVec<float> PSWeight) {
         return RVec<float>{1., PSWeight[1], PSWeight[3]};
@@ -445,7 +445,7 @@ RNode applyPSWeight_FSR(RNode df, bool doVariations) {
 
 RNode applyPSWeight_ISR(RNode df, bool doVariations) {
     if (!doVariations) {
-        return df.Define("weight_PSISR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        return df.Define("weightsyst_PSISR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
     auto eval_correction = [] (const RVec<float> PSWeight) {
         return RVec<float>{1., PSWeight[0], PSWeight[2]};
@@ -455,7 +455,7 @@ RNode applyPSWeight_ISR(RNode df, bool doVariations) {
 
 RNode applyLHEScaleWeight_muF(RNode df, bool doVariations) {
     if (!doVariations) {
-        return df.Define("weight_muF", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        return df.Define("weightsyst_muF", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
     auto eval_correction = [] (const RVec<float> LHEScaleWeight) {
         return RVec<float>{1., LHEScaleWeight[5], LHEScaleWeight[3]};
@@ -465,7 +465,7 @@ RNode applyLHEScaleWeight_muF(RNode df, bool doVariations) {
 
 RNode applyLHEScaleWeight_muR(RNode df, bool doVariations) {
     if (!doVariations) {
-        return df.Define("weight_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
+        return df.Define("weightsyst_muR", [] () { return RVec<float>{1.f, 1.f, 1.f}; }, {});
     }
     auto eval_correction = [] (const RVec<float> LHEScaleWeight) {
         return RVec<float>{1., LHEScaleWeight[7], LHEScaleWeight[1]};

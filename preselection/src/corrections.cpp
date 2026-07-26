@@ -90,7 +90,7 @@ const std::map<std::string, EraJERC>& eraJERCTable() {
         // L2L3Residual payloads had not actually been updated (JEC tags bumped to V5/V3 with the fix).
         {"2024Prompt",           {"Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15", "2026-07-16", "Summer24Prompt24_V5",        "Summer24Prompt24_JRV2",           "2024"}},
         // 2025 data + Summer24 MC — JME-recommended Summer24Prompt25 (JEC + JER + JES self-contained).
-        {"2025",                 {"Run3-25Prompt-Summer24-NanoAODv15",                    "2026-07-16", "Summer24Prompt25_V3",        "Summer24Prompt25_JRV2",           "2025"}},
+        {"2025Prompt",                 {"Run3-25Prompt-Summer24-NanoAODv15",                    "2026-07-16", "Summer24Prompt25_V3",        "Summer24Prompt25_JRV2",           "2025"}},
     };
     return table;
 }
@@ -186,7 +186,7 @@ const CSetMap& btaggingCorrections() {
             {"2023PromptC",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
             {"2023PromptD",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
             {"2024Prompt",            "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2025",                  "Run3-25Prompt-Summer24-NanoAODv15"},
+            {"2025Prompt",            "Run3-25Prompt-Summer24-NanoAODv15"},
         };
         CSetMap out;
         for (const auto& [year, dir] : eras)
@@ -236,7 +236,9 @@ const CSetMap& jetVetoMaps() {
         {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/jetvetomaps.json.gz")},
         {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23CSep23-Summer23-NanoAODv12/latest/jetvetomaps.json.gz")},
         {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/jetvetomaps.json.gz")},
-        {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jetvetomaps.json.gz")}
+        {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/jetvetomaps.json.gz")},
+        {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-25Prompt-Winter25-NanoAODv15/latest/jetvetomaps.json.gz")}
+
     };
     return m;
 }
@@ -250,7 +252,8 @@ const StrMap jetVetoMap_names = {
     {"2022Re-recoE+PromptFG", "Summer22EE_23Sep2023_RunEFG_V1"},
     {"2023PromptC", "Summer23Prompt23_RunC_V1"},
     {"2023PromptD", "Summer23BPixPrompt23_RunD_V1"},
-    {"2024Prompt", "Summer24Prompt24_RunBCDEFGHI_V1"}
+    {"2024Prompt", "Summer24Prompt24_RunBCDEFGHI_V1"},
+    {"2025Prompt", "Winter25Prompt25_RunCDEFG_V1"}
 };
 
 // --- Electron scale & smearing ---------------------------------------------------------
@@ -264,7 +267,8 @@ const CSetMap& electronSSCorrections() {
         {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
         {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23CSep23-Summer23-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
         {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
-        {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")}
+        {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")},
+        {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-25Prompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")}
     };
     return m;
 }
@@ -278,21 +282,21 @@ const CSetMap& electronSSCorrections() {
     {"2016preVFP", 0.0f}, {"2016postVFP", 0.0f}, {"2017", 0.0f}, {"2018", 0.0f},
     {"2022Re-recoBCD", 0.0f}, {"2022Re-recoE+PromptFG", 0.0f},
     {"2023PromptC", 0.0f}, {"2023PromptD", 0.0f},
-    {"2024Prompt", 0.0f}
+    {"2024Prompt", 0.0f}, {"2025Prompt", 0.0f}
 };
 
 [[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_central = {
     {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
     {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
     {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}
+    {"2024Prompt", 1.0f}, {"2025Prompt", 1.0f}
 };
 
 [[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_sigmaRel_central = {
     {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
     {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
     {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}
+    {"2024Prompt", 1.0f}, {"2025Prompt", 1.0f}
 };
 
 } // anonymous namespace

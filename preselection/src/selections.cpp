@@ -488,6 +488,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, std::string ru
 
     // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
+        df = applyQCDScoreResampling(df, run_number);
 
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
