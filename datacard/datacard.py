@@ -11,7 +11,7 @@ from scipy.stats import gamma
 # The systematics definition lives with the code that writes the predictions, so
 # the branch list and nuisance naming cannot drift between the two.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "abcd"))
-from systematics import ACCEPTANCE_ONLY, SYST_WEIGHTS, nuisance_name, ratio_columns
+from systematics import SYST_WEIGHTS, jec_nuisance_name, nuisance_name, ratio_columns
 
 
 def get_poisson_uncertainty(n):
@@ -55,26 +55,21 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
     Only signal is affected: the background rate is a rateParam driven from the
     data control regions, so it carries no MC systematic.
 
-    kappa is the varied-over-nominal yield ratio in the region. For the theory
-    variations the inclusive ratio over the whole sample is divided out, leaving
-    an acceptance-only effect (the signal cross section is the POI, so its
-    normalization must not be constrained here too).
+    kappa is the raw varied-over-nominal yield ratio in the region, with no
+    inclusive normalization divided out: every variation carries its full effect,
+    normalization and acceptance together. This matches the convention of the
+    Run 2 semileptonic datacard script, which took the plain per-region ratio for
+    both the weight and the JES/JER systematics. (That script also symmetrized to
+    a single ``1 + max(|dn|, |up|)`` lnN; we keep the asymmetric dn/up form, which
+    combine reads natively and which preserves the two directions.)
 
     Returns ``{nuisance: {region: (kappa_dn, kappa_up)}}`` for every systematic
     whose columns are present, including ones that evaluate to exactly 1.
     """
     kappas = {}
-    w_all = sig_df["weight"].to_numpy()
-    total_nom = w_all.sum()
 
     for branch in available_systematics(sig_df):
         up_col, dn_col = ratio_columns(branch)
-
-        # Inclusive normalization for the acceptance-only (theory) variations.
-        norm_up = norm_dn = 1.0
-        if branch in ACCEPTANCE_ONLY and total_nom > 0:
-            norm_up = (w_all * sig_df[up_col].to_numpy()).sum() / total_nom
-            norm_dn = (w_all * sig_df[dn_col].to_numpy()).sum() / total_nom
 
         per_region = {}
         for region_id, df_r in region_dfs.items():
@@ -85,10 +80,6 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
                 continue
             k_up = (w * df_r[up_col].to_numpy()).sum() / nom
             k_dn = (w * df_r[dn_col].to_numpy()).sum() / nom
-            if norm_up > 0:
-                k_up /= norm_up
-            if norm_dn > 0:
-                k_dn /= norm_dn
             if not (np.isfinite(k_up) and np.isfinite(k_dn) and k_up > 0 and k_dn > 0):
                 per_region[region_id] = None
                 continue
@@ -104,6 +95,85 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
 
         kappas[nuisance_name(branch, proc_name, scan_name)] = per_region
 
+    return kappas
+
+
+def _jec_region_kappas(nom, sub, region_final_cuts):
+    """Per-region (kappa_dn, kappa_up) for one JES/JER source from its up/dn subframes.
+
+    ``sub`` maps 'up'/'dn' -> the variation's signal frame (already restricted to any
+    year). A missing direction contributes a ratio of 1 (no variation) on that side.
+    """
+    per_region = {}
+    for region_id, cut in region_final_cuts.items():
+        nom_y = nom.query(cut)["weight"].sum()
+        if nom_y <= 0:
+            per_region[region_id] = None
+            continue
+
+        def _region_yield(direction):
+            s = sub.get(direction)
+            if s is None or len(s) == 0:
+                return nom_y  # missing direction -> no variation on that side
+            return s.query(cut)["weight"].sum()
+
+        k_up = _region_yield("up") / nom_y
+        k_dn = _region_yield("dn") / nom_y
+        if not (np.isfinite(k_up) and np.isfinite(k_dn) and k_up > 0 and k_dn > 0):
+            per_region[region_id] = None
+            continue
+        per_region[region_id] = (k_dn, k_up)
+    return per_region
+
+
+def compute_jec_kappas(sig_df, region_final_cuts, proc_name):
+    """lnN kappas for the JES/JER (kinematic) variations, per ABCD region, for signal.
+
+    Each variation is a separate signal event set carried in the ``variation`` column
+    (candidate post-processor + per-variation inference). The kappa in a region is the
+    varied-over-nominal signal yield there, applying the same region cut to that
+    variation's rows — which carry that variation's own dnn/bdt/candidate scores.
+
+    JES '*Year' regrouped sources are decorrelated per data-taking year when a ``year``
+    column is present (one nuisance per year, restricted to that year's events); all
+    other JES sources and JER correlate across years. Returns
+    ``{nuisance: {region: (kappa_dn, kappa_up)}}``.
+    """
+    if "variation" not in sig_df.columns:
+        return {}
+    varcol = sig_df["variation"].astype(str)
+    nom = sig_df[varcol == "nominal"]
+    if len(nom) == 0:
+        return {}
+    has_year = "year" in sig_df.columns
+
+    # Group variation labels into sources by stripping the Up/Dn direction.
+    sources = {}
+    for v in set(varcol.unique()):
+        if v == "nominal":
+            continue
+        if v.endswith("Up"):
+            sources.setdefault(v[:-2], {})["up"] = v
+        elif v.endswith("Dn"):
+            sources.setdefault(v[:-2], {})["dn"] = v
+
+    kappas = {}
+    for source, ud in sorted(sources.items()):
+        stem = source[3:] if source.startswith("jes") else source
+        per_year = stem.endswith("Year") and has_year
+        sub_all = {d: sig_df[varcol == v] for d, v in ud.items()}
+
+        year_groups = ([(y, str(y)) for y in sorted(set(nom["year"].astype(str)))]
+                       if per_year else [(None, None)])
+        for year_val, year_tag in year_groups:
+            if year_val is None:
+                nom_g, sub_g = nom, sub_all
+            else:
+                nom_g = nom[nom["year"].astype(str) == year_val]
+                sub_g = {d: s[s["year"].astype(str) == year_val] for d, s in sub_all.items()}
+            per_region = _jec_region_kappas(nom_g, sub_g, region_final_cuts)
+            if any(v is not None for v in per_region.values()):
+                kappas[jec_nuisance_name(source, proc_name, year=year_tag)] = per_region
     return kappas
 
 
@@ -126,6 +196,14 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
     """
     Create a single datacard for a specific scan.
     """
+
+    # The full frame (all variations) drives the JES/JER kappas; the nominal subset
+    # drives the region yields, weight systematics and signal stat uncertainty.
+    full_sig_df = sig_df
+    if "variation" in sig_df.columns:
+        sig_df = sig_df[sig_df["variation"] == "nominal"]
+    if data_df is not None and "variation" in data_df.columns:
+        data_df = data_df[data_df["variation"] == "nominal"]
 
     yields = {scan_name: {}}
     observations = {scan_name: {}}
@@ -153,9 +231,11 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
         ortho_str = " and ".join([f"not ({cut})" for cut in orthogonality_cuts]) + " and "
 
     region_sig_dfs = {}
+    region_final_cuts = {}
     for region_id in ["A", "B", "C", "D"]:
         final_cut = ortho_str + cuts_dict[region_id]
-        
+        region_final_cuts[region_id] = final_cut
+
         # Data
         obs_val = get_data_yields_from_df(data_df, final_cut)
         if region_id == "A" and not unblind:
@@ -215,10 +295,10 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
         sigB_err = poisson_errs[scan_name]['sig_B']
         sigC_err = poisson_errs[scan_name]['sig_C']
         sigD_err = poisson_errs[scan_name]['sig_D']
-        f.write(f"{f'CMS_{process_name}_{scan_name}_signal_RegionA':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{sigA_err:<20.5f}{'-':<20}{'-':<20}{'-':<20}\n")
-        f.write(f"{f'CMS_{process_name}_{scan_name}_signal_RegionB':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{sigB_err:<20.5f}{'-':<20}{'-':<20}\n")
-        f.write(f"{f'CMS_{process_name}_{scan_name}_signal_RegionC':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{'-':<20}{sigC_err:<20.5f}{'-':<20}\n")
-        f.write(f"{f'CMS_{process_name}_{scan_name}_signal_RegionD':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{'-':<20}{'-':<20}{sigD_err:<20.5f}\n")
+        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionA':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{sigA_err:<20.5f}{'-':<20}{'-':<20}{'-':<20}\n")
+        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionB':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{sigB_err:<20.5f}{'-':<20}{'-':<20}\n")
+        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionC':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{'-':<20}{sigC_err:<20.5f}{'-':<20}\n")
+        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionD':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{'-':<20}{'-':<20}{sigD_err:<20.5f}\n")
 
         # Weight-based systematics, signal only (the background rate is a
         # rateParam measured from the data control regions). Asymmetric lnN is
@@ -238,6 +318,17 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
             else:
                 print(f"  WARNING: {scan_name}: systematic columns present but no region has a "
                       f"usable signal yield; no weight systematics written")
+
+        # JES/JER (kinematic) systematics, signal only: per-region varied/nominal yield
+        # ratios computed from the per-variation event sets carried in `variation`.
+        jec_kappas = compute_jec_kappas(full_sig_df, region_final_cuts, process_name)
+        for nuisance, per_region in sorted(jec_kappas.items()):
+            cells = []
+            for region_id in ["A", "B", "C", "D"]:
+                kv = per_region.get(region_id)
+                cells.append("-" if kv is None else f"{kv[0]:.4f}/{kv[1]:.4f}")
+            f.write(f"{nuisance:<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}"
+                    f"{cells[0]:<20}{cells[1]:<20}{cells[2]:<20}{cells[3]:<20}\n")
 
         f.write("-" * 150 + "\n")
 

@@ -1,103 +1,66 @@
-"""Reading event columns from ROOT ntuples into flat numpy dicts."""
+"""Reading event columns from candidate post-processor parquet into flat numpy dicts."""
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
-import uproot
+import pyarrow.parquet as pq
 from tqdm import tqdm
 
-from common import (
-    apply_mask,
-    concat_chunks,
-    data_length,
-    evaluate_expression,
-    flatten_cell,
-)
+from common import apply_mask, concat_chunks, data_length, evaluate_expression
 from systematics import SYST_WEIGHTS, ratio_columns
 
 
-def _syst_ratios(values):
-    """Split a length-3 ``[nominal, up, down]`` weight branch into up/down ratios.
+def _read_parquet_frame(path, branches, dataset_idx, sample_idx, variation="nominal"):
+    """Read one candidate post-processor parquet, selecting a single ``variation``.
 
-    The nominal element is already folded into the event weight upstream, so the
-    varied weight is ``weight * element / nominal``. A zero or non-finite nominal
-    would make that meaningless, so those events fall back to a ratio of 1 (no
-    variation) rather than propagating an inf into the yields.
+    The post-processor already pre-splits each systematic into ``<branch>_syst_up`` /
+    ``_dn`` ratio columns, so a requested SYST_WEIGHTS branch maps directly to those two
+    columns (forgiven when absent, e.g. on data). Non-systematic branches must exist —
+    a missing one is a config error and fails loudly, mirroring the ROOT reader. The
+    string ``variation`` column is carried through so predictions record their variation.
     """
-    triplets = np.asarray([np.asarray(v, dtype=np.float64) for v in values])
-    nominal, up, down = triplets[:, 0], triplets[:, 1], triplets[:, 2]
+    available = set(pq.read_schema(path).names)
 
-    safe = np.isfinite(nominal) & (nominal != 0)
-    ratio_up = np.where(safe, up / np.where(safe, nominal, 1.0), 1.0)
-    ratio_dn = np.where(safe, down / np.where(safe, nominal, 1.0), 1.0)
-    return ratio_up, ratio_dn
-
-
-def _read_root_frame(path, branches, dataset_idx, sample_idx):
-    with uproot.open(path) as root_file:
-        tree = root_file["Events"]
-        # Data has no MC weight branches at all, so drop the systematics that are
-        # absent rather than letting uproot raise. Only the systematics are
-        # forgiven: any other missing branch is a config error and must still
-        # fail loudly here rather than silently producing a column-less frame.
-        available = tree.keys()
-        requested = [b for b in branches if b in available or b not in SYST_WEIGHTS]
-        arrays = tree.arrays(requested, library="np")
-
-    if not isinstance(arrays, dict):
-        arrays = {name: arrays[name] for name in arrays.dtype.names}
-
-    columns = {}
-    n_events = None
+    read_cols, missing = [], []
     for branch in branches:
-        if branch not in arrays:
-            continue
-
-        values = np.asarray(arrays[branch])
-
-        # Systematic weights are length-3 vectors; flatten_cell would silently
-        # keep only the nominal, so expand them into ratio columns instead.
         if branch in SYST_WEIGHTS:
-            up_col, dn_col = ratio_columns(branch)
-            ratio_up, ratio_dn = _syst_ratios(values)
-            n_events = len(ratio_up) if n_events is None else min(n_events, len(ratio_up))
-            columns[up_col] = ratio_up
-            columns[dn_col] = ratio_dn
-            continue
-
-        if values.ndim == 1 and values.dtype != object:
-            clean_values = values
+            read_cols.extend(c for c in ratio_columns(branch) if c in available)
+        elif branch in available:
+            read_cols.append(branch)
         else:
-            flat_values = [flatten_cell(v) for v in values]
-            clean_values = np.asarray(flat_values)
+            missing.append(branch)
+    if missing:
+        raise KeyError(f"{path}: required column(s) not found: {sorted(missing)}")
+    # Always carry the variation tag (event-set selection / datacards) and the
+    # data-taking year (per-year JES decorrelation in the datacards) when present.
+    for meta in ("variation", "year"):
+        if meta in available:
+            read_cols.append(meta)
+    read_cols = list(dict.fromkeys(read_cols))
 
-        if n_events is None:
-            n_events = len(clean_values)
-        else:
-            n_events = min(n_events, len(clean_values))
+    table = pq.read_table(path, columns=read_cols)
+    columns = {name: table[name].to_numpy(zero_copy_only=False) for name in table.column_names}
 
-        columns[branch] = clean_values
+    # variation=None keeps every variation (the column is carried through for the
+    # datacards to split on); a string keeps only that variation's event set.
+    if variation is not None and "variation" in columns:
+        keep = columns["variation"].astype(str) == variation
+        columns = {name: vals[keep] for name, vals in columns.items()}
 
-    if n_events is None or n_events == 0:
-        return {
-            "dataset_idx": np.array([], dtype=np.int32),
-            "sample_idx": np.array([], dtype=np.int32),
-        }
-
-    trimmed = {name: np.asarray(vals)[:n_events] for name, vals in columns.items()}
-
-    trimmed["dataset_idx"] = np.full(n_events, dataset_idx, dtype=np.int32)
-    trimmed["sample_idx"] = np.full(n_events, sample_idx, dtype=np.int32)
-    return trimmed
+    n_events = len(next(iter(columns.values()))) if columns else 0
+    columns["dataset_idx"] = np.full(n_events, dataset_idx, dtype=np.int32)
+    columns["sample_idx"] = np.full(n_events, sample_idx, dtype=np.int32)
+    return columns
 
 
-def load_data(paths, features, extra_vars, num_workers=1):
+def load_data(paths, features, extra_vars, num_workers=1, variation="nominal"):
     branches = list(dict.fromkeys(features + extra_vars))
 
-    # Sample name from the directory layout: <sample>/<chunk>/file.root or
-    # <sample>/file.root. Used only as a stable stratification key.
+    def _read(path, br, di, si):
+        return _read_parquet_frame(path, br, di, si, variation)
+
     sample_names = []
     for path in paths:
         p = Path(path)
@@ -116,15 +79,15 @@ def load_data(paths, features, extra_vars, num_workers=1):
         max_workers = min(num_workers, len(indexed_paths))
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             futures = {
-                pool.submit(_read_root_frame, path, branches, dataset_idx, sample_idx): dataset_idx
+                pool.submit(_read, path, branches, dataset_idx, sample_idx): dataset_idx
                 for dataset_idx, path, sample_idx in indexed_paths
             }
-            for future in tqdm(as_completed(futures), total=len(futures), desc="Loading ROOT files"):
+            for future in tqdm(as_completed(futures), total=len(futures), desc="Loading parquet files"):
                 dataset_idx = futures[future]
                 chunks[dataset_idx] = future.result()
     else:
-        for dataset_idx, path, sample_idx in tqdm(indexed_paths, total=len(indexed_paths), desc="Loading ROOT files"):
-            chunks[dataset_idx] = _read_root_frame(path, branches, dataset_idx, sample_idx)
+        for dataset_idx, path, sample_idx in tqdm(indexed_paths, total=len(indexed_paths), desc="Loading parquet files"):
+            chunks[dataset_idx] = _read(path, branches, dataset_idx, sample_idx)
 
     chunks = [chunk for chunk in chunks if chunk is not None]
 

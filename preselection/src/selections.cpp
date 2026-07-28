@@ -498,7 +498,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, std::string ru
 
         df = definePerVariationPassFlags(df, "0lep_3FJ", [](const std::string& sfx){
             const std::string n = sfx.empty() ? "nFatJets" : "nFatJets_" + sfx;
-            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " >= 3)";
+            const std::string j  = sfx.empty() ? "njet"     : "njet_"     + sfx;
+            return "((nMuon_Loose == 0) && (nElectron_Loose == 0)) && (" + n + " >= 3) && (" + j + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "0lep_3FJ"), "C2: 0lep_3FJ");
 

@@ -52,6 +52,7 @@ def infer_on_data(args, parser, run_cfg):
         run_cfg.load_features,
         run_cfg.extra_vars_for("data"),
         num_workers=run_cfg.io_workers,
+        variation=None,  # carry the variation column (data is nominal-only in practice)
     )
     logging.info("Data samples: %d", data_length(real_data))
     real_data = apply_preselection(real_data, run_cfg.preselection, label="Data")
@@ -85,15 +86,18 @@ def main():
         infer_on_data(args, parser, run_cfg)
         return
 
+    # Training uses the nominal event set; inference keeps every JES/JER variation so
+    # the predictions (and hence the datacards) carry per-variation event sets.
+    load_variation = None if args.infer else "nominal"
     logging.info("Loading signal data...")
     sig_data = load_data(
         run_cfg.sample_paths("sig", for_inference=args.infer), run_cfg.load_features, run_cfg.extra_vars_for("sig"),
-        num_workers=run_cfg.io_workers,
+        num_workers=run_cfg.io_workers, variation=load_variation,
     )
     logging.info("Loading background data...")
     bkg_data = load_data(
         run_cfg.sample_paths("bkg", for_inference=args.infer), run_cfg.load_features, run_cfg.extra_vars_for("bkg"),
-        num_workers=run_cfg.io_workers,
+        num_workers=run_cfg.io_workers, variation=load_variation,
     )
 
     logging.info("Signal samples: %d, Background samples: %d", data_length(sig_data), data_length(bkg_data))

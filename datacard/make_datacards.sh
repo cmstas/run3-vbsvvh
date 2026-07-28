@@ -28,7 +28,7 @@ run_datacard() {
                 echo "ERROR: could not find prediction files in $dir for $channel" >&2
                 return 1
         fi
-        echo "Using $dir for $proc"
+        echo "for $proc, data=$data, sig=$sig"
         python3 datacard.py \
                 --sig "$sig" \
                 --data "$data" \

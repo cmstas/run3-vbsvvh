@@ -64,6 +64,13 @@ def main():
     df = read_predictions(args.input).query(presel)
     df_data = read_predictions(args.data).query(presel) if args.data else None
 
+    # ABCD cut optimization runs on the nominal event set only; JES/JER variations, if
+    # present in the predictions, are consumed later by the datacards, not here.
+    if "variation" in df.columns:
+        df = df[df["variation"] == "nominal"]
+    if df_data is not None and "variation" in df_data.columns:
+        df_data = df_data[df_data["variation"] == "nominal"]
+
     previous_cuts = []
     scan_cuts = {}
 
