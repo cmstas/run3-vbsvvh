@@ -1,9 +1,9 @@
-input_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/preselection/latest/"
+input_base_path: "/ceph/cms/store/user/aaarora/vbsvvh/postprocessing/latest/"
 
-sig_path: ["*r2*2fj_sig*/*/*.root"]
-sig_infer_path: ["*r2*2fj_sig*/*1p5*/*.root"]
-bkg_path: ["*r2*2fj_bkg*/*/*.root"]
-data_path: ["*r2*2fj_data*/*/*.root"]
+sig_path: ["*r2*2fj_sig*/*/*.parquet"]
+sig_infer_path: ["*r2*2fj_sig*/*1p5*/*.parquet"]
+bkg_path: ["*r2*2fj_bkg*/*/*.parquet"]
+data_path: ["*r2*2fj_data*/*/*.parquet"]
 
 training_features:
   - lepton_pt: log

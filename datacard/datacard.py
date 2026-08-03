@@ -49,6 +49,42 @@ def available_systematics(df):
     return present
 
 
+LEPTON_TAGS = {"0lep": "ZeroLep", "1lep": "OneLep", "2lep": "TwoLep"}
+
+
+def lepton_tag(process_name):
+    """'ZeroLep' / 'OneLep' / ... from a process name like '0lep_3fj_r2'.
+
+    Only used to name the background process and the ABCD rateParams. Combine
+    treats those as opaque strings, so the tag is cosmetic -- but every card
+    used to say OneLep regardless of channel, which was simply wrong for the
+    0-lepton ones. Anything unrecognised keeps the old OneLep spelling.
+    """
+    return LEPTON_TAGS.get(process_name.split("_")[0], "OneLep")
+
+
+def kappa_cell(kv):
+    """The datacard cell for one region's ``(kappa_dn, kappa_up)``, '-' if absent."""
+    return "-" if kv is None else f"{kv[0]:.4f}/{kv[1]:.4f}"
+
+
+def contributes(per_region):
+    """True if a nuisance has any visible effect across its regions.
+
+    The test is on the *written* cell rather than the raw ratio: a kappa of
+    1.00003 rounds to 1.0000 in the card and is exactly as inert as a true 1.0,
+    so both must be judged the same way.
+
+    Dropping the inert ones matters. A nuisance that is 1.0 in every bin is an
+    exactly flat direction in the likelihood, and once the per-scan cards are
+    combined a single such nuisance makes the covariance matrix singular: HESSE
+    fails (fit status 300, covQual 0), no parameter gets a usable error, and
+    every combine Impacts fit then has no +-sigma to shift to and is dropped.
+    """
+    return any(kappa_cell(kv) not in ("-", "1.0000/1.0000")
+               for kv in per_region.values())
+
+
 def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
     """lnN kappas for every systematic, per ABCD region, for the signal.
 
@@ -64,7 +100,7 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
     combine reads natively and which preserves the two directions.)
 
     Returns ``{nuisance: {region: (kappa_dn, kappa_up)}}`` for every systematic
-    whose columns are present, including ones that evaluate to exactly 1.
+    whose columns are present and which has an effect in at least one region.
     """
     kappas = {}
 
@@ -85,12 +121,13 @@ def compute_syst_kappas(sig_df, region_dfs, proc_name, scan_name):
                 continue
             per_region[region_id] = (k_dn, k_up)
 
-        # A systematic that comes out to exactly 1 everywhere (muR, or the lepton
-        # SFs in a 0-lepton channel) is still written. It constrains nothing in
-        # combine, but keeping it makes the nuisance list identical across cards
-        # and distinguishes "evaluated, no effect" from "never computed" -- an
-        # omitted line cannot tell you which.
-        if not any(v is not None for v in per_region.values()):
+        # A systematic that comes out to 1 in every region (muR, or the lepton
+        # SFs in a 0-lepton channel) is dropped: it constrains nothing, and
+        # leaving it in makes the combined likelihood singular -- see
+        # contributes(). The cost is that an omitted line no longer distinguishes
+        # "evaluated, no effect" from "never computed"; the summary printed after
+        # the card is written records which were dropped.
+        if not contributes(per_region):
             continue
 
         kappas[nuisance_name(branch, proc_name, scan_name)] = per_region
@@ -172,7 +209,7 @@ def compute_jec_kappas(sig_df, region_final_cuts, proc_name):
                 nom_g = nom[nom["year"].astype(str) == year_val]
                 sub_g = {d: s[s["year"].astype(str) == year_val] for d, s in sub_all.items()}
             per_region = _jec_region_kappas(nom_g, sub_g, region_final_cuts)
-            if any(v is not None for v in per_region.values()):
+            if contributes(per_region):
                 kappas[jec_nuisance_name(source, proc_name, year=year_tag)] = per_region
     return kappas
 
@@ -279,7 +316,8 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
         f.write("-" * 150 + "\n")
 
         # Process block
-        bkg_name = f"TotalBkg_OneLep_{process_name}_{scan_name}"
+        lep = lepton_tag(process_name)
+        bkg_name = f"TotalBkg_{lep}_{process_name}_{scan_name}"
         f.write(f"{'bin':<60}{'A':<50}{'B':<50}{'C':<50}{'D':<50}{'A':<20}{'B':<20}{'C':<20}{'D':<20}\n")
         f.write(f"{'process':<60}{bkg_name:<50}{bkg_name:<50}{bkg_name:<50}{bkg_name:<50}{'TotalSig':<20}{'TotalSig':<20}{'TotalSig':<20}{'TotalSig':<20}\n")
         f.write(f"{'process':<60}{'1':<50}{'1':<50}{'1':<50}{'1':<50}{'0':<20}{'0':<20}{'0':<20}{'0':<20}\n")
@@ -295,20 +333,28 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
         sigB_err = poisson_errs[scan_name]['sig_B']
         sigC_err = poisson_errs[scan_name]['sig_C']
         sigD_err = poisson_errs[scan_name]['sig_D']
-        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionA':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{sigA_err:<20.5f}{'-':<20}{'-':<20}{'-':<20}\n")
-        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionB':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{sigB_err:<20.5f}{'-':<20}{'-':<20}\n")
-        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionC':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{'-':<20}{sigC_err:<20.5f}{'-':<20}\n")
-        f.write(f"{f'CMS_{process_name}_{scan_name}_mcstat_RegionD':<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}{'-':<20}{'-':<20}{'-':<20}{sigD_err:<20.5f}\n")
+        # One line per region, touching only that region. A region with no signal
+        # yield gets an error of exactly 1 and is skipped for the same reason the
+        # weight systematics are -- see contributes().
+        dropped = []
+        for i, (region_id, err) in enumerate(
+                zip("ABCD", (sigA_err, sigB_err, sigC_err, sigD_err))):
+            name = f"CMS_{process_name}_{scan_name}_mcstat_Region{region_id}"
+            if f"{err:.5f}" == "1.00000":
+                dropped.append(name)
+                continue
+            cells = ["-"] * 4
+            cells[i] = f"{err:.5f}"
+            f.write(f"{name:<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}"
+                    f"{cells[0]:<20}{cells[1]:<20}{cells[2]:<20}{cells[3]:<20}\n")
 
         # Weight-based systematics, signal only (the background rate is a
         # rateParam measured from the data control regions). Asymmetric lnN is
         # written in combine's "down/up" form.
         syst_kappas = compute_syst_kappas(sig_df, region_sig_dfs, process_name, scan_name)
+        n_inert_weight = len(available_systematics(sig_df)) - len(syst_kappas)
         for nuisance, per_region in sorted(syst_kappas.items()):
-            cells = []
-            for region_id in ["A", "B", "C", "D"]:
-                kv = per_region.get(region_id)
-                cells.append("-" if kv is None else f"{kv[0]:.4f}/{kv[1]:.4f}")
+            cells = [kappa_cell(per_region.get(r)) for r in ["A", "B", "C", "D"]]
             f.write(f"{nuisance:<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}"
                     f"{cells[0]:<20}{cells[1]:<20}{cells[2]:<20}{cells[3]:<20}\n")
         if not syst_kappas:
@@ -323,22 +369,26 @@ def create_abcd_datacard_single(process_name, out_name, scan_name, scan_info, or
         # ratios computed from the per-variation event sets carried in `variation`.
         jec_kappas = compute_jec_kappas(full_sig_df, region_final_cuts, process_name)
         for nuisance, per_region in sorted(jec_kappas.items()):
-            cells = []
-            for region_id in ["A", "B", "C", "D"]:
-                kv = per_region.get(region_id)
-                cells.append("-" if kv is None else f"{kv[0]:.4f}/{kv[1]:.4f}")
+            cells = [kappa_cell(per_region.get(r)) for r in ["A", "B", "C", "D"]]
             f.write(f"{nuisance:<50}{'lnN':<10}{'-':<50}{'-':<50}{'-':<50}{'-':<50}"
                     f"{cells[0]:<20}{cells[1]:<20}{cells[2]:<20}{cells[3]:<20}\n")
 
         f.write("-" * 150 + "\n")
 
         # RateParams
-        f.write(f"A_OneLep_{process_name}_{scan_name} rateParam       A                   {bkg_name}     (@0*@1/@2)\tB_OneLep_{process_name}_{scan_name},C_OneLep_{process_name}_{scan_name},D_OneLep_{process_name}_{scan_name}\n")
+        f.write(f"A_{lep}_{process_name}_{scan_name} rateParam       A                   {bkg_name}     (@0*@1/@2)\tB_{lep}_{process_name}_{scan_name},C_{lep}_{process_name}_{scan_name},D_{lep}_{process_name}_{scan_name}\n")
         for r in ['B', 'C', 'D']:
             o = observations[scan_name][r]
             up, dn = poisson_errs[scan_name][r]
-            f.write(f"{r}_OneLep_{process_name}_{scan_name} rateParam       {r}                   {bkg_name}     {o}\t[{dn},{up}]\n")
+            f.write(f"{r}_{lep}_{process_name}_{scan_name} rateParam       {r}                   {bkg_name}     {o}\t[{dn},{up}]\n")
 
+    if dropped or n_inert_weight:
+        bits = []
+        if n_inert_weight:
+            bits.append(f"{n_inert_weight} weight syst")
+        if dropped:
+            bits.append(", ".join(n.rsplit("_", 1)[-1] for n in dropped))
+        print(f"  {scan_name}: dropped as having no effect: {'; '.join(bits)}")
     print(f"Datacard written to {out_name}")
 
 def create_abcd_datacards(out_name_prefix, scans, sig_df, data_df, process_name, combination, unblind=False):

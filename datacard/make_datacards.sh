@@ -1,6 +1,25 @@
 #!/bin/bash
+#
+# Build the per-scan ABCD datacards.
+#
+# Usage:
+#   ./make_datacards.sh [--unblind]
+#
+#   --unblind   region A takes its real observation instead of being pinned to 1.
+#               Cards go to unblind/<region>/ so the blind ones are never
+#               overwritten. Combine them from there:
+#                   cd unblind && ../combine_cards.sh all
 
 BASE=/home/users/aaarora/phys/run3/cmstas-run3-vbsvvh/abcd/output/
+
+OUTDIR=.
+UNBLIND=()
+if [[ ${1:-} == "--unblind" ]]; then
+        OUTDIR=unblind
+        UNBLIND=(--unblind)
+        echo "Building UNBLINDED cards into $OUTDIR/"
+        mkdir -p "$OUTDIR"
+fi
 
 # Return the highest version_N directory for a given channel, e.g.
 #   latest_version 1LEP_2FJ_RUN3  ->  .../1LEP_2FJ_RUN3/single/version_5
@@ -38,9 +57,9 @@ run_datacard() {
                 "$@"
 }
 
-run_datacard 1LEP_2FJ_RUN3 1lep_2fj_r3/datacard_scan 1lep_2fj_r3 &
-run_datacard 1LEP_2FJ_RUN2 1lep_2fj_r2/datacard_scan 1lep_2fj_r2 &
-run_datacard 1LEP_1FJ_RUN3 1lep_1fj_r3/datacard_scan 1lep_1fj_r3 --combination or &
-run_datacard 1LEP_1FJ_RUN2 1lep_1fj_r2/datacard_scan 1lep_1fj_r2 --combination or &
-run_datacard 0LEP_3FJ_RUN3 0lep_3fj_r3/datacard_scan 0lep_3fj_r3 &
-run_datacard 0LEP_3FJ_RUN2 0lep_3fj_r2/datacard_scan 0lep_3fj_r2 &
+run_datacard 1LEP_2FJ_RUN3 $OUTDIR/1lep_2fj_r3/datacard_scan 1lep_2fj_r3 "${UNBLIND[@]}" &
+run_datacard 1LEP_2FJ_RUN2 $OUTDIR/1lep_2fj_r2/datacard_scan 1lep_2fj_r2 "${UNBLIND[@]}" &
+run_datacard 1LEP_1FJ_RUN3 $OUTDIR/1lep_1fj_r3/datacard_scan 1lep_1fj_r3 --combination or "${UNBLIND[@]}" &
+run_datacard 1LEP_1FJ_RUN2 $OUTDIR/1lep_1fj_r2/datacard_scan 1lep_1fj_r2 --combination or "${UNBLIND[@]}" &
+run_datacard 0LEP_3FJ_RUN3 $OUTDIR/0lep_3fj_r3/datacard_scan 0lep_3fj_r3 "${UNBLIND[@]}" &
+run_datacard 0LEP_3FJ_RUN2 $OUTDIR/0lep_3fj_r2/datacard_scan 0lep_3fj_r2 "${UNBLIND[@]}" &

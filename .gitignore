@@ -6,13 +6,13 @@ plotter
 
 datacard/*
 !datacard/datacard.py
-!datacard/make_datacards.sh
+!datacard/*.sh
 !datacard/run.sh
 !datacard/table.py
 
 AN-26-009
 junk/
-postprocess/
+postprocess
 
 .vscode/
 .DS_Store
