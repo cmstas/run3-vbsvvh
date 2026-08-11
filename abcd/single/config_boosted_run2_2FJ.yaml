@@ -1,6 +1,6 @@
-sig_base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_1FJ_r2_2lep_1FJ_20260615211230_2lep_1FJ/"
-bkg_base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_1FJ_r2_2lep_1FJ_20260615211230_2lep_1FJ/"
-data_base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_1FJ_r2_2lep_1FJ_20260615211230_2lep_1FJ/"
+sig_base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_2FJ_r2_2lep_2FJ_20260615211710_2lep_2FJ"
+bkg_base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_2FJ_r2_2lep_2FJ_20260615211710_2lep_2FJ
+data_base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_2FJ_r2_2lep_2FJ_20260615211710_2lep_2FJ
 
 training_features:
   - lepton_pt: log
