@@ -62,6 +62,34 @@ def threshold_ABCD_control_from_idx(d_idx, v_idx, w, n_dnn, n_vbs):
     D = pre1(pre0)   # dnn <  i, bdt <  j
     return B, C, D
 
+# The signal regions are defined against this benchmark and nothing else.
+# Prediction files may carry several anomalous-coupling points -- the C2V scan
+# behind the exclusion plot scores each of them -- and the region definitions
+# must not drift depending on which points happen to be in the file.
+OPTIMISATION_SIGNAL = "C2V_1p5_C3_1p0"
+
+
+def select_optimisation_signal(df_sig, tag=OPTIMISATION_SIGNAL):
+    """Restrict the optimisation signal to the benchmark coupling point.
+
+    Falls back to the whole frame if the predictions carry no `shortname`
+    column (older files), which is the historical behaviour.
+    """
+    if "shortname" not in df_sig.columns:
+        return df_sig
+    keep = df_sig["shortname"].astype(str).str.contains(tag, regex=False)
+    if keep.all():
+        return df_sig
+    present = sorted(df_sig["shortname"].astype(str).unique())
+    if not keep.any():
+        raise ValueError(
+            f"no signal matching {tag!r} in the predictions; found: {present}")
+    print(f"  [optimisation] restricting signal to {tag}: "
+          f"{int(keep.sum())}/{len(df_sig)} events "
+          f"({len(present)} samples present)")
+    return df_sig[keep]
+
+
 def optimize_cuts(df_sig, df_bkg,
                   var1_col="boosted_h_candidate_score", var2_col="boosted_v_candidate_score", var3_col=None,
                   disco1_col="dnn_0_score", disco2_col="dnn_1_score",
@@ -80,7 +108,11 @@ def optimize_cuts(df_sig, df_bkg,
         must be provided. `min_data_yield` requires each of B, C, D to hold at
         least that (weighted) yield for a cell to be eligible, which suppresses
         cuts driven by empty/low-stat control regions.
+
+    The signal is always restricted to the C2V=1.5 benchmark, see
+    select_optimisation_signal().
     """
+    df_sig = select_optimisation_signal(df_sig)
     if cut_var1_list is None:
         cut_var1_list = np.linspace(0, 1, 21)
     if cut_var2_list is None:
@@ -279,10 +311,13 @@ def plot_background_decorrelation(df_bkg_kin, cut_disco1, cut_disco2, out_dir, s
           (regions B + D), which never contains region A.
 
     df_*_kin frames must already have the kinematic (tagger) preselection applied.
-    Writes: background_abcd_regions_scan_<N>.png and <profile_name>_scan_<N>.png.
+    Writes: background_abcd_regions_scan_<N>.{pdf,png} and <profile_name>_scan_<N>.{pdf,png}.
     """
-    import seaborn as sns
+    import matplotlib.colors
+    import matplotlib.patheffects
     import matplotlib.pyplot as plt
+
+    import style
 
     if use_data_driven:
         if df_data_kin is None:
@@ -291,36 +326,79 @@ def plot_background_decorrelation(df_bkg_kin, cut_disco1, cut_disco2, out_dir, s
         map_df = df_data_kin[~in_A]                                 # blind: no region A
         prof_df = df_data_kin[df_data_kin[disco2_col] < cut_disco2]  # control band B + D
         weights = None                                              # data is unweighted
-        color = "green"
+        cmap = style.CMAP_DATA
+        is_data = True
         src_label = "Data"
-        map_note = " (region A blinded)"
-        prof_note = f" [profile: {disco2_col} < {cut_disco2:.3f} control band]"
+        map_note = "Region A blinded"
+        prof_note = rf"Profile: {style.axis_label(disco2_col)} $<$ {cut_disco2:.3f}"
     else:
         map_df = df_bkg_kin
         prof_df = df_bkg_kin
-        weights = "weight"
-        color = "blue"
+        weights = df_bkg_kin["weight"].to_numpy()
+        cmap = style.CMAP_MC
+        is_data = False
         src_label = "Background MC"
         map_note = ""
         prof_note = ""
 
-    # 2D ABCD map
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.histplot(data=map_df, x=disco1_col, y=disco2_col, weights=weights,
-                 bins=100, color=color, cbar=True, ax=ax)
-    ax.axvline(x=cut_disco1, color="red", linestyle="--", linewidth=2, label=f"{disco1_col} = {cut_disco1}")
-    ax.axhline(y=cut_disco2, color="red", linestyle="--", linewidth=2, label=f"{disco2_col} = {cut_disco2}")
-    ax.set_title(f"{src_label}: ABCD Regions{map_note} (Scan {scan_idx + 1})")
-    plt.savefig(os.path.join(out_dir, f"background_abcd_regions_scan_{scan_idx + 1}.png"))
-    plt.close()
+    xlabel = style.axis_label(disco1_col)
+    ylabel = style.axis_label(disco2_col)
+    scan_label = f"Scan {scan_idx + 1}"
 
-    # profile of mean disco2 in bins of disco1
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.histplot(data=map_df, x=disco1_col, y=disco2_col, weights=weights,
-                 bins=100, color=color, cbar=True, ax=ax)
-    bin_means = prof_df.groupby(pd.cut(prof_df[disco1_col], bins=20), observed=False)[disco2_col].mean()
+    def _draw_plane(ax):
+        counts, xedges, yedges = np.histogram2d(
+            map_df[disco1_col].to_numpy(), map_df[disco2_col].to_numpy(),
+            bins=100, weights=weights,
+        )
+        mesh = ax.pcolormesh(
+            xedges, yedges, np.ma.masked_where(counts <= 0, counts).T,
+            cmap=cmap, norm=matplotlib.colors.LogNorm(), rasterized=True,
+        )
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        return mesh
+
+    # 2D ABCD map, with the four regions marked by the optimized cuts.
+    fig, ax = plt.subplots(figsize=style.FIG_PLANE)
+    mesh = _draw_plane(ax)
+    style.colorbar(fig, mesh, ax, label="Events")
+    ax.axvline(cut_disco1, color=style.SIGNAL_COLOR, linestyle="--", linewidth=2)
+    ax.axhline(cut_disco2, color=style.SIGNAL_COLOR, linestyle="--", linewidth=2)
+    xlo, xhi = ax.get_xlim()
+    ylo, yhi = ax.get_ylim()
+    for name, xpos, ypos in (
+        ("A", 0.5 * (cut_disco1 + xhi), 0.5 * (cut_disco2 + yhi)),
+        ("B", 0.5 * (cut_disco1 + xhi), 0.5 * (ylo + cut_disco2)),
+        ("C", 0.5 * (xlo + cut_disco1), 0.5 * (cut_disco2 + yhi)),
+        ("D", 0.5 * (xlo + cut_disco1), 0.5 * (ylo + cut_disco2)),
+    ):
+        if name == "A" and use_data_driven:
+            continue  # region A is blind; do not imply there is anything to see
+        ax.text(xpos, ypos, name, ha="center", va="center", fontsize=30,
+                fontweight="bold", color=style.DATA_COLOR, zorder=5,
+                path_effects=[matplotlib.patheffects.withStroke(linewidth=3, foreground="white")])
+    # The two cut lines would give indistinguishable legend swatches, so the cut
+    # values go in the annotation block instead.
+    style.annotate(ax, [
+        src_label, style.CONTEXT.extra, scan_label, map_note,
+        f"{xlabel} = {cut_disco1:.3f}", f"{ylabel} = {cut_disco2:.3f}",
+    ])
+    style.cms_header(ax, data=is_data)
+    style.save(fig, os.path.join(out_dir, f"background_abcd_regions_scan_{scan_idx + 1}"))
+
+    # Profile of mean disco2 in bins of disco1: flat means the two are decorrelated.
+    fig, ax = plt.subplots(figsize=style.FIG_PLANE)
+    mesh = _draw_plane(ax)
+    style.colorbar(fig, mesh, ax, label="Events")
+    grouped = prof_df.groupby(pd.cut(prof_df[disco1_col], bins=20), observed=False)[disco2_col]
+    bin_means = grouped.mean()
+    bin_errs = grouped.sem()
     bin_centers = [interval.mid for interval in bin_means.index.categories]
-    ax.plot(bin_centers, bin_means.values, color="red", marker="o", label=f"Mean {disco2_col}")
-    ax.set_title(f"{src_label}: {disco1_col} vs {disco2_col} Mean Profile{prof_note} (Scan {scan_idx + 1})")
-    plt.savefig(os.path.join(out_dir, f"{profile_name}_scan_{scan_idx + 1}.png"))
-    plt.close()
+    ax.errorbar(bin_centers, bin_means.values, yerr=bin_errs.values,
+                color=style.PROFILE_COLOR_WEIGHTED, fmt="o", markersize=6, linewidth=1.5,
+                label=f"Mean {ylabel}", zorder=5,
+                path_effects=[matplotlib.patheffects.withStroke(linewidth=2.5, foreground="white")])
+    style.annotate(ax, [src_label, style.CONTEXT.extra, scan_label, prof_note])
+    style.legend(ax, loc="lower left", fontsize=16)
+    style.cms_header(ax, data=is_data)
+    style.save(fig, os.path.join(out_dir, f"{profile_name}_scan_{scan_idx + 1}"))

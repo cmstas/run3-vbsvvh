@@ -6,10 +6,9 @@ import os
 import numpy as np
 import yaml
 
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+import style
 # Per-channel kinematic preselection (taggers + how their cuts combine) is
 # shared with run_analysis.py via channels.py.
 from channels import CHANNELS
@@ -17,6 +16,16 @@ from predictions import read_predictions
 
 DNN_COL = "dnn_score"
 BDT_COL = "bdt_score"
+
+# Human-readable channel names for the in-frame annotation.
+CHANNEL_LABELS = {"1fj": "1 AK8 jet", "2fj": "2 AK8 jets", "3fj": "3 AK8 jets"}
+
+# What each closure region measures, for the in-frame annotation.
+REGION_LABELS = {
+    "D": "Region D",
+    "CD": "Regions C + D",
+    "BD": "Regions B + D",
+}
 
 
 def region_box(region, dnn_cut, vbs_cut, dnn_vals, bdt_vals):
@@ -72,20 +81,34 @@ def closure_scan(dnn, bdt, w, rangednn, rangebdt):
     return _quadrants(Hw), _quadrants(Hc)
 
 
-def plot_hist(errvec, title, path):
+def plot_hist(errvec, xlabel, path, annotations=None):
+    """Distribution of the closure metric over every internal split of the box."""
     if len(errvec) == 0:
         return
-    mean = round(float(np.mean(errvec)), 3)
-    std = round(float(np.std(errvec)), 3)
-    plt.hist(errvec, 50, density=True, histtype="stepfilled", color="limegreen",
-             label=f"mean={mean},\n std={std}")
-    plt.legend()
-    plt.title(title)
-    plt.savefig(path)
-    plt.clf()
+    mean = float(np.mean(errvec))
+    std = float(np.std(errvec))
+
+    fig, ax = plt.subplots(figsize=style.FIG_SINGLE)
+    counts, edges = np.histogram(errvec, bins=50)
+    ax.stairs(counts, edges, fill=True, facecolor=style.BACKGROUND_COLOR, alpha=0.35,
+              edgecolor="none")
+    ax.stairs(counts, edges, linewidth=2, color=style.BACKGROUND_COLOR,
+              label=f"{len(errvec)} split points")
+    ax.axvline(mean, color=style.SIGNAL_COLOR, linewidth=2, linestyle="--",
+               label=rf"Mean = {mean:+.3f}, RMS = {std:.3f}")
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Split points")
+    ax.set_xlim(edges[0], edges[-1])
+    style.headroom(ax, factor=1.5)
+    style.annotate(ax, annotations)
+    style.legend(ax, loc="upper right", fontsize=17)
+    style.cms_header(ax, data=True)
+
+    style.save(fig, path)
 
 
-def run_one(df_kin, dnn_cut, vbs_cut, region, n_scan, min_count, out_dir, tag):
+def run_one(df_kin, dnn_cut, vbs_cut, region, n_scan, min_count, out_dir, tag, annotations=()):
     """Run the closure scan for one (scan, region) and return its summary dict."""
     dnn_all = df_kin[DNN_COL].to_numpy()
     bdt_all = df_kin[BDT_COL].to_numpy()
@@ -143,10 +166,19 @@ def run_one(df_kin, dnn_cut, vbs_cut, region, n_scan, min_count, out_dir, tag):
     print(f"  |1 - obs/pred|                      : mean={a2m:.4f} std={a2s:.4f}")
 
     base = f"closure_{tag}_{region}"
-    plot_hist(errs,     f"{tag} {region}: 2(A-Apred)/(A+Apred)", os.path.join(out_dir, base + "_diff_over_avg.png"))
-    plot_hist(errs2,    f"{tag} {region}: 1 - A/Apred",          os.path.join(out_dir, base + "_1_minus_ratio.png"))
-    plot_hist(abserrs,  f"{tag} {region}: |2(A-Apred)/(A+Apred)|", os.path.join(out_dir, base + "_abs_diff_over_avg.png"))
-    plot_hist(abserrs2, f"{tag} {region}: |1 - A/Apred|",        os.path.join(out_dir, base + "_abs_1_minus_ratio.png"))
+    notes = [*annotations, REGION_LABELS.get(region, f"Region {region}")]
+    # A and A_pred are the observed and B*C/D-predicted yields of the mini-ABCD
+    # signal region at each internal split of the blinded control box. The symbols
+    # carry no '$' of their own: each label wraps the whole expression in one pair.
+    n_obs = r"N_{\mathrm{obs}}"
+    n_pred = r"N_{\mathrm{pred}}"
+    for vec, label, suffix in (
+        (errs,     rf"$2({n_obs} - {n_pred}) / ({n_obs} + {n_pred})$", "_diff_over_avg"),
+        (errs2,    rf"$1 - {n_obs} / {n_pred}$",                       "_1_minus_ratio"),
+        (abserrs,  rf"$|2({n_obs} - {n_pred}) / ({n_obs} + {n_pred})|$", "_abs_diff_over_avg"),
+        (abserrs2, rf"$|1 - {n_obs} / {n_pred}|$",                     "_abs_1_minus_ratio"),
+    ):
+        plot_hist(vec, label, os.path.join(out_dir, base + suffix), annotations=notes)
 
     return {
         "n_points": int(errs.size),
@@ -196,10 +228,13 @@ def main():
     parser.add_argument("--v-cut", type=float, default=None)
     parser.add_argument("--v1-cut", type=float, default=None)
     parser.add_argument("--v2-cut", type=float, default=None)
+    style.add_cli_args(parser)
     args = parser.parse_args()
 
     DNN_COL = args.dnn_col
     BDT_COL = args.bdt_col
+    channel_label = CHANNEL_LABELS.get(args.channel, args.channel)
+    style.configure_from_args(args, extra=channel_label)
 
     out_dir = args.outdir or (os.path.dirname(args.input) or ".")
     os.makedirs(out_dir, exist_ok=True)
@@ -223,7 +258,8 @@ def main():
         summary[scan_name] = {}
         for region in regions:
             res = run_one(df_kin, dnn_cut, vbs_cut, region, args.n_scan,
-                          args.min_count, out_dir, tag=f"{args.channel}_{scan_name}")
+                          args.min_count, out_dir, tag=f"{args.channel}_{scan_name}",
+                          annotations=[channel_label, scan_name])
             if res is not None:
                 summary[scan_name][region] = res
 

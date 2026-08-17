@@ -8,17 +8,21 @@ how their cuts combine); that now lives in channels.py.
 import argparse
 import os
 
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import yaml
 
+import style
 from analysis import get_ABCD_regions, optimize_cuts, plot_background_decorrelation
 from channels import CHANNELS
 from predictions import read_predictions
 
 DNN_COL = "dnn_score"
 BDT_COL = "bdt_score"
+
+# Human-readable channel names for the in-frame plot annotation.
+CHANNEL_LABELS = {"1fj": "1 AK8 jet", "2fj": "2 AK8 jets", "3fj": "3 AK8 jets"}
 
 
 def parse_args():
@@ -32,6 +36,7 @@ def parse_args():
                         help="Optimize using the data-driven ABCD background estimate (B*C/D from data control regions) instead of MC background. Requires --data. Region A of the data is never used.")
     parser.add_argument("--min-data-yield", type=float, default=0.0,
                         help="Minimum (weighted) yield required in each data control region B, C, D for a cell to be eligible (data-driven mode only).")
+    style.add_cli_args(parser)
     args = parser.parse_args()
 
     if args.data_driven and not args.data:
@@ -57,6 +62,7 @@ def main():
     args = parse_args()
     channel = CHANNELS[args.channel]
     n_taggers = len(channel.taggers)
+    style.configure_from_args(args, extra=CHANNEL_LABELS.get(args.channel, args.channel))
 
     out_dir = os.path.dirname(args.input) or "."
 
@@ -154,14 +160,26 @@ def main():
             profile_name=channel.profile_name,
         )
 
-        fig, ax = plt.subplots(figsize=(10, 8))
-        sns.histplot(data=df_sig.query(kin_query), x=DNN_COL, y=BDT_COL,
-                     weights="weight", bins=100, color='red', cbar=True, ax=ax)
-        ax.axvline(x=cut_dnn, color='black', linestyle='--', linewidth=2, label=f'{DNN_COL} = {cut_dnn}')
-        ax.axhline(y=cut_bdt, color='black', linestyle='--', linewidth=2, label=f'{BDT_COL} = {cut_bdt}')
-        ax.set_title(f'Signal: ABCD Regions (Scan {scan_idx + 1})')
-        plt.savefig(os.path.join(out_dir, f'signal_abcd_regions_scan_{scan_idx + 1}.png'))
-        plt.close()
+        df_sig_kin = df_sig.query(kin_query)
+        fig, ax = plt.subplots(figsize=style.FIG_PLANE)
+        counts, xedges, yedges = np.histogram2d(
+            df_sig_kin[DNN_COL].to_numpy(), df_sig_kin[BDT_COL].to_numpy(),
+            bins=100, weights=df_sig_kin["weight"].to_numpy(),
+        )
+        mesh = ax.pcolormesh(xedges, yedges, np.ma.masked_where(counts <= 0, counts).T,
+                             cmap="Reds", norm=matplotlib.colors.LogNorm(), rasterized=True)
+        style.colorbar(fig, mesh, ax, label="Events")
+        ax.axvline(cut_dnn, color=style.DATA_COLOR, linestyle="--", linewidth=2)
+        ax.axhline(cut_bdt, color=style.DATA_COLOR, linestyle="--", linewidth=2)
+        ax.set_xlabel(style.axis_label(DNN_COL))
+        ax.set_ylabel(style.axis_label(BDT_COL))
+        style.annotate(ax, [
+            "Signal", style.CONTEXT.extra, f"Scan {scan_idx + 1}",
+            f"{style.axis_label(DNN_COL)} = {cut_dnn:.3f}",
+            f"{style.axis_label(BDT_COL)} = {cut_bdt:.3f}",
+        ])
+        style.cms_header(ax, data=False)
+        style.save(fig, os.path.join(out_dir, f"signal_abcd_regions_scan_{scan_idx + 1}"))
 
         print(f"\nSignal Regions Yields (Scan {scan_idx + 1}):\n"
               f"A: {sig_regions[0]:.4f}, B: {sig_regions[1]:.4f}, C: {sig_regions[2]:.4f}, D: {sig_regions[3]:.4f}")

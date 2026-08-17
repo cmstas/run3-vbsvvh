@@ -19,6 +19,7 @@ import numpy as np
 import bdt as bdt_lib
 import checkpoints
 import plots
+import style
 from common import concat_sig_bkg, data_length
 from config import RunConfig, load_yaml
 from inference import default_predictions_path, plots_from_predictions, prepare_inference_data, run_inference
@@ -35,6 +36,7 @@ def parse_args():
     parser.add_argument("--infer", action="store_true", help="Skip training and run inference only")
     parser.add_argument("--plots-only", action="store_true", help="Skip training and inference; remake the plots from an already-written predictions file")
     parser.add_argument("--checkpoint", default=None, help="Path to model checkpoint (.ckpt) for inference. If omitted, auto-picks newest checkpoint.")
+    parser.add_argument("--no-plots", action="store_true", help="Write the predictions and skip the diagnostic plots (useful when scoring many samples through one checkpoint)")
     parser.add_argument("--output-path", default=None, help="Output predictions path (.parquet). With --plots-only, the predictions file to read.")
     args = parser.parse_args()
     if args.data and not (args.infer or args.plots_only):
@@ -60,7 +62,8 @@ def infer_on_data(args, parser, run_cfg):
     logging.info("Skipping training. Running inference on data only...")
     checkpoint_path = args.checkpoint or checkpoints.latest_checkpoint(run_cfg.output_dir, run_cfg.flavor)
     prepared = prepare_inference_data(run_cfg, real_data)
-    run_inference(run_cfg, checkpoint_path, prepared, is_data=True, output_path=args.output_path)
+    run_inference(run_cfg, checkpoint_path, prepared, is_data=True, output_path=args.output_path,
+                  make_plots=not args.no_plots)
 
 
 def main():
@@ -72,6 +75,7 @@ def main():
     logging.info("Using flavor=%s", flavor)
 
     run_cfg = RunConfig(cfg, flavor)
+    style.configure(**run_cfg.plot_style)
 
     if args.plots_only:
         predictions_path = args.output_path
@@ -124,11 +128,12 @@ def main():
         logging.info("Skipping training. Running inference only...")
         checkpoint_path = args.checkpoint or checkpoints.latest_checkpoint(run_cfg.output_dir, run_cfg.flavor)
         prepared = prepare_inference_data(run_cfg, concat_sig_bkg(raw_sig_data, raw_bkg_data))
-        run_inference(run_cfg, checkpoint_path, prepared, output_path=args.output_path)
+        run_inference(run_cfg, checkpoint_path, prepared, output_path=args.output_path,
+                      make_plots=not args.no_plots)
         return
 
     run_cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    plots.plot_weight_distributions(sig_data, bkg_data, run_cfg.output_dir / "input_weight_distributions.png")
+    plots.plot_weight_distributions(sig_data, bkg_data, run_cfg.output_dir / "input_weight_distributions")
 
     sig_data, bkg_data = normalize_class_weights(sig_data, bkg_data)
 
@@ -154,7 +159,7 @@ def main():
 
     plots.plot_constraint_var_distribution(
         data, run_cfg.constraint_var, train_idx, val_idx,
-        run_cfg.output_dir / "constraint_var_distribution.png",
+        run_cfg.output_dir / "constraint_var_distribution",
     )
 
     raw_plot_data = apply_derived_vars(concat_sig_bkg(raw_sig_data, raw_bkg_data), run_cfg.derived_vars)

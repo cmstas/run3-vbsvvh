@@ -197,6 +197,20 @@ class RunConfig:
     def preselection(self):
         return self.raw.get("preselection")
 
+    @property
+    def plot_style(self):
+        """CMS header settings for every figure this run draws (see style.py).
+
+        Optional top-level config keys; anything left out falls back to the
+        style module's default (or its ABCD_* environment override).
+        """
+        return {
+            "label": self.raw.get("cms_label"),
+            "lumi": self.raw.get("lumi"),
+            "com": self.raw.get("com"),
+            "extra": self.raw.get("channel_label"),
+        }
+
     def sample_paths(self, kind, for_inference=False):
         """Resolved input files for kind in {'sig', 'bkg', 'data'}.
 

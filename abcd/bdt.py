@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 
 import xgboost as xgb
 
+import style
 from common import MISSING_VALUE, to_flat_float_column
 
 BDT_SCORE_NAME = "bdt_score"
@@ -66,8 +67,8 @@ def bdt_paths(output_dir):
         "model": bdt_dir / "bdt_model.json",
         "features": bdt_dir / "bdt_features.json",
         "tmva": bdt_dir / "bdt_tmva.root",
-        "roc": bdt_dir / "bdt_roc.png",
-        "score": bdt_dir / "bdt_score_density.png",
+        "roc": bdt_dir / "bdt_roc",
+        "score": bdt_dir / "bdt_score_density",
     }
 
 
@@ -232,16 +233,21 @@ def _plot_bdt_roc(labels, scores, weights, output_path):
     fpr, tpr, _ = roc_curve(labels, np.asarray(scores), sample_weight=weights)
     roc_auc = auc(fpr, tpr)
 
-    plt.figure(figsize=(8, 7))
-    plt.plot(fpr, tpr, linewidth=2, color="tab:green", label=f"BDT (AUC={roc_auc:.4f})")
-    plt.plot([0, 1], [0, 1], "k--", linewidth=1)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("BDT ROC Curve (validation)")
-    plt.legend(loc="lower right")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=200)
-    plt.close()
+    fig, ax = plt.subplots(figsize=(9, 9))
+    ax.plot(fpr, tpr, linewidth=2.5, color=style.PETROFF_6[0],
+            label=f"BDT (AUC = {roc_auc:.3f})")
+    ax.plot([0, 1], [0, 1], linestyle=":", linewidth=1.5, color=style.NEUTRAL_COLOR,
+            label="Random")
+    ax.set_xlabel("False positive rate")
+    ax.set_ylabel("True positive rate")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_aspect("equal")
+    style.annotate(ax, ["Validation set", style.CONTEXT.extra])
+    style.legend(ax, loc="lower right")
+    style.cms_header(ax, data=False)
+
+    style.save(fig, output_path)
 
 
 def _plot_bdt_score_density(labels, scores, weights, output_path):
@@ -257,19 +263,20 @@ def _plot_bdt_score_density(labels, scores, weights, output_path):
     else:
         sig_w = bkg_w = None
 
-    plt.figure(figsize=(8, 6))
-    plt.hist(
-        scores[sig_mask], bins=50, range=(0, 1), weights=sig_w, density=True,
-        histtype="step", linewidth=2, label="Signal", color="tab:red",
-    )
-    plt.hist(
-        scores[bkg_mask], bins=50, range=(0, 1), weights=bkg_w, density=True,
-        histtype="step", linewidth=2, label="Background", color="tab:blue",
-    )
-    plt.xlabel(BDT_SCORE_NAME)
-    plt.ylabel("Density")
-    plt.title("BDT score density (validation)")
-    plt.legend(loc="best")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=200)
-    plt.close()
+    fig, ax = plt.subplots(figsize=style.FIG_SINGLE)
+    for values, w, label, color, linestyle in [
+        (scores[sig_mask], sig_w, "Signal", style.SIGNAL_COLOR, "-"),
+        (scores[bkg_mask], bkg_w, "Background", style.BACKGROUND_COLOR, "--"),
+    ]:
+        ax.hist(values, bins=50, range=(0, 1), weights=w, density=True,
+                histtype="step", linewidth=2.5, label=label, color=color,
+                linestyle=linestyle)
+    ax.set_xlabel("BDT score")
+    ax.set_ylabel("Normalised events")
+    ax.set_xlim(0, 1)
+    style.headroom(ax, factor=1.5)
+    style.annotate(ax, ["Validation set", style.CONTEXT.extra])
+    style.legend(ax, loc="upper center")
+    style.cms_header(ax, data=False)
+
+    style.save(fig, output_path)

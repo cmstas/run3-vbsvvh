@@ -118,19 +118,17 @@ def make_inference_plots(run_cfg, data, output_path, is_data=False,
     constraint_var = run_cfg.constraint_var
     output_path = Path(output_path)
 
+    # Plot paths carry no extension: style.save writes each figure in every format
+    # in style.SAVE_FORMATS (PDF for the note, PNG for browsing) and logs what it wrote.
     if is_data:
-        abcd_data_path = output_path.with_name(f"{output_path.stem}_abcd_plane_data.png")
         plots.plot_abcd_plane_data(data, flavor=flavor, constraint_var=constraint_var,
-                                   output_path=abcd_data_path)
-        logging.info("Saved ABCD plane plot to %s", abcd_data_path)
+                                   output_path=output_path.with_name(f"{output_path.stem}_abcd_plane_data"))
         return
 
-    roc_path = output_path.with_name(f"{output_path.stem}_roc.png")
-    density_path = output_path.with_name(f"{output_path.stem}_score_density.png")
-    plots.plot_roc_curves(data, flavor=flavor, output_path=roc_path)
-    plots.plot_score_densities(data, flavor=flavor, output_path=density_path)
-    logging.info("Saved ROC plot to %s", roc_path)
-    logging.info("Saved score density plot to %s", density_path)
+    plots.plot_roc_curves(data, flavor=flavor,
+                          output_path=output_path.with_name(f"{output_path.stem}_roc"))
+    plots.plot_score_densities(data, flavor=flavor,
+                               output_path=output_path.with_name(f"{output_path.stem}_score_density"))
 
     # Make ABCD plane and decorrelation plots (for all events, for train only, and for val only)
     plot_subsets = [("all", data)]
@@ -142,11 +140,11 @@ def make_inference_plots(run_cfg, data, output_path, is_data=False,
                 plot_subsets.append((subset_name, apply_mask(data, mask)))
 
     for subset_name, subset_data in plot_subsets:
-        abcd_path = output_path.with_name(f"{output_path.stem}_abcd_plane_{subset_name}.png")
+        abcd_path = output_path.with_name(f"{output_path.stem}_abcd_plane_{subset_name}")
         plots.plot_abcd_plane(subset_data, flavor=flavor, constraint_var=constraint_var,
                               output_path=abcd_path, title_suffix=subset_name)
 
-        decorr_path = output_path.with_name(f"{output_path.stem}_decorrelation_check_{subset_name}.png")
+        decorr_path = output_path.with_name(f"{output_path.stem}_decorrelation_check_{subset_name}")
         plots.plot_decorrelation_check(subset_data, flavor=flavor, constraint_var=constraint_var,
                                        output_path=decorr_path, title_suffix=subset_name)
 
@@ -155,7 +153,7 @@ def make_inference_plots(run_cfg, data, output_path, is_data=False,
         logging.info("Skipping permutation importance (needs the model; re-run without --plots-only).")
         return
 
-    importance_path = output_path.with_name(f"{output_path.stem}_permutation_importance.png")
+    importance_path = output_path.with_name(f"{output_path.stem}_permutation_importance")
     baseline_auc, importances = compute_permutation_importance(
         model=model,
         feature_matrix=feature_matrix,
@@ -166,7 +164,6 @@ def make_inference_plots(run_cfg, data, output_path, is_data=False,
         batch_size=run_cfg.batch_size,
     )
     plots.plot_permutation_importance(baseline_auc, importances, importance_path)
-    logging.info("Saved permutation importance plot to %s", importance_path)
 
 
 def plots_from_predictions(run_cfg, predictions_path, is_data=False):
@@ -187,9 +184,15 @@ def plots_from_predictions(run_cfg, predictions_path, is_data=False):
 
 
 def run_inference(run_cfg, checkpoint_path, inference_data, is_data=False,
-                  train_idx=None, val_idx=None, output_path=None):
+                  train_idx=None, val_idx=None, output_path=None, make_plots=True):
     """Score ``inference_data`` (already passed through prepare_inference_data)
-    with one checkpoint, write the prediction file, and draw the diagnostics."""
+    with one checkpoint, write the prediction file, and draw the diagnostics.
+
+    ``make_plots=False`` writes the predictions and stops. The diagnostics are
+    dominated by the permutation importance, which costs several minutes and is
+    the same for every run that shares a checkpoint -- not worth repeating when
+    scoring a series of signal samples through one trained model.
+    """
     checkpoint_path = Path(checkpoint_path)
     logging.info("Using checkpoint: %s", checkpoint_path)
     data = dict(inference_data)
@@ -238,5 +241,6 @@ def run_inference(run_cfg, checkpoint_path, inference_data, is_data=False,
     write_predictions(data, output_path)
     logging.info("Done. Wrote %d rows.", data_length(data))
 
-    make_inference_plots(run_cfg, data, output_path, is_data=is_data,
-                         model=model, feature_matrix=feature_matrix, device=device)
+    if make_plots:
+        make_inference_plots(run_cfg, data, output_path, is_data=is_data,
+                             model=model, feature_matrix=feature_matrix, device=device)

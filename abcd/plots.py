@@ -1,4 +1,9 @@
-"""Diagnostic plots for training inputs, the ABCD plane, and model performance."""
+"""Diagnostic plots for training inputs, the ABCD plane, and model performance.
+
+Every figure is drawn in the CMS style defined in ``style.py`` and written as
+both PDF and PNG, so the same code produces the thesis/note figures and the
+browsing plots.
+"""
 
 import logging
 import re
@@ -6,13 +11,21 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.patheffects
 import matplotlib.pyplot as plt
 from sklearn.metrics import auc, roc_curve
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
+import style
 from common import data_length, score_column, to_flat_float_column
+from style import axis_label as _pretty
+
+# How the train/val/all subsets are named on the plots.
+SUBSET_LABELS = {"train": "Training set", "val": "Validation set", "all": ""}
+
+
+def _subset_label(name):
+    return SUBSET_LABELS.get(name, name.capitalize() if name else "")
 
 
 def save_tensorboard_plots(log_dir, output_dir):
@@ -24,17 +37,13 @@ def save_tensorboard_plots(log_dir, output_dir):
         events = ea.Scalars(tag)
         steps = [e.step for e in events]
         values = [e.value for e in events]
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.plot(steps, values, linewidth=2)
+        fig, ax = plt.subplots(figsize=style.FIG_SINGLE)
+        ax.plot(steps, values, linewidth=2, color=style.BACKGROUND_COLOR)
         ax.set_xlabel("Epoch")
-        ax.set_ylabel(tag)
-        ax.set_title(tag)
-        ax.grid(True, alpha=0.3)
-        plt.tight_layout()
-        safe_tag = tag.replace("/", "_")
-        plt.savefig(output_dir / f"{safe_tag}.png", dpi=150)
-        plt.close()
-        logging.info("Saved %s", output_dir / f"{safe_tag}.png")
+        ax.set_ylabel(_pretty(tag))
+        style.annotate(ax, tag)
+        style.cms_header(ax, data=False)
+        style.save(fig, output_dir / tag.replace("/", "_"))
 
 
 def plot_input_feature_distributions(
@@ -86,11 +95,13 @@ def plot_input_feature_distributions(
         except Exception:
             return None
 
-    color_map = {
-        ("bkg", "train"): "tab:blue",
-        ("bkg", "val"): "tab:green",
-        ("sig", "train"): "tab:red",
-        ("sig", "val"): "tab:orange",
+    # Signal/background carry their analysis colours; train/val are told apart by
+    # linestyle rather than a second pair of hues, so the plot stays readable in print.
+    series_style = {
+        ("bkg", "train"): (style.BACKGROUND_COLOR, "-"),
+        ("bkg", "val"): (style.BACKGROUND_COLOR, "--"),
+        ("sig", "train"): (style.SIGNAL_COLOR, "-"),
+        ("sig", "val"): (style.SIGNAL_COLOR, "--"),
     }
 
     for feat in sorted(k for k in raw_data.keys() if k not in skip_cols):
@@ -119,31 +130,26 @@ def plot_input_feature_distributions(
 
         bins = np.linspace(vmin, vmax, 51)
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=style.FIG_SINGLE)
 
-        backgrounds = [
-            ("bkg", "train", (plot_labels == 0) & plot_train_mask, "Background train"),
-            ("bkg", "val",   (plot_labels == 0) & plot_val_mask,   "Background val"),
-            ("sig", "train", (plot_labels == 1) & plot_train_mask, "Signal train"),
-            ("sig", "val",   (plot_labels == 1) & plot_val_mask,   "Signal val"),
+        series = [
+            ("sig", "train", (plot_labels == 1) & plot_train_mask, "Signal (train)"),
+            ("sig", "val",   (plot_labels == 1) & plot_val_mask,   "Signal (val)"),
+            ("bkg", "train", (plot_labels == 0) & plot_train_mask, "Background (train)"),
+            ("bkg", "val",   (plot_labels == 0) & plot_val_mask,   "Background (val)"),
         ]
 
         drew_any = False
-        for cls_name, split_name, mask, legend_label in backgrounds:
+        for cls_name, split_name, mask, legend_label in series:
             vals = plot_vals[mask]
             wts = plot_weights[mask]
             if len(vals) == 0 or np.sum(wts) <= 0:
                 continue
 
             counts, edges = _weighted_density(vals, wts, bins=bins)
-            ax.step(
-                edges[:-1],
-                counts,
-                where="post",
-                linewidth=2,
-                color=color_map[(cls_name, split_name)],
-                label=f"{legend_label} (n={len(vals)})",
-            )
+            color, linestyle = series_style[(cls_name, split_name)]
+            ax.stairs(counts, edges, linewidth=2, color=color, linestyle=linestyle,
+                      label=legend_label)
             drew_any = True
 
         if not drew_any:
@@ -151,46 +157,20 @@ def plot_input_feature_distributions(
             logging.info("Skipping feature '%s' because no drawable backgrounds were found", feat)
             continue
 
-        ax.set_title(feat)
-        ax.set_xlabel(feat)
-        ax.set_ylabel("Unit-normalized weighted yield")
-        legend = ax.legend(loc="best")
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel(_pretty(feat))
+        ax.set_ylabel("Fraction of events")
+        ax.set_xlim(bins[0], bins[-1])
+        style.headroom(ax, factor=1.55)
 
+        note = [style.CONTEXT.extra]
         if feat in training_feature_set:
             transform = feature_transforms.get(feat, "none")
-            training_note = "★ used in training"
-            if transform != "none":
-                training_note += f" (transform: {transform})"
+            note.append("Training input" + (f" (transform: {transform})" if transform != "none" else ""))
+        style.annotate(ax, note)
+        style.legend(ax, loc="upper right")
+        style.cms_header(ax, data=False)
 
-            fig.canvas.draw()
-            if legend is not None:
-                bbox_disp = legend.get_window_extent(fig.canvas.get_renderer())
-                bbox_axes = bbox_disp.transformed(ax.transAxes.inverted())
-                x_text = bbox_axes.x0
-                y_text = max(0.02, bbox_axes.y0 - 0.06)
-            else:
-                x_text = 0.02
-                y_text = 0.02
-
-            ax.text(
-                x_text,
-                y_text,
-                training_note,
-                transform=ax.transAxes,
-                fontsize=10,
-                color="black",
-                ha="left",
-                va="top",
-                bbox=dict(boxstyle="round,pad=0.25", facecolor="gold", alpha=0.25, edgecolor="goldenrod"),
-            )
-
-        output_path = output_dir / f"inputs_{_safe_filename(feat)}.png"
-        plt.tight_layout()
-        plt.savefig(output_path, dpi=150)
-        plt.close()
-
-        logging.info("Saved input feature plot to %s", output_path)
+        style.save(fig, output_dir / f"inputs_{_safe_filename(feat)}")
 
 
 def plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, output_path):
@@ -198,11 +178,14 @@ def plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, o
     constraint = np.asarray(data[constraint_var])
     weights = np.asarray(data["weight"]) if "weight" in data else None
 
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10), gridspec_kw={"height_ratios": [3, 1]})
+    fig, axes = plt.subplots(
+        2, 2, figsize=(19, 12), sharex="col",
+        gridspec_kw={"height_ratios": [3, 1], "hspace": 0.07, "wspace": 0.22},
+    )
 
     for col, (mask, title) in enumerate([
-        (labels == 0, "Background"),
         (labels == 1, "Signal"),
+        (labels == 0, "Background"),
     ]):
         ax_main = axes[0, col]
         ax_ratio = axes[1, col]
@@ -229,66 +212,55 @@ def plot_constraint_var_distribution(data, constraint_var, train_idx, val_idx, o
         train_counts_norm = train_counts / (train_counts.sum() + 1e-12)
         val_counts_norm = val_counts / (val_counts.sum() + 1e-12)
 
-        ax_main.step(bins[:-1], all_counts_norm, where="post", linewidth=2,
-                     color="black", label=f"All ({len(all_vals)})")
-        ax_main.step(bins[:-1], train_counts_norm, where="post", linewidth=2,
-                     color="tab:blue", label=f"Train ({len(train_vals)})")
-        ax_main.step(bins[:-1], val_counts_norm, where="post", linewidth=2,
-                     color="tab:orange", label=f"Val ({len(val_vals)})")
-        ax_main.set_ylabel("Density")
-        ax_main.set_title(f"{title} {constraint_var} distribution")
-        ax_main.legend()
-        ax_main.grid(True, alpha=0.3)
+        for counts, color, linestyle, label in [
+            (all_counts_norm, style.DATA_COLOR, "-", "All"),
+            (train_counts_norm, style.TRAIN_COLOR, "--", "Train"),
+            (val_counts_norm, style.VAL_COLOR, "-.", "Validation"),
+        ]:
+            ax_main.stairs(counts, bins, linewidth=2, color=color, linestyle=linestyle, label=label)
+
+        ax_main.set_ylabel("Fraction of events")
+        ax_main.set_xlim(bins[0], bins[-1])
+        style.headroom(ax_main, factor=1.5)
+        style.annotate(ax_main, [title, style.CONTEXT.extra])
+        style.legend(ax_main, loc="upper right")
+        style.cms_header(ax_main, data=False)
 
         ratio = np.where(train_counts_norm > 1e-12, val_counts_norm / train_counts_norm, np.nan)
-        ax_ratio.step(bins[:-1], ratio, where="post", linewidth=2, color="black")
-        ax_ratio.axhline(1.0, color="red", linewidth=1, linestyle="--")
-        ax_ratio.set_xlabel(constraint_var)
-        ax_ratio.set_ylabel("Val / Train")
-        ax_ratio.set_title("Val / Train ratio", fontsize=10)
+        ax_ratio.stairs(ratio, bins, linewidth=2, color=style.DATA_COLOR)
+        ax_ratio.axhline(1.0, color=style.NEUTRAL_COLOR, linewidth=1.5, linestyle="--")
+        ax_ratio.set_xlabel(_pretty(constraint_var))
+        ax_ratio.set_ylabel("Val. / train", fontsize=20)
+        ax_ratio.set_xlim(bins[0], bins[-1])
         ax_ratio.set_ylim(0, 2)
-        ax_ratio.grid(True, alpha=0.3)
+        ax_ratio.yaxis.set_major_locator(plt.MaxNLocator(nbins=4, prune="both"))
 
-    fig.suptitle(f"{constraint_var} train/val split distribution")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close()
-    logging.info("Saved constraint var distribution plot to %s", output_path)
+    style.save(fig, output_path)
 
 
 def plot_weight_distributions(sig_data, bkg_data, output_path):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(19, 8), gridspec_kw={"wspace": 0.22})
 
     for ax, data, title, color in [
-        (axes[0], sig_data, "Signal weight distribution", "tab:red"),
-        (axes[1], bkg_data, "Background weight distribution", "tab:blue"),
+        (axes[0], sig_data, "Signal", style.SIGNAL_COLOR),
+        (axes[1], bkg_data, "Background", style.BACKGROUND_COLOR),
     ]:
         ax.hist(np.asarray(data["weight"]), bins=50, histtype="step", linewidth=2, color=color)
-        ax.set_xlabel("Weight")
-        ax.set_ylabel("Counts")
-        ax.set_title(title)
+        ax.set_xlabel("Event weight")
+        ax.set_ylabel("Events")
         ax.set_yscale("log")
-        ax.grid(True, alpha=0.3)
+        style.annotate(ax, [title, style.CONTEXT.extra])
+        style.cms_header(ax, data=False)
 
-    fig.suptitle("Input weight distributions")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close()
-    logging.info("Saved weight distribution plot to %s", output_path)
+    style.save(fig, output_path)
 
 
-# Profile-marker colours for the data plane. Both clear a 3:1 contrast ratio against the
-# light end of the Greens ramp (violet 8.2:1, orange 3.1:1), where the old yellow scored
-# 2.08:1, and they stay 95 dE apart under simulated protan/deutan/tritan vision.
-PROFILE_COLOR = '#4a3aa7'
-PROFILE_COLOR_WEIGHTED = '#eb6834'
-
-
-def _profile_overlay(ax, x, y, bins, xrange, weights=None, color='yellow', label='Profile mean'):
+def _profile_overlay(ax, x, y, bins, xrange, weights=None, color=style.PROFILE_COLOR,
+                     label="Profile mean"):
     # Markers sit on a light->dark colormap, so no single colour contrasts with every
     # cell underneath. A white outline separates them from the dark end; the marker
     # colour itself carries the light end.
-    ring = [matplotlib.patheffects.withStroke(linewidth=2.5, foreground='white')]
+    ring = [matplotlib.patheffects.withStroke(linewidth=2.5, foreground="white")]
 
     bin_edges = np.linspace(xrange[0], xrange[1], bins + 1)
     bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
@@ -309,16 +281,14 @@ def _profile_overlay(ax, x, y, bins, xrange, weights=None, color='yellow', label
     means = np.array(means)
     errors = np.array(errors)
     container = ax.errorbar(bin_centers, means, yerr=errors, color=color,
-                            fmt='o', markersize=4, linewidth=1.5, label=label)
+                            fmt="o", markersize=5, linewidth=1.5, label=label, zorder=5)
     for artist in (container.lines[0], *container.lines[2]):
         if artist is not None:
             artist.set_path_effects(ring)
-    ax.legend(fontsize=9)
 
 
 def plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
     labels = np.asarray(data["label"])
-    signal = {k: np.asarray(v)[labels == 1] for k, v in data.items()}
     background = {k: np.asarray(v)[labels == 0] for k, v in data.items()}
 
     score_col = score_column(flavor)
@@ -327,25 +297,27 @@ def plot_abcd_plane(data, flavor, constraint_var, output_path, title_suffix=""):
     dnn_range = (0, 1)
     constrain_var_range = (0, max(np.asarray(data[constraint_var])))
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=style.FIG_PLANE)
 
     h = ax.hist2d(background[score_col], background[constraint_var], bins=bins,
-                    range=[dnn_range, constrain_var_range], cmap="Blues",
-                    norm=matplotlib.colors.LogNorm())
-    plt.colorbar(h[3], ax=ax, label='Counts')
-    ax.set_title("Background")
-    ax.set_xlabel('DNN Score')
-    ax.set_ylabel('BDT Score')
+                  range=[dnn_range, constrain_var_range], cmap=style.CMAP_MC,
+                  norm=matplotlib.colors.LogNorm(), rasterized=True)
+    style.colorbar(fig, h[3], ax, label="Events")
+
     _profile_overlay(ax, background[score_col], background[constraint_var], bins[0], dnn_range)
     _profile_overlay(ax, background[score_col], background[constraint_var], bins[0], dnn_range,
-                        weights=background["weight"] if "weight" in background else None,
-                        color='orange', label='Profile mean (weighted)')
+                     weights=background["weight"] if "weight" in background else None,
+                     color=style.PROFILE_COLOR_WEIGHTED, label="Profile mean (weighted)")
 
-    fig.suptitle(f'ABCD Plane{" - " + title_suffix if title_suffix else ""}')
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close()
-    logging.info("Saved ABCD plane plot to %s", output_path)
+    ax.set_xlabel(_pretty(score_col))
+    ax.set_ylabel(_pretty(constraint_var))
+    ax.set_xlim(dnn_range)
+    ax.set_ylim(constrain_var_range)
+    style.annotate(ax, ["Background MC", style.CONTEXT.extra, _subset_label(title_suffix)])
+    style.legend(ax, loc="lower right")
+    style.cms_header(ax, data=False)
+
+    style.save(fig, output_path)
 
 
 def plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_threshold=0.8, title_suffix=""):
@@ -369,15 +341,14 @@ def plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_thresh
     counts[blind_x, :] = np.nan
     counts[:, blind_y] = np.nan
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=style.FIG_PLANE)
     mesh = ax.pcolormesh(
         xedges, yedges,
         np.ma.masked_where(~np.isfinite(counts) | (counts <= 0), counts).T,
-        cmap='Greens', norm=matplotlib.colors.LogNorm(),
+        cmap=style.CMAP_DATA, norm=matplotlib.colors.LogNorm(), rasterized=True,
     )
-    plt.colorbar(mesh, ax=ax, label='Counts')
+    style.colorbar(fig, mesh, ax, label="Events")
 
-    
     n_open = int(np.argmax(blind_x)) if blind_x.any() else bins[0]
     y_open = yedges[int(np.argmax(blind_y))] if blind_y.any() else yedges[-1]
     if n_open > 0:
@@ -386,10 +357,10 @@ def plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_thresh
         # events, so nothing blinded is handed to the profile in the first place.
         visible = (score < xedges[n_open]) & (constraint < y_open)
         _profile_overlay(ax, score[visible], constraint[visible], n_open, open_range,
-                         color=PROFILE_COLOR)
+                         color=style.PROFILE_COLOR)
         _profile_overlay(ax, score[visible], constraint[visible], n_open, open_range,
                          weights=weights[visible] if weights is not None else None,
-                         color=PROFILE_COLOR_WEIGHTED, label='Profile mean (weighted)')
+                         color=style.PROFILE_COLOR_WEIGHTED, label="Profile mean (weighted)")
 
     # Blinding on either axis leaves an L: the full high-DNN strip, plus the
     # high-constraint strip beside it.
@@ -401,22 +372,22 @@ def plot_abcd_plane_data(data, flavor, constraint_var, output_path, blind_thresh
         if rw > 0 and rh > 0:
             ax.add_patch(plt.Rectangle(
                 (rx, ry), rw, rh,
-                facecolor='none', edgecolor='grey', hatch='//', linewidth=1.0, zorder=3,
+                facecolor="none", edgecolor=style.NEUTRAL_COLOR, hatch="//", linewidth=1.0, zorder=3,
             ))
     if blind_x.any() and blind_y.any():
-        ax.text(0.5 * (x0 + xedges[-1]), 0.5 * (y_open + yedges[-1]), 'BLINDED',
-                ha='center', va='center', color='grey', fontsize=11, fontweight='bold', zorder=4)
+        ax.text(0.5 * (x0 + xedges[-1]), 0.5 * (y_open + yedges[-1]), "Blinded",
+                ha="center", va="center", color=style.NEUTRAL_COLOR, fontsize=20,
+                rotation=90, zorder=4)
 
     ax.set_xlim(dnn_range)
     ax.set_ylim(constrain_var_range)
-    ax.set_xlabel('DNN Score')
-    ax.set_ylabel('BDT Score')
-    ax.set_title("Data")
+    ax.set_xlabel(_pretty(score_column(flavor)))
+    ax.set_ylabel(_pretty(constraint_var))
+    style.annotate(ax, [style.CONTEXT.extra, _subset_label(title_suffix)])
+    style.legend(ax, loc="lower right")
+    style.cms_header(ax, data=True)
 
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close()
-    logging.info("Saved data ABCD plane plot to %s", output_path)
+    style.save(fig, output_path)
 
 
 def plot_decorrelation_check(data, flavor, constraint_var, output_path, title_suffix=""):
@@ -426,27 +397,30 @@ def plot_decorrelation_check(data, flavor, constraint_var, output_path, title_su
 
     score_bins = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-    fig, ax = plt.subplots(figsize=(7, 6))
+    fig, ax = plt.subplots(figsize=style.FIG_SINGLE)
     for i in range(len(score_bins) - 1):
         mask = (background[score_col] >= score_bins[i]) & (background[score_col] < score_bins[i + 1])
         ax.hist(background[constraint_var][mask], bins=50, density=True,
-                histtype='step', label=f'DNN score [{score_bins[i]}, {score_bins[i + 1]}]')
+                histtype="step", linewidth=2,
+                color=style.PETROFF_6[i % len(style.PETROFF_6)],
+                linestyle=style.LINESTYLES[i % len(style.LINESTYLES)],
+                label=f"{score_bins[i]:.2f} $\\leq$ {_pretty(score_col)} $<$ {score_bins[i + 1]:.2f}")
 
-    ax.set_xlabel(constraint_var)
-    ax.set_ylabel('Normalised counts')
-    ax.legend()
-    ax.set_title(f'{constraint_var} in DNN score slices (background){" - " + title_suffix if title_suffix else ""}')
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close()
-    logging.info("Saved decorrelation check plot to %s", output_path)
+    ax.set_xlabel(_pretty(constraint_var))
+    ax.set_ylabel("Normalised events")
+    style.headroom(ax, factor=1.6)
+    style.annotate(ax, ["Background MC", style.CONTEXT.extra, _subset_label(title_suffix)])
+    style.legend(ax, loc="upper right", fontsize=16)
+    style.cms_header(ax, data=False)
+
+    style.save(fig, output_path)
 
 
 def plot_roc_curves(data, flavor, output_path):
     labels = np.asarray(data["label"])
     weights = np.asarray(data["weight"]) if "weight" in data else None
 
-    plt.figure(figsize=(8, 7))
+    fig, ax = plt.subplots(figsize=(9, 9))
 
     roc_series = [
         ("DNN", "dnn_score")
@@ -455,24 +429,31 @@ def plot_roc_curves(data, flavor, output_path):
         ("DNN 1", "dnn_1_score"),
     ]
 
-    for label_name, score_col in roc_series:
+    for i, (label_name, score_col) in enumerate(roc_series):
         fpr, tpr, _ = roc_curve(labels, np.asarray(data[score_col]), sample_weight=weights)
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, linewidth=2, label=f"{label_name} (AUC={roc_auc:.4f})")
+        ax.plot(fpr, tpr, linewidth=2.5, color=style.PETROFF_6[i % len(style.PETROFF_6)],
+                linestyle=style.LINESTYLES[i % len(style.LINESTYLES)],
+                label=f"{label_name} (AUC = {roc_auc:.3f})")
 
-    plt.plot([0, 1], [0, 1], "k--", linewidth=1)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title(f"ROC Curve ({flavor} flavor)")
-    plt.legend(loc="lower right")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=200)
-    plt.close()
+    ax.plot([0, 1], [0, 1], linestyle=":", linewidth=1.5, color=style.NEUTRAL_COLOR,
+            label="Random")
+    ax.set_xlabel("False positive rate")
+    ax.set_ylabel("True positive rate")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_aspect("equal")
+    style.annotate(ax, style.CONTEXT.extra)
+    style.legend(ax, loc="lower right")
+    style.cms_header(ax, data=False)
+
+    style.save(fig, output_path)
 
 
 def plot_score_densities(data, flavor, output_path):
     score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
-    fig, axes = plt.subplots(1, len(score_cols), figsize=(8 * len(score_cols), 6), squeeze=False)
+    fig, axes = plt.subplots(1, len(score_cols), figsize=(9.5 * len(score_cols), 8),
+                             squeeze=False, gridspec_kw={"wspace": 0.22})
 
     labels = np.asarray(data["label"])
     sig_mask = labels == 1
@@ -489,29 +470,22 @@ def plot_score_densities(data, flavor, output_path):
     for idx, col in enumerate(score_cols):
         ax = axes[0, idx]
         values = np.asarray(data[col])
-        for mask, w, label, color in [
-            (sig_mask, sig_w, "Signal", "tab:red"),
-            (bkg_mask, bkg_w, "Background", "tab:blue"),
+        for mask, w, label, color, linestyle in [
+            (sig_mask, sig_w, "Signal", style.SIGNAL_COLOR, "-"),
+            (bkg_mask, bkg_w, "Background", style.BACKGROUND_COLOR, "--"),
         ]:
-            ax.hist(
-                values[mask],
-                bins=50,
-                range=(0, 1),
-                weights=w,
-                density=True,
-                histtype="step",
-                linewidth=2,
-                label=label,
-                color=color,
-            )
-        ax.set_xlabel(col)
-        ax.set_ylabel("Density")
-        ax.set_title(f"Score density: {col}")
-        ax.legend(loc="best")
+            ax.hist(values[mask], bins=50, range=(0, 1), weights=w, density=True,
+                    histtype="step", linewidth=2.5, label=label, color=color,
+                    linestyle=linestyle)
+        ax.set_xlabel(_pretty(col))
+        ax.set_ylabel("Normalised events")
+        ax.set_xlim(0, 1)
+        style.headroom(ax, factor=1.5)
+        style.annotate(ax, style.CONTEXT.extra)
+        style.legend(ax, loc="upper center")
+        style.cms_header(ax, data=False)
 
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=200)
-    plt.close()
+    style.save(fig, output_path)
 
 
 # Plot permutation importance as a horizontal bar chart, sorted by importance.
@@ -520,14 +494,15 @@ def plot_permutation_importance(baseline_auc, importances, output_path):
     sorted_feats = sorted(importances, key=importances.get)
     sorted_vals = [importances[f] for f in sorted_feats]
 
-    fig, ax = plt.subplots(figsize=(10, max(6, len(sorted_feats) * 0.25)))
-    colors = ["tab:red" if v > 0 else "tab:blue" for v in sorted_vals]
-    ax.barh(sorted_feats, sorted_vals, color=colors)
-    ax.axvline(0, color="black", linewidth=0.8)
-    ax.set_xlabel("Mean AUC drop when feature is shuffled")
-    ax.set_title(f"Permutation Importance (baseline AUC={baseline_auc:.4f})")
-    ax.grid(True, alpha=0.3, axis="x")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close()
-    logging.info("Saved %s", output_path)
+    fig, ax = plt.subplots(figsize=(12, max(8, len(sorted_feats) * 0.42)))
+    colors = [style.SIGNAL_COLOR if v > 0 else style.BACKGROUND_COLOR for v in sorted_vals]
+    ax.barh([_pretty(f) for f in sorted_feats], sorted_vals, color=colors)
+    ax.axvline(0, color=style.DATA_COLOR, linewidth=1.2)
+    ax.set_xlabel("AUC loss when the input is shuffled")
+    ax.tick_params(axis="y", labelsize=16, length=0)
+    ax.tick_params(axis="y", which="minor", length=0)
+    style.annotate(ax, style.CONTEXT.extra)
+    style.annotate(ax, f"Baseline AUC = {baseline_auc:.3f}", x=0.96, y=0.05, ha="right", va="bottom")
+    style.cms_header(ax, data=False)
+
+    style.save(fig, output_path)

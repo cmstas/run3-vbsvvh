@@ -11,6 +11,7 @@ from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor, Mode
 from pytorch_lightning.loggers import TensorBoardLogger
 from sklearn.model_selection import train_test_split
 
+import style
 from common import data_length
 from dataloader import get_dataloader
 from plots import save_tensorboard_plots
@@ -130,12 +131,13 @@ def collect_run_artifacts(version_dir, config_path, output_dir):
     output_dir = Path(output_dir)
     version_dir.mkdir(parents=True, exist_ok=True)
 
-    for src in [
-        Path(config_path),
-        output_dir / "scaler_params.json",
-        output_dir / "input_weight_distributions.png",
-        output_dir / "constraint_var_distribution.png",
-    ]:
+    # Plots are written in every format in style.SAVE_FORMATS (PDF for the note,
+    # PNG for browsing), so each one is collected under all of its extensions.
+    artifacts = [Path(config_path), output_dir / "scaler_params.json"]
+    for stem in ("input_weight_distributions", "constraint_var_distribution"):
+        artifacts += [output_dir / f"{stem}.{ext}" for ext in style.SAVE_FORMATS]
+
+    for src in artifacts:
         if not src.is_file():
             logging.warning("Expected run artifact %s not found, skipping copy", src)
             continue
@@ -143,7 +145,7 @@ def collect_run_artifacts(version_dir, config_path, output_dir):
         logging.info("Copied %s to %s", src.name, version_dir / src.name)
 
     # Input feature plots are per-run, so move rather than copy them.
-    for plot_path in output_dir.glob("inputs_*.png"):
+    for plot_path in sorted(p for ext in style.SAVE_FORMATS for p in output_dir.glob(f"inputs_*.{ext}")):
         try:
             dest = version_dir / plot_path.name
             shutil.move(str(plot_path), str(dest))
