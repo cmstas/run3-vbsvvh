@@ -894,7 +894,8 @@ RNode applyBTaggingScaleFactors(const std::string &channel,
         selected_indices.push_back(static_cast<std::size_t>(std::distance(kBTagInclusiveWorkingPoints.begin(), it)));
         selected_wp_names.push_back(wp);
     }
-    auto evaluate_bundle = [contexts, selected_indices, selected_wp_names]
+    const bool evaluate_regrouped_btag_jes = !jesVariationSuffixes().empty();
+    auto evaluate_bundle = [contexts, selected_indices, selected_wp_names, evaluate_regrouped_btag_jes]
         (const std::string &year, const std::string &sample,
          const RVec<float> &eta,
          const RVec<float> &pt, const RVec<unsigned char> &jetflavor,
@@ -969,7 +970,12 @@ RNode applyBTaggingScaleFactors(const std::string &channel,
                 auto &weights = bundle.hf[index];
                 weights[0] *= central_weight;
                 const std::string payload_source = bTagHFPayloadSource(year, source);
-                if (payload_source.empty()) { weights[1] *= central_weight; weights[2] *= central_weight; continue; }
+                if (payload_source.empty() ||
+                    (bTagHFSourceIsRegroupedJES(source) && !evaluate_regrouped_btag_jes)) {
+                    weights[1] *= central_weight;
+                    weights[2] *= central_weight;
+                    continue;
+                }
                 for (const auto direction : {std::string("up_"), std::string("down_")}) {
                     std::vector<double> selected_shifted_sf;
                     selected_shifted_sf.reserve(selected_indices.size());
