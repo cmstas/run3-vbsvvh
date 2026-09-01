@@ -193,6 +193,8 @@ Examples:
                         help="Store JES/JER variation branches (default: nominal only)")
     parser.add_argument("--no_jetveto", "--no-jetveto", dest="no_jetveto", action="store_true",
                         help="DEBUG ONLY: compute Jet_vetoMap but do not apply it")
+    parser.add_argument("--cutflow", action="store_true",
+                        help="Generate cutflow histograms")
     return parser.parse_args()
 
 
@@ -390,7 +392,7 @@ def create_tarball(preselection_dir: Path) -> Path:
     preselection_items = [
         "Makefile", "src", "include", "corrections", "applybtag.yaml",
         "etc/goldenJson", spanet_run2_dir, spanet_run3_dir,
-        bdt_dir
+        bdt_dir, "data"
     ]
 
     # Build tar command
@@ -428,6 +430,8 @@ def generate_submit_file(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --store_hlt"
     if args.skip_btag_sf:
         extra_flags += " --skip-btag-sf"
+    if args.cutflow:
+        extra_flags += " --cutflow"
 
     # Arguments passed to executable:
     # USER N_CPUS CONFIG_FILE OUTPUT_NAME ANALYSIS RUN_NUMBER SAMPLE_NAME JOB_IDX [EXTRA_FLAGS]

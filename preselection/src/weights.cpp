@@ -638,30 +638,17 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
 
         for (size_t i = 0; i < eta.size(); i++) {
             if (is_run2) {
-                if (pt[i] >= 20) {
-                    electron_sf_weights[0] *= correctionset->evaluate({year, "sf", "RecoAbove20", eta[i], pt[i]});
-                    electron_sf_weights[1] *= correctionset->evaluate({year, "sfup", "RecoAbove20", eta[i], pt[i]});
-                    electron_sf_weights[2] *= correctionset->evaluate({year, "sfdown", "RecoAbove20", eta[i], pt[i]});
-                } else {
-                    electron_sf_weights[0] *= correctionset->evaluate({year, "sf", "RecoBelow20", eta[i], pt[i]});
-                    electron_sf_weights[1] *= correctionset->evaluate({year, "sfup", "RecoBelow20", eta[i], pt[i]});
-                    electron_sf_weights[2] *= correctionset->evaluate({year, "sfdown", "RecoBelow20", eta[i], pt[i]});
-                }
+                wp = (pt[i] >= 20) ? "RecoAbove20" : "RecoBelow20";
+            } else if (pt[i] >= 75) {
+                wp = "RecoAbove75";
+            } else if (pt[i] >= 20) {
+                wp = "Reco20to75";
             } else {
-                if (pt[i] >= 20 && pt[i] < 75) {
-                    electron_sf_weights[0] *= correctionset->evaluate({year, "sf", "Reco20to75", eta[i], pt[i]});
-                    electron_sf_weights[1] *= correctionset->evaluate({year, "sfup", "Reco20to75", eta[i], pt[i]});
-                    electron_sf_weights[2] *= correctionset->evaluate({year, "sfdown", "Reco20to75", eta[i], pt[i]});
-                } else if (pt[i] >= 75) {
-                    electron_sf_weights[0] *= correctionset->evaluate({year, "sf", "RecoAbove75", eta[i], pt[i]});
-                    electron_sf_weights[1] *= correctionset->evaluate({year, "sfup", "RecoAbove75", eta[i], pt[i]});
-                    electron_sf_weights[2] *= correctionset->evaluate({year, "sfdown", "RecoAbove75", eta[i], pt[i]});
-                } else {
-                    electron_sf_weights[0] *= correctionset->evaluate({year, "sf", "RecoBelow20", eta[i], pt[i]});
-                    electron_sf_weights[1] *= correctionset->evaluate({year, "sfup", "RecoBelow20", eta[i], pt[i]});
-                    electron_sf_weights[2] *= correctionset->evaluate({year, "sfdown", "RecoBelow20", eta[i], pt[i]});
-                }
+                wp = "RecoBelow20";
             }
+            electron_sf_weights[0] *= correctionset->evaluate({year, "sf", wp, eta[i], pt[i]});
+            electron_sf_weights[1] *= correctionset->evaluate({year, "sfup", wp, eta[i], pt[i]});
+            electron_sf_weights[2] *= correctionset->evaluate({year, "sfdown", wp, eta[i], pt[i]});
         }
         return electron_sf_weights;
     };
