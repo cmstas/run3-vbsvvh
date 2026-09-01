@@ -637,6 +637,7 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
         auto correctionset = cset_electron.at(year).at(correction_name);
 
         for (size_t i = 0; i < eta.size(); i++) {
+            std::string wp;
             if (is_run2) {
                 wp = (pt[i] >= 20) ? "RecoAbove20" : "RecoBelow20";
             } else if (pt[i] >= 75) {
