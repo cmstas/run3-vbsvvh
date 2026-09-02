@@ -1,62 +1,8 @@
-"""
-Extract data-driven GloParT score templates for QCD resampling (Run 2 or Run 3).
-
-Motivation
-----------
-The GloParT tagger scores (HvsQCD, VvsQCD) are badly mismodelled for QCD MC.
-To fix this we resample the QCD-MC scores from *data* templates measured in a
-QCD-enriched control region, in bins of fat-jet pT and |eta|.
-
-The two scores are *correlated* per jet (they share the QCD term in the
-denominator: a strongly b-like jet has suppressed Xqq/Xcs), so they must not be
-drawn independently.  Because the analysis picks the H candidate first
-(ArgMax HvsQCD) and the V candidates from the remainder, we keep a *factorised*
-template that gets P(H | pT,|eta|) exactly right and draws V conditionally on H:
-
-    P(H, V | pT, |eta|)  ~=  P(H | pT, |eta|)  x  P(V | H, pT)
-
-The P(V | H, pT) piece is eta-integrated (the H-V correlation itself is nearly
-eta-independent, and integrating keeps the 2D template well populated).
-
-Control region
---------------
-- 0 leptons, exactly 2 *good* (analysis-selected) fat jets  -> orthogonal to the
-  signal channel (>= 3 good fat jets).
-- Hadronic data with the 0-lepton channel HT trigger:
-    * Run 3: JetMET, 2022-2025, HLT_PFHT1050.
-    * Run 2: JetHT, 2016 (HLT_PFHT800 || HLT_PFHT900) + 2017-2018 (HLT_PFHT1050),
-      summed.  The MET-filter list also differs between the two runs.
-
-Note: the input skim (`..._0Lep3FJ`) has a hard *raw* nFatJet >= 3 cut, so the
-2-good-fatjet events selected here always have a 3rd fat jet that fails the good
-selection.  The residual bias on per-jet score shapes is expected to be small.
-
-Usage
------
-    python resampling.py [run2|run3] [test]     # default run3; "test" -> few files
-
-Output
-------
-  resampling_pdfs.root       (run3) / resampling_pdfs_run2.root       (run2)
-    * h3_HvsQCD, h3_VvsQCD          : TH3D (score, pT, |eta|) marginal counts
-    * pdf_<score>_pt..._eta...      : unit-normalised TH1D per (pT,|eta|) bin
-    * joint_HV_pt...                : TH2D (HvsQCD x VvsQCD), eta-integrated, one
-                                      per pT bin  -> the H-V correlation template
-
-Sampling recipe (per QCD-MC fat jet with a given pT, |eta|)
------------------------------------------------------------
-  1. locate its (pT, |eta|) bin.
-  2. H* = pdf_HvsQCD_<that bin>.GetRandom()             # eta-dependent
-  3. in joint_HV_pt<that pT>, take the column at H* (ProjectionY of that x-bin);
-     V* = that_projection.GetRandom()                   # V conditional on H
-     -> if the H* column is empty (thin tail), fall back to the full ProjectionY
-        of joint_HV_pt<that pT>, or to pdf_VvsQCD_<that bin>.
-"""
-
+import json
 import os
-import shutil
+import re
+import subprocess
 import sys
-from glob import glob
 from array import array
 
 import ROOT as r
@@ -92,7 +38,8 @@ ETA_EDGES = array("d", [0.0, 1.479, 2.5])
 
 SCORES = ["HvsQCD", "VvsQCD"]
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
+_HERE = os.path.dirname(os.path.abspath(__file__))      # preselection/data
+_PRESEL = os.path.dirname(_HERE)                        # preselection
 _SUFFIX = "" if RUN == "run3" else f"_{RUN}"
 OUT_ROOT = os.path.join(_HERE, f"resampling_pdfs{_SUFFIX}.root")
 OUT_PNG = os.path.join(_HERE, f"resampling_pdfs{_SUFFIX}.png")
@@ -124,31 +71,178 @@ RUN2_MET_COMMON = (
 TRIGGER_LOGIC_HT = "(is2016 && HLT_PFHT800||HLT_PFHT900 ) || (!is2016 && HLT_PFHT1050)"
 HT_TRIGGER_BRANCHES = ["HLT_PFHT800", "HLT_PFHT900", "HLT_PFHT1050"]
 
-SKIM_BASE = "/ceph/cms/store/user/aaarora/VBSVVH_skim_v30"
+# Hadronic (HT-triggered) primary dataset per run; the other PDs in the spec (MET, Muon,
+# EGamma) are on different trigger paths and have no place in this CR.
+HADRONIC_PD = {"run3": "JetMET", "run2": "JetHT"}
+
+
+def spec_path(run):
+    """The production spec JSON the preselection itself is run on for this CR's skim."""
+    return os.path.join(_PRESEL, "etc", "old_config", "0Lep3FJ", f"0Lep3FJ_{run}-data.json")
+
+
+def era_met_filters(era):
+    """MET-filter list for a JERC era key (matches selections.cpp::METFilters)."""
+    if era.startswith("2016"):
+        return RUN2_MET_COMMON
+    if era in ("2017", "2018"):
+        return RUN2_MET_COMMON + " && Flag_ecalBadCalibFilter"
+    return RUN3_MET
 
 
 def groups_for_run(run):
-    """Return the list of era groups (files, MET filter, is2016) to sum."""
-    if run == "run3":
-        base = f"{SKIM_BASE}/Run3_Data_v15_v30_0Lep3FJ"
-        files = []
-        for era in ("2022", "2023", "2024", "2025"):
-            files += glob(f"{base}/JetMET*Run{era}*/*.root")
-        return [dict(name="Run3-JetMET", files=sorted(files),
-                     met=RUN3_MET, is2016=False, split_by_trigger=False)]
-    if run == "run2":
-        base = f"{SKIM_BASE}/Run2_Data_v15_v30_0Lep3FJ"
-        f2016 = sorted(glob(f"{base}/JetHT_Run2016*/*.root"))
-        f1718 = sorted(glob(f"{base}/JetHT_Run2017*/*.root")
-                       + glob(f"{base}/JetHT_Run2018*/*.root"))
-        return [
-            dict(name="2016-JetHT", files=f2016,
-                 met=RUN2_MET_COMMON, is2016=True, split_by_trigger=True),
-            dict(name="2017_2018-JetHT", files=f1718,
-                 met=RUN2_MET_COMMON + " && Flag_ecalBadCalibFilter",
-                 is2016=False, split_by_trigger=True),
-        ]
-    raise ValueError(f"unknown run '{run}'")
+    """Era groups (files, era key, MET filter, is2016) to sum.
+
+    Taken from the production spec JSON rather than a path glob so that the input file
+    list is exactly the preselection's, and so that every file carries the `year` key
+    that selects its JEC payload (2022Re-recoBCD, 2023PromptD, ...) -- a glob cannot tell
+    Run2022D from Run2022E, which sit in different JME era directories."""
+    if run not in HADRONIC_PD:
+        raise ValueError(f"unknown run '{run}'")
+    pd = HADRONIC_PD[run]
+    with open(spec_path(run)) as fp:
+        spec = json.load(fp)
+    by_era = {}
+    for name, entry in spec["samples"].items():
+        if not name.startswith(pd):
+            continue
+        by_era.setdefault(entry["metadata"]["year"], []).extend(entry["files"])
+    if not by_era:
+        raise RuntimeError(f"no {pd} samples found in {spec_path(run)}")
+    return [dict(name=f"{era}-{pd}", files=sorted(files), era=era,
+                 met=era_met_filters(era), is2016=era.startswith("2016"),
+                 # 2016 switched HT menu mid-year, so those files need the
+                 # trigger-branch partitioning below; Run 3 JetMET is uniform.
+                 split_by_trigger=(run == "run2"))
+            for era, files in sorted(by_era.items())]
+
+
+# ---------------------------------------------------------------------------
+# Nominal AK8 jet energy corrections
+# ---------------------------------------------------------------------------
+# Port of corrections.cpp::applyFatJetEnergyCorrections for data: recover the raw pT via
+# FatJet_rawFactor, then re-apply the era's DATA L1L2L3Res compound from the pinned
+# fatJet_jerc.json.gz.  Same by-name argument resolution as the C++ (the compound's input
+# list is era-dependent -- 2023BPix/2024/2025 also take JetPhi -- so positional args are
+# not safe).
+JME_BASE = "/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/"
+CORRECTIONS_CPP = os.path.join(_PRESEL, "src", "corrections.cpp")
+
+
+def parse_jerc_era_table():
+    """era -> (JME era dir, pinned snapshot, JEC tag), read out of corrections.cpp.
+
+    Parsed instead of copied: correctionlib has no "give me the newest tag" API, so the
+    snapshot directory and the tag string must be bumped together in that one table.  A
+    hand-kept duplicate here would eventually pin a different JEC than the preselection
+    applies, which is exactly the mismatch these templates exist to avoid."""
+    with open(CORRECTIONS_CPP) as fp:
+        src = fp.read()
+    try:
+        block = src.split("static const std::map<std::string, EraJERC> table = {", 1)[1]
+        block = block.split("\n    };", 1)[0]
+    except IndexError:
+        raise RuntimeError(f"could not locate eraJERCTable() in {CORRECTIONS_CPP}")
+    rows = re.findall(
+        r'\{"([^"]+)",\s*\{"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\}\}',
+        block)
+    if not rows:
+        raise RuntimeError(f"eraJERCTable() in {CORRECTIONS_CPP} did not parse -- layout changed?")
+    return {era: (jme_dir, snapshot, jec_tag)
+            for era, jme_dir, snapshot, jec_tag, _jer_tag, _year_token in rows}
+
+
+ERA_JERC = parse_jerc_era_table()
+
+
+def load_correctionlib():
+    """Make correctionlib's C++ API callable from cling.
+
+    The shared library has to be loaded *through ROOT*: importing the correctionlib python
+    module instead dlopens it outside cling's JIT search path, and the JIT then fails to
+    materialise every symbol in the declaration below."""
+    incdir = subprocess.check_output(["correction", "config", "--incdir"], text=True).strip()
+    lib = os.path.join(os.path.dirname(incdir), "lib", "libcorrectionlib.so")
+    if r.gSystem.Load(lib) < 0:
+        raise RuntimeError(f"failed to load {lib} (is the CMSSW environment set up?)")
+    r.gInterpreter.AddIncludePath(incdir)
+    r.gInterpreter.Declare('#include "correction.h"')
+
+
+load_correctionlib()
+
+# Function-local statics, not namespace-scope globals: cling fails to run the static
+# initialisers of namespace-scope std::map<..., unique_ptr<...>> in a JIT'd module.
+r.gInterpreter.Declare("""
+namespace jecfj {
+
+using ROOT::VecOps::RVec;
+
+inline std::vector<std::unique_ptr<correction::CorrectionSet>>& ownedSets() {
+    static std::vector<std::unique_ptr<correction::CorrectionSet>> v;
+    return v;
+}
+inline std::map<std::string, correction::CompoundCorrection::Ref>& compounds() {
+    static std::map<std::string, correction::CompoundCorrection::Ref> m;
+    return m;
+}
+
+void registerEra(const std::string& era, const std::string& file, const std::string& compound) {
+    auto cs = correction::CorrectionSet::from_file(file);
+    compounds()[era] = cs->compound().at(compound);
+    ownedSets().push_back(std::move(cs));
+}
+
+// factor such that FatJet_pt * factor == the preselection's corrected FatJet_pt:
+//   (1 - rawFactor) undoes the JEC baked into NanoAOD, then the compound is applied.
+RVec<float> jecFactor(const std::string& era,
+                      const RVec<float>& pt, const RVec<float>& eta, const RVec<float>& phi,
+                      const RVec<float>& area, const RVec<float>& rawFactor,
+                      float rho, unsigned int run) {
+    RVec<float> factor(pt.size(), 1.0f);
+    if (pt.empty()) return factor;
+    auto it = compounds().find(era);
+    if (it == compounds().end())
+        throw std::runtime_error("resampling: no AK8 JEC compound registered for era " + era);
+    const auto& comp = *it->second;
+    std::vector<correction::Variable::Type> args;
+    args.reserve(comp.inputs().size());
+    for (size_t i = 0; i < pt.size(); ++i) {
+        const float pt_raw = (1.0f - rawFactor[i]) * pt[i];
+        args.clear();
+        for (const auto& v : comp.inputs()) {
+            const std::string n = v.name();
+            if      (n == "JetA")   args.push_back((double)area[i]);
+            else if (n == "JetEta") args.push_back((double)eta[i]);
+            else if (n == "JetPt")  args.push_back((double)pt_raw);
+            else if (n == "Rho")    args.push_back((double)rho);
+            else if (n == "JetPhi") args.push_back((double)phi[i]);
+            else if (n == "run")    args.push_back((double)run);
+            else throw std::runtime_error("resampling: unexpected JEC compound input " + n);
+        }
+        factor[i] = (1.0f - rawFactor[i]) * static_cast<float>(comp.evaluate(args));
+    }
+    return factor;
+}
+
+}
+""")
+
+_registered_eras = set()
+
+
+def register_jec_era(era):
+    if era in _registered_eras:
+        return
+    if era not in ERA_JERC:
+        raise RuntimeError(f"era '{era}' from the spec JSON is not in "
+                           f"corrections.cpp::eraJERCTable() -- the two are out of sync")
+    jme_dir, snapshot, jec_tag = ERA_JERC[era]
+    payload = f"{JME_BASE}{jme_dir}/{snapshot}/fatJet_jerc.json.gz"
+    compound = f"{jec_tag}_DATA_L1L2L3Res_AK8PFPuppi"
+    r.jecfj.registerEra(era, payload, compound)
+    _registered_eras.add(era)
+    print(f"[resampling] JEC {era}: {compound}  <-  {jme_dir}/{snapshot}")
 
 
 def partition_by_trigger_branches(files):
@@ -239,6 +333,20 @@ def trigger_selection(df, is2016):
     return df.Filter(TRIGGER_LOGIC_HT, "HT trigger")
 
 
+def apply_jec(df, era):
+    """Nominal AK8 JEC, redefined in place on FatJet_pt exactly as the preselection does.
+
+    FatJet_mass is not touched (the preselection scales it too, but it never enters this
+    script), and neither is FatJet_msoftdrop -- the preselection leaves that uncorrected
+    as well, so the msoftdrop > 40 object cut below already matches."""
+    register_jec_era(era)
+    return (df.Define("_jecEra", f'std::string("{era}")')
+              .Define("FatJet_jecFactor",
+                      "jecfj::jecFactor(_jecEra, FatJet_pt, FatJet_eta, FatJet_phi, "
+                      "FatJet_area, FatJet_rawFactor, Rho_fixedGridRhoFastjetAll, run)")
+              .Redefine("FatJet_pt", "FatJet_pt * FatJet_jecFactor"))
+
+
 def apply_selection(df):
     """0-lepton, exactly-2-good-fatjet CR selection (identical for Run 2 / Run 3)."""
     # Electron selections
@@ -302,12 +410,19 @@ def apply_selection(df):
     return df
 
 
-def book_group(files, met_expr, is2016):
-    """Apply MET filters + HT trigger + selection and book the marginal/joint histos."""
+def book_group(files, met_expr, is2016, era):
+    """Apply MET filters + HT trigger + JEC + selection and book the marginal/joint histos."""
     df = r.RDataFrame("Events", files)
     r.RDF.Experimental.AddProgressBar(df)
     df = df.Filter(met_expr, "MET filters")
     df = trigger_selection(df, is2016)
+    # Between the event filters and the jet selection -- the preselection corrects before
+    # both, but this ordering matters here: a few skim events carry a FatJet_jetId vector
+    # shorter than nFatJet (e.g. run 391572 / event 140368253 in 2025B has 44 fat jets up
+    # to 27 TeV and an empty jetId), which makes the RVec && in _good_ak8jets throw on a
+    # size mismatch.  Those are noise events that the MET filters reject, so building the
+    # jet columns only downstream of the filters keeps them out of the event loop.
+    df = apply_jec(df, era)
     df = apply_selection(df)
 
     # Marginal TH3s (score, pT, |eta|); RVec columns -> one fill per fat jet.
@@ -352,15 +467,15 @@ tasks = []
 for g in groups:
     if g["split_by_trigger"]:
         for present, fl in sorted(partition_by_trigger_branches(g["files"]).items()):
-            tasks.append(dict(name=f"{g['name']} [{'|'.join(present)}]",
-                              files=fl, met=g["met"], is2016=g["is2016"]))
+            tasks.append(dict(name=f"{g['name']} [{'|'.join(present)}]", files=fl,
+                              era=g["era"], met=g["met"], is2016=g["is2016"]))
     else:
         tasks.append(dict(name=g["name"], files=g["files"],
-                          met=g["met"], is2016=g["is2016"]))
+                          era=g["era"], met=g["met"], is2016=g["is2016"]))
 
 print(f"[resampling] period={RUN}  tasks:")
 for t in tasks:
-    print(f"  - {t['name']}: {len(t['files'])} files (is2016={t['is2016']})")
+    print(f"  - {t['name']}: {len(t['files'])} files (era={t['era']}, is2016={t['is2016']})")
 
 h3 = {score: None for score in SCORES}
 joint = {ipt: None for ipt in range(1, n_pt + 1)}
@@ -369,7 +484,7 @@ for g in tasks:
     if not g["files"]:
         print(f"[resampling] WARNING: task {g['name']} has no files, skipping")
         continue
-    h3_ptrs, joint_ptrs, report = book_group(g["files"], g["met"], g["is2016"])
+    h3_ptrs, joint_ptrs, report = book_group(g["files"], g["met"], g["is2016"], g["era"])
     # Trigger this group's event loop and accumulate.
     for score in SCORES:
         h = h3_ptrs[score].GetValue()
@@ -411,16 +526,10 @@ for score in SCORES:
 for ipt in range(1, n_pt + 1):
     joint[ipt].Write()  # raw counts; GetRandom uses the integral
 
+# OUT_ROOT already lives at preselection/data/resampling_pdfs*.root, which is the
+# relative path the C++ QCD score resampling (utils.cpp applyQCDScoreResampling) loads
+# and the path condor/submit.py packages into the job tarball -- nothing to copy.
 print(f"[resampling] wrote {OUT_ROOT}")
-
-# Mirror the templates into the preselection tree so the C++ QCD score resampling
-# (preselection/src/utils.cpp applyQCDScoreResampling) and the condor tarball pick
-# them up at the relative path data/resampling_pdfs*.root.
-_PRESEL_DATA = os.path.join(_HERE, "preselection", "data")
-os.makedirs(_PRESEL_DATA, exist_ok=True)
-_presel_copy = os.path.join(_PRESEL_DATA, os.path.basename(OUT_ROOT))
-shutil.copyfile(OUT_ROOT, _presel_copy)
-print(f"[resampling] copied templates to {_presel_copy}")
 
 # ---------------------------------------------------------------------------
 # Summaries: statistics per (pT, |eta|) bin, and H-V correlation per pT bin
