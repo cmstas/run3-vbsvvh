@@ -10,14 +10,14 @@
 # the HPG login ($USER). Export CERN_USER in your shell or set
 # it on the line below; the expansion aborts the script if unset.
 CERN_USER="${CERN_USER:?Please set CERN_USER to your T2 username}"
-PREFIX="/cmsuf/data/"
+PREFIX="/cmsuf/data/store/user/phchang/skim/"
 OUT_DIR="/cmsuf/data/store/user/$CERN_USER/vbs_vvh_rdf"
 
 # HPG blue (recurring space issues — uncomment only when needed)
 #OUT_DIR="/blue/avery/$USER/samples/run3-vbsvvh"
 
 # HPG via xrd
-#PREFIX="root://cmsio2.rc.ufl.edu//"
+#PREFIX="root://cmsio3.rc.ufl.edu//store/user/phchang/skim/"
 #OUT_DIR="/blue/avery/$USER/samples/run3-vbsvvh"
 
 # UAF local filesystem
