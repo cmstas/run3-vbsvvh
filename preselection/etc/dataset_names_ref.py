@@ -1020,6 +1020,7 @@ datasets = {
 # "data" is deliberately absent: data entries already carry their own real year.
 mc_era_clones = {
     ("run3", "sig") : [("2024Prompt", "2025")],
+    ("run3", "bkg") : [("2024Prompt", "2025")],
 }
 
 for _run_kind, _year_pairs in mc_era_clones.items():
