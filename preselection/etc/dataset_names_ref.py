@@ -1011,6 +1011,24 @@ datasets = {
 
 }
 
+# CMS produced no 2025 MC; the Summer24 campaign serves both the 2024 and 2025 data
+# eras. Each (run_tag, kind) below gets a second copy of every entry whose year is
+# <source_year>, re-tagged <clone_year>, so the same skim files are processed once per
+# data era, each with that era's calibration (JER SF, jet veto map, pileup) and lumi.
+# The "era_clone" flag marks the copy so make_sample_jsons.py gives it a distinct sample
+# key -- the dataset_name has to stay verbatim, it is the directory name on disk.
+# "data" is deliberately absent: data entries already carry their own real year.
+mc_era_clones = {
+    ("run3", "sig") : [("2024Prompt", "2025")],
+}
+
+for _run_kind, _year_pairs in mc_era_clones.items():
+    for _src_year, _clone_year in _year_pairs:
+        datasets[_run_kind] += [
+            dict(d, year=_clone_year, era_clone=True)
+            for d in datasets[_run_kind] if d["year"] == _src_year
+        ]
+
 # These datasets require a correction becuase of a bug in the MG generation
 # See https://github.com/cmstas/run3-vbsvvh/pull/28#issuecomment-3820814039
 datasets_for_ewk_corr = [

@@ -91,6 +91,15 @@ LUMI_DICT = {
 
 ################# Helper functions #################
 
+# The RDF sample key for a dataset: the key inside the json, which becomes the "name"
+# branch and the per-sample output subdirectory. Era clones get a "_<year>" suffix so
+# the two copies do not share an output directory; everything else keeps the bare
+# dataset name.
+def sample_key_for_dataset(dataset_info):
+    if dataset_info.get("era_clone"):
+        return f"{dataset_info['dataset_name']}_{dataset_info['year']}"
+    return dataset_info["dataset_name"]
+
 # Get the list of files in a given dir
 #     - Input should be a full path to the given dir
 #     - Return the list of files joined with the full path
@@ -252,11 +261,13 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, ru
     out_dict["files"] = file_fullpath_lst
     out_dict["metadata"] = metadata_dict
 
+    sample_key = sample_key_for_dataset(dataset_info)
+
     # Dump the dict to an output json (split by run so Run 2 and Run 3 JSONs never co-locate)
     out_dir = f"input_sample_jsons/{run_tag}/{kind}/{skim_set_name}"
     os.makedirs(out_dir, exist_ok=True)
     with open(f"{out_dir}/{year}_{dataset_name_short}.json", "w") as fp:
-        json.dump({"samples": {dataset_name: out_dict}}, fp, indent=4)
+        json.dump({"samples": {sample_key: out_dict}}, fp, indent=4)
 
 
 
@@ -283,11 +294,15 @@ def main():
             havejson_ds_set = set(get_ds_names_from_jsons(paths_to_current_jsons))
             haveskim_ds_set = set(os.listdir(path_to_skims))
             haveref_ds_set  = set(d["dataset_name"] for d in known_datasets_lst)
+            # Compare in sample-key space: era-clone keys carry a "_<year>" suffix that
+            # never appears in the skim directory listing.
+            haveref_key_set = set(sample_key_for_dataset(d) for d in known_datasets_lst
+                                  if d["dataset_name"] in haveskim_ds_set)
 
             # Do some checks of the list of skims we have against what we expect
             print(f"\nChecking datasets for {run_tag} {kind}...")
             have_skim_but_not_ref  = haveskim_ds_set.difference(haveref_ds_set)
-            have_json_but_not_skim = havejson_ds_set.difference(haveskim_ds_set)
+            have_json_but_not_skim = havejson_ds_set.difference(haveref_key_set)
             if len(have_skim_but_not_ref)>0:
                 print("WARNING: Skim includes these samples, but reference info is not in the dataset_names_ref.py, so cannot make a json.")
                 for ds in have_skim_but_not_ref: print(f"\t{ds}")
