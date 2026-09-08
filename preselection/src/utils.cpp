@@ -489,9 +489,8 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
 
     if (isSig) {
         final_variables.push_back("LHEReweightingWeight");
-        final_variables.push_back("nLHEReweightingWeight");
+        // ROOT creates the count branch automatically for vector branches.
         final_variables.push_back("LHEPdfWeight");
-        final_variables.push_back("nLHEPdfWeight");
     }
 
     // store all columns from input nanoAOD tree

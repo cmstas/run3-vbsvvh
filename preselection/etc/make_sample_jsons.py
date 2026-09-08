@@ -137,7 +137,7 @@ def get_sow(list_of_files):
 
 # Strip everything before the a given string in all paths in a list
 # Assumes all paths are the same up to the given string
-def strip_prefixes(fullpaths_lst,split_on="store"):
+def strip_prefixes(fullpaths_lst,split_on="VBSVVH_skim_"):
     out_lst =[]
     for fullpath in fullpaths_lst:
         before,after = fullpath.split(split_on)
