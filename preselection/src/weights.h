@@ -246,6 +246,27 @@ const std::unordered_map<std::string, correction::CorrectionSet> electronScaleFa
     {"2025",                  *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-25Prompt-Summer24-NanoAODv15/2026-06-26/electron.json.gz")},
 };
 
+// The lowest-pt electron reco working point, per era. EGM provides RecoBelow20 (valid
+// from 10 GeV) everywhere except 2025, where the lowest available bin is Reco20to75 and
+// sub-20 GeV electrons have to be clamped onto its first bin -- the same approach as
+// MuonSFYear::pt_min. Revisit if EGM adds a low-pt reco SF for 2025.
+struct ElectronRecoLowPt {
+    std::string working_point;
+    float pt_min; // minimum valid pt, verified against JSON bin edges
+};
+const std::unordered_map<std::string, ElectronRecoLowPt> electronRecoLowPt = {
+    {"2016preVFP",            {"RecoBelow20", 10.1}},
+    {"2016postVFP",           {"RecoBelow20", 10.1}},
+    {"2017",                  {"RecoBelow20", 10.1}},
+    {"2018",                  {"RecoBelow20", 10.1}},
+    {"2022Re-recoBCD",        {"RecoBelow20", 10.1}},
+    {"2022Re-recoE+PromptFG", {"RecoBelow20", 10.1}},
+    {"2023PromptC",           {"RecoBelow20", 10.1}},
+    {"2023PromptD",           {"RecoBelow20", 10.1}},
+    {"2024Prompt",            {"RecoBelow20", 10.1}},
+    {"2025",                  {"Reco20to75",  20.1}} // 2025 json has no RecoBelow20
+};
+
 struct ElectronIDConfig {
     std::unordered_map<std::string, std::string> correction_name_map;
     std::string working_point; // Loose or Tight
@@ -296,10 +317,10 @@ const std::unordered_map<std::string, std::vector<std::string>> electronWorkingP
 
 // Keep trigger SF machinery available for 1lep
 const std::unordered_map<std::string, correction::CorrectionSet> electronTriggerScaleFactors = {
-    {"2022Re-recoBCD",        *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22CDSep23-Summer22-NanoAODv12/latest/electronHlt.json.gz")},
-    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22EFGSep23-Summer22EE-NanoAODv12/latest/electronHlt.json.gz")},
-    {"2023PromptC",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23CSep23-Summer23-NanoAODv12/latest/electronHlt.json.gz")},
-    {"2023PromptD",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/electronHlt.json.gz")}
+    {"2022Re-recoBCD",        *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22CDSep23-Summer22-NanoAODv12/2025-12-15/electronHlt.json.gz")},
+    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22EFGSep23-Summer22EE-NanoAODv12/2025-12-15/electronHlt.json.gz")},
+    {"2023PromptC",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23CSep23-Summer23-NanoAODv12/2025-12-15/electronHlt.json.gz")},
+    {"2023PromptD",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23DSep23-Summer23BPix-NanoAODv12/2025-12-15/electronHlt.json.gz")}
 };
 
 const std::unordered_map<std::string, std::string> electronTriggerScaleFactors_yearmap = {
