@@ -114,15 +114,16 @@ const std::unordered_map<std::string, std::vector<std::string>> muonWorkingPoint
 };
 
 const std::unordered_map<std::string, MuonCorrectionSet> muonScaleFactors = {
-    {"2016preVFP",            {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2016preVFP_UL__muon_Z.json.gz"),    true}},  // abs eta
-    {"2016postVFP",           {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2016postVFP_UL__muon_Z.json.gz"),   true}},  // abs eta
-    {"2017",                  {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2017_UL__muon_Z.json.gz"),           true}},  // abs eta
-    {"2018",                  {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2018_UL__muon_Z.json.gz"),           true}},  // abs eta
-    {"2022Re-recoBCD",        {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2022_Summer22__muon_Z.json.gz"),     true}},  // abs eta
-    {"2022Re-recoE+PromptFG", {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2022_Summer22EE__muon_Z.json.gz"),  true}},  // abs eta
-    {"2023PromptC",           {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2023_Summer23__muon_Z.json.gz"),     false}}, // signed eta
-    {"2023PromptD",           {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2023_Summer23BPix__muon_Z.json.gz"),false}}, // signed eta
-    {"2024Prompt",            {*CorrectionSet::from_file("corrections/from_jsonpog-integration/MUO__2024_Summer24__muon_Z.json.gz"),     false}}, // signed eta
+    {"2016preVFP",            {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run2-2016preVFP-UL-NanoAODv9/2024-07-02/muon_Z.json.gz"),                       true}},  // abs eta
+    {"2016postVFP",           {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run2-2016postVFP-UL-NanoAODv9/2024-07-02/muon_Z.json.gz"),                      true}},  // abs eta
+    {"2017",                  {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run2-2017-UL-NanoAODv9/2024-07-02/muon_Z.json.gz"),                             true}},  // abs eta
+    {"2018",                  {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run2-2018-UL-NanoAODv9/2024-07-02/muon_Z.json.gz"),                             true}},  // abs eta
+    {"2022Re-recoBCD",        {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-22CDSep23-Summer22-NanoAODv12/2026-06-18/muon_Z.json.gz"),                  true}},  // abs eta
+    {"2022Re-recoE+PromptFG", {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-22EFGSep23-Summer22EE-NanoAODv12/2026-06-18/muon_Z.json.gz"),               true}},  // abs eta
+    {"2023PromptC",           {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-23CSep23-Summer23-NanoAODv12/2026-06-18/muon_Z.json.gz"),                   false}}, // signed eta
+    {"2023PromptD",           {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-23DSep23-Summer23BPix-NanoAODv12/2026-06-18/muon_Z.json.gz"),               false}}, // signed eta
+    {"2024Prompt",            {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-06-18/muon_Z.json.gz"),false}}, // signed eta
+    {"2025",                  {*CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/MUO/Run3-25Prompt-Summer24-NanoAODv15/2026-04-28/muon_Z.json.gz"),                   false}}, // signed eta
 };
 
 struct MuonSFYear {
@@ -153,6 +154,7 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptC",           {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
         {"2023PromptD",           {"NUM_LooseID_DEN_TrackerMuons", 15.1}},
         {"2024Prompt",            {"NUM_LooseID_DEN_TrackerMuons", 10.1}},
+        {"2025",                  {"NUM_LooseID_DEN_TrackerMuons", 10.1}},
     }}},
     {"_weight_muon_id_medium", {{
         {"2016preVFP",            {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
@@ -164,6 +166,7 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptC",           {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
         {"2023PromptD",           {"NUM_MediumID_DEN_TrackerMuons", 15.1}},
         {"2024Prompt",            {"NUM_MediumID_DEN_TrackerMuons", 10.1}},
+        {"2025",                  {"NUM_MediumID_DEN_TrackerMuons", 10.1}},
     }}},
     {"_weight_muon_id_tight", {{
         {"2016preVFP",            {"NUM_TightID_DEN_TrackerMuons", 15.1}},
@@ -175,6 +178,7 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptC",           {"NUM_TightID_DEN_TrackerMuons", 15.1}},
         {"2023PromptD",           {"NUM_TightID_DEN_TrackerMuons", 15.1}},
         {"2024Prompt",            {"NUM_TightID_DEN_TrackerMuons", 10.1}},
+        {"2025",                  {"NUM_TightID_DEN_TrackerMuons", 10.1}},
     }}},
     // ISO SFs
     {"_weight_muon_iso_looseid_looseiso", {{
@@ -187,6 +191,7 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptC",           {"NUM_LoosePFIso_DEN_LooseID",  15.1}},
         {"2023PromptD",           {"NUM_LoosePFIso_DEN_LooseID",  15.1}},
         {"2024Prompt",            {"NUM_LoosePFIso_DEN_LooseID",  10.1}},
+        {"2025",                  {"NUM_LoosePFIso_DEN_LooseID",  10.1}},
     }}},
     {"_weight_muon_iso_mediumid_tightiso", {{
         {"2016preVFP",            {"NUM_TightRelIso_DEN_MediumID", 15.1}},
@@ -198,6 +203,7 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptC",           {"NUM_TightPFIso_DEN_MediumID",  15.1}},
         {"2023PromptD",           {"NUM_TightPFIso_DEN_MediumID",  15.1}},
         {"2024Prompt",            {"NUM_TightPFIso_DEN_MediumID",  10.1}},
+        {"2025",                  {"NUM_TightPFIso_DEN_MediumID",  10.1}},
     }}},
     {"_weight_muon_iso_tightid_tightiso", {{
         {"2016preVFP",            {"NUM_TightRelIso_DEN_TightIDandIPCut", 15.1}},
@@ -209,6 +215,7 @@ const std::unordered_map<std::string, MuonSFConfig> muonSFConfigs = {
         {"2023PromptC",           {"NUM_TightPFIso_DEN_TightID",          15.1}},
         {"2023PromptD",           {"NUM_TightPFIso_DEN_TightID",          15.1}},
         {"2024Prompt",            {"NUM_TightPFIso_DEN_TightID",          10.1}},
+        {"2025",                  {"NUM_TightPFIso_DEN_TightID",          10.1}},
     }}},
     {"_weight_muon_trigger", {{
         {"2016preVFP",            {"NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",  30.0}},
