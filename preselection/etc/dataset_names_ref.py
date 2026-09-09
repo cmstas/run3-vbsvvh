@@ -1013,13 +1013,22 @@ datasets = {
 
 ########################################################################################
 
-# Create 2025 dictionaries:
-# CMS produced no 2025 MC; the Summer24 campaign serves both the 2024 and 2025 data
-# eras. Each <dataset> has been symlinked as <dataset><suffix> so that we can create
-# 2025 jsons for the <dataset><suffix> files. The symlinks are needed so that the
-# files have distinct paths (so that RDataFrame keys does not get confused).
+# Era clones: process one MC campaign as a second data era.
+#
+# CMS produced no 2025 MC, so the Summer24 campaign serves both the 2024 and 2025
+# data eras. The same skim has to be run twice, once tagged 2024Prompt and once
+# tagged 2025, so that each pass picks up its own era's lumi and calibrations.
+#
+# The clone cannot simply list the same files under a different sample name:
+# RDataFrame keys per-sample metadata (year, lumi, name, ...) by file path plus
+# tree name, so a merged local spec that lists a file twice hands both samples
+# the metadata of whichever was registered first. Each <dataset> skim directory
+# has therefore been symlinked as <dataset><suffix> in the skim area, and the
+# clone entry points at that symlink. Everything downstream (json key, "name"
+# branch, output subdirectory) then sees a distinct dataset with no special
+# handling. The suffix must match the symlink names on disk.
 
-MC_ERA_CLONE_SUFFIX = "Summer24for2025" # This suffix was chosen at the time of symlinking
+MC_ERA_CLONE_SUFFIX = "Summer24for2025"
 
 mc_era_clones = {
     ("run3", "sig") : [("2024Prompt", "2025", MC_ERA_CLONE_SUFFIX)],

@@ -39,8 +39,8 @@ def merge_jsons(input_paths_lst):
                 # silently drop one of the samples.
                 if k in the_dict["samples"]:
                     raise Exception(f"ERROR: sample key \"{k}\" appears in more than one input json "
-                                    f"(latest: {path_to_json}). Sample keys must be unique within a "
-                                    f"submission -- see sample_key_for_dataset() in etc/make_sample_jsons.py")
+                                    f"(latest: {path_to_json}). The key is the dataset_name from "
+                                    f"etc/dataset_names_ref.py and must be unique within a submission.")
                 the_dict["samples"][k] = v
 
     # Loop over paths
