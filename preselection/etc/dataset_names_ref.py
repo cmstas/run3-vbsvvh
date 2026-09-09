@@ -1011,24 +1011,43 @@ datasets = {
 
 }
 
+########################################################################################
+
+# Create 2025 dictionaries:
 # CMS produced no 2025 MC; the Summer24 campaign serves both the 2024 and 2025 data
-# eras. Each (run_tag, kind) below gets a second copy of every entry whose year is
-# <source_year>, re-tagged <clone_year>, so the same skim files are processed once per
-# data era, each with that era's calibration (JER SF, jet veto map, pileup) and lumi.
-# The "era_clone" flag marks the copy so make_sample_jsons.py gives it a distinct sample
-# key -- the dataset_name has to stay verbatim, it is the directory name on disk.
-# "data" is deliberately absent: data entries already carry their own real year.
+# eras. Each <dataset> has been symlinked as <dataset><suffix> so that we can create
+# 2025 jsons for the <dataset><suffix> files. The symlinks are needed so that the
+# files have distinct paths (so that RDataFrame keys does not get confused).
+
+MC_ERA_CLONE_SUFFIX = "Summer24for2025" # This suffix was chosen at the time of symlinking
+
 mc_era_clones = {
-    ("run3", "sig") : [("2024Prompt", "2025")],
-    ("run3", "bkg") : [("2024Prompt", "2025")],
+    ("run3", "sig") : [("2024Prompt", "2025", MC_ERA_CLONE_SUFFIX)],
+    ("run3", "bkg") : [("2024Prompt", "2025", MC_ERA_CLONE_SUFFIX)],
 }
 
-for _run_kind, _year_pairs in mc_era_clones.items():
-    for _src_year, _clone_year in _year_pairs:
-        datasets[_run_kind] += [
-            dict(d, year=_clone_year, era_clone=True)
-            for d in datasets[_run_kind] if d["year"] == _src_year
-        ]
+# For each (run_tag, kind) above, copy every dataset whose year is src_year, re-tag the
+# copy as clone_year, and point it at the suffixed directory name.
+def add_mc_era_clones(datasets, clones_to_add):
+
+    for run_kind, clone_specs in clones_to_add.items():
+        for src_year, clone_year, suffix in clone_specs:
+
+            # Build the copies first, then append, so we never grow the list we're looping over
+            clones = []
+            for dataset in datasets[run_kind]:
+                if dataset["year"] != src_year: continue
+                clone = dict(dataset)  # copy, so the original entry is untouched
+                clone["year"] = clone_year
+                clone["dataset_name"] = dataset["dataset_name"] + suffix
+                clones.append(clone)
+
+            datasets[run_kind] += clones
+
+add_mc_era_clones(datasets, mc_era_clones)
+
+########################################################################################
+
 
 # These datasets require a correction becuase of a bug in the MG generation
 # See https://github.com/cmstas/run3-vbsvvh/pull/28#issuecomment-3820814039
