@@ -26,7 +26,7 @@
                 "shortname": "TTToSemiLeptonic_TuneCP5_13TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
-                "sumw": 40057043014.38402
+                "sumw": 43624104146.17201
             }
         }
     }
