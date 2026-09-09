@@ -35,7 +35,12 @@ def merge_jsons(input_paths_lst):
         with open(path_to_json, 'r') as file:
             data = json.load(file)["samples"]
             for k,v in data.items():
-                if k in the_dict: raise Exception(f"ERROR: key \"{k}\" already exsists in the output dict")
+                # The key is the per-sample output subdirectory, so a collision would
+                # silently drop one of the samples.
+                if k in the_dict["samples"]:
+                    raise Exception(f"ERROR: sample key \"{k}\" appears in more than one input json "
+                                    f"(latest: {path_to_json}). The key is the dataset_name from "
+                                    f"etc/dataset_names_ref.py and must be unique within a submission.")
                 the_dict["samples"][k] = v
 
     # Loop over paths
