@@ -42,7 +42,7 @@
                 "shortname": "TTToHadronic_TuneCP5_13TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
-                "sumw": 88712442180.53996
+                "sumw": 107748737931.51595
             }
         }
     }
