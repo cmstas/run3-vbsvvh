@@ -710,6 +710,17 @@ ELECTRON SFs
 ############################################
 */
 
+// The "year" axis inside the EGM jsons is EGM's campaign label, which does not always
+// match our era label -- we call the 2025 era "2025", EGM calls it "2025Prompt". Every
+// other era happens to coincide, so map only where it differs.
+static std::string egmYearKey(const std::string& year) {
+    static const std::unordered_map<std::string, std::string> m = {
+        {"2025", "2025Prompt"},
+    };
+    auto it = m.find(year);
+    return (it == m.end()) ? year : it->second;
+
+
 RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, RNode df, std::string output_name) {
     auto eval_correction = [cset_electron] (std::string year, const RVec<float> eta, const RVec<float> pt) {
         RVec<double> electron_sf_weights = {1., 1., 1.};

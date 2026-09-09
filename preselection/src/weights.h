@@ -234,15 +234,16 @@ ELECTRON SFs
 ############################################
 */
 const std::unordered_map<std::string, correction::CorrectionSet> electronScaleFactors = {
-    {"2016preVFP",            *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2016preVFP-UL-NanoAODv15/latest/electron.json.gz")},
-    {"2016postVFP",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2016postVFP-UL-NanoAODv15/latest/electron.json.gz")},
-    {"2017",                  *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2017-UL-NanoAODv15/latest/electron.json.gz")},
-    {"2018",                  *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2018-UL-NanoAODv15/latest/electron.json.gz")},
-    {"2022Re-recoBCD",        *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electron.json.gz")}, // Using 2024 for 22-23 for now
-    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electron.json.gz")}, // Using 2024 for 22-23 for now
-    {"2023PromptC",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electron.json.gz")}, // Using 2024 for 22-23 for now
-    {"2023PromptD",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electron.json.gz")}, // Using 2024 for 22-23 for now
-    {"2024Prompt",            *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electron.json.gz")},
+    {"2016preVFP",            *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2016preVFP-UL-NanoAODv15/2025-12-05/electron.json.gz")},
+    {"2016postVFP",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2016postVFP-UL-NanoAODv15/2025-12-05/electron.json.gz")},
+    {"2017",                  *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2017-UL-NanoAODv15/2025-12-05/electron.json.gz")},
+    {"2018",                  *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run2-2018-UL-NanoAODv15/2025-12-05/electron.json.gz")},
+    {"2022Re-recoBCD",        *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22CDSep23-Summer22-NanoAODv12/2025-12-15/electron.json.gz")},
+    {"2022Re-recoE+PromptFG", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-22EFGSep23-Summer22EE-NanoAODv12/2025-12-15/electron.json.gz")},
+    {"2023PromptC",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23CSep23-Summer23-NanoAODv12/2025-12-15/electron.json.gz")},
+    {"2023PromptD",           *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23DSep23-Summer23BPix-NanoAODv12/2025-12-15/electron.json.gz")},
+    {"2024Prompt",            *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2025-12-15/electron.json.gz")},
+    {"2025",                  *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-25Prompt-Summer24-NanoAODv15/2026-06-26/electron.json.gz")},
 };
 
 struct ElectronIDConfig {
@@ -260,7 +261,8 @@ const ElectronIDConfig electronID_loose = {
         {"2022Re-recoE+PromptFG", "Electron-ID-SF"},
         {"2023PromptC",           "Electron-ID-SF"},
         {"2023PromptD",           "Electron-ID-SF"},
-        {"2024Prompt",            "Electron-ID-SF"}
+        {"2024Prompt",            "Electron-ID-SF"},
+        {"2025",                  "Electron-ID-SF"}
     },
     "Loose"
 };
@@ -275,7 +277,8 @@ const ElectronIDConfig electronID_tight = {
         {"2022Re-recoE+PromptFG", "Electron-ID-SF"},
         {"2023PromptC",           "Electron-ID-SF"},
         {"2023PromptD",           "Electron-ID-SF"},
-        {"2024Prompt",            "Electron-ID-SF"}
+        {"2024Prompt",            "Electron-ID-SF"},
+        {"2025",                  "Electron-ID-SF"}
     },
     "Tight"
 };
