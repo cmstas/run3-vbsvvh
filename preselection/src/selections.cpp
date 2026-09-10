@@ -415,7 +415,7 @@ RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 
 
 ///////////////// Main channel selection block /////////////////
-RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
+RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, std::string run_number)
 {
 
     Cutflow::Add(df_, "All events");
@@ -581,19 +581,23 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
     // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
+        df = applyQCDScoreResampling(df, run_number);
 
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        df = TriggerSelections(df, trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
         // Channel orthogonality selection
         df = definePerVariationPassFlags(df, "0lep_3FJ", [](const std::string& sfx){
             const std::string fjCountCol = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
-            return "(nLep_Sel == 0) && (" + fjCountCol + " == 3)";
+            const std::string jCountCol  = sfx.empty() ? "njet"     : "njet_"     + sfx;
+            return "(nLep_Sel == 0) && (" + fjCountCol + " >= 3) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "0lep_3FJ"), "C2: 0lep_3FJ");
+
+        Cutflow::Add(df, "C2: 0 lepton + 3 fatjet selection");
     }
 
     // 1lep_1FJ - fatjet + njet cuts must combine inside a single per-variation pass flag,
@@ -624,12 +628,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " == 1) && (" + jCountCol + " >= 4)";
         });
         df = df.Filter(orPassExpr(df, "1lep_1FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
     }
 
     // 1lep_2FJ - same caveat as 1lep_1FJ (C3 + C4 collapsed).
     else if (channel == "1lep_2FJ"){
 
-        df = VBSTagging(df, "jetNoFJClean");
+        df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_singlelep);
@@ -652,6 +657,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " >= 2) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "1lep_2FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
+
     }
 
     // 2lepSS

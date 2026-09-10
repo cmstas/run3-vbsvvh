@@ -325,21 +325,21 @@ const CSetMap& electronSSCorrections() {
     {"2016preVFP", 0.0f}, {"2016postVFP", 0.0f}, {"2017", 0.0f}, {"2018", 0.0f},
     {"2022Re-recoBCD", 0.0f}, {"2022Re-recoE+PromptFG", 0.0f},
     {"2023PromptC", 0.0f}, {"2023PromptD", 0.0f},
-    {"2024Prompt", 0.0f}
+    {"2024Prompt", 0.0f}, {"2025", 0.0f}
 };
 
 [[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_central = {
     {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
     {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
     {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}
+    {"2024Prompt", 1.0f}, {"2025", 1.0f}
 };
 
 [[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_sigmaRel_central = {
     {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
     {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
     {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}
+    {"2024Prompt", 1.0f}, {"2025", 1.0f}
 };
 
 } // anonymous namespace
