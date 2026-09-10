@@ -67,7 +67,7 @@ const std::unordered_map<std::string, std::string> pileupScaleFactors_yearmap = 
     {"2024Prompt", "Collisions24_BCDEFGHI_goldenJSON"},
     {"2025", "Collisions25_goldenJSON"}
 };
-RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
+RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df);
 
 
 /*
