@@ -735,8 +735,8 @@ private:
 
 RNode applyQCDScoreResampling(RNode df, const std::string& run_number) {
     const std::string template_path = (run_number == "2")
-        ? "data/resampling_pdfs_run2.root"
-        : "data/resampling_pdfs.root";
+        ? "data/resampling_pdfs_QCD_run2.root"
+        : "data/resampling_pdfs_QCD_run3.root";
     auto resampler = std::make_shared<QCDScoreResampler>(template_path);
     std::cout << " -> QCD GloParT score resampling ENABLED (templates: " << template_path << ")" << std::endl;
 
