@@ -108,7 +108,7 @@ class ConfigGenerator:
             elif any(run in sample_path for run in ["Run2024B", "Run2024C", "Run2024D", "Run2024E", "Run2024F", "Run2024G", "Run2024H", "Run2024I"]):
                 return "2024Prompt"
             elif any(run in sample_path for run in ["Run2025A", "Run2025B", "Run2025C", "Run2025D", "Run2025E", "Run2025F", "Run2025G", "Run2025H"]):
-                return "2025Prompt"
+                return "2025"
 
         # MC patterns - Run 2
         if "UL16" in sample_path and "APV" in sample_path:

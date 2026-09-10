@@ -38,12 +38,12 @@ using StrMap  = std::unordered_map<std::string, std::string>;
 JERC ERA TABLE
 --------------
 Run 2 + the 2022/2023 Run 3 eras are pinned to the 2026-06-05 JME snapshot
-(jet_jerc / fatJet_jerc); the 2024Prompt and 2025Prompt eras are pinned to the newer
+(jet_jerc / fatJet_jerc); the 2024Prompt and 2025 eras are pinned to the newer
 2026-07-16 snapshot (JEC V5/V3, JER JRV2). JER-Smearing is pinned to
 2025-11-03 — NOT the mutable `latest/` symlink. The tag strings below are the
 compound/correction key roots that exist inside those pinned files. The
 "2024Prompt" era uses the Summer24Prompt24 tag (JEC V5 / JER JRV2), and the
-"2025Prompt" era (2025 data + Summer24 MC) uses the JME-recommended Summer24Prompt25
+"2025" era (2025 data + Summer24 MC) uses the JME-recommended Summer24Prompt25
 tag (JEC V3 / JER JRV2). The 2026-07-14 update moved the L2L3Residual
 corrections to signed-η (from |η|) and refreshed the JER SFs (evalJECCompound
 already passes signed eta and resolves inputs by name, so no code change was
@@ -90,7 +90,7 @@ const std::map<std::string, EraJERC>& eraJERCTable() {
         // L2L3Residual payloads had not actually been updated (JEC tags bumped to V5/V3 with the fix).
         {"2024Prompt",           {"Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15", "2026-07-16", "Summer24Prompt24_V5",        "Summer24Prompt24_JRV2",           "2024"}},
         // 2025 data + Summer24 MC — JME-recommended Summer24Prompt25 (JEC + JER + JES self-contained).
-        {"2025Prompt",           {"Run3-25Prompt-Summer24-NanoAODv15",                    "2026-07-16", "Summer24Prompt25_V3",        "Summer24Prompt25_JRV2",           "2025"}},
+        {"2025",                 {"Run3-25Prompt-Summer24-NanoAODv15",                    "2026-07-16", "Summer24Prompt25_V3",        "Summer24Prompt25_JRV2",           "2025"}},
     };
     return table;
 }
@@ -186,7 +186,7 @@ const CSetMap& btaggingCorrections() {
             {"2023PromptC",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
             {"2023PromptD",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
             {"2024Prompt",            "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2025Prompt",            "Run3-25Prompt-Summer24-NanoAODv15"},
+            {"2025",                  "Run3-25Prompt-Summer24-NanoAODv15"},
         };
         CSetMap out;
         for (const auto& [year, dir] : eras)
@@ -274,7 +274,7 @@ const std::map<std::string, EraVetoMap>& eraVetoMapTable() {
         {"2023PromptC",          {"Run3-23CSep23-Summer23-NanoAODv12",                    "2026-07-15", "Summer23Prompt23_RunC_V1"}},
         {"2023PromptD",          {"Run3-23DSep23-Summer23BPix-NanoAODv12",                "2026-07-15", "Summer23BPixPrompt23_RunD_V1"}},
         {"2024Prompt",           {"Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15", "2026-07-16", "Summer24Prompt24_RunBCDEFGHI_V1"}},
-        {"2025Prompt",           {"Run3-25Prompt-Summer24-NanoAODv15",                    "2026-07-16", "Summer24Prompt25_RunCDEFG_V1"}},
+        {"2025",                 {"Run3-25Prompt-Summer24-NanoAODv15",                    "2026-07-16", "Summer24Prompt25_RunCDEFG_V1"}},
     };
     return table;
 }
@@ -311,7 +311,7 @@ const CSetMap& electronSSCorrections() {
         {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23CSep23-Summer23-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
         {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/electronSS_EtDependent.json.gz")},
         {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")},
-        {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-25Prompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")}
+        {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-25Prompt-Summer24-NanoAODv15/latest/electronSS_EtDependent.json.gz")}
     };
     return m;
 }
@@ -325,21 +325,21 @@ const CSetMap& electronSSCorrections() {
     {"2016preVFP", 0.0f}, {"2016postVFP", 0.0f}, {"2017", 0.0f}, {"2018", 0.0f},
     {"2022Re-recoBCD", 0.0f}, {"2022Re-recoE+PromptFG", 0.0f},
     {"2023PromptC", 0.0f}, {"2023PromptD", 0.0f},
-    {"2024Prompt", 0.0f}, {"2025Prompt", 0.0f}
+    {"2024Prompt", 0.0f}, {"2025", 0.0f}
 };
 
 [[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_central = {
     {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
     {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
     {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}, {"2025Prompt", 1.0f}
+    {"2024Prompt", 1.0f}, {"2025", 1.0f}
 };
 
 [[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_sigmaRel_central = {
     {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
     {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
     {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}, {"2025Prompt", 1.0f}
+    {"2024Prompt", 1.0f}, {"2025", 1.0f}
 };
 
 } // anonymous namespace

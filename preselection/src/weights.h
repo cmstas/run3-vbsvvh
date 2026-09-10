@@ -53,7 +53,7 @@ const std::unordered_map<std::string, correction::CorrectionSet> pileupScaleFact
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-23CSep23-Summer23-NanoAODv12/latest/puWeights.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/puWeights.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/puWeights_BCDEFGHI.json.gz")},
-    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-25Prompt-Summer24-NanoAODv15/latest/puWeights_2025pp_Golden_Summer24_25ns_69200ub.json.gz")}
+    {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-25Prompt-Summer24-NanoAODv15/latest/puWeights_2025pp_Golden_Summer24_25ns_69200ub.json.gz")}
 };
 const std::unordered_map<std::string, std::string> pileupScaleFactors_yearmap = {
     {"2016preVFP", "Collisions16_UltraLegacy_goldenJSON"},
@@ -65,7 +65,7 @@ const std::unordered_map<std::string, std::string> pileupScaleFactors_yearmap = 
     {"2023PromptC", "Collisions2023_366403_369802_eraBC_GoldenJson"},
     {"2023PromptD", "Collisions2023_369803_370790_eraD_GoldenJson"},
     {"2024Prompt", "Collisions24_BCDEFGHI_goldenJSON"},
-    {"2025Prompt", "Collisions25_goldenJSON"}
+    {"2025", "Collisions25_goldenJSON"}
 };
 RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_pileup, std::unordered_map<std::string, std::string> year_map, RNode df, bool doVariations);
 
@@ -331,7 +331,7 @@ const std::unordered_map<std::string, correction::CorrectionSet> bTaggingScaleFa
     {"2023PromptC", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-23CSep23-Summer23-NanoAODv12/latest/btagging.json.gz")},
     {"2023PromptD", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-23DSep23-Summer23BPix-NanoAODv12/latest/btagging.json.gz")},
     {"2024Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/btagging.json.gz")},
-    {"2025Prompt", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
+    {"2025", *CorrectionSet::from_file("/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/Run3-25Prompt-Summer24-NanoAODv15/latest/btagging.json.gz")}
 };
 
 // Deliberately lazy: --btag_eff must be able to create this payload when it
@@ -344,7 +344,7 @@ const std::unordered_map<std::string, std::string> bTaggingScaleFactors_HF_corrn
     {"2017", "UParTAK4_comb"},
     {"2018", "UParTAK4_comb"},
     {"2024Prompt", "UParTAK4_comb"},
-    {"2025Prompt", "UParTAK4_comb"}
+    {"2025", "UParTAK4_comb"}
 };
 
 const std::unordered_map<std::string, std::string> bTaggingScaleFactors_LF_corrname = {
@@ -353,7 +353,7 @@ const std::unordered_map<std::string, std::string> bTaggingScaleFactors_LF_corrn
     {"2017", "UParTAK4_light"},
     {"2018", "UParTAK4_light"},
     {"2024Prompt", "UParTAK4_light"},
-    {"2025Prompt", "UParTAK4_light"}
+    {"2025", "UParTAK4_light"}
 };
 
 using BTagCorrectionRef = std::decay_t<decltype(std::declval<const correction::CorrectionSet &>().at(std::declval<std::string>()))>;
