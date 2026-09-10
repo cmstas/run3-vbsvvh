@@ -532,15 +532,16 @@ RNode applyPileupScaleFactors(std::unordered_map<std::string, correction::Correc
     auto eval_correction = [cset_pileup, year_map] (std::string year, float ntrueint) {
         RVec<double> pileup_weights;
         if (cset_pileup.find(year) == cset_pileup.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: Pileup correction set for year " << year << " not found. Setting pileup weights to 1." << std::endl;
-                warned_years.insert(year);
-            }
-            pileup_weights.push_back(1.0);
-            pileup_weights.push_back(1.0);
-            pileup_weights.push_back(1.0);
-            return pileup_weights;
+            std::string known;
+            for (const auto& [k, _] : cset_pileup) known += (known.empty() ? "" : ", ") + k;
+            throw std::runtime_error("Pileup: no correction set configured for year '" + year
+                                     + "'. Configured years: " + known
+                                     + ". Add the era to pileupScaleFactors and "
+                                       "pileupScaleFactors_yearmap in src/weights.h.");
+        }
+        if (year_map.find(year) == year_map.end()) {
+            throw std::runtime_error("Pileup: year '" + year + "' has a correction set but no entry in "
+                                     "pileupScaleFactors_yearmap (src/weights.h).");
         }
         auto correctionset = cset_pileup.at(year).at(year_map.at(year));
         pileup_weights.push_back(correctionset->evaluate({ntrueint, "nominal"}));

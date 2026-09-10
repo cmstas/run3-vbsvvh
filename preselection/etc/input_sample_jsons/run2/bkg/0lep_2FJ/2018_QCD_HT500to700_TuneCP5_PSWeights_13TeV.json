@@ -18,7 +18,7 @@
                 "shortname": "QCD_HT500to700_TuneCP5_PSWeights_13TeV",
                 "do_ewk_corr": 0,
                 "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
-                "sumw": 37360351.0
+                "sumw": 49184771.0
             }
         }
     }
