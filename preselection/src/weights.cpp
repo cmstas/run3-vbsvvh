@@ -377,7 +377,11 @@ std::string bTagEfficiencyFamily(const std::string &sample, const std::string &y
 std::string bTagEfficiencyChannel(const std::string &channel, const std::string &year) {
     const std::string canonical_channel =
         channel == "0lep_1FJ_met" ? "0lep_1FJ" :
-        channel == "0lep_2FJ_met" ? "0lep_2FJ" : channel;
+        channel == "0lep_2FJ_met" ? "0lep_2FJ" :
+        // 1lep_WSF is a variant of 1lep_1FJ -- same pre-skim, same
+        // leptonic topology -- and never gets an efficiency payload of its own, so it
+        // canonicalises onto 1lep_1FJ exactly as the _met variants do onto theirs.
+        channel == "1lep_WSF" ? "1lep_1FJ" : channel;
     if (canonical_channel == "all_events")
         throw std::runtime_error("all_events has no channel-specific b-tag efficiency payload. "
                                  "Specify an analysis channel, or rerun with --skip-btag-sf.");
