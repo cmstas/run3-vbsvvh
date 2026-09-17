@@ -79,6 +79,11 @@ preliminary_families:
   DY:
     - DYto
     - DYJetsTo
+    # Z(->nunu)+jets: jets are ISR/FSR as in DY, so the flavour composition matches.
+    # "Zto2Nu-4Jets" not "Zto2Nu" -- the latter is also a substring of the VH
+    # samples (GluGluZH-Zto2Nu-Hto2B, ZH-Zto2Nu-Hto2B) and of ZZto2Nu2Q.
+    - Zto2Nu-4Jets
+    - ZJetsToNuNu
   W_leptonic:
     - WtoLNu
     - WJetsToLNu
