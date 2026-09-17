@@ -255,7 +255,9 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, ru
     metadata_dict = {}
     metadata_dict["kind"] = kind
     metadata_dict["year"] = year
-    metadata_dict["xsec"] = xsec_val
+    # float() on purpose: an integral xsec would serialise as a bare int and RDF
+    # rejects it ("Metadata value found at key 'xsec' is not of type double").
+    metadata_dict["xsec"] = float(xsec_val)
     metadata_dict["lumi"] = lumi
     metadata_dict["shortname"] = name_for_metadata
     metadata_dict["do_ewk_corr"] = do_ewk_corr

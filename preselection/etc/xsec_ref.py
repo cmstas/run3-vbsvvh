@@ -49,7 +49,7 @@ xsec_dict = {
             # V+jets HT-binned, LO. GenXSecAnalyzer over the complete datasets via CRAB
             # (Maria Mazza 2026-09-16). Quoted to 4 s.f.: the GenXSecAnalyzer statistical
             # error is ~0.03%, but the production-to-production scatter dominates at ~0.5% (median 0.22%, max 0.83%).
-            "WtoLNu-4Jets_Bin-HT-100to400-MLNu-0to120_TuneCP5_13p6TeV"   : 1635,
+            "WtoLNu-4Jets_Bin-HT-100to400-MLNu-0to120_TuneCP5_13p6TeV"   : 1635.0,
             "WtoLNu-4Jets_Bin-HT-100to400-MLNu-120_TuneCP5_13p6TeV"      : 10.17,
             "WtoLNu-4Jets_Bin-HT-1500to2500-MLNu-0to120_TuneCP5_13p6TeV" : 0.45,
             "WtoLNu-4Jets_Bin-HT-1500to2500-MLNu-120_TuneCP5_13p6TeV"    : 0.005053,
@@ -57,7 +57,7 @@ xsec_dict = {
             "WtoLNu-4Jets_Bin-HT-2500-MLNu-120_TuneCP5_13p6TeV"          : 0.0003781,
             "WtoLNu-4Jets_Bin-HT-400to800-MLNu-0to120_TuneCP5_13p6TeV"   : 59.89,
             "WtoLNu-4Jets_Bin-HT-400to800-MLNu-120_TuneCP5_13p6TeV"      : 0.5268,
-            "WtoLNu-4Jets_Bin-HT-40to100-MLNu-0to120_TuneCP5_13p6TeV"    : 4259,
+            "WtoLNu-4Jets_Bin-HT-40to100-MLNu-0to120_TuneCP5_13p6TeV"    : 4259.0,
             "WtoLNu-4Jets_Bin-HT-40to100-MLNu-120_TuneCP5_13p6TeV"       : 20.66,
             "WtoLNu-4Jets_Bin-HT-800to1500-MLNu-0to120_TuneCP5_13p6TeV"  : 6.22,
             "WtoLNu-4Jets_Bin-HT-800to1500-MLNu-120_TuneCP5_13p6TeV"     : 0.06255,
