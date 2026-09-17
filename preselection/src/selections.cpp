@@ -62,6 +62,110 @@ inline std::string orPassExpr(RNode df, const std::string& channel) {
     }
     return out;
 }
+
+// ---------------------------------------------------------------------------
+// 1lep_WSF probe gen-truth. Lives here, not in genSelections.cpp, because it reads
+// the flattened probe (fj0_eta / fj0_phi) that only the 1lep_WSF channel body
+// defines -- the precondition and the thing that establishes it stay together.
+// Internal linkage: nothing outside this channel has any use for it.
+//
+// Signature is bound at compile time, so it must match the NanoAOD v15 GenPart
+// column types exactly -- verified against the v24/v30 skims:
+//   GenPart_pdgId            Int_t    -> int
+//   GenPart_genPartIdxMother Short_t  -> short
+//   GenPart_statusFlags      UShort_t -> unsigned short
+// isLastCopy is bit 13 of statusFlags.
+//
+// Categorisation downstream:
+//   wmerged = dr_T_Wq_max < 0.8 && dr_T_b > 0.8
+//   tmerged = dr_T_Wq_max < 0.8 && dr_T_b < 0.8
+//   unmatched otherwise
+ROOT::RVec<float> wsf_truth_vars(
+    float probe_eta, float probe_phi,
+    const ROOT::RVec<int>& pdg,
+    const ROOT::RVec<short>& mom,
+    const ROOT::RVec<unsigned short>& flags,
+    const ROOT::RVec<float>& geta,
+    const ROOT::RVec<float>& gphi)
+{
+    const int n = static_cast<int>(pdg.size());
+    auto isLastCopy = [&](int i) { return (flags[i] >> 13) & 1; };
+
+    // Walk the mother chain from i up to a |pdg|==6 top; return its index or -1.
+    auto topAncestor = [&](int i) -> int {
+        int cur = static_cast<int>(mom[i]);
+        for (int guard = 0; cur >= 0 && cur < n && guard < 50; ++guard) {
+            if (std::abs(pdg[cur]) == 6) return cur;
+            cur = static_cast<int>(mom[cur]);
+        }
+        return -1;
+    };
+
+    // The two quark (|pdg| in 1..5) daughters of the boson at index w, plus a flag for
+    // whether it has any charged-lepton daughter (=> leptonic, skip).
+    auto quarkDaughters = [&](int w, int& q1, int& q2, bool& has_lep) {
+        q1 = -1; q2 = -1; has_lep = false;
+        for (int j = 0; j < n; ++j) {
+            if (static_cast<int>(mom[j]) != w) continue;
+            const int ad = std::abs(pdg[j]);
+            if (ad == 11 || ad == 13 || ad == 15) has_lep = true;
+            if (ad >= 1 && ad <= 5) { if (q1 < 0) q1 = j; else if (q2 < 0) q2 = j; }
+        }
+    };
+
+    float dr_T_Wq_max = 999.f, dr_T_b = 999.f, dr_W_daus = 999.f;
+    int   wq_max_pdg  = 0;
+
+    // --- Pass 1: hadronic W from a top (ttbar / single top / ttV) ---
+    float best = 1e9f;
+    bool  found_top_W = false;
+    for (int i = 0; i < n; ++i) {
+        if (std::abs(pdg[i]) != 24 || !isLastCopy(i)) continue;
+        int q1, q2; bool has_lep;
+        quarkDaughters(i, q1, q2, has_lep);
+        if (q1 < 0 || q2 < 0) continue;        // not hadronic
+        const int top = topAncestor(i);
+        if (top < 0) continue;                 // prompt W -> handled in pass 2
+        int b = -1;
+        for (int j = 0; j < n; ++j) {
+            if (static_cast<int>(mom[j]) == top && std::abs(pdg[j]) == 5) { b = j; break; }
+        }
+        const float dRq1 = ROOT::VecOps::DeltaR(probe_eta, geta[q1], probe_phi, gphi[q1]);
+        const float dRq2 = ROOT::VecOps::DeltaR(probe_eta, geta[q2], probe_phi, gphi[q2]);
+        const float wqmax = std::max(dRq1, dRq2);
+        if (wqmax < best) {
+            best = wqmax;
+            found_top_W = true;
+            dr_T_Wq_max = wqmax;
+            dr_W_daus   = ROOT::VecOps::DeltaR(geta[q1], geta[q2], gphi[q1], gphi[q2]);
+            dr_T_b      = (b >= 0) ? ROOT::VecOps::DeltaR(probe_eta, geta[b], probe_phi, gphi[b]) : 999.f;
+            wq_max_pdg  = (dRq1 >= dRq2) ? pdg[q1] : pdg[q2];   // pdg of the farther quark
+        }
+    }
+    if (found_top_W) return {dr_T_Wq_max, dr_T_b, dr_W_daus, static_cast<float>(wq_max_pdg)};
+
+    // --- Pass 2: prompt hadronic W/Z (W+jets, Z+jets, diboson). pdgId stays 0. ---
+    best = 1e9f;
+    for (int i = 0; i < n; ++i) {
+        const int ad = std::abs(pdg[i]);
+        if ((ad != 24 && ad != 23) || !isLastCopy(i)) continue;
+        int q1, q2; bool has_lep;
+        quarkDaughters(i, q1, q2, has_lep);
+        if (has_lep || q1 < 0 || q2 < 0) continue;
+        const float dRq1 = ROOT::VecOps::DeltaR(probe_eta, geta[q1], probe_phi, gphi[q1]);
+        const float dRq2 = ROOT::VecOps::DeltaR(probe_eta, geta[q2], probe_phi, gphi[q2]);
+        const float wqmax = std::max(dRq1, dRq2);
+        if (wqmax < best) {
+            best = wqmax;
+            dr_T_Wq_max = wqmax;
+            dr_W_daus   = ROOT::VecOps::DeltaR(geta[q1], geta[q2], gphi[q1], gphi[q2]);
+            dr_T_b      = 999.f;   // no associated top b
+            wq_max_pdg  = 0;       // "not from top" -> upstream tp2 falls back to dr_W_daus
+        }
+    }
+    return {dr_T_Wq_max, dr_T_b, dr_W_daus, static_cast<float>(wq_max_pdg)};
+}
+
 } // anonymous namespace
 
 // MET filters
@@ -632,6 +736,79 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " >= 2) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "1lep_2FJ"), "C3: jet selection (any variation)");
+    }
+
+    // 1lep_WSF - GloParT W-tagging and JMS/JMR calibration region.
+    //
+    // Standalone tag-and-probe measurement region whose output feeds the jmsr fit and the Wqq
+    // tagging-SF fit. Because it is not part of the analysis, run_rdf.py keeps it
+    // out of the "--channels all" expansion -- see NON_ANALYSIS_CHANNELS there.
+    //
+    else if (channel == "1lep_WSF"){
+
+        df = TriggerSelections(df, trigger_logic_string_1lepWSF);
+        Cutflow::Add(df, "C1: single-muon trigger");
+
+        // nMuon_Tight is mediumId && pfIsoId>=4 (MuonSelections above), so the matching
+        // SF payload is mediumid_tightiso, NOT the tightid_tightiso the 1lep_* channels use.
+        df = lepSFWrapper(df, isData,
+                          /*ele_sf_name=*/ "_weight_electron_reco_tightid",
+                          /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso",
+                          /*include_trigger_sf=*/ true);
+
+        // Tag: exactly one muon in the event, and it is tight. nMuon_Tight alone would
+        // not veto a second, softer loose muon, and muon_pt[0] indexes the loose
+        // collection -- so nMuon_Loose == 1 is what makes [0] the tag muon.
+        df = df.Filter("nMuon_Loose == 1 && nMuon_Tight == 1 && "
+                       "nElectron_Loose == 0 && muon_pt[0] > 30", "C2: single muon tag");
+        Cutflow::Add(df, "C2: single muon tag (pT>30)");
+
+        // Probe. Hard nominal cut, NOT definePerVariationPassFlags/orPassExpr: the
+        // probe payload below indexes fatjet_*[0], which is only defined once this has
+        // passed nominally. An OR-over-variations filter would admit events with
+        // nfatjet == 0 nominally and read out of bounds. The cost is that under --systs
+        // the flat fj0_* columns stay nominal; the JES-varied FatJet_* arrays and
+        // FatJet_isGood_<sfx> masks are still written, so a varied probe is
+        // reconstructible downstream.
+        df = df.Filter("nfatjet >= 1", "C3: >=1 fat jet (probe)");
+        Cutflow::Add(df, "C3: >=1 fat jet");
+
+        // Type-1 rebuilt MET. The W-SF fit re-cuts at 40 downstream.
+        df = df.Filter("met_pt > 30", "C4: MET > 30");
+        Cutflow::Add(df, "C4: MET > 30");
+
+        // Suppresses W+jets, whose untagged low-mass tail is what rails the jmsr fit.
+        df = df.Filter("Sum(jet_isMediumBTag) >= 1", "C5: >=1 medium b-tag");
+        Cutflow::Add(df, "C5: >=1 medium b-tag");
+
+        // ---- probe payload: Defines only, no further cuts (produce loose, cut downstream) ----
+        // Probe = leading good AK8, already dR>0.8 isolated from the lepton by AK8JetsSelection.
+        df = df.Define("fj0_pt",     "fatjet_pt[0]")
+               .Define("fj0_eta",    "fatjet_eta[0]")
+               .Define("fj0_phi",    "fatjet_phi[0]")
+               .Define("fj0_sdmass", "fatjet_msoftdrop[0]")
+               .Define("fj0_massGloParT3", "fatjet_massGloParT3[0]")
+               .Define("fj0_Wqq", "fatjet_Wqq[0]")
+               .Define("fj0_Hbb", "fatjet_Hbb[0]")
+               .Define("fj0_nMediumBTag", "Sum(jet_isMediumBTag)");
+
+        // Leptonic-W pT: the tag-side boost. In semileptonic tt the two tops recoil
+        // against each other, so requiring a boosted leptonic W (the fit cuts at 150
+        // downstream) is what makes the probe AK8 contain a genuinely merged hadronic W.
+        df = df.Define("_lepW_px", "muon_pt[0]*cos(muon_phi[0]) + met_pt*cos(met_phi)")
+               .Define("_lepW_py", "muon_pt[0]*sin(muon_phi[0]) + met_pt*sin(met_phi)")
+               .Define("leptonicW_pt", "sqrt(_lepW_px*_lepW_px + _lepW_py*_lepW_py)");
+
+        // Probe gen-truth
+        if (!isData) {
+            df = df.Define("_wsf_truth", wsf_truth_vars,
+                           {"fj0_eta", "fj0_phi", "GenPart_pdgId", "GenPart_genPartIdxMother",
+                            "GenPart_statusFlags", "GenPart_eta", "GenPart_phi"})
+                   .Define("fj0_dr_T_Wq_max",    "_wsf_truth[0]")
+                   .Define("fj0_dr_T_b",         "_wsf_truth[1]")
+                   .Define("fj0_dr_W_daus",      "_wsf_truth[2]")
+                   .Define("fj0_T_Wq_max_pdgId", "(int)_wsf_truth[3]");
+        }
     }
 
     // 2lepSS

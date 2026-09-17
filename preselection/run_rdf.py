@@ -14,16 +14,25 @@ ANA_CHANNELS = {
         "0lep_3FJ"     : "0lep_3FJ",
         "1lep_1FJ"     : "1lep_1FJ",
         "1lep_2FJ"     : "1lep_1FJ",
+        "1lep_WSF"     : "1lep_1FJ",
         #"2lepSS"       : "2lepSS", # DNE yet
         "2lep_1FJ"     : "2lep_1FJ", # Analysis channel shared between SF and OF
         "2lep_2FJ"     : "2lep_2FJ",
         "3lep"         : "3lep",
         "4lep"         : "4lep",
 }
+# Calibration / measurement regions that RDF knows how to run but that are NOT part of
+# the analysis. Unlike the analysis channels, these are not mutually orthogonal -- they
+# deliberately overlap the channels they are measured from -- so they must never be swept
+# up by "--channels all", which is how the routine full production is submitted. Run them
+# explicitly by name instead: run_rdf.py -c 1lep_WSF.
+NON_ANALYSIS_CHANNELS = {"1lep_WSF"}
+
 # MET-trigger subsets may have their own efficiency payloads.  They remain
 # excluded from final channel merging by the b-tag YAML, but are valid raw
-# production channels here.
-B_TAG_EFF_EXCLUDED_CHANNELS = {"all_events"}
+# production channels here.  The non-analysis channels are excluded too: they apply
+# another channel's efficiency payload and never produce one.
+B_TAG_EFF_EXCLUDED_CHANNELS = {"all_events"} | NON_ANALYSIS_CHANNELS
 SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
 
 # Where RDF productions go by default on Hipergator (/cmsuf). A single channel
@@ -212,7 +221,8 @@ def main():
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
     if args.channels == ["all"]:
         channels_to_run = [channel for channel in ANA_CHANNELS
-                           if not args.btag_eff or channel not in B_TAG_EFF_EXCLUDED_CHANNELS]
+                           if channel not in NON_ANALYSIS_CHANNELS
+                           and (not args.btag_eff or channel not in B_TAG_EFF_EXCLUDED_CHANNELS)]
     else: channels_to_run = args.channels
 
     # Run RDF once for each specified channel

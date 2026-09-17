@@ -160,3 +160,6 @@ excluded_source_channels:
   - all_events
   - 0lep_1FJ_met
   - 0lep_2FJ_met
+  # Calibration region, not an analysis channel: it applies 1lep_1FJ's payload
+  # (bTagEfficiencyChannel canonicalises it) and never contributes one of its own.
+  - 1lep_WSF
