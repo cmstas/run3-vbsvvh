@@ -69,27 +69,58 @@ inline std::string orPassExpr(RNode df, const std::string& channel) {
 // defines -- the precondition and the thing that establishes it stay together.
 // Internal linkage: nothing outside this channel has any use for it.
 //
-// Signature is bound at compile time, so it must match the NanoAOD v15 GenPart
-// column types exactly -- verified against the v24/v30 skims:
+// Strategy: JET-FIRST. Ask what truth object, if any, is contained in the leading
+// fat jet -- never start from the sample's expected topology and check containment
+// afterwards. The second direction forces an a priori choice exactly where it is
+// least safe: in tW->4Q, TTW-WtoQQ, TTWW and TTWZ a top-W and a prompt W are both
+// hadronic in the same event, and any fixed priority between them is applied blind.
+//
+// IDENTITY BEFORE CONTAINMENT. Decide what the jet *is* first; the containment test
+// then follows from the identity, rather than one dR threshold standing in for both
+// questions. The answer is one code:
+//
+//   fj0_gen_match   0 nothing   1 prompt W   2 W from top   3 top
+//
+// 0 covers both "no hadronic W in the record" and "one exists but is not in the
+// cone" -- in both cases the jet corresponds to nothing in the hard process, and
+// dr_Wq_max (999 vs finite-but->=0.8) separates them.
+//
+// NanoAOD v15 types, verified against the v30 skims:
 //   GenPart_pdgId            Int_t    -> int
 //   GenPart_genPartIdxMother Short_t  -> short
 //   GenPart_statusFlags      UShort_t -> unsigned short
+//   GenPart_status           Int_t    -> int
 // isLastCopy is bit 13 of statusFlags.
 //
-// Categorisation downstream:
-//   wmerged = dr_T_Wq_max < 0.8 && dr_T_b > 0.8
-//   tmerged = dr_T_Wq_max < 0.8 && dr_T_b < 0.8
-//   unmatched otherwise
+// Downstream (jmsr.selection.categorize):
+//   wmerged   = gen_match in {1,2}   (or {2} alone, if prompt W is excluded)
+//   tmerged   = gen_match == 3
+//   unmatched = otherwise
+namespace wsf {
+
+// The AK8 radius. "Inside this jet" has exactly one meaning, so this is a
+// definition rather than a tunable working point -- but every continuous dR is
+// emitted anyway, so a consumer wanting a different radius never needs a re-run.
+constexpr float kMatchDR = 0.8f;
+
+constexpr float kNone = 999.f;
+
+enum : int { kMatchNone = 0, kMatchPromptW = 1, kMatchTopW = 2, kMatchTop = 3 };
+
+} // namespace wsf
+
 ROOT::RVec<float> wsf_truth_vars(
     float probe_eta, float probe_phi,
     const ROOT::RVec<int>& pdg,
     const ROOT::RVec<short>& mom,
     const ROOT::RVec<unsigned short>& flags,
+    const ROOT::RVec<int>& status,
     const ROOT::RVec<float>& geta,
     const ROOT::RVec<float>& gphi)
 {
     const int n = static_cast<int>(pdg.size());
     auto isLastCopy = [&](int i) { return (flags[i] >> 13) & 1; };
+    auto dRprobe    = [&](int i) { return ROOT::VecOps::DeltaR(probe_eta, geta[i], probe_phi, gphi[i]); };
 
     // Walk the mother chain from i up to a |pdg|==6 top; return its index or -1.
     auto topAncestor = [&](int i) -> int {
@@ -101,69 +132,95 @@ ROOT::RVec<float> wsf_truth_vars(
         return -1;
     };
 
-    // The two quark (|pdg| in 1..5) daughters of the boson at index w, plus a flag for
-    // whether it has any charged-lepton daughter (=> leptonic, skip).
-    auto quarkDaughters = [&](int w, int& q1, int& q2, bool& has_lep) {
-        q1 = -1; q2 = -1; has_lep = false;
+    // The quark daughters of the boson at index w. A last-copy W decays either to
+    // qq' or to lnu, never both -- downstream radiation attaches to the quarks, not
+    // back to the W -- so no charged-lepton guard is needed here. (Measured on 240k
+    // last-copy W in tW: the multiplicity is exactly 0 or 2, never 1 or 3, and zero
+    // W carry both a quark and a charged lepton.) A count != 2 is a record we do not
+    // understand, so it is rejected rather than silently truncated to the first two.
+    auto quarkDaughters = [&](int w, int& q1, int& q2) -> bool {
+        q1 = -1; q2 = -1; int nq = 0;
         for (int j = 0; j < n; ++j) {
             if (static_cast<int>(mom[j]) != w) continue;
             const int ad = std::abs(pdg[j]);
-            if (ad == 11 || ad == 13 || ad == 15) has_lep = true;
-            if (ad >= 1 && ad <= 5) { if (q1 < 0) q1 = j; else if (q2 < 0) q2 = j; }
+            if (ad < 1 || ad > 5) continue;
+            ++nq;
+            if      (q1 < 0) q1 = j;
+            else if (q2 < 0) q2 = j;
         }
+        return nq == 2;
     };
 
-    float dr_T_Wq_max = 999.f, dr_T_b = 999.f, dr_W_daus = 999.f;
-    int   wq_max_pdg  = 0;
-
-    // --- Pass 1: hadronic W from a top (ttbar / single top / ttV) ---
-    float best = 1e9f;
-    bool  found_top_W = false;
+    // ---- choose the candidate, across provenances, by best match to THIS jet ----
+    //
+    // Only |pdg|==24. A merged hadronic Z is a 91 GeV object and this is a W
+    // calibration, so it is not a candidate; it surfaces as a bump in the unmatched
+    // template, where it is visible, rather than inside the template whose peak
+    // position is the quantity being measured.
+    int   best_w = -1, best_q1 = -1, best_q2 = -1;
+    float best_dr = 1e9f;
     for (int i = 0; i < n; ++i) {
         if (std::abs(pdg[i]) != 24 || !isLastCopy(i)) continue;
-        int q1, q2; bool has_lep;
-        quarkDaughters(i, q1, q2, has_lep);
-        if (q1 < 0 || q2 < 0) continue;        // not hadronic
-        const int top = topAncestor(i);
-        if (top < 0) continue;                 // prompt W -> handled in pass 2
-        int b = -1;
-        for (int j = 0; j < n; ++j) {
-            if (static_cast<int>(mom[j]) == top && std::abs(pdg[j]) == 5) { b = j; break; }
-        }
-        const float dRq1 = ROOT::VecOps::DeltaR(probe_eta, geta[q1], probe_phi, gphi[q1]);
-        const float dRq2 = ROOT::VecOps::DeltaR(probe_eta, geta[q2], probe_phi, gphi[q2]);
-        const float wqmax = std::max(dRq1, dRq2);
-        if (wqmax < best) {
-            best = wqmax;
-            found_top_W = true;
-            dr_T_Wq_max = wqmax;
-            dr_W_daus   = ROOT::VecOps::DeltaR(geta[q1], geta[q2], gphi[q1], gphi[q2]);
-            dr_T_b      = (b >= 0) ? ROOT::VecOps::DeltaR(probe_eta, geta[b], probe_phi, gphi[b]) : 999.f;
-            wq_max_pdg  = (dRq1 >= dRq2) ? pdg[q1] : pdg[q2];   // pdg of the farther quark
-        }
+        int q1, q2;
+        if (!quarkDaughters(i, q1, q2)) continue;   // leptonic, or a record we reject
+        const float dr = std::max(dRprobe(q1), dRprobe(q2));
+        if (dr < best_dr) { best_dr = dr; best_w = i; best_q1 = q1; best_q2 = q2; }
     }
-    if (found_top_W) return {dr_T_Wq_max, dr_T_b, dr_W_daus, static_cast<float>(wq_max_pdg)};
 
-    // --- Pass 2: prompt hadronic W/Z (W+jets, Z+jets, diboson). pdgId stays 0. ---
-    best = 1e9f;
-    for (int i = 0; i < n; ++i) {
-        const int ad = std::abs(pdg[i]);
-        if ((ad != 24 && ad != 23) || !isLastCopy(i)) continue;
-        int q1, q2; bool has_lep;
-        quarkDaughters(i, q1, q2, has_lep);
-        if (has_lep || q1 < 0 || q2 < 0) continue;
-        const float dRq1 = ROOT::VecOps::DeltaR(probe_eta, geta[q1], probe_phi, gphi[q1]);
-        const float dRq2 = ROOT::VecOps::DeltaR(probe_eta, geta[q2], probe_phi, gphi[q2]);
-        const float wqmax = std::max(dRq1, dRq2);
-        if (wqmax < best) {
-            best = wqmax;
-            dr_T_Wq_max = wqmax;
-            dr_W_daus   = ROOT::VecOps::DeltaR(geta[q1], geta[q2], gphi[q1], gphi[q2]);
-            dr_T_b      = 999.f;   // no associated top b
-            wq_max_pdg  = 0;       // "not from top" -> upstream tp2 falls back to dr_W_daus
+    // ---- contamination probe: nearest hard-process b, whatever its origin ----
+    //
+    // Status 23 is an outgoing particle of the hard process, which catches both a
+    // top's b and the initial-state b of 5-flavour-scheme tW. This is what makes
+    // "merged W plus a stray b" measurable downstream instead of invisible; it never
+    // enters the categorisation.
+    float dr_b_near = wsf::kNone;
+    for (int j = 0; j < n; ++j) {
+        if (std::abs(pdg[j]) != 5 || status[j] != 23) continue;
+        dr_b_near = std::min(dr_b_near, dRprobe(j));
+    }
+
+    if (best_w < 0) {
+        return {static_cast<float>(wsf::kMatchNone), wsf::kNone, wsf::kNone,
+                wsf::kNone, dr_b_near, 0.f, 0.f};
+    }
+
+    const float dr_Wq_max   = best_dr;
+    const float dr_W_daus   = ROOT::VecOps::DeltaR(geta[best_q1], geta[best_q2],
+                                                   gphi[best_q1], gphi[best_q2]);
+    const int   Wq_max_pdg  = (dRprobe(best_q1) >= dRprobe(best_q2)) ? pdg[best_q1] : pdg[best_q2];
+
+    // ---- the top's partner quark ----
+    //
+    // t -> q W is one vertex, so the partner is always emitted with the W -- but it
+    // is not always a b. Accepting only |pdg|==5 loses CKM-suppressed t->sW / t->dW
+    // (measured in tW: 0.1485% s, 0.0071% d, total 0.156% against
+    // |Vts|^2 + |Vtd|^2 = 0.171%), and the old code emitted 999 for those, which
+    // reads downstream as "the partner is outside the jet" and makes the event a
+    // merged W. tt is generated with t->bW forced, which is why this is invisible
+    // there. Hence any DOWN-TYPE daughter.
+    const int top = topAncestor(best_w);
+    float dr_top_q  = wsf::kNone;
+    int   top_q_pdg = 0;
+    if (top >= 0) {
+        for (int j = 0; j < n; ++j) {
+            if (static_cast<int>(mom[j]) != top) continue;
+            const int ad = std::abs(pdg[j]);
+            if (ad != 1 && ad != 3 && ad != 5) continue;
+            dr_top_q  = dRprobe(j);
+            top_q_pdg = pdg[j];
+            break;
         }
     }
-    return {dr_T_Wq_max, dr_T_b, dr_W_daus, static_cast<float>(wq_max_pdg)};
+
+    // ---- identity ----
+    int match;
+    if      (dr_Wq_max >= wsf::kMatchDR) match = wsf::kMatchNone;    // found, not contained
+    else if (top < 0)                    match = wsf::kMatchPromptW;
+    else if (dr_top_q <= wsf::kMatchDR)  match = wsf::kMatchTop;
+    else                                 match = wsf::kMatchTopW;
+
+    return {static_cast<float>(match), dr_Wq_max, dr_top_q, dr_W_daus, dr_b_near,
+            static_cast<float>(Wq_max_pdg), static_cast<float>(top_q_pdg)};
 }
 
 } // anonymous namespace
@@ -790,7 +847,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
                .Define("fj0_massGloParT3", "fatjet_massGloParT3[0]")
                .Define("fj0_Wqq", "fatjet_Wqq[0]")
                .Define("fj0_Hbb", "fatjet_Hbb[0]")
-               .Define("fj0_nMediumBTag", "Sum(jet_isMediumBTag)");
+               // Tag-side b multiplicity. jet_* is the FJ-CLEANED AK4 collection
+               // (dR>0.8 from every good fat jet, AK4JetsSelection above), so this counts
+               // b-tags OUTSIDE the probe -- it is not the b content of the fat jet, which
+               // is what fj0_dr_T_b gives in MC. Named without the fj0_ prefix for that
+               // reason. Cast to int because Sum(RVec<bool>) returns std::size_t, whose
+               // branch type uproot has no interpretation rule for.
+               .Define("nMediumBTag_outsideFJ", "(int)Sum(jet_isMediumBTag)");
 
         // Leptonic-W pT: the tag-side boost. In semileptonic tt the two tops recoil
         // against each other, so requiring a boosted leptonic W (the fit cuts at 150
@@ -803,11 +866,14 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         if (!isData) {
             df = df.Define("_wsf_truth", wsf_truth_vars,
                            {"fj0_eta", "fj0_phi", "GenPart_pdgId", "GenPart_genPartIdxMother",
-                            "GenPart_statusFlags", "GenPart_eta", "GenPart_phi"})
-                   .Define("fj0_dr_T_Wq_max",    "_wsf_truth[0]")
-                   .Define("fj0_dr_T_b",         "_wsf_truth[1]")
-                   .Define("fj0_dr_W_daus",      "_wsf_truth[2]")
-                   .Define("fj0_T_Wq_max_pdgId", "(int)_wsf_truth[3]");
+                            "GenPart_statusFlags", "GenPart_status", "GenPart_eta", "GenPart_phi"})
+                   .Define("fj0_gen_match",     "(int)_wsf_truth[0]")
+                   .Define("fj0_dr_Wq_max",     "_wsf_truth[1]")
+                   .Define("fj0_dr_top_q",      "_wsf_truth[2]")
+                   .Define("fj0_dr_W_daus",     "_wsf_truth[3]")
+                   .Define("fj0_dr_b_near",     "_wsf_truth[4]")
+                   .Define("fj0_Wq_max_pdgId",  "(int)_wsf_truth[5]")
+                   .Define("fj0_top_q_pdgId",   "(int)_wsf_truth[6]");
         }
     }
 
