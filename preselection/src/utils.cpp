@@ -481,6 +481,19 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         final_variables.push_back("LHEReweightingWeight");
         // ROOT creates the count branch automatically for vector branches.
         final_variables.push_back("LHEPdfWeight");
+
+        // Gen-truth objects, signal only: the skim's truth<Obj>_* scalars (pdgId, pt, eta,
+        // phi, mass, status, genPartIdxMother for H, V1, V2, their daughters, and the VBS
+        // quarks). They are skim branches, not defined columns, so must be added explicitly.
+        auto genColNames = df.GetColumnNames();
+        for (auto &&colName : genColNames) {
+            if (!colName.starts_with("truth")) {
+                continue;
+            }
+            if (std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
+                final_variables.push_back(colName);
+            }
+        }
     }
 
     // store all columns from input nanoAOD tree
