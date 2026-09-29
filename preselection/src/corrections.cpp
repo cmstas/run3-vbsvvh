@@ -1476,8 +1476,7 @@ Taking the difference is what cancels nano's JEC:
   dy± = PuppiMET_ptUnclustered±·sin(PuppiMET_phiUnclustered±) - PuppiMET_pt·sin(PuppiMET_phi)
   px± = met_pt·cos(met_phi) + dx±,    py± = met_pt·sin(met_phi) + dy±
 
-Runs after applyType1MET and before applyMETPhiCorrections, so met_pt/met_phi here are the
-pre-φ-corrected Type-1 rebuild.
+Runs after applyType1MET, so met_pt/met_phi here are the Type-1 rebuild.
 */
 
 RNode applyMETUnclusteredVariations(RNode df, bool isData) {
@@ -1917,9 +1916,9 @@ RNode applyDataCorrections(RNode df_) {
                                       jetEnergyCorrections_JEC_prefix(),   // same JEC release for AK4 and AK8
                                       fatJetEnergyCorrections_JEC_suffix(),
                                       df, /*isData=*/true);
-    // Rebuild Type-I MET (nominal only for data), then apply the Run 2 MET-φ correction on top.
+    // Rebuild Type-I MET (nominal only for data).
     df = applyType1MET(df, /*isData=*/true);
-    df = applyMETPhiCorrections(df, true);
+    // df = applyMETPhiCorrections(df, true);
     df = HEMCorrection(df, true);
     df = applyElectronScaleAndSmearing(df, true);
     return df;
@@ -1960,7 +1959,7 @@ RNode applyMCCorrections(RNode df_) {
     df = applyType1MET(df, /*isData=*/false);
     // UES ±1σ on top of the rebuilt Type-I MET
     df = applyMETUnclusteredVariations(df, /*isData=*/false);
-    df = applyMETPhiCorrections(df, false);
+    // df = applyMETPhiCorrections(df, false);
     // GloParT JMS/JMR would be wired here via applyJetMassScale / applyJetMassResolution
     // once the calibration is derived. FatJet_msoftdrop is intentionally not calibrated
     // (loose object cut only; GloParT is used in the rest of the analysis).

@@ -288,11 +288,13 @@ int main(int argc, char** argv) {
         std::cout << " -> Saving SPANet training data" << std::endl;
         saveSpanetSnapshot(df, output_dir, output_file);
         Cutflow::Print();
+        printBTagDiagnostics();
         return 0; // Exit after saving training data
     }
 
     saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput, args.storeHLT);
     Cutflow::Print();
+    printBTagDiagnostics();
 
     return 0;
 }
