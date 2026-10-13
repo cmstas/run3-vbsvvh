@@ -64,63 +64,85 @@ inline std::string orPassExpr(RNode df, const std::string& channel) {
 }
 
 // ---------------------------------------------------------------------------
-// 1lep_WSF probe gen-truth. Lives here, not in genSelections.cpp, because it reads
-// the flattened probe (fj0_eta / fj0_phi) that only the 1lep_WSF channel body
-// defines -- the precondition and the thing that establishes it stay together.
-// Internal linkage: nothing outside this channel has any use for it.
+// Per-fat-jet gen-truth (MC only), computed for every FatJet so any channel can
+// read it and the per-variation FatJet_isGood_<sfx> masks select it like any other
+// FatJet_ attribute. It depends on eta/phi only, so it is the same in every JES/JER
+// variation.
 //
-// Strategy: JET-FIRST. Ask what truth object, if any, is contained in the leading
-// fat jet -- never start from the sample's expected topology and check containment
-// afterwards. The second direction forces an a priori choice exactly where it is
-// least safe: in tW->4Q, TTW-WtoQQ, TTWW and TTWZ a top-W and a prompt W are both
-// hadronic in the same event, and any fixed priority between them is applied blind.
+// Strategy: JET-FIRST. Ask what truth object, if any, is contained in this jet --
+// never start from the sample's expected topology and check containment afterwards.
+// The second direction forces an a priori choice exactly where it is least safe: in
+// tW->4Q, TTW-WtoQQ, TTWW and TTWZ a top-W and a prompt W are both hadronic in the
+// same event, and any fixed priority between them is applied blind.
 //
-// IDENTITY BEFORE CONTAINMENT. Decide what the jet *is* first; the containment test
-// then follows from the identity, rather than one dR threshold standing in for both
-// questions. The answer is one code:
+// IDENTITY BEFORE CONTAINMENT. The candidate is the hadronic W or Z, or the H->bb,
+// whose two quarks best match the jet (smallest max dR); what it is then decides
+// which containment test applies. The answer is one code:
 //
-//   fj0_gen_match   0 nothing   1 prompt W   2 W from top   3 top
+//   FatJet_genMatch   0 nothing   1 prompt W   2 W from top   3 top   4 prompt Z
+//                     5 H->bb
 //
-// 0 covers both "no hadronic W in the record" and "one exists but is not in the
-// cone" -- in both cases the jet corresponds to nothing in the hard process, and
-// dr_Wq_max (999 vs finite-but->=0.8) separates them.
+// 0 covers both "no candidate boson in the record" and "one exists but is not in
+// the cone"; FatJet_genDrVqMax (999 vs finite-but->=kMatchDR) separates them.
+//
+//   FatJet_genDrVqMax    max dR(jet, q) over the candidate boson's two quarks
+//   FatJet_genDrTopB     dR(jet, b) for the b from the candidate W's top (999 if the
+//                        W is not from a top, or the top has no b daughter)
+//   FatJet_genVqFlavour  0 light, 1 at least one c and no b, 2 at least one b,
+//                        -1 no candidate boson in the event
+//
+// Only H->bb is a Higgs candidate; other Higgs decays never match.
+//
+// Top-merged means both W quarks AND the top's b are inside the jet. Only a b counts
+// as the top's partner: a CKM-suppressed t->sW / t->dW is labelled by its W alone.
 //
 // NanoAOD v15 types, verified against the v30 skims:
 //   GenPart_pdgId            Int_t    -> int
 //   GenPart_genPartIdxMother Short_t  -> short
 //   GenPart_statusFlags      UShort_t -> unsigned short
-//   GenPart_status           Int_t    -> int
 // isLastCopy is bit 13 of statusFlags.
-//
-// Downstream (jmsr.selection.categorize):
-//   wmerged   = gen_match in {1,2}   (or {2} alone, if prompt W is excluded)
-//   tmerged   = gen_match == 3
-//   unmatched = otherwise
-namespace wsf {
+namespace gentruth {
 
-// The AK8 radius. "Inside this jet" has exactly one meaning, so this is a
-// definition rather than a tunable working point -- but every continuous dR is
-// emitted anyway, so a consumer wanting a different radius never needs a re-run.
-constexpr float kMatchDR = 0.8f;
+// One radius for every quark containment test (V quarks and the top's b).
+constexpr float kMatchDR = 0.6f;
 
 constexpr float kNone = 999.f;
 
-enum : int { kMatchNone = 0, kMatchPromptW = 1, kMatchTopW = 2, kMatchTop = 3 };
+enum : int { kMatchNone = 0, kMatchPromptW = 1, kMatchTopW = 2, kMatchTop = 3, kMatchPromptZ = 4, kMatchHbb = 5 };
 
-} // namespace wsf
+enum : int { kFlavNoV = -1, kFlavLight = 0, kFlavCharm = 1, kFlavBottom = 2 };
 
-ROOT::RVec<float> wsf_truth_vars(
-    float probe_eta, float probe_phi,
-    const ROOT::RVec<int>& pdg,
-    const ROOT::RVec<short>& mom,
-    const ROOT::RVec<unsigned short>& flags,
-    const ROOT::RVec<int>& status,
-    const ROOT::RVec<float>& geta,
-    const ROOT::RVec<float>& gphi)
+struct FatJetTruth {
+    RVec<int>   match;
+    RVec<float> drVqMax;
+    RVec<float> drTopB;
+    RVec<int>   vqFlavour;
+};
+
+enum class Boson { W, Z, H };
+
+// A last-copy W or Z decaying to quarks, or H->bb: its two quarks, and for a W from
+// a top, the top's b.
+struct HadronicV {
+    int q1, q2;
+    Boson kind;
+    bool fromTop;
+    int topB;
+};
+
+} // namespace gentruth
+
+gentruth::FatJetTruth fatjet_gen_truth(
+    const RVec<float>& fj_eta, const RVec<float>& fj_phi,
+    const RVec<int>& pdg,
+    const RVec<short>& mom,
+    const RVec<unsigned short>& flags,
+    const RVec<float>& geta,
+    const RVec<float>& gphi)
 {
+    using namespace gentruth;
     const int n = static_cast<int>(pdg.size());
     auto isLastCopy = [&](int i) { return (flags[i] >> 13) & 1; };
-    auto dRprobe    = [&](int i) { return ROOT::VecOps::DeltaR(probe_eta, geta[i], probe_phi, gphi[i]); };
 
     // Walk the mother chain from i up to a |pdg|==6 top; return its index or -1.
     auto topAncestor = [&](int i) -> int {
@@ -132,16 +154,16 @@ ROOT::RVec<float> wsf_truth_vars(
         return -1;
     };
 
-    // The quark daughters of the boson at index w. A last-copy W decays either to
-    // qq' or to lnu, never both -- downstream radiation attaches to the quarks, not
-    // back to the W -- so no charged-lepton guard is needed here. (Measured on 240k
-    // last-copy W in tW: the multiplicity is exactly 0 or 2, never 1 or 3, and zero
-    // W carry both a quark and a charged lepton.) A count != 2 is a record we do not
-    // understand, so it is rejected rather than silently truncated to the first two.
-    auto quarkDaughters = [&](int w, int& q1, int& q2) -> bool {
+    // The quark daughters of the boson at index v. A last-copy W/Z/H decays either to
+    // quarks or to leptons, never both -- downstream radiation attaches to the quarks,
+    // not back to the boson -- so no lepton guard is needed. (Measured on 240k
+    // last-copy W in tW: the quark multiplicity is exactly 0 or 2, never 1 or 3.) A
+    // count != 2 is a record we do not understand, so it is rejected rather than
+    // silently truncated to the first two.
+    auto quarkDaughters = [&](int v, int& q1, int& q2) -> bool {
         q1 = -1; q2 = -1; int nq = 0;
         for (int j = 0; j < n; ++j) {
-            if (static_cast<int>(mom[j]) != w) continue;
+            if (static_cast<int>(mom[j]) != v) continue;
             const int ad = std::abs(pdg[j]);
             if (ad < 1 || ad > 5) continue;
             ++nq;
@@ -151,76 +173,62 @@ ROOT::RVec<float> wsf_truth_vars(
         return nq == 2;
     };
 
-    // ---- choose the candidate, across provenances, by best match to THIS jet ----
-    //
-    // Only |pdg|==24. A merged hadronic Z is a 91 GeV object and this is a W
-    // calibration, so it is not a candidate; it surfaces as a bump in the unmatched
-    // template, where it is visible, rather than inside the template whose peak
-    // position is the quantity being measured.
-    int   best_w = -1, best_q1 = -1, best_q2 = -1;
-    float best_dr = 1e9f;
+    // Candidates are found once per event; every jet is then compared to all of them.
+    std::vector<HadronicV> cands;
     for (int i = 0; i < n; ++i) {
-        if (std::abs(pdg[i]) != 24 || !isLastCopy(i)) continue;
-        int q1, q2;
-        if (!quarkDaughters(i, q1, q2)) continue;   // leptonic, or a record we reject
-        const float dr = std::max(dRprobe(q1), dRprobe(q2));
-        if (dr < best_dr) { best_dr = dr; best_w = i; best_q1 = q1; best_q2 = q2; }
-    }
-
-    // ---- contamination probe: nearest hard-process b, whatever its origin ----
-    //
-    // Status 23 is an outgoing particle of the hard process, which catches both a
-    // top's b and the initial-state b of 5-flavour-scheme tW. This is what makes
-    // "merged W plus a stray b" measurable downstream instead of invisible; it never
-    // enters the categorisation.
-    float dr_b_near = wsf::kNone;
-    for (int j = 0; j < n; ++j) {
-        if (std::abs(pdg[j]) != 5 || status[j] != 23) continue;
-        dr_b_near = std::min(dr_b_near, dRprobe(j));
-    }
-
-    if (best_w < 0) {
-        return {static_cast<float>(wsf::kMatchNone), wsf::kNone, wsf::kNone,
-                wsf::kNone, dr_b_near, 0.f, 0.f};
-    }
-
-    const float dr_Wq_max   = best_dr;
-    const float dr_W_daus   = ROOT::VecOps::DeltaR(geta[best_q1], geta[best_q2],
-                                                   gphi[best_q1], gphi[best_q2]);
-    const int   Wq_max_pdg  = (dRprobe(best_q1) >= dRprobe(best_q2)) ? pdg[best_q1] : pdg[best_q2];
-
-    // ---- the top's partner quark ----
-    //
-    // t -> q W is one vertex, so the partner is always emitted with the W -- but it
-    // is not always a b. Accepting only |pdg|==5 loses CKM-suppressed t->sW / t->dW
-    // (measured in tW: 0.1485% s, 0.0071% d, total 0.156% against
-    // |Vts|^2 + |Vtd|^2 = 0.171%), and the old code emitted 999 for those, which
-    // reads downstream as "the partner is outside the jet" and makes the event a
-    // merged W. tt is generated with t->bW forced, which is why this is invisible
-    // there. Hence any DOWN-TYPE daughter.
-    const int top = topAncestor(best_w);
-    float dr_top_q  = wsf::kNone;
-    int   top_q_pdg = 0;
-    if (top >= 0) {
-        for (int j = 0; j < n; ++j) {
-            if (static_cast<int>(mom[j]) != top) continue;
-            const int ad = std::abs(pdg[j]);
-            if (ad != 1 && ad != 3 && ad != 5) continue;
-            dr_top_q  = dRprobe(j);
-            top_q_pdg = pdg[j];
-            break;
+        const int ad = std::abs(pdg[i]);
+        if ((ad != 24 && ad != 23 && ad != 25) || !isLastCopy(i)) continue;
+        const Boson kind = ad == 24 ? Boson::W : ad == 23 ? Boson::Z : Boson::H;
+        HadronicV v{-1, -1, kind, false, -1};
+        if (!quarkDaughters(i, v.q1, v.q2)) continue;   // no quark decay, or rejected
+        if (kind == Boson::H && (std::abs(pdg[v.q1]) != 5 || std::abs(pdg[v.q2]) != 5)) continue;
+        if (kind == Boson::W) {
+            const int top = topAncestor(i);
+            if (top >= 0) {
+                v.fromTop = true;
+                for (int j = 0; j < n; ++j) {
+                    if (static_cast<int>(mom[j]) == top && std::abs(pdg[j]) == 5) { v.topB = j; break; }
+                }
+            }
         }
+        cands.push_back(v);
     }
 
-    // ---- identity ----
-    int match;
-    if      (dr_Wq_max >= wsf::kMatchDR) match = wsf::kMatchNone;    // found, not contained
-    else if (top < 0)                    match = wsf::kMatchPromptW;
-    else if (dr_top_q <= wsf::kMatchDR)  match = wsf::kMatchTop;
-    else                                 match = wsf::kMatchTopW;
+    const size_t nfj = fj_eta.size();
+    FatJetTruth out{RVec<int>(nfj, kMatchNone), RVec<float>(nfj, kNone),
+                    RVec<float>(nfj, kNone), RVec<int>(nfj, kFlavNoV)};
+    if (cands.empty()) return out;
 
-    return {static_cast<float>(match), dr_Wq_max, dr_top_q, dr_W_daus, dr_b_near,
-            static_cast<float>(Wq_max_pdg), static_cast<float>(top_q_pdg)};
+    for (size_t k = 0; k < nfj; ++k) {
+        auto dRjet = [&](int i) { return ROOT::VecOps::DeltaR(fj_eta[k], geta[i], fj_phi[k], gphi[i]); };
+
+        const HadronicV* best = nullptr;
+        float best_dr = 1e9f;
+        for (const auto& v : cands) {
+            const float dr = std::max(dRjet(v.q1), dRjet(v.q2));
+            if (dr < best_dr) { best_dr = dr; best = &v; }
+        }
+
+        const int a1 = std::abs(pdg[best->q1]), a2 = std::abs(pdg[best->q2]);
+        const int flav = (a1 == 5 || a2 == 5) ? kFlavBottom
+                       : (a1 == 4 || a2 == 4) ? kFlavCharm
+                       :                        kFlavLight;
+        const float dr_top_b = (best->fromTop && best->topB >= 0) ? dRjet(best->topB) : kNone;
+
+        int match;
+        if      (best_dr >= kMatchDR)        match = kMatchNone;
+        else if (best->kind == Boson::H)     match = kMatchHbb;
+        else if (best->kind == Boson::Z)     match = kMatchPromptZ;
+        else if (!best->fromTop)             match = kMatchPromptW;
+        else if (dr_top_b < kMatchDR)        match = kMatchTop;
+        else                                 match = kMatchTopW;
+
+        out.match[k]     = match;
+        out.drVqMax[k]   = best_dr;
+        out.drTopB[k]    = dr_top_b;
+        out.vqFlavour[k] = flav;
+    }
+    return out;
 }
 
 } // anonymous namespace
@@ -466,7 +474,7 @@ RNode AK4JetProperties(RNode df_)
 
 
 // Fat jet AK8 selection
-RNode AK8JetsSelection(RNode df_)
+RNode AK8JetsSelection(RNode df_, bool isData)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"));
@@ -495,6 +503,18 @@ RNode AK8JetsSelection(RNode df_)
     df = df.Define("_FatJet_Vqq_score", "FatJet_globalParT3_Xqq / 3.0f + FatJet_globalParT3_Xcs")
            .Define("FatJet_Hbb", vsQCD, {"FatJet_globalParT3_Xbb", "FatJet_globalParT3_QCD"})
            .Define("FatJet_Wqq", vsQCD, {"_FatJet_Vqq_score",     "FatJet_globalParT3_QCD"});
+
+    // Per-fat-jet gen-truth (see fatjet_gen_truth). Defined before applyObjectMaskNewAffix
+    // so the masked fatjet_gen* aliases are created with the rest of the collection.
+    if (!isData) {
+        df = df.Define("_fatjet_gen_truth", fatjet_gen_truth,
+                       {"FatJet_eta", "FatJet_phi", "GenPart_pdgId", "GenPart_genPartIdxMother",
+                        "GenPart_statusFlags", "GenPart_eta", "GenPart_phi"})
+               .Define("FatJet_genMatch",     [](const gentruth::FatJetTruth& t) { return t.match; },     {"_fatjet_gen_truth"})
+               .Define("FatJet_genDrVqMax",   [](const gentruth::FatJetTruth& t) { return t.drVqMax; },   {"_fatjet_gen_truth"})
+               .Define("FatJet_genDrTopB",    [](const gentruth::FatJetTruth& t) { return t.drTopB; },    {"_fatjet_gen_truth"})
+               .Define("FatJet_genVqFlavour", [](const gentruth::FatJetTruth& t) { return t.vqFlavour; }, {"_fatjet_gen_truth"});
+    }
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -581,7 +601,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     df = LeptonSelections(df);
 
     // Fat jet selection (cleaned against leptons)
-    df = AK8JetsSelection(df);
+    df = AK8JetsSelection(df, isData);
 
     // Do the ak4 jet selection
     df = AK4JetProperties(df);
@@ -797,7 +817,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
     // 1lep_WSF - GloParT W-tagging and JMS/JMR calibration region.
     //
-    // Standalone tag-and-probe measurement region whose output feeds the jmsr fit and the Wqq
+    // Standalone tag-and-probe measurement region whose output feeds the Wqq
     // tagging-SF fit. Because it is not part of the analysis, run_rdf.py keeps it
     // out of the "--channels all" expansion -- see NON_ANALYSIS_CHANNELS there.
     //
@@ -807,7 +827,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         Cutflow::Add(df, "C1: single-muon trigger");
 
         // nMuon_Tight is mediumId && pfIsoId>=4 (MuonSelections above), so the matching
-        // SF payload is mediumid_tightiso, NOT the tightid_tightiso the 1lep_* channels use.
+        // SF payload is mediumid_tightiso.
         df = lepSFWrapper(df, isData,
                           /*ele_sf_name=*/ "_weight_electron_reco_tightid",
                           /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso",
@@ -824,56 +844,53 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         // probe payload below indexes fatjet_*[0], which is only defined once this has
         // passed nominally. An OR-over-variations filter would admit events with
         // nfatjet == 0 nominally and read out of bounds. The cost is that under --systs
-        // the flat fj0_* columns stay nominal; the JES-varied FatJet_* arrays and
+        // the flat fj_1_* columns stay nominal; the JES-varied FatJet_* arrays and
         // FatJet_isGood_<sfx> masks are still written, so a varied probe is
         // reconstructible downstream.
         df = df.Filter("nfatjet >= 1", "C3: >=1 fat jet (probe)");
         Cutflow::Add(df, "C3: >=1 fat jet");
 
-        // Type-1 rebuilt MET. The W-SF fit re-cuts at 40 downstream.
-        df = df.Filter("met_pt > 30", "C4: MET > 30");
-        Cutflow::Add(df, "C4: MET > 30");
+        // Type-1 rebuilt MET. The W-SF fit applies no MET cut of its own.
+        df = df.Filter("met_pt > 40", "C4: MET > 40");
+        Cutflow::Add(df, "C4: MET > 40");
 
-        // Suppresses W+jets, whose untagged low-mass tail is what rails the jmsr fit.
         df = df.Filter("Sum(jet_isMediumBTag) >= 1", "C5: >=1 medium b-tag");
         Cutflow::Add(df, "C5: >=1 medium b-tag");
 
         // ---- probe payload: Defines only, no further cuts (produce loose, cut downstream) ----
         // Probe = leading good AK8, already dR>0.8 isolated from the lepton by AK8JetsSelection.
-        df = df.Define("fj0_pt",     "fatjet_pt[0]")
-               .Define("fj0_eta",    "fatjet_eta[0]")
-               .Define("fj0_phi",    "fatjet_phi[0]")
-               .Define("fj0_sdmass", "fatjet_msoftdrop[0]")
-               .Define("fj0_massGloParT3", "fatjet_massGloParT3[0]")
-               .Define("fj0_Wqq", "fatjet_Wqq[0]")
-               .Define("fj0_Hbb", "fatjet_Hbb[0]")
+        // The fj_1_* names, passmetfilters and passMuTrig are the branch names the
+        // ParticleNetSF-WqqSF fit (make2DTemplates.C) reads.
+        df = df.Define("fj_1_pt",     "fatjet_pt[0]")
+               .Define("fj_1_eta",    "fatjet_eta[0]")
+               .Define("fj_1_phi",    "fatjet_phi[0]")
+               .Define("fj_1_sdmass", "fatjet_msoftdrop[0]")
+               .Define("fj_1_massGloParT3", "fatjet_massGloParT3[0]")
+               .Define("fj_1_Wqq", "fatjet_Wqq[0]")
+               .Define("fj_1_Hbb", "fatjet_Hbb[0]")
+               .Define("fj_1_globalParT3_Xqq", "fatjet_globalParT3_Xqq[0]")
+               .Define("fj_1_globalParT3_QCD", "fatjet_globalParT3_QCD[0]")
+               // MET filters and the muon trigger are hard cuts above, so both are
+               // constants here.
+               .Define("passmetfilters", "true")
+               .Define("passMuTrig",     "true")
                // Tag-side b multiplicity. jet_* is the FJ-CLEANED AK4 collection
                // (dR>0.8 from every good fat jet, AK4JetsSelection above), so this counts
-               // b-tags OUTSIDE the probe -- it is not the b content of the fat jet, which
-               // is what fj0_dr_T_b gives in MC. Named without the fj0_ prefix for that
-               // reason. Cast to int because Sum(RVec<bool>) returns std::size_t, whose
+               // b-tags OUTSIDE the probe. Cast to int because Sum(RVec<bool>) returns std::size_t, whose
                // branch type uproot has no interpretation rule for.
                .Define("nMediumBTag_outsideFJ", "(int)Sum(jet_isMediumBTag)");
 
-        // Leptonic-W pT: the tag-side boost. In semileptonic tt the two tops recoil
-        // against each other, so requiring a boosted leptonic W (the fit cuts at 150
-        // downstream) is what makes the probe AK8 contain a genuinely merged hadronic W.
+        // Leptonic-W pT: the tag-side boost. 
         df = df.Define("_lepW_px", "muon_pt[0]*cos(muon_phi[0]) + met_pt*cos(met_phi)")
                .Define("_lepW_py", "muon_pt[0]*sin(muon_phi[0]) + met_pt*sin(met_phi)")
                .Define("leptonicW_pt", "sqrt(_lepW_px*_lepW_px + _lepW_py*_lepW_py)");
 
-        // Probe gen-truth
+        // Probe gen-truth: flat copies of the per-fat-jet columns.
         if (!isData) {
-            df = df.Define("_wsf_truth", wsf_truth_vars,
-                           {"fj0_eta", "fj0_phi", "GenPart_pdgId", "GenPart_genPartIdxMother",
-                            "GenPart_statusFlags", "GenPart_status", "GenPart_eta", "GenPart_phi"})
-                   .Define("fj0_gen_match",     "(int)_wsf_truth[0]")
-                   .Define("fj0_dr_Wq_max",     "_wsf_truth[1]")
-                   .Define("fj0_dr_top_q",      "_wsf_truth[2]")
-                   .Define("fj0_dr_W_daus",     "_wsf_truth[3]")
-                   .Define("fj0_dr_b_near",     "_wsf_truth[4]")
-                   .Define("fj0_Wq_max_pdgId",  "(int)_wsf_truth[5]")
-                   .Define("fj0_top_q_pdgId",   "(int)_wsf_truth[6]");
+            df = df.Define("fj_1_genMatch",     "fatjet_genMatch[0]")
+                   .Define("fj_1_genDrVqMax",   "fatjet_genDrVqMax[0]")
+                   .Define("fj_1_genDrTopB",    "fatjet_genDrTopB[0]")
+                   .Define("fj_1_genVqFlavour", "fatjet_genVqFlavour[0]");
         }
     }
 
