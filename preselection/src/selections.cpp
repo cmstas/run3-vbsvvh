@@ -93,8 +93,12 @@ inline std::string orPassExpr(RNode df, const std::string& channel) {
 //
 // Only H->bb is a Higgs candidate; other Higgs decays never match.
 //
-// Top-merged means both W quarks AND the top's b are inside the jet. Only a b counts
-// as the top's partner: a CKM-suppressed t->sW / t->dW is labelled by its W alone.
+// The W quarks are contained within kMatchDR. The top's b is tested against the full
+// AK8 radius, kTopBDR, so the top / W-from-top split leaves no b partly in the cone:
+//   top          both W quarks within kMatchDR AND dR(jet, b) <  kTopBDR
+//   W from top   both W quarks within kMatchDR AND dR(jet, b) >= kTopBDR
+// Only a b counts as the top's partner: a CKM-suppressed t->sW / t->dW is labelled by
+// its W alone.
 //
 // NanoAOD v15 types, verified against the v30 skims:
 //   GenPart_pdgId            Int_t    -> int
@@ -103,8 +107,11 @@ inline std::string orPassExpr(RNode df, const std::string& channel) {
 // isLastCopy is bit 13 of statusFlags.
 namespace gentruth {
 
-// One radius for every quark containment test (V quarks and the top's b).
+// Containment radius for the candidate boson's two quarks.
 constexpr float kMatchDR = 0.6f;
+
+// The top's b counts as inside the jet anywhere within the AK8 radius.
+constexpr float kTopBDR = 0.8f;
 
 constexpr float kNone = 999.f;
 
@@ -220,7 +227,7 @@ gentruth::FatJetTruth fatjet_gen_truth(
         else if (best->kind == Boson::H)     match = kMatchHbb;
         else if (best->kind == Boson::Z)     match = kMatchPromptZ;
         else if (!best->fromTop)             match = kMatchPromptW;
-        else if (dr_top_b < kMatchDR)        match = kMatchTop;
+        else if (dr_top_b < kTopBDR)         match = kMatchTop;
         else                                 match = kMatchTopW;
 
         out.match[k]     = match;
