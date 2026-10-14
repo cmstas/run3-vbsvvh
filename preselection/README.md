@@ -169,7 +169,11 @@ Pick the key by how your analysis uses the score of that jet:
 | One WP as a flag (passing and failing events both kept) | `flags: [[WP]]` | passes: SF(WP); fails: (1 − SF·ε)/(1 − ε) |
 | Several WPs as flags on the same jet | `flags: [[WP1, WP2, ...]]` | the weight of the score interval the jet falls in (below WP1, between two adjacent WPs, or above the last) |
 
-ε is the candle MC efficiency of true W jets for score > WP. For several flags, use **one** set rather than one entry per WP: the flags are nested (a jet above 0.80 also passes 0.60), so multiplying per-WP values would double count. `flags` needs `Wqq_eff_MC` in the era files; requesting it without them stops the job with an error.
+ε is the candle MC efficiency of true W jets for score > WP.
+
+If your NN uses several WPs as flags on the same jet, request them together as one set, e.g. `flags: [[0.60, 0.80]]`, and use that single branch. Do not request them as separate sets `[[0.60], [0.80]]` and multiply the two branches: the flags are not independent (a jet above 0.80 always passes 0.60 too), so the product applies the correction for the shared part twice and biases the yield. Several sets per channel are allowed so that the same production can serve different downstream uses, for example two NNs with different WPs, or a study comparing WP choices. Each use takes exactly **one** of the branches.
+
+`flags` needs `Wqq_eff_MC` in the era json files. These are currently missing and requesting it without them stops the job with an error.
 
 Branches, each a `{nom, up, down}` triple on `FatJet_` and on the selected-jet `fatjet_` collection:
 
@@ -179,7 +183,7 @@ Branches, each a `{nom, up, down}` triple on `FatJet_` and on the selected-jet `
 
 In the postprocessor, multiply `_nom` into the event weight for every fat jet whose score your selection uses, and use `_up` / `_down` the same way for the systematic variation. The variation shifts the SFs of every WP in a set together.
 
-Payloads are `corrections/scalefactors/WqqSF/Wqq_SF_<year>.json` (2016preVFP, 2016postVFP, 2017, 2018, 2024Prompt, 2025), generated from the provider's file by `make_wqq_sf_jsons.py`; see [`corrections/scalefactors/WqqSF/README_per_era.md`](corrections/scalefactors/WqqSF/README_per_era.md). pT is clamped to the measured bins; above 800 GeV the 400–800 GeV value is used with 3× its uncertainty. A WP outside 0.40–0.98 is an error, so looser cuts (e.g. score > 0.1) get no Wqq SF.
+Payloads are `corrections/scalefactors/WqqSF/Wqq_SF_<year>.json` (2016preVFP, 2016postVFP, 2017, 2018, 2024Prompt, 2025), see [`corrections/scalefactors/WqqSF/README_per_era.md`](corrections/scalefactors/WqqSF/README_per_era.md). pT is clamped to the measured bins; above 800 GeV the 400–800 GeV value is used with 3× its uncertainty. A WP outside 0.40–0.98 is an error, so looser cuts (e.g. score > 0.1) get no Wqq SF.
 
 
 ---
