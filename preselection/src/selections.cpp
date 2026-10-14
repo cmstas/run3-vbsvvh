@@ -1,6 +1,7 @@
 #include "selections.h"
 #include "cutflow.h"
 #include "weights.h"
+#include "wqq_sf.h"
 
 namespace {
 // AK4 good-jet selection as a string template, parametrised by the pt-column name.
@@ -481,7 +482,7 @@ RNode AK4JetProperties(RNode df_)
 
 
 // Fat jet AK8 selection
-RNode AK8JetsSelection(RNode df_, bool isData)
+RNode AK8JetsSelection(RNode df_, bool isData, const std::string &channel)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"));
@@ -497,7 +498,6 @@ RNode AK8JetsSelection(RNode df_, bool isData)
     // GloParT tagging discriminants, built from the raw score outputs as signal / (signal + QCD):
     //   Hbb = Xbb / (Xbb + QCD)
     //   Wqq = (Xqq/3 + Xcs) / (Xqq/3 + Xcs + QCD)
-    // Unlike the mass these are kinematics-independent, so they need no raw-quantity snapshot.
     // Jets with a vanishing denominator (no score at all) get -1 rather than a NaN.
     auto vsQCD = [](const RVec<float>& sig, const RVec<float>& qcd) {
         RVec<float> out(sig.size(), -1.0f);
@@ -522,6 +522,11 @@ RNode AK8JetsSelection(RNode df_, bool isData)
                .Define("FatJet_genDrTopB",    [](const gentruth::FatJetTruth& t) { return t.drTopB; },    {"_fatjet_gen_truth"})
                .Define("FatJet_genVqFlavour", [](const gentruth::FatJetTruth& t) { return t.vqFlavour; }, {"_fatjet_gen_truth"});
     }
+
+    // Wqq tagging SFs for the working points this channel lists in applywqqsf.yaml (see
+    // wqq_sf.h). Needs FatJet_Wqq and FatJet_genMatch. 
+    // SFs are retrieved at the nominal FatJet_pt.
+    df = applyWqqScaleFactors(df, channel, isData);
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -608,7 +613,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     df = LeptonSelections(df);
 
     // Fat jet selection (cleaned against leptons)
-    df = AK8JetsSelection(df, isData);
+    df = AK8JetsSelection(df, isData, channel);
 
     // Do the ak4 jet selection
     df = AK4JetProperties(df);

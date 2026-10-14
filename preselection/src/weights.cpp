@@ -1,5 +1,6 @@
 #include "weights.h"
 #include "btag_settings.h"
+#include "category_weight.h"
 #include "corrections.h"
 
 #include <algorithm>
@@ -169,12 +170,6 @@ std::string bTagObservedCategory(const std::vector<bool> &passed,
            std::string(kBTagInclusiveWorkingPoints[indices[static_cast<std::size_t>(passed_index + 1)]]);
 }
 
-int bTagTightestPassed(const std::vector<bool> &passed) {
-    for (int index = static_cast<int>(passed.size()) - 1; index >= 0; --index)
-        if (passed[static_cast<std::size_t>(index)]) return index;
-    return -1;
-}
-
 double bTagCategoryWeight(const std::vector<double> &sf, const std::vector<double> &eff,
                           const std::vector<bool> &passed,
                           const std::vector<std::size_t> &indices,
@@ -183,45 +178,24 @@ double bTagCategoryWeight(const std::vector<double> &sf, const std::vector<doubl
     if (sf.empty() || sf.size() != eff.size() || sf.size() != passed.size() || sf.size() != indices.size())
         throw std::runtime_error("Inconsistent b-tag working-point vector sizes");
     const std::string category = bTagObservedCategory(passed, indices);
+    const auto result = cumulativeWPCategoryWeight(sf, eff, passed, kBTagDenominatorEpsilon);
     const auto fail = [&](const char *reason, std::atomic<unsigned long long> &counter) {
         recordBTagFailure(reason, source, direction, flavor, category.c_str());
         return unityForInvalidBTagWeight(counter);
     };
-    for (std::size_t index = 0; index < passed.size(); ++index) {
-        if (!std::isfinite(sf[index]) || !std::isfinite(eff[index]))
+    switch (result.status) {
+        case CategoryWeightStatus::Ok:
+            return result.value;
+        case CategoryWeightStatus::InvalidProbability:
             return fail("invalid_probability", g_btag_invalid_probability);
-        if (index > 0 && passed[index] && !passed[index - 1])
+        case CategoryWeightStatus::NonnestedWorkingPoints:
             return fail("nonnested_working_points", g_btag_invalid_probability);
-        if (!(0. <= eff[index] && eff[index] <= 1.))
-            return fail("invalid_probability", g_btag_invalid_probability);
-    }
-    for (std::size_t index = 1; index < eff.size(); ++index)
-        if (eff[index - 1] < eff[index])
-            return fail("invalid_probability", g_btag_invalid_probability);
-
-    std::vector<double> q(sf.size());
-    for (std::size_t index = 0; index < q.size(); ++index) {
-        q[index] = sf[index] * eff[index];
-        if (!std::isfinite(q[index]) || q[index] < 0. || q[index] > 1.)
-            return fail("invalid_probability", g_btag_invalid_probability);
-        if (index > 0 && q[index - 1] < q[index])
-            return fail("invalid_probability", g_btag_invalid_probability);
-    }
-
-    const int passed_index = bTagTightestPassed(passed);
-    if (passed_index < 0) {
-        if (std::abs(1. - eff[0]) < kBTagDenominatorEpsilon)
+        case CategoryWeightStatus::NegativeIntermediate:
+            return fail("negative_intermediate", g_btag_negative_intermediate);
+        case CategoryWeightStatus::TinyDenominator:
             return fail("tiny_denominator", g_btag_tiny_denominator);
-        return (1. - q[0]) / (1. - eff[0]);
     }
-    if (passed_index == static_cast<int>(passed.size()) - 1) return sf.back();
-    const std::size_t next = static_cast<std::size_t>(passed_index + 1);
-    if (q[static_cast<std::size_t>(passed_index)] < q[next])
-        return fail("negative_intermediate", g_btag_negative_intermediate);
-    if (std::abs(eff[static_cast<std::size_t>(passed_index)] - eff[next]) < kBTagDenominatorEpsilon)
-        return fail("tiny_denominator", g_btag_tiny_denominator);
-    return (q[static_cast<std::size_t>(passed_index)] - q[next]) /
-           (eff[static_cast<std::size_t>(passed_index)] - eff[next]);
+    throw std::logic_error("Unhandled b-tag category weight status");
 }
 
 std::size_t bTagHFSourceIndex(std::string_view source) {
