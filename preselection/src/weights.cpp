@@ -23,10 +23,10 @@ std::atomic<unsigned long long> g_btag_invalid_probability{0};
 std::mutex g_btag_diagnostic_mutex;
 std::map<std::string, unsigned long long> g_btag_failure_details;
 
-constexpr std::array<std::string_view, 29> kBTagHFSources = {
+constexpr std::array<std::string_view, 30> kBTagHFSources = {
     "correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
     "muf", "mur", "pdf", "as", "pdfas", "ttbar", "jes", "jer", "type3",
-    "bfragmentation", "topmass", "hdamp",
+    "bfragmentation", "bdecays", "topmass", "hdamp",
     "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
     "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
     "jesRegrouped_EC2", "jesRegrouped_EC2_2024",
@@ -47,16 +47,16 @@ const std::map<std::string, std::set<std::string>> kBTagHFAvailableSources = {
     // jes_<source> (see kBTagJES2025Mapping).
     {"2024Prompt", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
                      "muf", "mur", "pdf", "as", "ttbar", "jer", "type3", "bfragmentation",
-                     "topmass", "hdamp",
+                     "bdecays", "topmass", "hdamp",
                      "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
                      "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
                      "jesRegrouped_EC2", "jesRegrouped_EC2_2024",
                      "jesRegrouped_FlavorQCD", "jesRegrouped_HF", "jesRegrouped_HF_2024",
                      "jesRegrouped_RelativeBal", "jesRegrouped_RelativeSample_2024"}},
-    // The 2025 payload uses the same logical sources except that topmass is
-    // labelled mass, while generic pdfas/jes/bfragmentation are absent.
+    // The 2025 payload uses the same logical sources as 2024.
     {"2025", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
-               "muf", "mur", "pdf", "as", "ttbar", "jer", "type3", "topmass", "hdamp",
+               "muf", "mur", "pdf", "as", "ttbar", "jer", "type3", "bfragmentation",
+               "bdecays", "topmass", "hdamp",
                "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
                "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
                "jesRegrouped_EC2", "jesRegrouped_EC2_2024",

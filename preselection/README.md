@@ -140,7 +140,7 @@ Systematic branches are `{central, up, down}` vectors. Recommended branches to u
   - With JES variation responses: simply use nominal event weight `weight`
 
 - **Full breakdown (where AK4 b-tag systematics are found to be dominant):**
-  - HF: `weightsyst_btag_HF_pdf`, `weightsyst_btag_HF_as`, `weightsyst_btag_HF_ttbar`, `weightsyst_btag_HF_type3`, `weightsyst_btag_HF_bfragmentation`, `weightsyst_btag_HF_topmass`, `weightsyst_btag_HF_hdamp`, and `weightsyst_btag_HF_statistic_<year>`
+  - HF: `weightsyst_btag_HF_pdf`, `weightsyst_btag_HF_as`, `weightsyst_btag_HF_ttbar`, `weightsyst_btag_HF_type3`, `weightsyst_btag_HF_bfragmentation`, `weightsyst_btag_HF_bdecays`, `weightsyst_btag_HF_topmass`, `weightsyst_btag_HF_hdamp`, and `weightsyst_btag_HF_statistic_<year>`
   - LF: `weightsyst_btag_LF_correlated`, `weightsyst_btag_LF_uncorrelated_<year>`
   - Other SFs: `weightsyst_pileup_withbSF`, `weightsyst_PSISR_withbSF`, `weightsyst_PSFSR_withbSF`, `weightsyst_muF_withbSF`, and `weightsyst_muR_withbSF`
   - JES responses:
