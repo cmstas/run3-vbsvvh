@@ -52,8 +52,42 @@ moves as the fitted template does; f widens (f > 1) or narrows (f < 1) the MC pe
 template, and sigma_rel sets the size of the random smear for jets without a gen match (sqrt(f^2 - 1) * sigma_rel is
 the extra relative smear that turns a width sigma_rel into f * sigma_rel).
 
-(Reusing the nominal's core bins matters: re-choosing the window for each template can move it by one 5-GeV bin and
-change f by several percent between nearly identical templates.)
+### Core bins: what they are and how they are found
+
+The true-W template is not a Gaussian over the whole 50-220 GeV range: it has a Gaussian-like peak around the W mass
+and a long high-mass tail. Example, nominal tp2 template (pass + fail) of 2018, WP 0.78, pt 300-400 GeV, per 5-GeV bin
+(bin centre: events):
+
+    52:48  57:70  62:124  67:221  72:502  77:1226  82:2301  87:2718  92:2102  97:1320  102:821
+    107:549  112:384  117:291  122:219  127:163  ...  182:6  ...  217:1
+
+A single Gaussian fitted to all 34 bins gives sigma = 22.5 GeV, because the tail drags it wide; that says nothing about
+the peak resolution. The **core bins** are the bins around the peak where the shape is Gaussian, here 70-105 GeV
+(7 bins), where the fit gives sigma = 8.86 GeV.
+
+The window depends on mu and sigma (bins with centres in mu +- 2 sigma), but mu and sigma come from the fit inside the
+window, so `_core_window` iterates:
+
+1. start with mu = centre of the highest bin, sigma = 10 GeV (a guess);
+2. take the bins with centres in (mu - 2 sigma, mu + 2 sigma) and fit a Gaussian to those bins only, giving a new
+   mu, sigma;
+3. repeat step 2 with the new mu, sigma (10 times); once the window stops changing, the fit stops changing.
+
+The Gaussian fit is a parabola fitted to log(counts), since the log of a Gaussian is a parabola
+(ln N = c0 + c1 x + c2 x^2, so mu = -c1 / (2 c2), sigma = sqrt(-1 / (2 c2))), weighted by sqrt(counts). For the bin
+above it settles at once, because the starting guess is already close:
+
+    start:  mu = 87.5,  sigma = 10 (guess)
+    iter 1: window 70-105 GeV (7 bins) -> mu = 88.09, sigma = 8.86
+    iter 2: window 70-105 GeV (7 bins) -> mu = 88.09, sigma = 8.86   (unchanged from here on)
+
+so mu_0 = 88.09 GeV, sigma_0 = 8.86 GeV, sigma_rel = 8.86 / 88.09 = 0.101. In bins where the first guess is further
+off, the window moves for a step or two before it settles.
+
+The window found on the nominal (here the 7 bins 70-105 GeV) is then **kept fixed**: T_JMS and T_JMR are fitted on
+exactly these bins, s = mu_JMS / 88.09, f = sigma_JMR / 8.86. Re-finding the window for each morphed template could
+make it gain or lose one 5-GeV bin at the edge and change f by several percent between nearly identical templates;
+with a fixed window, s and f reflect only the change in shape.
 
 Examples at WP 0.78:
 
