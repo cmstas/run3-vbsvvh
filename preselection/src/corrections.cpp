@@ -173,24 +173,26 @@ const StrMap& fatJetEnergyResolution_JER_unc_name() { static const StrMap m = ma
 
 // Note: Re-using the 2024 payload for 2022-2023 (same Run3-24... file).
 // 2025 recommendation: https://btv-wiki.docs.cern.ch/ScaleFactors/Run3Prompt25/
+// Payload versions are pinned, not `latest`; keep them in sync with
+// bTaggingScaleFactors in weights.h.
 const CSetMap& btaggingCorrections() {
     static const CSetMap m = [] {
         const std::string base = "/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/";
         const std::vector<std::pair<std::string, std::string>> eras = {
-            {"2016preVFP",            "Run2-2016preVFP-UL-NanoAODv15"},
-            {"2016postVFP",           "Run2-2016postVFP-UL-NanoAODv15"},
-            {"2017",                  "Run2-2017-UL-NanoAODv15"},
-            {"2018",                  "Run2-2018-UL-NanoAODv15"},
-            {"2022Re-recoBCD",        "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2022Re-recoE+PromptFG", "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2023PromptC",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2023PromptD",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2024Prompt",            "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2025",                  "Run3-25Prompt-Summer24-NanoAODv15"},
+            {"2016preVFP",            "Run2-2016preVFP-UL-NanoAODv15/2026-06-18"},
+            {"2016postVFP",           "Run2-2016postVFP-UL-NanoAODv15/2026-06-18"},
+            {"2017",                  "Run2-2017-UL-NanoAODv15/2026-06-18"},
+            {"2018",                  "Run2-2018-UL-NanoAODv15/2026-06-18"},
+            {"2022Re-recoBCD",        "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2022Re-recoE+PromptFG", "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2023PromptC",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2023PromptD",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2024Prompt",            "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2025",                  "Run3-25Prompt-Summer24-NanoAODv15/2026-10-14"},
         };
         CSetMap out;
         for (const auto& [year, dir] : eras)
-            out.emplace(year, *CorrectionSet::from_file(base + dir + "/latest/btagging.json.gz"));
+            out.emplace(year, *CorrectionSet::from_file(base + dir + "/btagging.json.gz"));
         return out;
     }();
     return m;
