@@ -1,0 +1,904 @@
+{
+  "schema_version": 2,
+  "description": "ParticleNet Wqq candle MC efficiencies of true W jets",
+  "corrections": [
+    {
+      "name": "particleNet_Wqq_effMC",
+      "description": "Candle MC efficiency of true W jets (tp2) to pass score > WP, pre-fit tp2 yield pass / (pass + fail) in the candle selection and fit mass window, as a function of era, working point, jet eta, and jet pt.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "era",
+          "type": "string",
+          "description": "Data-taking era"
+        },
+        {
+          "name": "WP",
+          "type": "string",
+          "description": "ParticleNet Wqq tagger working point"
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": "Jet |eta| (pass abs(eta))"
+        },
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Jet pt [GeV]"
+        }
+      ],
+      "output": {
+        "name": "eff",
+        "type": "real"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "era",
+        "content": [
+          {
+            "key": "2016postVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5847783291043562,
+                      0.6720404946169369,
+                      0.6426394784222766
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.39951013588638123,
+                      0.49197532893960394,
+                      0.4728353903395694
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.22079715289907606,
+                      0.3039645237430061,
+                      0.30169891774485663
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.09053914905910337,
+                      0.14698494431905265,
+                      0.16114856312332207
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.024152418018868114,
+                      0.052427659619128604,
+                      0.06742852012289144
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.007670266761394172,
+                      0.021010478575322716,
+                      0.028772151896255566
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5907654207832302,
+                      0.673751489912797,
+                      0.6514871876591878
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.40226504043199024,
+                      0.49175153355929274,
+                      0.4752194665786114
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.22161217664200714,
+                      0.3019833183462851,
+                      0.30345241407812945
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.09118622402719315,
+                      0.1475414541142765,
+                      0.16200953048942915
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.02541732434434839,
+                      0.05316092114917493,
+                      0.06919209708231204
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.008004861802135966,
+                      0.021245482836293877,
+                      0.02971355280995399
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2017",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5530995432505755,
+                      0.6499337372908432,
+                      0.6272885224327414
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.3652511407522594,
+                      0.47099525369933887,
+                      0.46046241808673155
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.19726714826865144,
+                      0.2912453100718561,
+                      0.2982794607613009
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.07987817092182727,
+                      0.14556847385621835,
+                      0.16548240475486384
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.02267998592089957,
+                      0.05544997699996477,
+                      0.07315735625044748
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.007882000356606928,
+                      0.023959427382594725,
+                      0.03622733847043463
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5646308199561898,
+                      0.6702342970785988,
+                      0.6455414925462057
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.3777360567795105,
+                      0.4895115105336069,
+                      0.4776192525883595
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.20729808255136628,
+                      0.30687711606473833,
+                      0.31271296657332354
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.08476135761358757,
+                      0.15633694566057657,
+                      0.17342496412241754
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.024420529153675374,
+                      0.060922986895680924,
+                      0.07675823373828372
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.008545464419878203,
+                      0.026812109548346154,
+                      0.03799131792884345
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5531429879258075,
+                      0.660577741132397,
+                      0.6489490379492032
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.363515619667945,
+                      0.4767479616936315,
+                      0.48138374965816294
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.19244155544164923,
+                      0.2931000664711097,
+                      0.3162064340619118
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.07720190061506643,
+                      0.14580198250737397,
+                      0.17375494540500683
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.021901022897093426,
+                      0.05656912837370409,
+                      0.07885359994802713
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.007466782849683907,
+                      0.02458948282375767,
+                      0.039185825392516686
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2025",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5532197828144708,
+                      0.6616464903916903,
+                      0.6492401482171962
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.36347283406782294,
+                      0.47717588583102233,
+                      0.482690833445262
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.19167127652666888,
+                      0.2928008221637335,
+                      0.31690772157454544
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.07714099735502274,
+                      0.14507033723141577,
+                      0.1737427791364532
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.021808692685118373,
+                      0.05607518136791819,
+                      0.07830447063536264
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.007346238478666724,
+                      0.024364433001569756,
+                      0.039278842240715844
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.5673143428606529,
+                      0.6648061540018666,
+                      0.6407904416415692
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.3800937904340084,
+                      0.4845047736737729,
+                      0.4715563170407925
+                    ]
+                  }
+                },
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.20792713345586714,
+                      0.30106124444417975,
+                      0.3054870093839194
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.08488152587058533,
+                      0.1506448709744395,
+                      0.16745998163382889
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.02397958621914336,
+                      0.05707086695176925,
+                      0.07280906033110955
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.008137968891012178,
+                      0.024392210915319613,
+                      0.0344642138335338
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

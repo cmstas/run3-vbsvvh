@@ -149,6 +149,42 @@ Systematic branches are `{central, up, down}` vectors. Recommended branches to u
     - Run 2: no BTV JES branch is written for payloads without a supported inclusive/total source; legacy granular sources are intentionally not exposed.
     - `weightsyst_jer` remains the BTV JER response where available.
 
+## Wqq tagging SF application
+
+GloParT-3 Wqq tagging SFs are written **per fat jet**, not folded into `weight`: which jets enter the event weight depends on each analysis's selection. The SFs are cumulative (measured for score > WP, with score = `FatJet_Wqq` = (Xcs + Xqq/3)/(Xcs + Xqq/3 + QCD)). Only true W jets (`FatJet_genMatch` 1 = prompt W, 2 = W from a top) are corrected; every other jet, and every jet in data, gets 1. The SFs are evaluated at the nominal JEC/JER `FatJet_pt` and are the same in every JES/JER variation.
+
+Edit `applywqqsf.yaml` to choose the working points each channel needs; every channel must be listed, and a channel with no keys gets no Wqq branches. Any WP between the measured points (0.40 to 0.98) can be requested: the SF is linearly interpolated between adjacent measured WPs.
+
+```yaml
+0lep_1FJ_met:
+  cut:   [0.80]                        # hard cut on the score
+  flags: [[0.60], [0.40, 0.60, 0.80]]  # WPs used as flags (e.g. NN inputs)
+```
+
+Pick the key by how your analysis uses the score of that jet:
+
+| Use of the score | Config | Per-jet value for a true W jet |
+|---|---|---|
+| Hard cut, score > WP (failing events are discarded) | `cut: [WP]` | passes: SF(WP); fails: 1 |
+| One WP as a flag (passing and failing events both kept) | `flags: [[WP]]` | passes: SF(WP); fails: (1 − SF·ε)/(1 − ε) |
+| Several WPs as flags on the same jet | `flags: [[WP1, WP2, ...]]` | the weight of the score interval the jet falls in (below WP1, between two adjacent WPs, or above the last) |
+
+ε is the candle MC efficiency of true W jets for score > WP.
+
+If your NN uses several WPs as flags on the same jet, request them together as one set, e.g. `flags: [[0.60, 0.80]]`, and use that single branch. Do not request them as separate sets `[[0.60], [0.80]]` and multiply the two branches: the flags are not independent (a jet above 0.80 always passes 0.60 too), so the product applies the correction for the shared part twice and biases the yield. Several sets per channel are allowed so that the same production can serve different downstream uses, for example two NNs with different WPs, or a study comparing WP choices. Each use takes exactly **one** of the branches.
+
+`flags` needs `Wqq_eff_MC` in the era json files; it is there for every era (the candle MC efficiency from the same campaign as the SFs, see `corrections/scalefactors/WqqSF/README_per_era.md`). A file without it stops a `flags` job with an error.
+
+Branches, each a `{nom, up, down}` triple on `FatJet_` and on the selected-jet `fatjet_` collection:
+
+- `FatJet_WqqSF_cut0p80_{nom,up,down}`
+- `FatJet_WqqSF_flags0p60_{nom,up,down}`
+- `FatJet_WqqSF_flags0p40_0p60_0p80_{nom,up,down}`
+
+In the postprocessor, multiply `_nom` into the event weight for every fat jet whose score your selection uses, and use `_up` / `_down` the same way for the systematic variation. The variation shifts the SFs of every WP in a set together.
+
+Payloads are `corrections/scalefactors/WqqSF/Wqq_SF_<year>.json` (2016preVFP, 2016postVFP, 2017, 2018, 2024Prompt, 2025), see [`corrections/scalefactors/WqqSF/README_per_era.md`](corrections/scalefactors/WqqSF/README_per_era.md). pT is clamped to the measured bins; above 800 GeV the 400–800 GeV value is used with 3× its uncertainty. A WP outside 0.40–0.98 is an error, so looser cuts (e.g. score > 0.1) get no Wqq SF.
+
 
 ---
 ## Details on the condor batch submission
