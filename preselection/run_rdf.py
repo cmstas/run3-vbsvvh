@@ -26,6 +26,47 @@ ANA_CHANNELS = {
 B_TAG_EFF_EXCLUDED_CHANNELS = {"all_events"}
 SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
 
+# Where RDF productions go by default on Hipergator (/cmsuf). A single channel
+# production is O(TB), so it belongs on /cmsuf rather than the much smaller shared
+# /blue project filesystem. This is a convenience, never a requirement: off
+# Hipergator, or for anyone without a writable /cmsuf area, we fall back to the
+# ordinary "." default. Pass -o to override in either case.
+CMSUF_USER_BASE = "/cmsuf/data/store/user"
+
+
+def _is_creatable(path):
+    """True if path is writable, or could be created under an existing ancestor."""
+    path = os.path.abspath(path)
+    while not os.path.exists(path):
+        parent = os.path.dirname(path)
+        if parent == path:
+            return False
+        path = parent
+    return os.path.isdir(path) and os.access(path, os.W_OK | os.X_OK)
+
+
+def default_rdf_outpath():
+    """<CMSUF_USER_BASE>/<user>/vbsvvh/rdf on Hipergator, else "." .
+
+    CMSUF_USER_BASE itself is not writable, so a usable area means the account's
+    own directory already exists and is writable by whoever is running. The
+    /cmsuf account name may drop the dot in $USER (first.last -> firstlast), so
+    try both spellings and take whichever is actually usable.
+    """
+    if not os.path.isdir(CMSUF_USER_BASE):
+        return "."
+
+    user = os.environ.get("USER", "")
+    seen = set()
+    for candidate in (user, user.replace(".", "")):
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        outpath = os.path.join(CMSUF_USER_BASE, candidate, "vbsvvh", "rdf")
+        if _is_creatable(outpath):
+            return outpath
+    return "."
+
 # Merge the input jsons into one dictionary
 def merge_jsons(input_paths_lst):
     out_dict = {"samples": {}}
@@ -133,7 +174,8 @@ def main():
     parser.add_argument('--kinds', nargs='+',          help = 'Which sample kinds to auto-resolve when -i is not given (default: all three). Use it to submit signal separately, e.g. with --systs',
                         choices=['sig','bkg','data'], default=['sig','bkg','data'])
     parser.add_argument('-m', '--mode',                help = 'Which mode to run in (local, condor, or slurm)', choices=['local','condor','slurm'])
-    parser.add_argument('-o', '--outpath',             help = 'Output directory', default=".")
+    parser.add_argument('-o', '--outpath',             help = 'Output directory (default: %(default)s)',
+                        default=default_rdf_outpath())
     parser.add_argument('-n', '--outname',             help = 'Output name', default="rdf_output")
     parser.add_argument('-r', '--run',                 help = 'Which run (2 or 3)', choices=['2','3'])
     parser.add_argument('-p', '--prefix',              help = 'Prefix to append to the file paths', default="/ceph/cms/")
