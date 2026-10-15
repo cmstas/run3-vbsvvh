@@ -50,25 +50,18 @@ RNode applyMETUnclusteredVariations(RNode df, bool isData);
 
 /*
 ############################################
-JET MASS SCALE (JMS) AND RESOLUTION (JMR) — generic, per-mass-column
+JET MASS SCALE (JMS) AND RESOLUTION (JMR) — GloParT mass
 ############################################
 
-Convention:
-  - JMS  : *additive* shift on the target mass column, in GeV. Central = 0.0 GeV.
-  - JMR  : *multiplicative* width factor wrt the gen reference mass. Central = 1.0.
-
-applyJetMassScale / applyJetMassResolution (corrections.cpp) are column-agnostic — the
-mass branch and (for JMR) the gen mass + gen-index branches are passed in. This
-analysis intends to calibrate on the GloParT regressed mass, not FatJet_msoftdrop,
-and the calibration is not yet derived — the helpers
-are currently unwired in applyMCCorrections. Identity-valued placeholder maps
-(a template for the future calibration) live in corrections.cpp.
+Per era and fat-jet pt, from the Wqq tag-and-probe fit (payload and formulas: corrections.cpp).
+  - JMS : multiplicative scale on the target mass column.
+  - JMR : resolution factor wrt the gen-jet mass (hybrid: gen-matched scaling, else stochastic).
+Column-agnostic: the mass, pt and (for JMR) gen mass + gen-index columns are passed in.
+Called for MC in AK8JetsSelection on FatJet_massGloParT3: resolution first, then the scale.
 */
-RNode applyJetMassScale(const std::unordered_map<std::string, float>& shift_map,
-                     const std::string& mass_col, RNode df);
-RNode applyJetMassResolution(const std::unordered_map<std::string, float>& factor_map,
-                          const std::unordered_map<std::string, float>& sigma_rel_map,
-                          const std::string& mass_col,
+RNode applyJetMassScale(const std::string& mass_col, const std::string& pt_col, RNode df);
+RNode applyJetMassResolution(const std::string& mass_col,
+                          const std::string& pt_col,
                           const std::string& gen_mass_col,
                           const std::string& gen_idx_col,
                           RNode df);

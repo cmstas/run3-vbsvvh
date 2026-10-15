@@ -1,0 +1,705 @@
+{
+  "schema_version": 2,
+  "description": "RDF-ready JMS/JMR for the GloParT mass, from the Wqq tag-and-probe fit",
+  "corrections": [
+    {
+      "name": "JMS_scale",
+      "description": "Multiplicative jet mass scale for MC, m' = JMS_scale * m. Derived from the fitted tp2jms/tp2jmr on the fit's own true-W templates.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "era",
+          "type": "string",
+          "description": "Data-taking era"
+        },
+        {
+          "name": "WP",
+          "type": "string",
+          "description": "Wqq tagger working point of the fit"
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": "Jet |eta| (pass abs(eta))"
+        },
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Jet pt [GeV]"
+        }
+      ],
+      "output": {
+        "name": "jms_scale",
+        "type": "real"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "era",
+        "content": [
+          {
+            "key": "2016postVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9884948711326298,
+                      0.9811328209686712,
+                      0.9858445199197917
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9856923566963359,
+                      0.9823165097473939,
+                      0.9947694515302237
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2017",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9858663250752939,
+                      0.9849095697889978,
+                      0.9871132777284635
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9953062986361474,
+                      0.9908539597260995,
+                      0.9988301183568951
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9904924948702688,
+                      0.9866738978918916,
+                      0.9932265630572504
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2025",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9635726665432525,
+                      0.9650087001961406,
+                      0.9783698654643541
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9900342054034057,
+                      0.9865242207221895,
+                      0.9926336107195358
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "JMR_factor",
+      "description": "MC jet mass resolution factor f (hybrid: gen-matched m' = m_gen + f*(m - m_gen), otherwise stochastic with JMR_sigmaRel). Derived from the fitted tp2jms/tp2jmr on the fit's own true-W templates.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "era",
+          "type": "string",
+          "description": "Data-taking era"
+        },
+        {
+          "name": "WP",
+          "type": "string",
+          "description": "Wqq tagger working point of the fit"
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": "Jet |eta| (pass abs(eta))"
+        },
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Jet pt [GeV]"
+        }
+      ],
+      "output": {
+        "name": "jmr_factor",
+        "type": "real"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "era",
+        "content": [
+          {
+            "key": "2016postVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      1.0444264840636555,
+                      1.0025045052840098,
+                      1.0514877263107207
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      1.052059493434969,
+                      0.9762176747384992,
+                      1.1065237337312772
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2017",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9721874435891412,
+                      1.0364883322416023,
+                      1.0213325331750942
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      1.0113752295572735,
+                      1.0017937025181667,
+                      1.0747532580549537
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      1.0411762483335294,
+                      1.0526332589535992,
+                      1.0891814077868671
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2025",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      1.039516901307647,
+                      1.0496678626944906,
+                      1.0676499264734212
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.9943609069462603,
+                      0.9968620340101818,
+                      1.0467281569752707
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "JMR_sigmaRel",
+      "description": "Relative MC mass resolution of true W jets (core width / core mean). Derived from the fitted tp2jms/tp2jmr on the fit's own true-W templates.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "era",
+          "type": "string",
+          "description": "Data-taking era"
+        },
+        {
+          "name": "WP",
+          "type": "string",
+          "description": "Wqq tagger working point of the fit"
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": "Jet |eta| (pass abs(eta))"
+        },
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Jet pt [GeV]"
+        }
+      ],
+      "output": {
+        "name": "jmr_sigmarel",
+        "type": "real"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "era",
+        "content": [
+          {
+            "key": "2016postVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.10490783453142803,
+                      0.0986574063904348,
+                      0.09570725887056278
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.10595570140205544,
+                      0.099495195287272,
+                      0.09614737553765561
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2017",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.10805339751074175,
+                      0.10026497975003941,
+                      0.0975729114911182
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.10817837807499876,
+                      0.10055814689281349,
+                      0.09786163451076374
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.11698068209643207,
+                      0.10958496512331975,
+                      0.09589575451009094
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2025",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.11683033377923067,
+                      0.10951223451208861,
+                      0.09624609256599506
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.10748348704036788,
+                      0.10017773641342273,
+                      0.09735988855812823
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
