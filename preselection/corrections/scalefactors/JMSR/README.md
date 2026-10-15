@@ -64,6 +64,92 @@ Examples at WP 0.78:
 | 2024, 300-400 | -0.211 | +0.159 | 0.990 | 1.043 | 0.110 |
 | 2017, 250-300 | -0.306 | -0.124 | 0.986 | 0.970 | 0.108 |
 
+### Conversion code
+
+Verbatim from `wqq_sf` `ParticleNetSF-WqqSF/get_SF_summary.py` (commit 57651cb), run by the collector with
+`--export_json` for `mass_to_use = "globalpart"` campaigns. `m["templates"]` are the fit's pass and fail template ROOT
+files of one era / WP / pt bin (histograms `tp2`, `tp2_tp2jmsUp`, `tp2_tp2jmsDown`, `tp2_tp2jmrUp`, `tp2_tp2jmrDown`),
+`m["jms"]` / `m["jmr"]` the fitted `tp2jms` / `tp2jmr`.
+
+```python
+def _template_hist(paths, name):
+    """Sum of histogram `name` over the pass and fail template files -> (contents, bin centres) as numpy arrays."""
+    import numpy as np
+    vals, centres = None, None
+    for path in paths:
+        f = ROOT.TFile.Open(path, "READ")
+        h = f.Get(name) if f and not f.IsZombie() else None
+        if not h:
+            if f:
+                f.Close()
+            return None, None
+        n = h.GetNbinsX()
+        v = np.array([h.GetBinContent(i) for i in range(1, n + 1)])
+        c = np.array([h.GetBinCenter(i) for i in range(1, n + 1)])
+        vals = v if vals is None else vals + v
+        centres = c
+        f.Close()
+    return vals, centres
+
+def _gauss_fit(vals, centres, sel):
+    """Gaussian (mean, width) from a parabola fitted to log(counts) over the bins in sel, weighted by sqrt(counts).
+    (None, None) if fewer than 3 bins or the parabola does not open downwards."""
+    import numpy as np
+    sel = sel & (vals > 0)
+    if sel.sum() < 3:
+        return None, None
+    c2, c1, _c0 = np.polyfit(centres[sel], np.log(vals[sel]), 2, w=np.sqrt(vals[sel]))
+    if c2 >= 0:
+        return None, None
+    return -c1 / (2.0 * c2), (-1.0 / (2.0 * c2)) ** 0.5
+
+def _core_window(vals, centres, nsig=2.0, iters=10):
+    """Bins of the Gaussian core of a peak: iterate the fit within mean +- nsig*width. Returns (sel, mean, width),
+    sel None if the fit fails. Morphed templates are then fitted on the SAME bins: re-iterating the window on each
+    template makes it jump by a bin (5-GeV bins, ~7 bins in the core) and the width ratio by several percent."""
+    import numpy as np
+    mu, sig = centres[int(np.argmax(vals))], 10.0
+    sel = None
+    for _ in range(iters):
+        sel = (centres > mu - nsig * sig) & (centres < mu + nsig * sig)
+        mu, sig = _gauss_fit(vals, centres, sel)
+        if mu is None:
+            return None, None, None
+    return sel, mu, sig
+
+def _morph(nom, up, down, theta):
+    """The template combine fits for a shapeU nuisance at value theta: linear vertical interpolation, which is
+    exact for symmetric up/down (down = 2*nom - up, as built for jmr) and beyond |theta| = 1. Clipped at 0."""
+    import numpy as np
+    shifted = nom + theta * (up - nom) if theta >= 0 else nom + (-theta) * (down - nom)
+    return np.clip(shifted, 0.0, None)
+
+def compute_jmsr_rdf(data):
+    """Turns the fitted tp2jms / tp2jmr nuisance values into what RDF applies to a jet mass, measured on the fit's
+    own true-W (tp2) templates (pass + fail summed), all fitted on the nominal's core bins (+-2 sigma):
+        JMS_scale    = core mean of the JMS-morphed template / core mean of the nominal   (m' = s * m)
+        JMR_factor   = core width of the JMR-morphed template / core width of the nominal (f, hybrid smearing)
+        JMR_sigmaRel = core width / core mean of the nominal (MC relative resolution, unmatched-jet branch)
+    Stored as data[key]['jms_scale'|'jmr_factor'|'jmr_sigma_rel']."""
+    for key, m in data.items():
+        if m.get("jms") is None or m.get("jmr") is None or not m.get("templates"):
+            continue
+        nom, c = _template_hist(m["templates"], "tp2")
+        hists = {n: _template_hist(m["templates"], f"tp2_tp2{n}")[0] for n in ("jmsUp", "jmsDown", "jmrUp", "jmrDown")}
+        if nom is None or any(h is None for h in hists.values()):
+            continue
+        win, mu0, s0 = _core_window(nom, c)
+        if win is None:
+            print(f"Warning: JMS/JMR core fit failed for {key}, no RDF values", file=sys.stderr)
+            continue
+        mu_s, _ = _gauss_fit(_morph(nom, hists["jmsUp"], hists["jmsDown"], m["jms"]), c, win)
+        _, s_r = _gauss_fit(_morph(nom, hists["jmrUp"], hists["jmrDown"], m["jmr"]), c, win)
+        if None in (mu_s, s_r):
+            print(f"Warning: JMS/JMR core fit failed for {key}, no RDF values", file=sys.stderr)
+            continue
+        m["jms_scale"], m["jmr_factor"], m["jmr_sigma_rel"] = mu_s / mu0, s_r / s0, s0 / mu0
+```
+
 ## `JMSR_correctionlib_etainclusive.json` (raw fit nuisances)
 
 Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
