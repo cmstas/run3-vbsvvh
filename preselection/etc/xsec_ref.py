@@ -77,6 +77,10 @@ xsec_dict = {
             "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2240.0,
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
+            
+            "DYto2Tau-2Jets_MLL-50_0J_TuneCP5_13p6TeV" : 5368.0,
+            "DYto2Tau-2Jets_MLL-50_1J_TuneCP5_13p6TeV" : 1014.0,
+            "DYto2Tau-2Jets_MLL-50_2J_TuneCP5_13p6TeV" : 380.8,
 
             # new xsec values from HZZ, multiplied by 1.7 (original values in comments)
             # https://github.com/CJLST/ZZAnalysis/blob/Run3/NanoAnalysis/test/prod/samplesNano_2024_MC.csv#L45
@@ -166,6 +170,11 @@ xsec_dict = {
             "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV" : 0.1158,
             "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 356.9,
             "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 29.52,
+            
+            "Wto2Q-3Jets_HT-200to400_TuneCP5_13p6TeV" : 2723.0,
+            "Wto2Q-3Jets_HT-400to600_TuneCP5_13p6TeV" : 299.8,
+            "Wto2Q-3Jets_HT-600to800_TuneCP5_13p6TeV" : 63.9,
+            "Wto2Q-3Jets_HT-800_TuneCP5_13p6TeV" : 31.9,
 
             "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV" : 342.3,
             "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV" : 21.84,
@@ -208,6 +217,8 @@ xsec_dict = {
             "ZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.168,
             "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5958,
             
+            "VH_HtoNonbb_M-125_TuneCP5_13p6TeV" : 2.558,
+            
             # from twiki (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap)
             "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3334,
             "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.2412,
@@ -228,6 +239,12 @@ xsec_dict = {
             "Zto2Q-4Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 12.9,
             "Zto2Q-4Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 0.8541,
             "Zto2Q-4Jets_Bin-HT-2500_TuneCP5_13p6TeV" : 0.05684,
+            
+            "Zto2Q-4Jets_HT-200to400_TuneCP5_13p6TeV" : 1082.0,
+            "Zto2Q-4Jets_HT-400to600_TuneCP5_13p6TeV" : 124.1,
+            "Zto2Q-4Jets_HT-600to800_TuneCP5_13p6TeV" : 27.28,
+            "Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV" : 14.57,
+
             "ZZJJto4L-EWK_TuneCP5_13p6TeV" : 0.001144,
             "ZZJJto4L-QCD_TuneCP5_13p6TeV" : 0.02029,
             "ZZto2L2Nu_TuneCP5_13p6TeV" : 1.031,
