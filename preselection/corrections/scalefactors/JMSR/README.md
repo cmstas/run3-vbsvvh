@@ -93,10 +93,10 @@ Examples at WP 0.78:
 
 | era, pt [GeV] | theta_JMS | theta_JMR | s | f | sigma_rel |
 |---|---|---|---|---|---|
-| 2018, 300-400 | -0.200 | +0.001 | 0.991 | 1.000 | 0.101 |
-| 2018, 400-800 | -0.040 | +0.228 | 0.998 | 1.076 | 0.098 |
-| 2024, 300-400 | -0.211 | +0.159 | 0.990 | 1.043 | 0.110 |
-| 2017, 250-300 | -0.306 | -0.124 | 0.986 | 0.970 | 0.108 |
+| 2018, 300-400 | -0.203 | +0.006 | 0.991 | 1.002 | 0.101 |
+| 2018, 400-800 | -0.027 | +0.225 | 0.999 | 1.075 | 0.098 |
+| 2024, 300-400 | -0.257 | +0.174 | 0.987 | 1.047 | 0.110 |
+| 2017, 250-300 | -0.305 | -0.114 | 0.986 | 0.972 | 0.108 |
 
 ### Conversion code
 
@@ -191,6 +191,9 @@ Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
 - JMR: theta = +1 corresponds to an extra Gaussian smearing with sigma = 10%; the Down template is the
   symmetrized mirror (2*nominal - up), so negative theta is constrained.
 
-Source: `wqq_sf/ParticleNetSF-WqqSF-genmatch/single_pass_results/particlenetmd_sf_15oct_JMSR_x2p_msdjec_wpgrid/SFsummary_jsons/`
-(`JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`; fits 2026-10-15, fit code 57651cb), same candle as `../WqqSF`
+Source: `wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid/SFsummary_jsons/`
+(2026-10-16: MC without overlapping samples, NLO Run 3 W+jets; vs the previous version s moves by <= 0.006, Run 2 f by
+<= 0.03, Run 3 f up by up to 0.10 at high pt / high WP, sigma_rel unchanged)
+(`JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`; fits 2026-10-15, branch pyli/wqqsf-nooverlap-genmatch = 57651cb + overlap-free merges + SF_tp2 scan fallback; the
+conversion code below is unchanged), same candle as `../WqqSF`
 (new gen matching + soft-drop JEC).

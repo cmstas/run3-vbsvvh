@@ -13,5 +13,8 @@ The correction is named `particleNet_Wqq_SF` for historical reasons; the tagger 
   from JEC'd subjets (`feat/msd-subjet-jec`), V+jets samples after PR #127.
 - `Wqq_effMC_correctionlib_etainclusive.json`, correction `particleNet_Wqq_effMC` (inputs `era`, `WP`, `eta`, `pt`): candle MC
   efficiency of true W jets, pre-fit tp2 pass / (pass + fail), same campaign; no uncertainty. Per-era files for RDF: `README_per_era.md`.
-- Source: `wqq_sf/ParticleNetSF-WqqSF-genmatch/single_pass_results/particlenetmd_sf_14oct_msdjec_wp0p78_etaincl/SFsummary_jsons/Wqq_SF_correctionlib.json`
-  (fits 2026-10-14/15, all 126 era x WP x pt bins).
+- MC without overlapping samples (2026-10-16): the candle merge drops the duplicates of run3-vbsvvh's bkg/1lep_1FJ base
+  list (Run 3 W->lnu: NLO `WtoLNu-2Jets` PTLNu only, no LO `WtoLNu-4Jets`; inclusive WW/ZZ, split WZ, inclusive ttW/ttZ
+  dropped). The earlier version of these files double counted Run 3 W+jets and the dibosons.
+- Source: `wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/particlenetmd_sf_15oct_noov_Wnlo_msdjec_wpgrid_etaincl/SFsummary_jsons/Wqq_SF_correctionlib.json`
+  (fits 2026-10-15, all 126 era x WP x pt bins, checked: no failed fit, no range-edge uncertainty).
