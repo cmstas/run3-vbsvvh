@@ -597,8 +597,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, s
         // Channel orthogonality selection
         df = df.Filter("(nLep_Sel == 1)", "C2: 1lep_1FJ");
 
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
         Cutflow::Add(df, "C2: 1-lepton selection");
 
