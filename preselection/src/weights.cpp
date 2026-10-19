@@ -908,7 +908,7 @@ RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correctio
         }
         return electron_sf_weights;
     };
-    return df.Define("_weight_electrontrigger", eval_correction, {"year", "electron_SC_eta", "electron_pt"});
+    return df.Define("_weight_electrontrigger", eval_correction, {"year", "_electronSel_SC_eta", "_electronSel_pt"});
 }
 
 /*
