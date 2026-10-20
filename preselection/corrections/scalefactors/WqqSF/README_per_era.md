@@ -17,13 +17,13 @@ The file name is the RDF `year` string, so RDF needs no era mapping.
 
 `Wqq_SF`: inputs `WP` (real), `pt` (real), `eta` (real), `systematic` (`nom`/`up`/`down`); output: the cumulative SF of score > WP, with score = (Xcs + Xqq/3)/(Xcs + Xqq/3 + QCD).
 
-- **WP:** piecewise linear between the measured points 0.40, 0.60, 0.78, 0.90, 0.96, 0.98 (nom, up and down each interpolated). The measured points are reproduced exactly, and a WP outside [0.40, 0.98] is an error.
+- **WP:** the current files have a single measured WP, 0.78: exactly that WP evaluates, any other WP is an error. With several measured WPs (e.g. 0.40, 0.60, 0.78, 0.90, 0.96, 0.98 in the previous version) the SF is piecewise linear between them (nom, up and down each interpolated), the measured points are reproduced exactly, and a WP outside the measured range is an error.
 - **pt:** bins [250, 300, 400, 800, 13000), clamped. Above 800 GeV: the 400–800 nominal, with its up/down distances multiplied by 3.
 - **eta:** unused (inclusive in |eta| < 2.5); kept so an |eta|-binned version can be dropped in later.
 
 `Wqq_eff_MC`: inputs `WP`, `pt`; output: the candle MC efficiency of true W jets (tp2) to pass score > WP, built the same way. It's present only when `make_wqq_sf_jsons.py --eff` was given an efficiency table. RDF needs it for the `flags` use case (`applywqqsf.yaml`); `cut` works without it.
 
-The current files carry it, from `Wqq_effMC_correctionlib_etainclusive.json` (correction `particleNet_Wqq_effMC`): the pre-fit tp2 yield pass / (pass + fail) of the same campaign as the SFs (`particlenetmd_sf_15oct_noov_Wnlo_msdjec_wpgrid_etaincl`, overlap-free MC with NLO Run 3 W+jets, true W = `fj_1_genMatch` 1 or 2, |eta| < 2.5, candle selection, 50-220 GeV soft-drop window), written by the provider's `get_SF_summary.py --export_json` next to the SF file. It has no uncertainty. When the SFs are remeasured, regenerate both files from the same campaign.
+The current files carry it, from `Wqq_effMC_correctionlib_etainclusive.json` (correction `particleNet_Wqq_effMC`): the pre-fit tp2 yield pass / (pass + fail) of the same campaign as the SFs (`particlenetmd_sf_16oct_noov_Wnlo_JMSR_x2p_msdjec_wp0p78_otherlnU6`, overlap-free MC with NLO Run 3 W+jets, true W = `fj_1_genMatch` 1 or 2, |eta| < 2.5, candle selection; pre-fit, so the same as the previous soft-drop campaign's to <= 0.003), written by the provider's `get_SF_summary.py --export_json` next to the SF file. It has no uncertainty. When the SFs are remeasured, regenerate both files from the same campaign.
 
 ## Regenerate
 

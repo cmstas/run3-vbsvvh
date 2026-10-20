@@ -1,7 +1,7 @@
 # JMS / JMR from the Wqq tag-and-probe fit (correctionlib)
 
-Both files: inputs `era` (string), `WP` (string, `0.40`, `0.60`, `0.78`, `0.90`, `0.96`, `0.98`, same GloParT-3 Wqq
-score as `../WqqSF`), `eta` (real, unused: inclusive in |eta| < 2.5), `pt` (real). Eras `2016preVFP`, `2016postVFP`,
+Both files: inputs `era` (string), `WP` (string, `0.78` only in this version; the previous one had `0.40`, `0.60`,
+`0.78`, `0.90`, `0.96`, `0.98`; same GloParT-3 Wqq score as `../WqqSF`), `eta` (real, unused: inclusive in |eta| < 2.5), `pt` (real). Eras `2016preVFP`, `2016postVFP`,
 `2017`, `2018`, `2024`, `2025`, plus `r2comb`; no 2022/2023 yet. pt bins [250, 300), [300, 400), [400, 800) GeV,
 clamped outside. Central values only, no uncertainty.
 
@@ -191,9 +191,9 @@ Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
 - JMR: theta = +1 corresponds to an extra Gaussian smearing with sigma = 10%; the Down template is the
   symmetrized mirror (2*nominal - up), so negative theta is constrained.
 
-Source: `wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid/SFsummary_jsons/`
-(2026-10-16: MC without overlapping samples, NLO Run 3 W+jets; vs the previous version s moves by <= 0.006, Run 2 f by
-<= 0.03, Run 3 f up by up to 0.10 at high pt / high WP, sigma_rel unchanged)
-(`JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`; fits 2026-10-15, branch pyli/wqqsf-nooverlap-genmatch = 57651cb + overlap-free merges + SF_tp2 scan fallback; the
-conversion code below is unchanged), same candle as `../WqqSF`
-(new gen matching + soft-drop JEC).
+Source: `wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/particlenetmd_sf_16oct_noov_Wnlo_JMSR_x2p_msdjec_wp0p78_otherlnU6/SFsummary_jsons/`
+(`JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`; fits 2026-10-16/19, WP 0.78, branch pyli/wqqsf-nooverlap-genmatch
+735825f: MC without overlapping samples, NLO Run 3 W+jets, free "other" normalisation with lnU kappa = 6 instead of 2;
+the conversion code below is unchanged), same candle and same fit as `../WqqSF` (new gen matching + soft-drop JEC).
+Previous version (d07a64def): `particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid` (kappa 2, 6 WPs); the kappa-2
+f was 0.02-0.05 too high at 400-800 GeV, s unchanged.

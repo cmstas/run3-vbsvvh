@@ -112,6 +112,11 @@ def interpolated_node(era_table, pt_edges, with_systematic):
     wp_edges = wp_values[:-1] + [wp_values[-1] + LAST_WP_NUDGE]
     out_pt_edges = pt_edges + [HIGH_PT_EDGE]
     cells = {w: with_high_pt_bin(era_table[w], with_systematic) for w in wps}
+    if len(wps) == 1:
+        # single measured WP (e.g. a WP-0.78-only study campaign): one constant bin [WP, WP + nudge], so exactly
+        # that WP evaluates and any other WP is an error, as outside the measured range
+        wp_edges = [wp_values[0], wp_values[0] + LAST_WP_NUDGE]
+        wps, wp_values = wps * 2, [wp_values[0], wp_values[0] + LAST_WP_NUDGE]
 
     segments = []
     for i in range(len(wps) - 1):

@@ -5,7 +5,7 @@
   {
    "name": "Wqq_SF",
    "version": 1,
-   "description": "GloParT-3 Wqq tagging SF for true W jets (FatJet_genMatch 1 or 2), cumulative: the SF of score > WP, score = (Xcs + Xqq/3) / (Xcs + Xqq/3 + QCD). Piecewise linear in WP between the measured points 0.40, 0.60, 0.78, 0.90, 0.96, 0.98; a WP outside [0.40, 0.98] is an error. pt clamped; above 800 GeV the last bin's nominal with 3x its up/down distances. eta is unused (inclusive in |eta| < 2.5). systematic: nom/up/down, absolute SF values. Source: Wqq_SF_correctionlib_etainclusive.json, era 2025",
+   "description": "GloParT-3 Wqq tagging SF for true W jets (FatJet_genMatch 1 or 2), cumulative: the SF of score > WP, score = (Xcs + Xqq/3) / (Xcs + Xqq/3 + QCD). Piecewise linear in WP between the measured points 0.78, 0.78; a WP outside [0.78, 0.78] is an error. pt clamped; above 800 GeV the last bin's nominal with 3x its up/down distances. eta is unused (inclusive in |eta| < 2.5). systematic: nom/up/down, absolute SF values. Source: Wqq_SF_correctionlib_etainclusive.json, era 2025",
    "inputs": [
     {
      "name": "WP",
@@ -36,12 +36,8 @@
     "nodetype": "binning",
     "input": "WP",
     "edges": [
-     0.4,
-     0.6,
      0.78,
-     0.9,
-     0.96,
-     0.980001
+     0.780001
     ],
     "content": [
      {
@@ -69,8 +65,8 @@
             "WP"
            ],
            "parameters": [
-            1.0430000000000001,
-            -0.38000000000000045
+            0.743,
+            0.0
            ]
           }
          },
@@ -84,8 +80,8 @@
             "WP"
            ],
            "parameters": [
-            1.0780000000000003,
-            -0.40000000000000047
+            0.768,
+            0.0
            ]
           }
          },
@@ -99,8 +95,8 @@
             "WP"
            ],
            "parameters": [
-            1.0150000000000001,
-            -0.37500000000000044
+            0.719,
+            0.0
            ]
           }
          }
@@ -120,8 +116,8 @@
             "WP"
            ],
            "parameters": [
-            1.0459999999999998,
-            -0.26999999999999974
+            0.806,
+            0.0
            ]
           }
          },
@@ -135,8 +131,8 @@
             "WP"
            ],
            "parameters": [
-            1.0679999999999998,
-            -0.27499999999999974
+            0.8320000000000001,
+            0.0
            ]
           }
          },
@@ -150,8 +146,8 @@
             "WP"
            ],
            "parameters": [
-            1.027,
-            -0.26999999999999974
+            0.782,
+            0.0
            ]
           }
          }
@@ -171,8 +167,8 @@
             "WP"
            ],
            "parameters": [
-            1.0500000000000003,
-            -0.35500000000000037
+            0.908,
+            0.0
            ]
           }
          },
@@ -186,8 +182,8 @@
             "WP"
            ],
            "parameters": [
-            1.0820000000000003,
-            -0.3600000000000004
+            0.9570000000000001,
+            0.0
            ]
           }
          },
@@ -201,8 +197,8 @@
             "WP"
            ],
            "parameters": [
-            1.0220000000000002,
-            -0.35500000000000037
+            0.863,
+            0.0
            ]
           }
          }
@@ -222,8 +218,8 @@
             "WP"
            ],
            "parameters": [
-            1.0500000000000003,
-            -0.35500000000000037
+            0.908,
+            0.0
            ]
           }
          },
@@ -237,8 +233,8 @@
             "WP"
            ],
            "parameters": [
-            1.1460000000000004,
-            -0.3700000000000004
+            1.0550000000000002,
+            0.0
            ]
           }
          },
@@ -252,880 +248,8 @@
             "WP"
            ],
            "parameters": [
-            0.9660000000000001,
-            -0.35500000000000037
-           ]
-          }
-         }
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.9349999999999996,
-            -0.1999999999999995
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.9479999999999996,
-            -0.18333333333333282
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.9099999999999996,
-            -0.1999999999999995
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.1239999999999997,
-            -0.39999999999999963
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.1363333333333332,
-            -0.3888888888888885
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.1083333333333332,
-            -0.40555555555555517
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.0169999999999997,
-            -0.29999999999999954
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.039333333333333,
-            -0.2888888888888885
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.9923333333333331,
-            -0.30555555555555514
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.0169999999999997,
-            -0.29999999999999954
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.0839999999999999,
-            -0.2666666666666662
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.9429999999999996,
-            -0.31666666666666626
-           ]
-          }
-         }
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.4224999999999999,
-            -0.8249999999999998
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.4224999999999999,
-            -0.7916666666666665
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.43,
-            -0.8666666666666666
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2540000000000004,
-            -0.5666666666666672
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2555000000000005,
-            -0.5416666666666672
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2535000000000005,
-            -0.5916666666666672
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2120000000000004,
-            -0.5500000000000005
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.1910000000000003,
-            -0.4833333333333338
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2090000000000005,
-            -0.5833333333333339
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2120000000000004,
-            -0.5500000000000005
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.1490000000000005,
-            -0.3500000000000003
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.2030000000000003,
-            -0.6500000000000006
-           ]
-          }
-         }
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.3700000000000014,
-            -0.766666666666668
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.1600000000000008,
-            -0.5000000000000009
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.5800000000000018,
-            -1.0333333333333352
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.0240000000000027,
-            -2.5333333333333363
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            2.913000000000002,
-            -2.383333333333336
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.1210000000000027,
-            -2.6666666666666696
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.027000000000003,
-            -2.5666666666666695
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.0210000000000026,
-            -2.5166666666666693
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.0840000000000023,
-            -2.6666666666666696
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.027000000000003,
-            -2.5666666666666695
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.0090000000000026,
-            -2.416666666666669
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.198000000000003,
-            -2.8666666666666702
-           ]
-          }
-         }
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.8019999999999996,
-            -3.3
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            2.4560000000000053,
-            -1.8500000000000056
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            4.811999999999997,
-            -4.399999999999997
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            4.815999999999994,
-            -4.399999999999994
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            4.560999999999995,
-            -4.099999999999994
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            5.0729999999999915,
-            -4.699999999999991
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            2.002999999999995,
-            -1.4999999999999944
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.5649999999999946,
-            -0.9999999999999944
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            2.443999999999992,
-            -1.9999999999999918
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            2.002999999999995,
-            -1.4999999999999944
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.6889999999999947,
-            5.551115123125778e-15
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            3.3259999999999863,
-            -2.9999999999999862
+            0.7729999999999999,
+            0.0
            ]
           }
          }
@@ -1141,7 +265,7 @@
   {
    "name": "Wqq_eff_MC",
    "version": 1,
-   "description": "Candle MC efficiency of true W jets (tp2) to pass score > WP, for the fail SF (1 - SF*eff)/(1 - eff) and the multi-WP category weights. Piecewise linear in WP between 0.40, 0.60, 0.78, 0.90, 0.96, 0.98; pt clamped. Source: Wqq_effMC_correctionlib_etainclusive.json, era 2025",
+   "description": "Candle MC efficiency of true W jets (tp2) to pass score > WP, for the fail SF (1 - SF*eff)/(1 - eff) and the multi-WP category weights. Piecewise linear in WP between 0.78, 0.78; pt clamped. Source: Wqq_effMC_correctionlib_etainclusive.json, era 2025",
    "inputs": [
     {
      "name": "WP",
@@ -1162,12 +286,8 @@
     "nodetype": "binning",
     "input": "WP",
     "edges": [
-     0.4,
-     0.6,
      0.78,
-     0.9,
-     0.96,
-     0.980001
+     0.780001
     ],
     "content": [
      {
@@ -1189,8 +309,8 @@
          "WP"
         ],
         "parameters": [
-         0.9327136803077667,
-         -0.9487347437332396
+         0.1912975196410979,
+         0.0
         ]
        },
        {
@@ -1201,8 +321,8 @@
          "WP"
         ],
         "parameters": [
-         1.0305876995130263,
-         -0.9223530228033402
+         0.2920587247124489,
+         0.0
         ]
        },
        {
@@ -1213,8 +333,8 @@
          "WP"
         ],
         "parameters": [
-         0.9823387777610648,
-         -0.8327465738596714
+         0.31434991967425496,
+         0.0
         ]
        },
        {
@@ -1225,256 +345,8 @@
          "WP"
         ],
         "parameters": [
-         0.9823387777610648,
-         -0.8327465738596714
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         0.9361446925383363,
-         -0.9544530974508556
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.0917594313886516,
-         -1.0243059092627156
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.0353012063476503,
-         -0.9210172881706472
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.0353012063476503,
-         -0.9210172881706472
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         0.9361180911423688,
-         -0.9544189930970512
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.2530489742237987,
-         -1.231087374435981
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.2474798474221451,
-         -1.193041186984102
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.2474798474221451,
-         -1.193041186984102
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         0.9071255674035891,
-         -0.9222050778317403
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.4799976751838806,
-         -1.4832525977249609
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.6053174066528129,
-         -1.5906384750181775
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.6053174066528129,
-         -1.5906384750181775
-        ]
-       }
-      ],
-      "flow": "clamp"
-     },
-     {
-      "nodetype": "binning",
-      "input": "pt",
-      "edges": [
-       250.0,
-       300.0,
-       400.0,
-       800.0,
-       13000.0
-      ],
-      "content": [
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         0.7160064945947969,
-         -0.7231227103225818
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.5781911029526414,
-         -1.5855374183174202
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.951534633578407,
-         -1.951281419732338
-        ]
-       },
-       {
-        "nodetype": "formula",
-        "expression": "[0]+[1]*x",
-        "parser": "TFormula",
-        "variables": [
-         "WP"
-        ],
-        "parameters": [
-         1.951534633578407,
-         -1.951281419732338
+         0.31434991967425496,
+         0.0
         ]
        }
       ],

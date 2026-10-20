@@ -48,7 +48,7 @@
               "input": "WP",
               "content": [
                 {
-                  "key": "0.40",
+                  "key": "0.78",
                   "value": {
                     "nodetype": "binning",
                     "input": "pt",
@@ -66,15 +66,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.85
+                            "value": 0.709
                           },
                           {
                             "key": "up",
-                            "value": 0.89
+                            "value": 0.752
                           },
                           {
                             "key": "down",
-                            "value": 0.8029999999999999
+                            "value": 0.6599999999999999
                           }
                         ]
                       },
@@ -84,15 +84,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.907
+                            "value": 0.833
                           },
                           {
                             "key": "up",
-                            "value": 0.9470000000000001
+                            "value": 0.877
                           },
                           {
                             "key": "down",
-                            "value": 0.87
+                            "value": 0.7909999999999999
                           }
                         ]
                       },
@@ -102,91 +102,30 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.952
+                            "value": 0.975
                           },
                           {
                             "key": "up",
-                            "value": 1.03
+                            "value": 1.101
                           },
                           {
                             "key": "down",
-                            "value": 0.8839999999999999
+                            "value": 0.865
                           }
                         ]
                       }
                     ]
                   }
-                },
-                {
-                  "key": "0.60",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.737
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.782
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.695
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.849
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.887
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.813
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.869
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.944
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.8
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
                 {
                   "key": "0.78",
                   "value": {
@@ -206,15 +145,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.667
+                            "value": 0.697
                           },
                           {
                             "key": "up",
-                            "value": 0.7090000000000001
+                            "value": 0.738
                           },
                           {
                             "key": "down",
-                            "value": 0.625
+                            "value": 0.6549999999999999
                           }
                         ]
                       },
@@ -224,15 +163,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.814
+                            "value": 0.778
                           },
                           {
                             "key": "up",
-                            "value": 0.855
+                            "value": 0.8270000000000001
                           },
                           {
                             "key": "down",
-                            "value": 0.7749999999999999
+                            "value": 0.74
                           }
                         ]
                       },
@@ -242,225 +181,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.906
+                            "value": 0.988
                           },
                           {
                             "key": "up",
-                            "value": 0.98
+                            "value": 1.099
                           },
                           {
                             "key": "down",
-                            "value": 0.8310000000000001
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.90",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.573
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.616
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5319999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.771
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8230000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.721
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.767
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.852
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.673
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.96",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.514
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.588
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.447
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.714
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.7899999999999999
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.642
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.528
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.666
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.41100000000000003
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.365
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.477
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.272
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.727
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.844
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.62
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.618
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.786
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.418
+                            "value": 0.891
                           }
                         ]
                       }
@@ -471,13 +200,13 @@
             }
           },
           {
-            "key": "2016preVFP",
+            "key": "2017",
             "value": {
               "nodetype": "category",
               "input": "WP",
               "content": [
                 {
-                  "key": "0.40",
+                  "key": "0.78",
                   "value": {
                     "nodetype": "binning",
                     "input": "pt",
@@ -495,15 +224,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.853
+                            "value": 0.675
                           },
                           {
                             "key": "up",
-                            "value": 0.898
+                            "value": 0.7070000000000001
                           },
                           {
                             "key": "down",
-                            "value": 0.8109999999999999
+                            "value": 0.643
                           }
                         ]
                       },
@@ -513,15 +242,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.891
+                            "value": 0.76
                           },
                           {
                             "key": "up",
-                            "value": 0.926
+                            "value": 0.789
                           },
                           {
                             "key": "down",
-                            "value": 0.856
+                            "value": 0.73
                           }
                         ]
                       },
@@ -531,23 +260,32 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.952
+                            "value": 0.758
                           },
                           {
                             "key": "up",
-                            "value": 1.022
+                            "value": 0.821
                           },
                           {
                             "key": "down",
-                            "value": 0.8899999999999999
+                            "value": 0.7
                           }
                         ]
                       }
                     ]
                   }
-                },
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
                 {
-                  "key": "0.60",
+                  "key": "0.78",
                   "value": {
                     "nodetype": "binning",
                     "input": "pt",
@@ -569,957 +307,11 @@
                           },
                           {
                             "key": "up",
-                            "value": 0.8200000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.74
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.858
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.895
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.822
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.936
-                          },
-                          {
-                            "key": "up",
-                            "value": 1.008
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.8680000000000001
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.78",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.708
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.755
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6609999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.755
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.794
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.718
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.927
-                          },
-                          {
-                            "key": "up",
-                            "value": 1.008
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.762
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.90",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.718
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.766
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6649999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.689
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.735
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6459999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.803
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.907
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.7040000000000001
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.96",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.676
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.756
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.537
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.635
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.702
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.562
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.908
-                          },
-                          {
-                            "key": "up",
-                            "value": 1.054
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.773
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.737
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.885
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.606
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.523
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.619
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.43700000000000006
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.723
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.9279999999999999
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.546
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "key": "2017",
-            "value": {
-              "nodetype": "category",
-              "input": "WP",
-              "content": [
-                {
-                  "key": "0.40",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.888
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.914
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.863
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.914
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.9410000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.889
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.878
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.923
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.837
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.60",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.826
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.856
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.7969999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.842
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.867
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.817
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.77
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.81
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.732
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.78",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.76
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.793
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.728
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.768
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.795
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.741
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.714
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.758
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6719999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.90",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.691
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.733
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6489999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.785
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8210000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.751
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.774
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8270000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.618
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.96",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.567
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.6339999999999999
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5009999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.753
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.801
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.706
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.67
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.76
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6000000000000001
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.667
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.758
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5760000000000001
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.727
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.796
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6619999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.592
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.698
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.494
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "key": "2018",
-            "value": {
-              "nodetype": "category",
-              "input": "WP",
-              "content": [
-                {
-                  "key": "0.40",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.878
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.903
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.854
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.884
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.906
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.863
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.899
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.9390000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.863
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.60",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.828
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.853
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.8029999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.837
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.859
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.816
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.875
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.918
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.833
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.78",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.758
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.785
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.731
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.785
-                          },
-                          {
-                            "key": "up",
                             "value": 0.809
                           },
                           {
                             "key": "down",
-                            "value": 0.761
+                            "value": 0.75
                           }
                         ]
                       },
@@ -1529,23 +321,50 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.844
+                            "value": 0.81
                           },
                           {
                             "key": "up",
-                            "value": 0.887
+                            "value": 0.8590000000000001
                           },
                           {
                             "key": "down",
-                            "value": 0.8019999999999999
+                            "value": 0.785
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.877
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.942
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.829
                           }
                         ]
                       }
                     ]
                   }
-                },
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
                 {
-                  "key": "0.90",
+                  "key": "0.78",
                   "value": {
                     "nodetype": "binning",
                     "input": "pt",
@@ -1567,11 +386,11 @@
                           },
                           {
                             "key": "up",
-                            "value": 0.763
+                            "value": 0.76
                           },
                           {
                             "key": "down",
-                            "value": 0.697
+                            "value": 0.7
                           }
                         ]
                       },
@@ -1581,216 +400,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.708
+                            "value": 0.794
                           },
                           {
                             "key": "up",
-                            "value": 0.735
+                            "value": 0.8160000000000001
                           },
                           {
                             "key": "down",
-                            "value": 0.6549999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.722
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.826
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6759999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.96",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.676
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.7430000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.617
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.653
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.6900000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.618
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.762
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8280000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.698
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.559
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.631
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.49300000000000005
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.615
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.667
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.566
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.68
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.765
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5930000000000001
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "key": "2024",
-            "value": {
-              "nodetype": "category",
-              "input": "WP",
-              "content": [
-                {
-                  "key": "0.40",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.854
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.902
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.834
+                            "value": 0.773
                           }
                         ]
                       },
@@ -1804,379 +422,11 @@
                           },
                           {
                             "key": "up",
-                            "value": 0.901
+                            "value": 0.937
                           },
                           {
                             "key": "down",
-                            "value": 0.866
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.872
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.901
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.844
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.60",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.793
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8130000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.774
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.831
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.849
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.814
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.804
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8340000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.775
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.78",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.74
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.762
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.719
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.779
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.798
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.76
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.764
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.796
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.733
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.90",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.679
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.7060000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.652
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.721
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.744
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.699
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.746
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.784
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.709
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.96",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.615
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.654
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.577
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.606
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.637
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.575
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.636
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.681
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.594
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.474
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.5329999999999999
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.419
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.504
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.542
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.467
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.497
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.547
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.451
+                            "value": 0.834
                           }
                         ]
                       }
@@ -2192,575 +442,6 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
-                {
-                  "key": "0.40",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.891
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.918
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.865
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.938
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.958
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.9189999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.908
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.9380000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.88
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.60",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.815
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.838
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.7899999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.884
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.903
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.865
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.837
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.866
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.8089999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.78",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.779
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.805
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.754
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.812
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8330000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.792
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.783
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.8140000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.754
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.90",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.68
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.7100000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.65
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.744
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.768
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.721
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.717
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.756
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6839999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.96",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.634
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.68
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.588
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.592
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.625
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5609999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.563
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.605
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5239999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.568
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.6429999999999999
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.49999999999999994
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.504
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.543
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.467
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.533
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.5850000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.48400000000000004
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "key": "r2comb",
-            "value": {
-              "nodetype": "category",
-              "input": "WP",
-              "content": [
-                {
-                  "key": "0.40",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.883
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.913
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.864
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.9
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.915
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.885
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.916
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.9450000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.889
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.60",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.82
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.838
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.8029999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.849
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.864
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.834
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.849
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.877
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.823
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
                 {
                   "key": "0.78",
                   "value": {
@@ -2784,125 +465,64 @@
                           },
                           {
                             "key": "up",
-                            "value": 0.761
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.725
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.786
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.802
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.77
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.815
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.845
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.7859999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.90",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.699
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.722
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.6769999999999999
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.739
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.76
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.717
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.752
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.789
+                            "value": 0.768
                           },
                           {
                             "key": "down",
                             "value": 0.719
                           }
                         ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.806
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8320000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.782
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.908
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.9570000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.863
+                          }
+                        ]
                       }
                     ]
                   }
-                },
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
                 {
-                  "key": "0.96",
+                  "key": "0.78",
                   "value": {
                     "nodetype": "binning",
                     "input": "pt",
@@ -2920,15 +540,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.647
+                            "value": 0.718
                           },
                           {
                             "key": "up",
-                            "value": 0.683
+                            "value": 0.735
                           },
                           {
                             "key": "down",
-                            "value": 0.611
+                            "value": 0.701
                           }
                         ]
                       },
@@ -2938,15 +558,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.698
+                            "value": 0.794
                           },
                           {
                             "key": "up",
-                            "value": 0.725
+                            "value": 0.81
                           },
                           {
                             "key": "down",
-                            "value": 0.6719999999999999
+                            "value": 0.778
                           }
                         ]
                       },
@@ -2956,85 +576,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.732
+                            "value": 0.893
                           },
                           {
                             "key": "up",
-                            "value": 0.7949999999999999
+                            "value": 0.934
                           },
                           {
                             "key": "down",
-                            "value": 0.6739999999999999
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "key": "0.98",
-                  "value": {
-                    "nodetype": "binning",
-                    "input": "pt",
-                    "edges": [
-                      250.0,
-                      300.0,
-                      400.0,
-                      800.0
-                    ],
-                    "flow": "clamp",
-                    "content": [
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.616
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.675
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.569
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.658
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.6950000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5840000000000001
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.655
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.7250000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.5880000000000001
+                            "value": 0.854
                           }
                         ]
                       }
