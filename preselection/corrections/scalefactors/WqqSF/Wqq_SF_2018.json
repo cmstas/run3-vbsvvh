@@ -65,7 +65,58 @@
             "WP"
            ],
            "parameters": [
-            0.779,
+            0.758,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.785,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.731,
+            0.0
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.785,
             0.0
            ]
           }
@@ -95,7 +146,7 @@
             "WP"
            ],
            "parameters": [
-            0.75,
+            0.761,
             0.0
            ]
           }
@@ -116,7 +167,7 @@
             "WP"
            ],
            "parameters": [
-            0.81,
+            0.844,
             0.0
            ]
           }
@@ -131,7 +182,7 @@
             "WP"
            ],
            "parameters": [
-            0.8590000000000001,
+            0.887,
             0.0
            ]
           }
@@ -146,7 +197,7 @@
             "WP"
            ],
            "parameters": [
-            0.785,
+            0.8019999999999999,
             0.0
            ]
           }
@@ -167,7 +218,7 @@
             "WP"
            ],
            "parameters": [
-            0.877,
+            0.844,
             0.0
            ]
           }
@@ -182,7 +233,7 @@
             "WP"
            ],
            "parameters": [
-            0.942,
+            0.9730000000000001,
             0.0
            ]
           }
@@ -197,58 +248,7 @@
             "WP"
            ],
            "parameters": [
-            0.829,
-            0.0
-           ]
-          }
-         }
-        ]
-       },
-       {
-        "nodetype": "category",
-        "input": "systematic",
-        "content": [
-         {
-          "key": "nom",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.877,
-            0.0
-           ]
-          }
-         },
-         {
-          "key": "up",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            1.0719999999999998,
-            0.0
-           ]
-          }
-         },
-         {
-          "key": "down",
-          "value": {
-           "nodetype": "formula",
-           "expression": "[0]+[1]*x",
-           "parser": "TFormula",
-           "variables": [
-            "WP"
-           ],
-           "parameters": [
-            0.7329999999999999,
+            0.7179999999999999,
             0.0
            ]
           }
@@ -309,7 +309,7 @@
          "WP"
         ],
         "parameters": [
-         0.2069632967572095,
+         0.2073553195121509,
          0.0
         ]
        },
@@ -321,7 +321,7 @@
          "WP"
         ],
         "parameters": [
-         0.3062979103676058,
+         0.30706522398913094,
          0.0
         ]
        },
@@ -333,7 +333,7 @@
          "WP"
         ],
         "parameters": [
-         0.3105455200936432,
+         0.31310894223841756,
          0.0
         ]
        },
@@ -345,7 +345,7 @@
          "WP"
         ],
         "parameters": [
-         0.3105455200936432,
+         0.31310894223841756,
          0.0
         ]
        }

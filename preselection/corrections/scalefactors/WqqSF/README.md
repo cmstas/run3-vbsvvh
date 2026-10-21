@@ -6,20 +6,23 @@ The correction is named `particleNet_Wqq_SF` for historical reasons; the tagger 
 
 - Inputs: `era` (string), `WP` (string), `eta` (real, unused: inclusive in |eta| < 2.5), `pt` (real), `systematic` (`nom`/`up`/`down`, absolute SF values).
 - Eras: `2016preVFP`, `2016postVFP`, `2017`, `2018`, `2024`, `2025`, plus `r2comb` (Run 2 combined fit). No 2022/2023 yet.
-- WP (score > WP, score = (Xcs + Xqq/3) / (Xcs + Xqq/3 + QCD) from `globalParT3`): `0.78` only in this version (the
-  previous version, d07a64def, had `0.40`, `0.60`, `0.78`, `0.90`, `0.96`, `0.98` from a soft-drop-mass fit).
+- WP (score > WP, score = (Xcs + Xqq/3) / (Xcs + Xqq/3 + QCD) from `globalParT3`): `0.78` only in this version.
 - pt bins: [250, 300), [300, 400), [400, 800) GeV, clamped outside.
-- GloParT-3 X2p mass in the fit (`FatJet_globalParT3_massCorrX2p * FatJet_rawmass`), the same fit that measures the
-  JMS/JMR in `../JMSR`; 1-lep ttbar tag-and-probe (single-pass pass/fail). The free normalisation of the "other"
-  (non-ttbar) MC has a lnU range of kappa = 6 (was 2; the kappa scan showed "other" needs x2.9-x4.4).
+- Soft-drop mass in the fit (`fj_1_sdmass`, 50-220 GeV); 1-lep ttbar tag-and-probe (single-pass pass/fail). The free
+  normalisation of the "other" (non-ttbar) MC has a lnU range of kappa = 2. The JMS/JMR in `../JMSR` come from the
+  GloParT-3 X2p-mass fit on the same candle and MC (as in d07a64def).
 - Candle: 1lep_WSF producer with the new fat-jet gen matching (`fj_1_genMatch`, true W = 1/2) and the soft-drop mass
   from JEC'd subjets (`feat/msd-subjet-jec`), V+jets samples after PR #127.
 - `Wqq_effMC_correctionlib_etainclusive.json`, correction `particleNet_Wqq_effMC` (inputs `era`, `WP`, `eta`, `pt`): candle MC
-  efficiency of true W jets, pre-fit tp2 pass / (pass + fail), same campaign; no uncertainty. Per-era files for RDF: `README_per_era.md`.
-- MC without overlapping samples (2026-10-16): the candle merge drops the duplicates of run3-vbsvvh's bkg/1lep_1FJ base
-  list (Run 3 W->lnu: NLO `WtoLNu-2Jets` PTLNu only, no LO `WtoLNu-4Jets`; inclusive WW/ZZ, split WZ, inclusive ttW/ttZ
-  dropped). The earlier version of these files double counted Run 3 W+jets and the dibosons.
-- Source: `wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/particlenetmd_sf_16oct_noov_Wnlo_JMSR_x2p_msdjec_wp0p78_otherlnU6/SFsummary_jsons/Wqq_SF_correctionlib.json`
-  (fits 2026-10-16/19, all 21 era x pt bins checked: no failed fit, no range-edge uncertainty). vs the previous
-  version (soft-drop mass, kappa 2) at WP 0.78: 400-800 GeV up by 0.03-0.13 in every era, 250-400 GeV within
-  -0.09..+0.04 (e.g. 2018: 0.758/0.785/0.844 -> 0.779/0.810/0.877, 2024: 0.740/0.779/0.764 -> 0.730/0.794/0.883).
+  efficiency of true W jets, pre-fit tp2 pass / (pass + fail), same campaigns as the SFs; no uncertainty. Per-era files for RDF: `README_per_era.md`.
+- MC without overlapping samples: the candle merge drops the duplicates of run3-vbsvvh's bkg/1lep_1FJ base list
+  (inclusive WW/ZZ, split WZ, inclusive ttW/ttZ dropped). W->lnu: Run 2 = `WJetsToLNu_HT-*` (8 HT bins, no inclusive
+  sample); **Run 3 (2024, 2025) = LO `WtoLNu-4Jets` HT x MLNu (12 bins), not the NLO `WtoLNu-2Jets` PTLNu**.
+- Sources (`wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/<campaign>/SFsummary_jsons/Wqq_SF_correctionlib.json`
+  and `Wqq_effMC_correctionlib.json`, WP 0.78 kept): `2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from
+  `particlenetmd_sf_15oct_noov_Wnlo_msdjec_wpgrid_etaincl`; `2024`, `2025` from `particlenetmd_sf_15oct_noov_Wlo_msdjec_wpgrid_etaincl`
+  (joined with `wqq_sf/small_tools/splice_sf_jsons.py`). Every fit of both campaigns checked (all eras, WPs, pt bins):
+  no failed fit, no SF / JMS / JMR uncertainty at a range edge.
+- vs the previous version (116c67844: X2p mass, kappa 6, NLO Run 3 W): Run 2 and its WP 0.78 values are identical to
+  d07a64def (same campaign); 2024 / 2025 differ from d07a64def by <= 0.02 (LO instead of NLO W). E.g. 2018:
+  0.779/0.810/0.877 -> 0.758/0.785/0.844, 2024: 0.730/0.794/0.883 -> 0.747/0.785/0.755, 2025: 0.743/0.806/0.908 -> 0.787/0.823/0.802.

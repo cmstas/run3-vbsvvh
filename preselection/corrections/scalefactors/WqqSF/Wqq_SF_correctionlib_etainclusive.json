@@ -66,15 +66,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.709
+                            "value": 0.667
                           },
                           {
                             "key": "up",
-                            "value": 0.752
+                            "value": 0.7090000000000001
                           },
                           {
                             "key": "down",
-                            "value": 0.6599999999999999
+                            "value": 0.625
                           }
                         ]
                       },
@@ -84,15 +84,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.833
+                            "value": 0.814
                           },
                           {
                             "key": "up",
-                            "value": 0.877
+                            "value": 0.855
                           },
                           {
                             "key": "down",
-                            "value": 0.7909999999999999
+                            "value": 0.7749999999999999
                           }
                         ]
                       },
@@ -102,15 +102,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.975
+                            "value": 0.906
                           },
                           {
                             "key": "up",
-                            "value": 1.101
+                            "value": 0.98
                           },
                           {
                             "key": "down",
-                            "value": 0.865
+                            "value": 0.8310000000000001
                           }
                         ]
                       }
@@ -145,15 +145,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.697
+                            "value": 0.708
                           },
                           {
                             "key": "up",
-                            "value": 0.738
+                            "value": 0.755
                           },
                           {
                             "key": "down",
-                            "value": 0.6549999999999999
+                            "value": 0.6609999999999999
                           }
                         ]
                       },
@@ -163,15 +163,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.778
+                            "value": 0.755
                           },
                           {
                             "key": "up",
-                            "value": 0.8270000000000001
+                            "value": 0.794
                           },
                           {
                             "key": "down",
-                            "value": 0.74
+                            "value": 0.718
                           }
                         ]
                       },
@@ -181,15 +181,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.988
+                            "value": 0.927
                           },
                           {
                             "key": "up",
-                            "value": 1.099
+                            "value": 1.008
                           },
                           {
                             "key": "down",
-                            "value": 0.891
+                            "value": 0.762
                           }
                         ]
                       }
@@ -224,33 +224,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.675
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.7070000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.643
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
                             "value": 0.76
                           },
                           {
                             "key": "up",
-                            "value": 0.789
+                            "value": 0.793
                           },
                           {
                             "key": "down",
-                            "value": 0.73
+                            "value": 0.728
                           }
                         ]
                       },
@@ -260,15 +242,33 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.758
+                            "value": 0.768
                           },
                           {
                             "key": "up",
-                            "value": 0.821
+                            "value": 0.795
                           },
                           {
                             "key": "down",
-                            "value": 0.7
+                            "value": 0.741
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.714
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.758
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6719999999999999
                           }
                         ]
                       }
@@ -303,7 +303,25 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.779
+                            "value": 0.758
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.785
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.731
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.785
                           },
                           {
                             "key": "up",
@@ -311,7 +329,7 @@
                           },
                           {
                             "key": "down",
-                            "value": 0.75
+                            "value": 0.761
                           }
                         ]
                       },
@@ -321,33 +339,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.81
+                            "value": 0.844
                           },
                           {
                             "key": "up",
-                            "value": 0.8590000000000001
+                            "value": 0.887
                           },
                           {
                             "key": "down",
-                            "value": 0.785
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.877
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.942
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.829
+                            "value": 0.8019999999999999
                           }
                         ]
                       }
@@ -382,15 +382,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.73
+                            "value": 0.747
                           },
                           {
                             "key": "up",
-                            "value": 0.76
+                            "value": 0.769
                           },
                           {
                             "key": "down",
-                            "value": 0.7
+                            "value": 0.725
                           }
                         ]
                       },
@@ -400,15 +400,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.794
+                            "value": 0.785
                           },
                           {
                             "key": "up",
-                            "value": 0.8160000000000001
+                            "value": 0.804
                           },
                           {
                             "key": "down",
-                            "value": 0.773
+                            "value": 0.767
                           }
                         ]
                       },
@@ -418,15 +418,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.883
+                            "value": 0.755
                           },
                           {
                             "key": "up",
-                            "value": 0.937
+                            "value": 0.784
                           },
                           {
                             "key": "down",
-                            "value": 0.834
+                            "value": 0.727
                           }
                         ]
                       }
@@ -461,15 +461,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.743
+                            "value": 0.787
                           },
                           {
                             "key": "up",
-                            "value": 0.768
+                            "value": 0.812
                           },
                           {
                             "key": "down",
-                            "value": 0.719
+                            "value": 0.762
                           }
                         ]
                       },
@@ -479,7 +479,25 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.806
+                            "value": 0.823
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.844
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8019999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.802
                           },
                           {
                             "key": "up",
@@ -487,25 +505,7 @@
                           },
                           {
                             "key": "down",
-                            "value": 0.782
-                          }
-                        ]
-                      },
-                      {
-                        "nodetype": "category",
-                        "input": "systematic",
-                        "content": [
-                          {
-                            "key": "nom",
-                            "value": 0.908
-                          },
-                          {
-                            "key": "up",
-                            "value": 0.9570000000000001
-                          },
-                          {
-                            "key": "down",
-                            "value": 0.863
+                            "value": 0.773
                           }
                         ]
                       }
@@ -540,15 +540,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.718
+                            "value": 0.743
                           },
                           {
                             "key": "up",
-                            "value": 0.735
+                            "value": 0.761
                           },
                           {
                             "key": "down",
-                            "value": 0.701
+                            "value": 0.725
                           }
                         ]
                       },
@@ -558,15 +558,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.794
+                            "value": 0.786
                           },
                           {
                             "key": "up",
-                            "value": 0.81
+                            "value": 0.802
                           },
                           {
                             "key": "down",
-                            "value": 0.778
+                            "value": 0.77
                           }
                         ]
                       },
@@ -576,15 +576,15 @@
                         "content": [
                           {
                             "key": "nom",
-                            "value": 0.893
+                            "value": 0.815
                           },
                           {
                             "key": "up",
-                            "value": 0.934
+                            "value": 0.845
                           },
                           {
                             "key": "down",
-                            "value": 0.854
+                            "value": 0.7859999999999999
                           }
                         ]
                       }

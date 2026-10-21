@@ -191,9 +191,11 @@ Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
 - JMR: theta = +1 corresponds to an extra Gaussian smearing with sigma = 10%; the Down template is the
   symmetrized mirror (2*nominal - up), so negative theta is constrained.
 
-Source: `wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/particlenetmd_sf_16oct_noov_Wnlo_JMSR_x2p_msdjec_wp0p78_otherlnU6/SFsummary_jsons/`
-(`JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`; fits 2026-10-16/19, WP 0.78, branch pyli/wqqsf-nooverlap-genmatch
-735825f: MC without overlapping samples, NLO Run 3 W+jets, free "other" normalisation with lnU kappa = 6 instead of 2;
-the conversion code below is unchanged), same candle and same fit as `../WqqSF` (new gen matching + soft-drop JEC).
-Previous version (d07a64def): `particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid` (kappa 2, 6 WPs); the kappa-2
-f was 0.02-0.05 too high at 400-800 GeV, s unchanged.
+Sources (`wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/<campaign>/SFsummary_jsons/`
+`JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`, WP 0.78 kept; joined with `wqq_sf/small_tools/splice_sf_jsons.py`):
+`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from `particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid`
+(= d07a64def), `2024`, `2025` from `particlenetmd_sf_15oct_noov_Wlo_JMSR_x2p_msdjec_wpgrid` (LO `WtoLNu-4Jets` Run 3
+W+jets instead of NLO). Both: X2p mass fit, free "other" normalisation with lnU kappa = 2, MC without overlapping samples,
+same candle as `../WqqSF` (new gen matching + soft-drop JEC; the Wqq SFs there come from the soft-drop-mass fit on the
+same MC). Every fit checked: no failed fit, deployed theta never at its range edge, theta +- 1 sigma inside [-1, 1].
+vs 116c67844 (kappa 6, NLO): Run 2 back to the d07a64def values; 2024/2025 vs d07a64def: s within 0.002, f within 0.03.
