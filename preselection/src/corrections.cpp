@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "Math/Vector4D.h"
 #include "TRandom3.h"
 
 /*
@@ -173,24 +174,26 @@ const StrMap& fatJetEnergyResolution_JER_unc_name() { static const StrMap m = ma
 
 // Note: Re-using the 2024 payload for 2022-2023 (same Run3-24... file).
 // 2025 recommendation: https://btv-wiki.docs.cern.ch/ScaleFactors/Run3Prompt25/
+// Payload versions are pinned, not `latest`; keep them in sync with
+// bTaggingScaleFactors in weights.h.
 const CSetMap& btaggingCorrections() {
     static const CSetMap m = [] {
         const std::string base = "/cvmfs/cms-griddata.cern.ch/cat/metadata/BTV/";
         const std::vector<std::pair<std::string, std::string>> eras = {
-            {"2016preVFP",            "Run2-2016preVFP-UL-NanoAODv15"},
-            {"2016postVFP",           "Run2-2016postVFP-UL-NanoAODv15"},
-            {"2017",                  "Run2-2017-UL-NanoAODv15"},
-            {"2018",                  "Run2-2018-UL-NanoAODv15"},
-            {"2022Re-recoBCD",        "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2022Re-recoE+PromptFG", "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2023PromptC",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2023PromptD",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2024Prompt",            "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15"},
-            {"2025",                  "Run3-25Prompt-Summer24-NanoAODv15"},
+            {"2016preVFP",            "Run2-2016preVFP-UL-NanoAODv15/2026-06-18"},
+            {"2016postVFP",           "Run2-2016postVFP-UL-NanoAODv15/2026-06-18"},
+            {"2017",                  "Run2-2017-UL-NanoAODv15/2026-06-18"},
+            {"2018",                  "Run2-2018-UL-NanoAODv15/2026-06-18"},
+            {"2022Re-recoBCD",        "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2022Re-recoE+PromptFG", "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2023PromptC",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2023PromptD",           "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2024Prompt",            "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-10-14"},
+            {"2025",                  "Run3-25Prompt-Summer24-NanoAODv15/2026-10-14"},
         };
         CSetMap out;
         for (const auto& [year, dir] : eras)
-            out.emplace(year, *CorrectionSet::from_file(base + dir + "/latest/btagging.json.gz"));
+            out.emplace(year, *CorrectionSet::from_file(base + dir + "/btagging.json.gz"));
         return out;
     }();
     return m;
@@ -376,14 +379,18 @@ JERC EVALUATION HELPERS — shared by the JEC / JER / Type-1 MET code below
 ############################################
 
 makeCompoundJECName + evalJECCompound serve the nominal AK4/AK8 JEC and the
-Type-1 MET rebuild; evalJERCorrection serves the AK4/AK8 JER smearing and the
-CorrT1METJet JER inside applyType1MET.
+Type-1 MET rebuild; makeJECLevelName + evalJECCompound serve the per-level subjet
+JEC behind the soft-drop mass; evalJERCorrection serves the AK4/AK8 JER smearing
+and the CorrT1METJet JER inside applyType1MET.
 */
 
 namespace {
-    inline std::string makeCompoundJECName(const std::string& mc_prefix,
-                                           const std::string& algo,
-                                           bool isData) {
+    // Name of a single JEC level (L2Relative, L3Absolute, L2L3Residual, ...) or of the
+    // L1L2L3Res compound: <jecTag>_{MC,DATA}_<level>_<algo>.
+    inline std::string makeJECLevelName(const std::string& mc_prefix,
+                                        const std::string& level,
+                                        const std::string& algo,
+                                        bool isData) {
         // jec_prefix_map values end in "_MC" by convention; replace with "_DATA" for data.
         std::string base = mc_prefix;
         const std::string mc_tag = "_MC";
@@ -392,7 +399,13 @@ namespace {
             base.compare(base.size() - mc_tag.size(), mc_tag.size(), mc_tag) == 0) {
             base.resize(base.size() - mc_tag.size());
         }
-        return base + (isData ? "_DATA" : "_MC") + "_L1L2L3Res_" + algo;
+        return base + (isData ? "_DATA" : "_MC") + "_" + level + "_" + algo;
+    }
+
+    inline std::string makeCompoundJECName(const std::string& mc_prefix,
+                                           const std::string& algo,
+                                           bool isData) {
+        return makeJECLevelName(mc_prefix, "L1L2L3Res", algo, isData);
     }
 
     // Evaluate a JEC L1L2L3Res compound, building the argument vector by matching each of the
@@ -407,7 +420,12 @@ namespace {
     // to the 2023BPix + 2024 compounds (DATA there also takes `run`), while older eras have neither.
     // A fixed arg list threw "wrong number of inputs" for those eras, which the per-jet catch turned
     // into sf=1.0 — jets silently left at raw pT.
-    inline double evalJECCompound(const correction::CompoundCorrection& comp,
+    //
+    // Templated over the correction type so the same by-name mapping also evaluates a single
+    // JEC level (correction::Correction), whose inputs vary the same way (e.g. L2Relative takes
+    // JetPhi for 2023BPix/2024/2025, DATA L2L3Residual takes run).
+    template <typename JECCorrection>
+    inline double evalJECCompound(const JECCorrection& comp,
                                   double area, double eta, double pt, double rho,
                                   double phi, double run) {
         std::vector<correction::Variable::Type> args;
@@ -695,6 +713,114 @@ RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correct
 
 /*
 ############################################
+SOFT-DROP MASS — nominal JEC via the subjets
+############################################
+
+FatJet_msoftdrop is groomedMass('SoftDropPuppi'): the invariant mass of the SoftDrop
+subjets, each corrected at production time with AK4PFPuppi L2Relative * L3Absolute
+(* L2L3Residual on data, inserted by CMSSW runOnData). Recipe, per subjet k of each fat jet:
+
+  pt0 = (1 - SubJet_rawFactor) * SubJet_pt          // undo the production JEC
+  m0  = (1 - SubJet_rawFactor) * SubJet_mass
+  c   = L2Relative(eta, [phi,] pt0)
+      * L3Absolute(eta, pt0 * c_L2)
+      * L2L3Residual([run,] eta, pt0 * c_L2 * c_L3)   // DATA only
+  p4_k = PtEtaPhiM(c * pt0, eta, phi, c * m0)
+
+  FatJet_msoftdrop = |sum_k p4_k|                     // k over FatJet_subJetIdx{1,2} >= 0
+
+No L1FastJet (as in production; it is the identity for AK4PFPuppi). Fat jets without
+subjets keep their input value (-1 in NanoAOD). The input value is kept as
+FatJet_msoftdrop_nano. SubJet_* columns are not modified.
+*/
+
+RNode applySoftDropMassCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                   RNode df, bool isData) {
+
+    auto compute_msd = [cset_jerc, jec_prefix_map, jec_suffix_map, isData](
+            std::string year, RVec<float> msd, RVec<short> sjIdx1, RVec<short> sjIdx2,
+            RVec<float> sj_pt, RVec<float> sj_eta, RVec<float> sj_phi, RVec<float> sj_mass,
+            RVec<float> sj_rawFactor, unsigned int run) {
+
+        RVec<float> out = msd;
+        if (msd.empty()) return out;
+
+        auto cs_it = cset_jerc.find(year);
+        auto pf_it = jec_prefix_map.find(year);
+        auto sf_it = jec_suffix_map.find(year);
+        if (cs_it == cset_jerc.end() || pf_it == jec_prefix_map.end() || sf_it == jec_suffix_map.end()) {
+            throw std::runtime_error("Subjet JEC: no correction set, prefix, or suffix configured for year '"
+                                     + year + "'. Refusing to run with the soft-drop mass uncorrected — add this "
+                                       "year to the JERC era table in corrections.cpp.");
+        }
+
+        auto level = [&](const std::string& name) {
+            const std::string full = makeJECLevelName(pf_it->second, name, sf_it->second, isData);
+            correction::Correction::Ref corr;
+            try {
+                corr = cs_it->second.at(full);
+            } catch (const std::out_of_range&) {
+                throw std::runtime_error("Subjet JEC: correction '" + full
+                                         + "' not found in the pinned jet_jerc.json.gz for year '" + year
+                                         + "'. The JEC tag in the JERC era table (corrections.cpp) is stale relative to the "
+                                           "pinned snapshot (version drift). Refusing to run with the soft-drop mass uncorrected.");
+            }
+            // The subjet recipe has no L1, so none of these levels should take JetA/Rho;
+            // refuse rather than feed a placeholder if a re-pinned file ever adds one.
+            for (const auto& v : corr->inputs()) {
+                if (v.name() == "JetA" || v.name() == "Rho")
+                    throw std::runtime_error("Subjet JEC: correction '" + full + "' takes input '" + v.name()
+                                             + "', which applySoftDropMassCorrections() does not provide.");
+            }
+            return corr;
+        };
+        const auto l2  = level("L2Relative");
+        const auto l3  = level("L3Absolute");
+        const auto res = isData ? level("L2L3Residual") : nullptr;
+
+        for (size_t i = 0; i < msd.size(); ++i) {
+            ROOT::Math::PtEtaPhiMVector groomed;
+            int nSubjets = 0;
+            for (int k : {static_cast<int>(sjIdx1[i]), static_cast<int>(sjIdx2[i])}) {
+                if (k < 0 || k >= static_cast<int>(sj_pt.size())) continue;
+                const float rawScale = 1.0f - sj_rawFactor[k];
+                const double pt0 = rawScale * sj_pt[k];
+                double c = 1.0;
+                try {
+                    // area/rho slots are unused: level() rejects any level that declares them.
+                    const double c2 = evalJECCompound(*l2, 0.0, (double)sj_eta[k], pt0,
+                                                      0.0, (double)sj_phi[k], (double)run);
+                    const double c3 = evalJECCompound(*l3, 0.0, (double)sj_eta[k], pt0 * c2,
+                                                      0.0, (double)sj_phi[k], (double)run);
+                    const double cR = res ? evalJECCompound(*res, 0.0, (double)sj_eta[k], pt0 * c2 * c3,
+                                                            0.0, (double)sj_phi[k], (double)run)
+                                          : 1.0;
+                    c = c2 * c3 * cR;
+                } catch (const std::exception& e) {
+                    std::cout << "Warning: JEC evaluation failed for subjet " << k << " (pt_raw=" << pt0
+                              << ", eta=" << sj_eta[k] << "): " << e.what() << ". Setting SF to 1.0." << std::endl;
+                    c = 1.0;
+                }
+                groomed += ROOT::Math::PtEtaPhiMVector(c * pt0, sj_eta[k], sj_phi[k],
+                                                       c * rawScale * sj_mass[k]);
+                ++nSubjets;
+            }
+            if (nSubjets > 0) out[i] = static_cast<float>(groomed.M());
+        }
+        return out;
+    };
+
+    return df
+        .Define("FatJet_msoftdrop_nano", "FatJet_msoftdrop")
+        .Redefine("FatJet_msoftdrop", compute_msd,
+                  {"year", "FatJet_msoftdrop", "FatJet_subJetIdx1", "FatJet_subJetIdx2",
+                   "SubJet_pt", "SubJet_eta", "SubJet_phi", "SubJet_mass", "SubJet_rawFactor", "run"});
+}
+
+/*
+############################################
 JET ENERGY RESOLUTION — hybrid smearing (MC only)
 ############################################
 
@@ -928,7 +1054,7 @@ sources × {Up, Dn} = 22 variations.
 
   AK4: Jet_pt_<sfx>, Jet_mass_<sfx>, _Jet_var_<sfx>  (full per-jet variation factor
        relative to the JEC pt; consumed by applyType1MET for the per-variation MET)
-  AK8: FatJet_pt_<sfx>, FatJet_mass_<sfx>            (FatJet_msoftdrop has its own JEC recipe)
+  AK8: FatJet_pt_<sfx>, FatJet_mass_<sfx>            (FatJet_msoftdrop: nominal only, applySoftDropMassCorrections)
   <sfx> = "jes" + column_label + direction   e.g. "jesAbsoluteUp", "jesAbsoluteYearDn"
 
 Source list lives in kJESRegroupedSources below. Lookup keys in jet_jerc.json.gz are
@@ -1025,7 +1151,7 @@ auto makeJESVarEvaluator(
 //
 // For the main jets, the matching met_pt_<sfx> / met_phi_<sfx> are built in
 // applyType1MET(), which reads _Jet_var_<sfx> and rebuilds the Type-I MET from
-// RawPuppiMET for this variation. (NOT FatJet_msoftdrop — that has its own JEC recipe;
+// RawPuppiMET for this variation. (NOT FatJet_msoftdrop — nominal only, via applySoftDropMassCorrections;
 // AK8 does not enter the Type-I MET, which is built from AK4 only.)
 RNode defineJESVariation(RNode df, const std::string& collection,
                          const std::string& column_label, const std::string& base_source,
@@ -1916,6 +2042,11 @@ RNode applyDataCorrections(RNode df_) {
                                       jetEnergyCorrections_JEC_prefix(),   // same JEC release for AK4 and AK8
                                       fatJetEnergyCorrections_JEC_suffix(),
                                       df, /*isData=*/true);
+    // Soft-drop mass from the subjets, re-corrected with the AK4PFPuppi levels.
+    df = applySoftDropMassCorrections(jetEnergyCorrections(),
+                                      jetEnergyCorrections_JEC_prefix(),
+                                      jetEnergyCorrections_JEC_suffix(),
+                                      df, /*isData=*/true);
     // Rebuild Type-I MET (nominal only for data).
     df = applyType1MET(df, /*isData=*/true);
     // df = applyMETPhiCorrections(df, true);
@@ -1934,6 +2065,11 @@ RNode applyMCCorrections(RNode df_) {
     df = applyFatJetEnergyCorrections(fatJetEnergyCorrections(),
                                       jetEnergyCorrections_JEC_prefix(),   // same JEC release for AK4 and AK8
                                       fatJetEnergyCorrections_JEC_suffix(),
+                                      df, /*isData=*/false);
+    // Soft-drop mass from the subjets, re-corrected with the AK4PFPuppi levels.
+    df = applySoftDropMassCorrections(jetEnergyCorrections(),
+                                      jetEnergyCorrections_JEC_prefix(),
+                                      jetEnergyCorrections_JEC_suffix(),
                                       df, /*isData=*/false);
     // JER smearing on top of JEC-corrected jets (defines Jet_jerFactor and, with systematics
     // enabled, the jerUp/jerDn factor + kinematic branches — all consumed by applyType1MET).

@@ -477,6 +477,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
         }
     }
 
+    // LHE-level variables that define the binned DY samples, needed downstream to remove the
+    // LHE_NpNLO (Run 3 PTLL x jet-multiplicity bins). Only added when present (not in data).
+    auto lheColNames = df.GetColumnNames();
+    for (auto &&colName : {"LHE_HT", "LHE_Vpt", "LHE_NpNLO"}) {
+        if (std::find(lheColNames.begin(), lheColNames.end(), colName) != lheColNames.end() &&
+            std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
+            final_variables.push_back(colName);
+        }
+    }
+
     if (isSig) {
         final_variables.push_back("LHEReweightingWeight");
         // ROOT creates the count branch automatically for vector branches.
