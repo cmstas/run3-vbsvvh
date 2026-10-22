@@ -48,6 +48,146 @@
               "input": "WP",
               "content": [
                 {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.85
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.89
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8029999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.907
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.9470000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.87
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.952
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.03
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8839999999999999
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.737
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.782
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.695
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.849
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.887
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.813
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.869
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.944
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
                   "key": "0.78",
                   "value": {
                     "nodetype": "binning",
@@ -116,6 +256,216 @@
                       }
                     ]
                   }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.573
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.616
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5319999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.771
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8230000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.721
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.767
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.852
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.673
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.514
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.588
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.447
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.714
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.7899999999999999
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.642
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.528
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.666
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.41100000000000003
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.365
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.477
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.272
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.727
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.844
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.62
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.618
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.786
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.418
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -126,6 +476,146 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.853
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.898
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8109999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.891
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.926
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.856
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.952
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.022
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8899999999999999
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.779
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8200000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.74
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.858
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.895
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.822
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.936
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.008
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8680000000000001
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
                 {
                   "key": "0.78",
                   "value": {
@@ -195,6 +685,216 @@
                       }
                     ]
                   }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.718
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.766
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6649999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.689
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.735
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6459999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.803
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.907
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.7040000000000001
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.676
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.756
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.537
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.635
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.702
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.562
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.908
+                          },
+                          {
+                            "key": "up",
+                            "value": 1.054
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.773
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.737
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.885
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.606
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.523
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.619
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.43700000000000006
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.723
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.9279999999999999
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.546
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -205,6 +905,146 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.888
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.914
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.863
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.914
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.9410000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.889
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.878
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.923
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.837
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.826
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.856
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.7969999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.842
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.867
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.817
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.77
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.81
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.732
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
                 {
                   "key": "0.78",
                   "value": {
@@ -274,6 +1114,216 @@
                       }
                     ]
                   }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.691
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.733
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6489999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.785
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8210000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.751
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.774
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8270000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.618
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.567
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.6339999999999999
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5009999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.753
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.801
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.706
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.67
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.76
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6000000000000001
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.667
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.758
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5760000000000001
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.727
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.796
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6619999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.592
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.698
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.494
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -284,6 +1334,146 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.878
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.903
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.854
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.884
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.906
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.863
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.899
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.9390000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.863
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.828
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.853
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8029999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.837
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.859
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.816
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.875
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.918
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.833
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
                 {
                   "key": "0.78",
                   "value": {
@@ -353,6 +1543,216 @@
                       }
                     ]
                   }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.73
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.763
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.697
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.708
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.735
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6549999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.722
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.826
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6759999999999999
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.676
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.7430000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.617
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.653
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.6900000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.618
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.762
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8280000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.698
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.559
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.631
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.49300000000000005
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.615
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.667
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.566
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.68
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.765
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5930000000000001
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -363,6 +1763,146 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.862
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.882
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.843
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.888
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.906
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.871
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.866
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.894
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.839
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.806
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8250000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.787
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.844
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.862
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.827
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.797
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8250000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.771
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
                 {
                   "key": "0.78",
                   "value": {
@@ -432,6 +1972,216 @@
                       }
                     ]
                   }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.694
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.721
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6669999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.726
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.748
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.705
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.721
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.772
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.688
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.648
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.6900000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.607
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.615
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.649
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.588
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.645
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.706
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.602
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.507
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.571
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.455
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.515
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.557
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.47300000000000003
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.502
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.556
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.44
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -442,6 +2192,146 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.893
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.913
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.873
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.948
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.967
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.9289999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.905
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.933
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.878
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.811
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.8320000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.791
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.895
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.915
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.876
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.841
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.868
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.814
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
                 {
                   "key": "0.78",
                   "value": {
@@ -511,6 +2401,216 @@
                       }
                     ]
                   }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.694
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.724
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6639999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.754
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.781
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.726
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.734
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.768
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.702
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.654
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.6990000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.609
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.612
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.641
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.567
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.618
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.659
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.578
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.63
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.6950000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5660000000000001
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.503
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.541
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.466
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.54
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.5930000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.49100000000000005
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -521,6 +2621,146 @@
               "nodetype": "category",
               "input": "WP",
               "content": [
+                {
+                  "key": "0.40",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.883
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.913
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.864
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.9
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.915
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.885
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.916
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.9450000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.889
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.60",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.82
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.838
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.8029999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.849
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.864
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.834
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.849
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.877
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.823
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
                 {
                   "key": "0.78",
                   "value": {
@@ -585,6 +2825,216 @@
                           {
                             "key": "down",
                             "value": 0.7859999999999999
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.90",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.699
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.722
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6769999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.739
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.76
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.717
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.752
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.789
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.719
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.96",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.647
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.683
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.611
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.698
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.725
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6719999999999999
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.732
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.7949999999999999
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.6739999999999999
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "0.98",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.616
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.675
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.569
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.658
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.6950000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5840000000000001
+                          }
+                        ]
+                      },
+                      {
+                        "nodetype": "category",
+                        "input": "systematic",
+                        "content": [
+                          {
+                            "key": "nom",
+                            "value": 0.655
+                          },
+                          {
+                            "key": "up",
+                            "value": 0.7250000000000001
+                          },
+                          {
+                            "key": "down",
+                            "value": 0.5880000000000001
                           }
                         ]
                       }

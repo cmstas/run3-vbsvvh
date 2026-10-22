@@ -17,7 +17,7 @@ The file name is the RDF `year` string, so RDF needs no era mapping.
 
 `Wqq_SF`: inputs `WP` (real), `pt` (real), `eta` (real), `systematic` (`nom`/`up`/`down`); output: the cumulative SF of score > WP, with score = (Xcs + Xqq/3)/(Xcs + Xqq/3 + QCD).
 
-- **WP:** the current files have a single measured WP, 0.78: exactly that WP evaluates, any other WP is an error. With several measured WPs (e.g. 0.40, 0.60, 0.78, 0.90, 0.96, 0.98 in the previous version) the SF is piecewise linear between them (nom, up and down each interpolated), the measured points are reproduced exactly, and a WP outside the measured range is an error.
+- **WP:** measured at 0.40, 0.60, 0.78, 0.90, 0.96, 0.98. The SF is piecewise linear between them (nom, up and down each interpolated), the measured points are reproduced exactly, and a WP outside [0.40, 0.98] is an error. (With a single measured WP, `make_wqq_sf_jsons.py` writes one constant bin: exactly that WP evaluates.)
 - **pt:** bins [250, 300, 400, 800, 13000), clamped. Above 800 GeV: the 400–800 nominal, with its up/down distances multiplied by 3.
 - **eta:** unused (inclusive in |eta| < 2.5); kept so an |eta|-binned version can be dropped in later.
 
