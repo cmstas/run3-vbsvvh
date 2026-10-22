@@ -11,9 +11,13 @@ Mass: GloParT-3 X2p-corrected mass, `FatJet_globalParT3_massCorrX2p * FatJet_raw
 ## `JMSR_rdf_correctionlib_etainclusive.json` (what to apply to MC)
 
 Corrections `JMS_scale` (s), `JMR_factor` (f), `JMR_sigmaRel` (sigma_rel):
-- scale: m' = s * m;
-- resolution (hybrid): gen-matched jets m' = m_gen + f * (m - m_gen); unmatched jets m' = m * (1 + sqrt(f^2 - 1) *
-  sigma_rel * N(0,1)) for f > 1.
+- scale first: m' = s * m;
+- then the resolution (hybrid) on the scaled mass: gen-matched jets m'' = m_gen + f * (m' - m_gen); unmatched jets
+  m'' = m' * (1 + sqrt(f^2 - 1) * sigma_rel * N(0,1)) for f > 1.
+
+The order only matters for gen-matched jets: scale-then-smear moves their peak by f (s - 1) mu instead of (s - 1) mu
+(<= ~0.1 GeV with the current values); the width becomes f s sigma either way. s and f are derived independently
+(each from its own nuisance), so the payload does not depend on the order.
 ## How the fitted JMS/JMR (theta) are converted to s, f and sigma_rel
 
 The fit does not measure s and f directly. It fits two shape nuisances of the true-W (tp2) mass template,

@@ -57,7 +57,7 @@ Per era and fat-jet pt, from the Wqq tag-and-probe fit (payload and formulas: co
   - JMS : multiplicative scale on the target mass column.
   - JMR : resolution factor wrt the gen-jet mass (hybrid: gen-matched scaling, else stochastic).
 Column-agnostic: the mass, pt and (for JMR) gen mass + gen-index columns are passed in.
-Called for MC in AK8JetsSelection on FatJet_massGloParT3: resolution first, then the scale.
+Called for MC in AK8JetsSelection on FatJet_massGloParT3: the scale first, then the resolution.
 */
 RNode applyJetMassScale(const std::string& mass_col, const std::string& pt_col, RNode df);
 RNode applyJetMassResolution(const std::string& mass_col,

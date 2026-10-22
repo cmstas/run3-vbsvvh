@@ -1915,11 +1915,12 @@ mean / width of the morphed to the nominal template). Inputs era / WP / eta / pt
 eta-inclusive (eta unused) and JMS/JMR are flat in WP, so WP 0.78 is used.
 
   JMS  : m' = max(0, s(pt) * m)
-  JMR  : matched to a gen jet →  m' = max(0, m_gen + f(pt) * (m - m_gen))
-         unmatched           →  m' = max(0, m * (1 + √max(f²-1,0) * σrel(pt) * N(0,1)))
+  JMR  : matched to a gen jet →  m'' = max(0, m_gen + f(pt) * (m' - m_gen))
+         unmatched           →  m'' = max(0, m' * (1 + √max(f²-1,0) * σrel(pt) * N(0,1)))
                                 (only widens; f < 1 leaves unmatched jets as they are)
 
-Applied to every MC fat jet, at the nominal FatJet_pt. Eras without a fit (2022, 2023) are left
+Applied to every MC fat jet, at the nominal FatJet_pt: the scale first, then the resolution on the
+scaled mass (the order matters only for gen-matched jets). Eras without a fit (2022, 2023) are left
 uncorrected (warning once). No up/down variations yet: the payload carries central values only.
 */
 
