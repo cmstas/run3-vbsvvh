@@ -5,6 +5,8 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <unordered_set>
 #include <utility>
@@ -318,32 +320,6 @@ const CSetMap& electronSSCorrections() {
     };
     return m;
 }
-
-// --- JMS/JMR placeholder maps (unwired; template for the future GloParT calibration) ----
-// See the JMS/JMR section in corrections.h. Identity-valued:
-// JMS shift 0.0 GeV, JMR factor 1.0. σ_rel feeds the unmatched stochastic branch of
-// applyJetMassResolution and is unreachable while the factor is 1.0 — replace both
-// together with the per-era values from the calibration fit.
-[[maybe_unused]] const std::unordered_map<std::string, float> jetMassScale_central = {
-    {"2016preVFP", 0.0f}, {"2016postVFP", 0.0f}, {"2017", 0.0f}, {"2018", 0.0f},
-    {"2022Re-recoBCD", 0.0f}, {"2022Re-recoE+PromptFG", 0.0f},
-    {"2023PromptC", 0.0f}, {"2023PromptD", 0.0f},
-    {"2024Prompt", 0.0f}
-};
-
-[[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_central = {
-    {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
-    {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
-    {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}
-};
-
-[[maybe_unused]] const std::unordered_map<std::string, float> jetMassResolution_sigmaRel_central = {
-    {"2016preVFP", 1.0f}, {"2016postVFP", 1.0f}, {"2017", 1.0f}, {"2018", 1.0f},
-    {"2022Re-recoBCD", 1.0f}, {"2022Re-recoE+PromptFG", 1.0f},
-    {"2023PromptC", 1.0f}, {"2023PromptD", 1.0f},
-    {"2024Prompt", 1.0f}
-};
 
 } // anonymous namespace
 
@@ -1926,90 +1902,104 @@ RNode applyJetVetoMaps(RNode df) {
 
 /*
 ############################################
-JET MASS SCALE (JMS) AND RESOLUTION (JMR) — generic, per-mass-column
+JET MASS SCALE (JMS) AND RESOLUTION (JMR) — GloParT mass, from the Wqq tag-and-probe fit
 ############################################
 
-Column-agnostic helpers: pass the target mass branch (and, for JMR, the gen
-reference mass + gen-index columns) as arguments so the same code serves
-`FatJet_msoftdrop`, the GloParT regressed mass, or any other analysis mass
-variable.
+Payload: corrections/scalefactors/JMSR/JMSR_rdf_correctionlib_etainclusive.json, written by the
+Wqq SF collector (get_SF_summary.py --export_json on a JMSR campaign). Per era and fat-jet pt:
+  JMS_scale     multiplicative mass scale s
+  JMR_factor    resolution factor f
+  JMR_sigmaRel  relative MC mass resolution of true W jets
+derived from the fitted tp2jms / tp2jmr on the fit's own true-W templates (ratios of Gaussian core
+mean / width of the morphed to the nominal template). Inputs era / WP / eta / pt; the fit is
+eta-inclusive (eta unused) and JMS/JMR are flat in WP, so WP 0.78 is used.
 
-  JMS  : m' = max(0, m + Δshift[year]) // additive shift in GeV
-  JMR  : matched   →  m' = max(0, m_gen + f * (m - m_gen))
-         unmatched →  m' = max(0, m * (1 + √max(f²-1,0) * σrel[year] * N(0,1)))
+  JMS  : m' = max(0, s(pt) * m)
+  JMR  : matched to a gen jet →  m'' = max(0, m_gen + f(pt) * (m' - m_gen))
+         unmatched           →  m'' = max(0, m' * (1 + √max(f²-1,0) * σrel(pt) * N(0,1)))
+                                (only widens; f < 1 leaves unmatched jets as they are)
 
-For msd, the POG-standard proxy is `GenJetAK8_mass[FatJet_genJetAK8Idx]`.
-
-Currently unwired — this analysis calibrates JMS/JMR on the GloParT mass, not
-on msd, and the GloParT calibration hasn't been derived yet.
-When it lands, wire the calls into `applyMCCorrections` with the
-GloParT column names + per-era shift/factor/σ_rel maps from the calibration
-fit. Up/down systematic variants add a `variation` arg carrying the ±1σ
-shift/scale.
+Applied to every MC fat jet, at the nominal FatJet_pt: the scale first, then the resolution on the
+scaled mass (the order matters only for gen-matched jets). Eras without a fit (2022, 2023) are left
+uncorrected (warning once). No up/down variations yet: the payload carries central values only.
 */
 
-RNode applyJetMassScale(const std::unordered_map<std::string, float>& shift_map,
-                     const std::string& mass_col,
-                     RNode df) {
-    auto eval = [shift_map, mass_col](std::string year, RVec<float> m) {
-        auto it = shift_map.find(year);
-        if (it == shift_map.end()) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(mass_col + "/" + year).second) {
-                std::cout << "Warning: mass-scale shift not defined for year " << year
-                          << " on column " << mass_col << ". Skipping." << std::endl;
-            }
-            return m;
-        }
-        const float shift = it->second;
-        if (shift == 0.0f || m.empty()) return m;
-        for (auto& x : m) x = std::max(0.0f, x + shift);
-        return m;
-    };
-    return df.Redefine(mass_col, eval, {"year", mass_col});
+namespace {
+
+constexpr const char *kJMSRPayload = "corrections/scalefactors/JMSR/JMSR_rdf_correctionlib_etainclusive.json";
+constexpr const char *kJMSRWorkingPoint = "0.78";
+
+const correction::CorrectionSet &jetMassCorrections() {
+    static const std::unique_ptr<correction::CorrectionSet> cs = CorrectionSet::from_file(kJMSRPayload);
+    return *cs;
 }
 
-RNode applyJetMassResolution(const std::unordered_map<std::string, float>& factor_map,
-                          const std::unordered_map<std::string, float>& sigma_rel_map,
-                          const std::string& mass_col,
+// RDF year -> era key of the payload; "" (and a one-time warning) for an era without a fit.
+std::string jetMassEra(const std::string &year, const std::string &mass_col) {
+    static const StrMap eras = {{"2016preVFP", "2016preVFP"}, {"2016postVFP", "2016postVFP"}, {"2017", "2017"},
+                                {"2018", "2018"}, {"2024Prompt", "2024"}, {"2025", "2025"}};
+    const auto it = eras.find(year);
+    if (it != eras.end()) return it->second;
+    static std::unordered_set<std::string> warned;
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
+    if (warned.insert(mass_col + "/" + year).second)
+        std::cout << "Warning: no JMS/JMR for year " << year << " on column " << mass_col
+                  << ", left uncorrected." << std::endl;
+    return "";
+}
+
+} // anonymous namespace
+
+RNode applyJetMassScale(const std::string& mass_col, const std::string& pt_col, RNode df) {
+    const auto scale = jetMassCorrections().at("JMS_scale");
+    auto eval = [scale, mass_col](const std::string &year, RVec<float> m, const RVec<float> &pt) {
+        const std::string era = jetMassEra(year, mass_col);
+        if (era.empty()) return m;
+        for (size_t i = 0; i < m.size(); ++i)
+            m[i] = std::max(0.0f, static_cast<float>(
+                m[i] * scale->evaluate({era, kJMSRWorkingPoint, 0.0, static_cast<double>(pt[i])})));
+        return m;
+    };
+    return df.Redefine(mass_col, eval, {"year", mass_col, pt_col});
+}
+
+RNode applyJetMassResolution(const std::string& mass_col,
+                          const std::string& pt_col,
                           const std::string& gen_mass_col,
                           const std::string& gen_idx_col,
                           RNode df) {
-    auto eval = [factor_map, sigma_rel_map, mass_col](std::string year,
-                             RVec<float> m,
-                             RVec<short> gen_idx, RVec<float> gen_mass,
+    const auto factor = jetMassCorrections().at("JMR_factor");
+    const auto sigma_rel = jetMassCorrections().at("JMR_sigmaRel");
+    auto eval = [factor, sigma_rel, mass_col](const std::string &year,
+                             RVec<float> m, const RVec<float> &pt,
+                             const RVec<short> &gen_idx, const RVec<float> &gen_mass,
                              unsigned int lumi, unsigned long long event) {
-        auto it = factor_map.find(year);
-        if (it == factor_map.end()) {
-            static std::unordered_set<std::string> warned;
-            if (warned.insert(mass_col + "/" + year).second) {
-                std::cout << "Warning: mass-resolution factor not defined for year " << year
-                          << " on column " << mass_col << ". Skipping." << std::endl;
-            }
-            return m;
-        }
-        const float f = it->second;
-        if (f == 1.0f || m.empty()) return m;
-
-        const float widen = std::sqrt(std::max(f * f - 1.0f, 0.0f));
-        auto sr_it = sigma_rel_map.find(year);
-        const float sigma_rel = (sr_it != sigma_rel_map.end()) ? sr_it->second : 1.0f;
+        const std::string era = jetMassEra(year, mass_col);
+        if (era.empty() || m.empty()) return m;
         TRandom3 rng((static_cast<unsigned long long>(lumi) << 10) ^ event);
         for (size_t i = 0; i < m.size(); ++i) {
+            const double jet_pt = static_cast<double>(pt[i]);
+            const float f = static_cast<float>(factor->evaluate({era, kJMSRWorkingPoint, 0.0, jet_pt}));
             const bool matched = (gen_idx[i] >= 0
                                   && gen_idx[i] < static_cast<int>(gen_mass.size()));
             if (matched) {
                 const float m_gen = gen_mass[gen_idx[i]];
                 m[i] = std::max(0.0f, m_gen + f * (m[i] - m_gen));
             } else {
+                // One draw per unmatched jet whatever f is, so the random sequence does not depend on it.
                 const float kick = static_cast<float>(rng.Gaus(0.0, 1.0));
-                m[i] = std::max(0.0f, m[i] * (1.0f + widen * sigma_rel * kick));
+                const float widen = std::sqrt(std::max(f * f - 1.0f, 0.0f));
+                if (widen > 0.0f) {
+                    const float sr = static_cast<float>(sigma_rel->evaluate({era, kJMSRWorkingPoint, 0.0, jet_pt}));
+                    m[i] = std::max(0.0f, m[i] * (1.0f + widen * sr * kick));
+                }
             }
         }
         return m;
     };
     return df.Redefine(mass_col, eval,
-                       {"year", mass_col, gen_idx_col, gen_mass_col,
+                       {"year", mass_col, pt_col, gen_idx_col, gen_mass_col,
                         "luminosityBlock", "event"});
 }
 
@@ -2096,9 +2086,9 @@ RNode applyMCCorrections(RNode df_) {
     // UES ±1σ on top of the rebuilt Type-I MET
     df = applyMETUnclusteredVariations(df, /*isData=*/false);
     // df = applyMETPhiCorrections(df, false);
-    // GloParT JMS/JMR would be wired here via applyJetMassScale / applyJetMassResolution
-    // once the calibration is derived. FatJet_msoftdrop is intentionally not calibrated
-    // (loose object cut only; GloParT is used in the rest of the analysis).
+    // GloParT JMS/JMR are applied in AK8JetsSelection, where FatJet_massGloParT3 is defined.
+    // FatJet_msoftdrop is intentionally not calibrated (loose object cut only; GloParT is used
+    // in the rest of the analysis).
     df = HEMCorrection(df, false);
     df = applyElectronScaleAndSmearing(df, false);
     return df;

@@ -305,7 +305,7 @@ RNode AK4JetProperties(RNode df_)
 
 
 // Fat jet AK8 selection
-RNode AK8JetsSelection(RNode df_)
+RNode AK8JetsSelection(RNode df_, bool isData)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"));
@@ -317,6 +317,12 @@ RNode AK8JetsSelection(RNode df_)
     // for AK8 and is not stacked on top of it. Defined before applyObjectMaskNewAffix so the
     // masked fatjet_massGloParT3 alias is created with the rest of the collection.
     df = df.Define("FatJet_massGloParT3", "FatJet_globalParT3_massCorrX2p * _FatJet_rawmass");
+    // GloParT JMS/JMR (MC, every fat jet, see corrections.h): the scale first, then the resolution
+    // relative to the gen-jet mass on the scaled mass, both at the nominal FatJet_pt.
+    if (!isData) {
+        df = applyJetMassScale("FatJet_massGloParT3", "FatJet_pt", df);
+        df = applyJetMassResolution("FatJet_massGloParT3", "FatJet_pt", "GenJetAK8_mass", "FatJet_genJetAK8Idx", df);
+    }
 
     // GloParT tagging discriminants, built from the raw score outputs as signal / (signal + QCD):
     //   Hbb = Xbb / (Xbb + QCD)
@@ -420,7 +426,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     df = LeptonSelections(df);
 
     // Fat jet selection (cleaned against leptons)
-    df = AK8JetsSelection(df);
+    df = AK8JetsSelection(df, isData);
 
     // Do the ak4 jet selection
     df = AK4JetProperties(df);

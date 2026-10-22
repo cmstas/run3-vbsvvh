@@ -16,7 +16,7 @@ using RNode = ROOT::RDF::RNode;
 
 RNode ElectronSelections(RNode df);
 RNode MuonSelections(RNode df);
-RNode AK8JetsSelection(RNode df);
+RNode AK8JetsSelection(RNode df, bool isData);
 RNode AK4JetsSelection(RNode df);
 
 RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData);
