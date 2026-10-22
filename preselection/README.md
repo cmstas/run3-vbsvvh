@@ -173,7 +173,7 @@ Pick the key by how your analysis uses the score of that jet:
 
 If your NN uses several WPs as flags on the same jet, request them together as one set, e.g. `flags: [[0.60, 0.80]]`, and use that single branch. Do not request them as separate sets `[[0.60], [0.80]]` and multiply the two branches: the flags are not independent (a jet above 0.80 always passes 0.60 too), so the product applies the correction for the shared part twice and biases the yield. Several sets per channel are allowed so that the same production can serve different downstream uses, for example two NNs with different WPs, or a study comparing WP choices. Each use takes exactly **one** of the branches.
 
-`flags` needs `Wqq_eff_MC` in the era json files. These are currently missing and requesting it without them stops the job with an error.
+`flags` needs `Wqq_eff_MC` in the era json files; every era file has it (the candle MC efficiency from the same fits as the SFs, see `corrections/scalefactors/WqqSF/README.md`). A file without it stops a `flags` job with an error.
 
 Branches, each a `{nom, up, down}` triple on `FatJet_` and on the selected-jet `fatjet_` collection:
 
