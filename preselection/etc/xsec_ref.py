@@ -61,6 +61,19 @@ xsec_dict = {
             "WtoLNu-4Jets_Bin-HT-40to100-MLNu-120_TuneCP5_13p6TeV"       : 20.66,
             "WtoLNu-4Jets_Bin-HT-800to1500-MLNu-0to120_TuneCP5_13p6TeV"  : 6.22,
             "WtoLNu-4Jets_Bin-HT-800to1500-MLNu-120_TuneCP5_13p6TeV"     : 0.06255,
+            
+            "WtoLNu-4Jets_MLNu-0to120_HT-100to400_TuneCP5_13p6TeV"   : 1635.0,
+            "WtoLNu-4Jets_MLNu-120_HT-100to400_TuneCP5_13p6TeV"      : 10.17,
+            "WtoLNu-4Jets_MLNu-0to120_HT-1500to2500_TuneCP5_13p6TeV" : 0.45,
+            "WtoLNu-4Jets_MLNu-120_HT-1500to2500_TuneCP5_13p6TeV"    : 0.005053,
+            "WtoLNu-4Jets_MLNu-0to120_HT-2500_TuneCP5_13p6TeV"       : 0.03088,
+            "WtoLNu-4Jets_MLNu-120_HT-2500_TuneCP5_13p6TeV"          : 0.0003781,
+            "WtoLNu-4Jets_MLNu-0to120_HT-400to800_TuneCP5_13p6TeV"   : 59.89,
+            "WtoLNu-4Jets_MLNu-120_HT-400to800_TuneCP5_13p6TeV"      : 0.5268,
+            "WtoLNu-4Jets_MLNu-0to120_HT-40to100_TuneCP5_13p6TeV"    : 4259.0,
+            "WtoLNu-4Jets_MLNu-120_HT-40to100_TuneCP5_13p6TeV"       : 20.66,
+            "WtoLNu-4Jets_MLNu-0to120_HT-800to1500_TuneCP5_13p6TeV"  : 6.22,
+            "WtoLNu-4Jets_MLNu-120_HT-800to1500_TuneCP5_13p6TeV"     : 0.06255,
 
             "Zto2Nu-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV"   : 273.4,
             "Zto2Nu-4Jets_Bin-HT-200to400_TuneCP5_13p6TeV"   : 76.09,
@@ -68,16 +81,28 @@ xsec_dict = {
             "Zto2Nu-4Jets_Bin-HT-800to1500_TuneCP5_13p6TeV"  : 1.365,
             "Zto2Nu-4Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 0.09839,
             "Zto2Nu-4Jets_Bin-HT-2500_TuneCP5_13p6TeV"       : 0.006699, 
+
+            "Zto2Nu-4Jets_HT-100to200_TuneCP5_13p6TeV"   : 273.4,
+            "Zto2Nu-4Jets_HT-200to400_TuneCP5_13p6TeV"   : 76.09,
+            "Zto2Nu-4Jets_HT-400to800_TuneCP5_13p6TeV"   : 13.16,
+            "Zto2Nu-4Jets_HT-800to1500_TuneCP5_13p6TeV"  : 1.365,
+            "Zto2Nu-4Jets_HT-1500to2500_TuneCP5_13p6TeV" : 0.09839,
+            "Zto2Nu-4Jets_HT-2500_TuneCP5_13p6TeV"       : 0.006699, 
             # From XSDB
 
             "DYto2E_Bin-MLL-10to50_TuneCP5_13p6TeV": 6744.0,
             "DYto2Mu_Bin-MLL-10to50_TuneCP5_13p6TeV": 6744.0,
             "DYto2Tau_Bin-MLL-10to50_TuneCP5_13p6TeV": 6744.0,
+            
+            "DYto2E_MLL-10to50_TuneCP5_13p6TeV": 6744.0,
+            "DYto2Mu_MLL-10to50_TuneCP5_13p6TeV": 6744.0,
+            "DYto2Tau_MLL-10to50_TuneCP5_13p6TeV": 6744.0,
 
             "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2240.0,
             "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2244.0,
             "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV": 2219.0,
             
+            # from XSDB - 22/23 binning
             "DYto2Tau-2Jets_MLL-50_0J_TuneCP5_13p6TeV" : 5368.0,
             "DYto2Tau-2Jets_MLL-50_1J_TuneCP5_13p6TeV" : 1014.0,
             "DYto2Tau-2Jets_MLL-50_2J_TuneCP5_13p6TeV" : 380.8,
@@ -103,6 +128,18 @@ xsec_dict = {
             "QCD-4Jets_Bin-HT-1200to1500_TuneCP5_13p6TeV": 384.5,
             "QCD-4Jets_Bin-HT-1500to2000_TuneCP5_13p6TeV": 125.5,
             "QCD-4Jets_Bin-HT-2000_TuneCP5_13p6TeV": 25.78,
+            
+            "QCD-4Jets_HT-40to70_TuneCP5_13p6TeV": 311600000.0,
+            "QCD-4Jets_HT-70to100_TuneCP5_13p6TeV": 58520000.0,
+            "QCD-4Jets_HT-100to200_TuneCP5_13p6TeV": 25220000.0,
+            "QCD-4Jets_HT-200to400_TuneCP5_13p6TeV": 1963000.0,
+            "QCD-4Jets_HT-400to600_TuneCP5_13p6TeV": 94870.0,
+            "QCD-4Jets_HT-600to800_TuneCP5_13p6TeV": 13420.0,
+            "QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV": 2992.0,
+            "QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV": 879.1,
+            "QCD-4Jets_HT-1200to1500_TuneCP5_13p6TeV": 384.5,
+            "QCD-4Jets_HT-1500to2000_TuneCP5_13p6TeV": 125.5,
+            "QCD-4Jets_HT-2000_TuneCP5_13p6TeV": 25.78,
 
             "QCD_Bin-PT-50to80_TuneCP5_13p6TeV": 16730000.0,
             "QCD_Bin-PT-80to120_TuneCP5_13p6TeV": 2506000.0,
@@ -123,9 +160,11 @@ xsec_dict = {
             "TbarBto2Q-s-channel_TuneCP5_13p6TeV": 3.057, #4.534*(1-3*0.108535)
             "TbarBtoLNu-s-channel_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
             "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
+            "TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV": 1.476, #4.534*3*0.108535
             
             "TBbarto2Q-s-channel_TuneCP5_13p6TeV": 4.8853, # 7.244*(1-3*0.108535)
             "TBbartoLNu-s-channel_TuneCP5_13p6TeV" : 2.359, # 7.244*3*0.108535
+            "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV" : 2.359, # 7.244*3*0.108535
             "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV": 2.359, # 7.244*3*0.108535
 
             "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV": 28.392, # 87.2*3*0.108535
@@ -149,7 +188,9 @@ xsec_dict = {
             #"TTBBto4Q_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBtoLNu2Q_TuneCP5_13p6TeV" : , # No xsdb number
             "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
+            "TTLL_MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
             "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
+            "TTLL_MLL-50_TuneCP5_13p6TeV" : 0.08646,
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
 
             # See Lara's comment on issue #45 (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO)
@@ -162,8 +203,11 @@ xsec_dict = {
             "TTWZ_TuneCP5_13p6TeV" : 0.002715,
             "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV" : 0.07968,
             "VBS-SSWW-LL_TuneCP5_13p6TeV" : 0.002179,
+            "VBS-SSWW_PolarizationLL_TuneCP5_13p6TeV" : 0.002179,
             "VBS-SSWW-TL_TuneCP5_13p6TeV" : 0.01151,
+            "VBS-SSWW_PolarizationTL_TuneCP5_13p6TeV" : 0.01151,
             #"VBS-SSWW-TT_TuneCP5_13p6TeV" : , # No xsdb number
+            #"VBS-SSWW_PolarizationTT_TuneCP5_13p6TeV" : , # No xsdb number
 
             "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV" : 16120.0,
             "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 1.825,
@@ -171,66 +215,107 @@ xsec_dict = {
             "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV" : 356.9,
             "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV" : 29.52,
             
+            # from XSDB - 22/23 binning
             "Wto2Q-3Jets_HT-200to400_TuneCP5_13p6TeV" : 2723.0,
             "Wto2Q-3Jets_HT-400to600_TuneCP5_13p6TeV" : 299.8,
             "Wto2Q-3Jets_HT-600to800_TuneCP5_13p6TeV" : 63.9,
             "Wto2Q-3Jets_HT-800_TuneCP5_13p6TeV" : 31.9,
+
 
             "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV" : 342.3,
             "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV" : 21.84,
             "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV" : 0.6845,
             "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV" : 4211.0,
             "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV" : 0.07753,
+            
+            "WtoLNu-2Jets_PTLNu-100to200_1J_TuneCP5_13p6TeV" : 342.3,
+            "WtoLNu-2Jets_PTLNu-200to400_1J_TuneCP5_13p6TeV" : 21.84,
+            "WtoLNu-2Jets_PTLNu-400to600_1J_TuneCP5_13p6TeV" : 0.6845,
+            "WtoLNu-2Jets_PTLNu-40to100_1J_TuneCP5_13p6TeV" : 4211.0,
+            "WtoLNu-2Jets_PTLNu-600_1J_TuneCP5_13p6TeV" : 0.07753,
+            
             "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV" : 411.1,
             "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV" : 53.59,
             "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV" : 3.099,
             "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV" : 1581.0,
             "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV" : 0.5259,
+            
+            "WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV" : 411.1,
+            "WtoLNu-2Jets_PTLNu-200to400_2J_TuneCP5_13p6TeV" : 53.59,
+            "WtoLNu-2Jets_PTLNu-400to600_2J_TuneCP5_13p6TeV" : 3.099,
+            "WtoLNu-2Jets_PTLNu-40to100_2J_TuneCP5_13p6TeV" : 1581.0,
+            "WtoLNu-2Jets_PTLNu-600_2J_TuneCP5_13p6TeV" : 0.5259,
+            
             "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV" : 9141.0,
             "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV" : 2931.0,
             "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV" : 864.6,
             "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV" : 417.8,
+            
+            "WtoLNu-4Jets_1J_TuneCP5_13p6TeV" : 9141.0,
+            "WtoLNu-4Jets_2J_TuneCP5_13p6TeV" : 2931.0,
+            "WtoLNu-4Jets_3J_TuneCP5_13p6TeV" : 864.6,
+            "WtoLNu-4Jets_4J_TuneCP5_13p6TeV" : 417.8,
+                        
             "WWJJto2L2Nu-OS-noTop-EWK_TuneCP5_13p6TeV" : 0.3304,
+            "WWto2L2Nu-2Jets_OS_noTop_EW_TuneCP5_13p6TeV" : 0.3304,
             "WWJJto2L2Nu-SS-noTop-EWK_TuneCP5_13p6TeV" : 0.02955,
+            "WWto2L2Nu-2Jets_SS_noTop_EW_TuneCP5_13p6TeV" : 0.02955,
             "WWto2L2Nu_TuneCP5_13p6TeV" : 11.79,
             "WWto4Q_TuneCP5_13p6TeV" : 50.79,
             "WWtoLNu2Q_TuneCP5_13p6TeV" : 48.94,
             "WW_TuneCP5_13p6TeV" : 80.42,
             "WWW-4F_TuneCP5_13p6TeV" : 0.2328,
+            "WWW_4F_TuneCP5_13p6TeV" : 0.2328,
             "WWZ-4F_TuneCP5_13p6TeV" : 0.1851,
+            "WWZ_4F_TuneCP5_13p6TeV" : 0.1851,
             "WZto2L2Q_TuneCP5_13p6TeV" : 7.568,
             "WZto3LNu_TuneCP5_13p6TeV" : 4.924,
             "WZtoL3Nu_TuneCP5_13p6TeV" : 3.077,
             "WZtoLNu2Q_TuneCP5_13p6TeV" : 15.87,
             "WZ_TuneCP5_13p6TeV" : 29.1,
             "WZZ-5F_TuneCP5_13p6TeV" : 0.06206,
+            "WZZ_TuneCP5_13p6TeV" : 0.06206,
             
             ###### H Decays ######
 
             "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.6409,
             "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3918,
+            "WminusH_Hto2B_Wto2Q_M-125_TuneCP5_13p6TeV" : 0.3918,
 
             "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 1.024,
             "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.6226,
+            "WplusH_Hto2B_Wto2Q_M-125_TuneCP5_13p6TeV" : 0.6226,
 
             "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.9014,
             "ZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.168,
+            "ZH_Hto2B_Zto2Nu_M-125_TuneCP5_13p6TeV" : 0.168,
             "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.5958,
+            "ZH_Hto2B_Zto2Q_M-125_TuneCP5_13p6TeV" : 0.5958,
             
+            # from XSDB
             "VH_HtoNonbb_M-125_TuneCP5_13p6TeV" : 2.558,
             
             # from twiki (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap)
             "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3334,
+            "TTHto2B_M-125_TuneCP5_13p6TeV" : 0.3334,
             "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.2412,
+            "TTHtoNon2B_M-125_TuneCP5_13p6TeV" : 0.2412,
             "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.0638,
+            "WminusH_Hto2B_WtoLNu_M-125_TuneCP5_13p6TeV" : 0.0638,
             "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.09896,
+            "WplusH_Hto2B_WtoLNu_M-125_TuneCP5_13p6TeV" : 0.09896,
             "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.03174,
+            "ZH_Hto2B_Zto2L_M-125_TuneCP5_13p6TeV" : 0.03174,
             #---------------------------------------------------
 
             "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV": 0.01395, # From twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGGGF_RUN2 and using BR:0.000267
+            "GluGluHto2Zto4L_M-125_TuneCP5_13p6TeV": 0.01395, # From twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGGGF_RUN2 and using BR:0.000267
             "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.006838,
+            "ggZH_Hto2B_Zto2L_M-125_TuneCP5_13p6TeV": 0.006838,
             "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.01351,
+            "ggZH_Hto2B_Zto2Nu_M-125_TuneCP5_13p6TeV": 0.01351,
             "GluGluZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV": 0.04776,
+            "ggZH_Hto2B_Zto2Q_M-125_TuneCP5_13p6TeV": 0.04776,
 
             ##############
 
@@ -240,13 +325,16 @@ xsec_dict = {
             "Zto2Q-4Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV" : 0.8541,
             "Zto2Q-4Jets_Bin-HT-2500_TuneCP5_13p6TeV" : 0.05684,
             
+            # from XSDB - 22/23 binning
             "Zto2Q-4Jets_HT-200to400_TuneCP5_13p6TeV" : 1082.0,
             "Zto2Q-4Jets_HT-400to600_TuneCP5_13p6TeV" : 124.1,
             "Zto2Q-4Jets_HT-600to800_TuneCP5_13p6TeV" : 27.28,
             "Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV" : 14.57,
 
             "ZZJJto4L-EWK_TuneCP5_13p6TeV" : 0.001144,
+            "ZZto4L-2Jets_EW_TuneCP5_13p6TeV" : 0.001144,
             "ZZJJto4L-QCD_TuneCP5_13p6TeV" : 0.02029,
+            "ZZto4L-2Jets_QCD_TuneCP5_13p6TeV" : 0.02029,
             "ZZto2L2Nu_TuneCP5_13p6TeV" : 1.031,
             "ZZto2L2Q_TuneCP5_13p6TeV" : 6.788,
             "ZZto2Nu2Q_TuneCP5_13p6TeV" : 4.826,
@@ -254,6 +342,7 @@ xsec_dict = {
             "ZZto4Q-1Jets_TuneCP5_13p6TeV" : 7.832,
             "ZZ_TuneCP5_13p6TeV" : 12.75, # XSDB Also quotes 12.85
             "ZZZ-5F_TuneCP5_13p6TeV" : 0.01591,
+            "ZZZ_TuneCP5_13p6TeV" : 0.01591,
  
 
             # From the old xsecs_13p6TeV.json in the repo (from XSDB?)
@@ -267,6 +356,17 @@ xsec_dict = {
             "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400": 7.159,
             "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600": 0.4157,
             "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600": 0.07019,
+            
+            "DYto2L-2Jets_MLL-50_PTLL-40to100_1J_TuneCP5_13p6TeV": 475.3,
+            "DYto2L-2Jets_MLL-50_PTLL-100to200_1J_TuneCP5_13p6TeV": 45.42,
+            "DYto2L-2Jets_MLL-50_PTLL-200to400_1J_TuneCP5_13p6TeV": 3.382,
+            "DYto2L-2Jets_MLL-50_PTLL-400to600_1J_TuneCP5_13p6TeV": 0.1162,
+            "DYto2L-2Jets_MLL-50_PTLL-600_1J_TuneCP5_13p6TeV": 0.01392,
+            "DYto2L-2Jets_MLL-50_PTLL-40to100_2J_TuneCP5_13p6TeV": 179.3,
+            "DYto2L-2Jets_MLL-50_PTLL-100to200_2J_TuneCP5_13p6TeV": 51.68,
+            "DYto2L-2Jets_MLL-50_PTLL-200to400_2J_TuneCP5_13p6TeV": 7.159,
+            "DYto2L-2Jets_MLL-50_PTLL-400to600_2J_TuneCP5_13p6TeV": 0.4157,
+            "DYto2L-2Jets_MLL-50_PTLL-600_2J_TuneCP5_13p6TeV": 0.07019,
 
         },
 
