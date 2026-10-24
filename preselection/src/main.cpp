@@ -46,7 +46,7 @@ RNode runAnalysis(RNode df, std::string ana, std::string run_number, bool isSign
 {
     std::cout << " -> Run " << ana << "::runAnalysis()" << std::endl;
 
-    df = runPreselection(df, ana, makeSpanetTrainingdata, isData);
+    df = runPreselection(df, ana, makeSpanetTrainingdata, isData, run_number);
     
     if (isSignal) {
         df = GenSelections(df);
@@ -104,6 +104,7 @@ int main(int argc, char** argv) {
         "0lep_3FJ",
         "1lep_1FJ",
         "1lep_2FJ",
+        "1lep_WSF", // W-tagging / JMS-JMR calibration; NOT orthogonal to the 1lep_* channels
         "2lep_1FJ", // Currently shared between SF and OF
         "2lepSS",
         "2lep_2FJ",

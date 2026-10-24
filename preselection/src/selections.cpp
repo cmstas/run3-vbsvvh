@@ -1,6 +1,8 @@
 #include "selections.h"
 #include "cutflow.h"
 #include "weights.h"
+#include "wqq_sf.h"
+#include "genSelections.h"
 
 namespace {
 // AK4 good-jet selection as a string template, parametrised by the pt-column name.
@@ -62,6 +64,7 @@ inline std::string orPassExpr(RNode df, const std::string& channel) {
     }
     return out;
 }
+
 } // anonymous namespace
 
 // MET filters
@@ -305,7 +308,7 @@ RNode AK4JetProperties(RNode df_)
 
 
 // Fat jet AK8 selection
-RNode AK8JetsSelection(RNode df_)
+RNode AK8JetsSelection(RNode df_, bool isData, const std::string &channel)
 {
     auto df = df_.Define("_dR_ak8_lep", VVdR, {"FatJet_eta", "FatJet_phi", "lepton_eta", "lepton_phi"})
                   .Define("_good_ak8jets", ak8GoodJetSelectionExpr("FatJet_pt"));
@@ -321,7 +324,6 @@ RNode AK8JetsSelection(RNode df_)
     // GloParT tagging discriminants, built from the raw score outputs as signal / (signal + QCD):
     //   Hbb = Xbb / (Xbb + QCD)
     //   Wqq = (Xqq/3 + Xcs) / (Xqq/3 + Xcs + QCD)
-    // Unlike the mass these are kinematics-independent, so they need no raw-quantity snapshot.
     // Jets with a vanishing denominator (no score at all) get -1 rather than a NaN.
     auto vsQCD = [](const RVec<float>& sig, const RVec<float>& qcd) {
         RVec<float> out(sig.size(), -1.0f);
@@ -334,6 +336,16 @@ RNode AK8JetsSelection(RNode df_)
     df = df.Define("_FatJet_Vqq_score", "FatJet_globalParT3_Xqq / 3.0f + FatJet_globalParT3_Xcs")
            .Define("FatJet_Hbb", vsQCD, {"FatJet_globalParT3_Xbb", "FatJet_globalParT3_QCD"})
            .Define("FatJet_Wqq", vsQCD, {"_FatJet_Vqq_score",     "FatJet_globalParT3_QCD"});
+
+    // Per-fat-jet gen truth (FatJet_genMatch etc., see genSelections.h). Defined before
+    // applyObjectMaskNewAffix so the masked fatjet_gen* aliases are created with the rest of
+    // the collection.
+    if (!isData) df = FatJetGenTruth(df);
+
+    // Wqq tagging SFs for the working points this channel lists in applywqqsf.yaml (see
+    // wqq_sf.h). Needs FatJet_Wqq and FatJet_genMatch. 
+    // SFs are retrieved at the nominal FatJet_pt.
+    df = applyWqqScaleFactors(df, channel, isData);
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");
@@ -407,7 +419,7 @@ RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 
 
 ///////////////// Main channel selection block /////////////////
-RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
+RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, std::string run_number)
 {
 
     Cutflow::Add(df_, "All events");
@@ -420,7 +432,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     df = LeptonSelections(df);
 
     // Fat jet selection (cleaned against leptons)
-    df = AK8JetsSelection(df);
+    df = AK8JetsSelection(df, isData, channel);
 
     // Do the ak4 jet selection
     df = AK4JetProperties(df);
@@ -561,19 +573,23 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
     // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
+        df = applyQCDScoreResampling(df, run_number);
 
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        df = TriggerSelections(df, trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
         // Channel orthogonality selection
         df = definePerVariationPassFlags(df, "0lep_3FJ", [](const std::string& sfx){
             const std::string fjCountCol = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
-            return "(nLep_Sel == 0) && (" + fjCountCol + " == 3)";
+            const std::string jCountCol  = sfx.empty() ? "njet"     : "njet_"     + sfx;
+            return "(nLep_Sel == 0) && (" + fjCountCol + " >= 3) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "0lep_3FJ"), "C2: 0lep_3FJ");
+
+        Cutflow::Add(df, "C2: 0 lepton + 3 fatjet selection");
     }
 
     // 1lep_1FJ - fatjet + njet cuts must combine inside a single per-variation pass flag,
@@ -593,8 +609,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         // Channel orthogonality selection
         df = df.Filter("(nLep_Sel == 1)", "C2: 1lep_1FJ");
 
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
         Cutflow::Add(df, "C2: 1-lepton selection");
 
@@ -604,12 +620,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " == 1) && (" + jCountCol + " >= 4)";
         });
         df = df.Filter(orPassExpr(df, "1lep_1FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
     }
 
     // 1lep_2FJ - same caveat as 1lep_1FJ (C3 + C4 collapsed).
     else if (channel == "1lep_2FJ"){
 
-        df = VBSTagging(df, "jetNoFJClean");
+        df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_singlelep);
@@ -632,6 +649,87 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " >= 2) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "1lep_2FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
+
+    }
+
+    // 1lep_WSF - GloParT W-tagging and JMS/JMR calibration region.
+    //
+    // Standalone tag-and-probe measurement region whose output feeds the Wqq
+    // tagging-SF fit. Because it is not part of the analysis, run_rdf.py keeps it
+    // out of the "--channels all" expansion -- see NON_ANALYSIS_CHANNELS there.
+    //
+    else if (channel == "1lep_WSF"){
+
+        df = TriggerSelections(df, trigger_logic_string_1lepWSF);
+        Cutflow::Add(df, "C1: single-muon trigger");
+
+        // nMuon_Tight is mediumId && pfIsoId>=4 (MuonSelections above), so the matching
+        // SF payload is mediumid_tightiso.
+        df = lepSFWrapper(df, isData,
+                          /*ele_sf_name=*/ "_weight_electron_reco_tightid",
+                          /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso",
+                          /*include_trigger_sf=*/ true);
+
+        // Tag: exactly one muon in the event, and it is tight. nMuon_Tight alone would
+        // not veto a second, softer loose muon, and muon_pt[0] indexes the loose
+        // collection -- so nMuon_Loose == 1 is what makes [0] the tag muon.
+        df = df.Filter("nMuon_Loose == 1 && nMuon_Tight == 1 && "
+                       "nElectron_Loose == 0 && muon_pt[0] > 30", "C2: single muon tag");
+        Cutflow::Add(df, "C2: single muon tag (pT>30)");
+
+        // Probe. Hard nominal cut, NOT definePerVariationPassFlags/orPassExpr: the
+        // probe payload below indexes fatjet_*[0], which is only defined once this has
+        // passed nominally. An OR-over-variations filter would admit events with
+        // nfatjet == 0 nominally and read out of bounds. The cost is that under --systs
+        // the flat fj_1_* columns stay nominal; the JES-varied FatJet_* arrays and
+        // FatJet_isGood_<sfx> masks are still written, so a varied probe is
+        // reconstructible downstream.
+        df = df.Filter("nfatjet >= 1", "C3: >=1 fat jet (probe)");
+        Cutflow::Add(df, "C3: >=1 fat jet");
+
+        // Type-1 rebuilt MET. The W-SF fit applies no MET cut of its own.
+        df = df.Filter("met_pt > 40", "C4: MET > 40");
+        Cutflow::Add(df, "C4: MET > 40");
+
+        df = df.Filter("Sum(jet_isMediumBTag) >= 1", "C5: >=1 medium b-tag");
+        Cutflow::Add(df, "C5: >=1 medium b-tag");
+
+        // ---- probe payload: Defines only, no further cuts (produce loose, cut downstream) ----
+        // Probe = leading good AK8, already dR>0.8 isolated from the lepton by AK8JetsSelection.
+        // The fj_1_* names, passmetfilters and passMuTrig are the branch names the
+        // ParticleNetSF-WqqSF fit (make2DTemplates.C) reads.
+        df = df.Define("fj_1_pt",     "fatjet_pt[0]")
+               .Define("fj_1_eta",    "fatjet_eta[0]")
+               .Define("fj_1_phi",    "fatjet_phi[0]")
+               .Define("fj_1_sdmass", "fatjet_msoftdrop[0]")
+               .Define("fj_1_massGloParT3", "fatjet_massGloParT3[0]")
+               .Define("fj_1_Wqq", "fatjet_Wqq[0]")
+               .Define("fj_1_Hbb", "fatjet_Hbb[0]")
+               .Define("fj_1_globalParT3_Xqq", "fatjet_globalParT3_Xqq[0]")
+               .Define("fj_1_globalParT3_QCD", "fatjet_globalParT3_QCD[0]")
+               // MET filters and the muon trigger are hard cuts above, so both are
+               // constants here.
+               .Define("passmetfilters", "true")
+               .Define("passMuTrig",     "true")
+               // Tag-side b multiplicity. jet_* is the FJ-CLEANED AK4 collection
+               // (dR>0.8 from every good fat jet, AK4JetsSelection above), so this counts
+               // b-tags OUTSIDE the probe. Cast to int because Sum(RVec<bool>) returns std::size_t, whose
+               // branch type uproot has no interpretation rule for.
+               .Define("nMediumBTag_outsideFJ", "(int)Sum(jet_isMediumBTag)");
+
+        // Leptonic-W pT: the tag-side boost. 
+        df = df.Define("_lepW_px", "muon_pt[0]*cos(muon_phi[0]) + met_pt*cos(met_phi)")
+               .Define("_lepW_py", "muon_pt[0]*sin(muon_phi[0]) + met_pt*sin(met_phi)")
+               .Define("leptonicW_pt", "sqrt(_lepW_px*_lepW_px + _lepW_py*_lepW_py)");
+
+        // Probe gen-truth: flat copies of the per-fat-jet columns.
+        if (!isData) {
+            df = df.Define("fj_1_genMatch",     "fatjet_genMatch[0]")
+                   .Define("fj_1_genDrVqMax",   "fatjet_genDrVqMax[0]")
+                   .Define("fj_1_genDrTopB",    "fatjet_genDrTopB[0]")
+                   .Define("fj_1_genVqFlavour", "fatjet_genVqFlavour[0]");
+        }
     }
 
     // 2lepSS
