@@ -12,13 +12,4 @@ int find_matching_fatjet(int target_idx, float target_eta, float target_phi, ROO
 
 RNode GenSelections(RNode df_);
 
-// Per-fat-jet gen truth for MC, on the full FatJet_ collection (any channel):
-//   FatJet_genMatch      0 nothing, 1 prompt W, 2 W from top, 3 top, 4 prompt Z, 5 H->bb
-//   FatJet_genDrVqMax    max dR(jet, q) over the candidate boson's two quarks
-//   FatJet_genDrTopB     dR(jet, b) for the b from the candidate W's top
-//   FatJet_genVqFlavour  0 light, 1 c and no b, 2 at least one b, -1 no candidate
-// Needs GenPart_{pdgId,genPartIdxMother,statusFlags,eta,phi}. See fatjet_gen_truth in
-// genSelections.cpp for the matching rules.
-RNode FatJetGenTruth(RNode df_);
-
 #endif // GENSELECTIONS_H

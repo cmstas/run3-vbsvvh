@@ -9,7 +9,6 @@ all_events: []
 0lep_3FJ: []
 1lep_1FJ: [L]
 1lep_2FJ: [L]
-1lep_WSF: [M]   # matches the medium-WP C5 cut in the channel body
 2lep_1FJ: [T]
 2lepSS: [L, M, T, XT, XXT]
 2lep_2FJ: [M]
