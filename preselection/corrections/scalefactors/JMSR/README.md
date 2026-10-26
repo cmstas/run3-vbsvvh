@@ -93,10 +93,10 @@ Examples at WP 0.78:
 
 | era, pt [GeV] | theta_JMS | theta_JMR | s | f | sigma_rel |
 |---|---|---|---|---|---|
-| 2018, 300-400 | -0.203 | +0.006 | 0.991 | 1.002 | 0.101 |
-| 2018, 400-800 | -0.027 | +0.225 | 0.999 | 1.075 | 0.098 |
-| 2024, 300-400 | -0.257 | +0.174 | 0.987 | 1.047 | 0.110 |
-| 2017, 250-300 | -0.305 | -0.114 | 0.986 | 0.972 | 0.108 |
+| 2018, 300-400 | -0.196 | +0.009 | 0.991 | 1.003 | 0.101 |
+| 2018, 400-800 | -0.024 | +0.212 | 0.999 | 1.070 | 0.098 |
+| 2024, 300-400 | -0.265 | +0.205 | 0.987 | 1.057 | 0.110 |
+| 2017, 250-300 | -0.302 | -0.143 | 0.986 | 0.966 | 0.108 |
 
 ### Conversion code
 
@@ -191,11 +191,13 @@ Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
 - JMR: theta = +1 corresponds to an extra Gaussian smearing with sigma = 10%; the Down template is the
   symmetrized mirror (2*nominal - up), so negative theta is constrained.
 
-Sources (`wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/<campaign>/SFsummary_jsons/`
+Sources (`wqq_sf/ParticleNetSF-WqqSF-ptbinfix/single_pass_results/<campaign>/SFsummary_jsons/`
 `JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`, WP 0.78 kept; joined with `wqq_sf/small_tools/splice_sf_jsons.py`):
-`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from `particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid`
-(= d07a64def), `2024`, `2025` from `particlenetmd_sf_15oct_noov_Wlo_JMSR_x2p_msdjec_wpgrid` (LO `WtoLNu-4Jets` Run 3
+`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from `particlenetmd_sf_25oct_ptfix_noov_Wnlo_JMSR_x2p_msdjec_wpgrid`,
+`2024`, `2025` from `particlenetmd_sf_25oct_ptfix_noov_Wlo_JMSR_x2p_msdjec_wpgrid` (LO `WtoLNu-4Jets` Run 3
 W+jets instead of NLO). Both: X2p mass fit, free "other" normalisation with lnU kappa = 2, MC without overlapping samples,
 same candle as `../WqqSF` (new gen matching + soft-drop JEC; the Wqq SFs there come from the soft-drop-mass fit on the
 same MC). Every fit checked: no failed fit, deployed theta never at its range edge, theta +- 1 sigma inside [-1, 1].
-vs 116c67844 (kappa 6, NLO): Run 2 back to the d07a64def values; 2024/2025 vs d07a64def: s within 0.002, f within 0.03.
+Since 2026-10-26 the fit's pt bins are exactly [250, 300), [300, 400), [400, 800) GeV (before, up to 1027838ce, each bin
+included the 16.7 GeV slice above its upper edge; fixed in wqq_sf 7737f2d). vs 1027838ce: s within 0.003, f within 0.023,
+sigma_rel within 0.001 (largest changes at 250-300 GeV).
