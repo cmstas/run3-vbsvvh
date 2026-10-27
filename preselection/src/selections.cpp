@@ -430,8 +430,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, s
     // Get ahold of the relevant lepton SFs (will choose which ones to actually apply in each channel)
     df = applyMuonWorkingPointSFs(df, isData, {
         "_weight_muon_looseid_looseiso",
-        "_weight_muon_mediumid_tightiso",
-        "_weight_muon_tightid_tightiso"
+        "_weight_muon_mediumid_tightiso"
     });
     df = applyElectronWorkingPointSFs(df, isData, {
         "_weight_electron_reco_looseid",
@@ -592,7 +591,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, s
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
+        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso", /*include_trigger_sf=*/ false);
 
         // Channel orthogonality selection
         df = df.Filter("(nLep_Sel == 1)", "C2: 1lep_1FJ");
@@ -620,7 +619,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, s
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
+        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso", /*include_trigger_sf=*/ false);
 
         // Channel orthogonality selection
         df = df.Filter("(nLep_Sel == 1)", "C2: 1lep_2FJ");
