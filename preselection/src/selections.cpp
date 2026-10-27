@@ -1,4 +1,5 @@
 #include "selections.h"
+#include "btag_settings.h"
 #include "cutflow.h"
 #include "weights.h"
 
@@ -296,11 +297,17 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
 RNode AK4JetProperties(RNode df_)
 {
     df_ = applyJetVetoMaps(df_);
-    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isExtraTightBTag", isbTagExtraTight, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isExtraExtraTightBTag", isbTagExtraExtraTight, {"year", "Jet_btagUParTAK4B"});
+    // Jets outside the b-tagging acceptance (|eta| < 2.4 in 2016, 2.5 otherwise),
+    // where SFs and efficiencies are not defined, never pass a b-tagging WP.
+    df_ = df_.Define("_Jet_inEta",
+                     [](const std::string &year, const RVec<float> &score, const RVec<float> &eta) {
+                         return Where(abs(eta) < bTagMaxAbsEta(year), score, -1.f);
+                     }, {"year", "Jet_btagUParTAK4B", "Jet_eta"});
+    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "_Jet_inEta"})
+              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "_Jet_inEta"})
+              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "_Jet_inEta"})
+              .Define("Jet_isExtraTightBTag", isbTagExtraTight, {"year", "_Jet_inEta"})
+              .Define("Jet_isExtraExtraTightBTag", isbTagExtraExtraTight, {"year", "_Jet_inEta"});
 }
 
 
