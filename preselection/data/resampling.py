@@ -1,3 +1,13 @@
+"""
+
+The committed .root files are final, so this script does not need to be rerun. If it ever
+is (new skims, new JEC, new binning), check the configuration below first: FILE_PREFIX
+and sample_jsons() (input files), and the trigger / MET-filter / object selections, which
+are copies of the preselection's and must be kept in sync with src/selections.{h,cpp}.
+
+Usage (from preselection/, in the CMSSW env):  python data/resampling.py [run2|run3] [test]
+"""
+import glob
 import json
 import os
 import re
@@ -40,10 +50,9 @@ SCORES = ["HvsQCD", "VvsQCD"]
 
 _HERE = os.path.dirname(os.path.abspath(__file__))      # preselection/data
 _PRESEL = os.path.dirname(_HERE)                        # preselection
-_SUFFIX = "" if RUN == "run3" else f"_{RUN}"
-OUT_ROOT = os.path.join(_HERE, f"resampling_pdfs{_SUFFIX}.root")
-OUT_PNG = os.path.join(_HERE, f"resampling_pdfs{_SUFFIX}.png")
-OUT_JOINT_PNG = os.path.join(_HERE, f"resampling_joint{_SUFFIX}.png")
+OUT_ROOT = os.path.join(_HERE, f"resampling_pdfs_QCD_{RUN}.root")
+OUT_PNG = os.path.join(_HERE, f"resampling_pdfs_QCD_{RUN}.png")
+OUT_JOINT_PNG = os.path.join(_HERE, f"resampling_joint_QCD_{RUN}.png")
 
 n_pt = len(PT_EDGES) - 1
 n_eta = len(ETA_EDGES) - 1
@@ -64,11 +73,12 @@ RUN2_MET_COMMON = (
     "Flag_BadPFMuonDzFilter && Flag_eeBadScFilter"
 )  # 2017/2018 additionally require Flag_ecalBadCalibFilter
 
-# HT trigger, verbatim from preselection/src/selections.h (trigger_logic_string_ht).
+# HT trigger from preselection/src/selections.h (trigger_logic_string_ht), without its
+# primary-dataset guard: only the hadronic PD is read here (see HADRONIC_PD).
 # Applied via trigger_selection(), which -- like the C++ TriggerSelections -- defines
 # any HLT branch absent from a file as false (so e.g. a 2016 file that only has
 # HLT_PFHT900 reduces to HLT_PFHT900). `is2016` is supplied per era group.
-TRIGGER_LOGIC_HT = "(is2016 && HLT_PFHT800||HLT_PFHT900 ) || (!is2016 && HLT_PFHT1050)"
+TRIGGER_LOGIC_HT = "(is2016 && (HLT_PFHT800 || HLT_PFHT900)) || (!is2016 && HLT_PFHT1050)"
 HT_TRIGGER_BRANCHES = ["HLT_PFHT800", "HLT_PFHT900", "HLT_PFHT1050"]
 
 # Hadronic (HT-triggered) primary dataset per run; the other PDs in the spec (MET, Muon,
@@ -76,9 +86,27 @@ HT_TRIGGER_BRANCHES = ["HLT_PFHT800", "HLT_PFHT900", "HLT_PFHT1050"]
 HADRONIC_PD = {"run3": "JetMET", "run2": "JetHT"}
 
 
-def spec_path(run):
-    """The production spec JSON the preselection itself is run on for this CR's skim."""
-    return os.path.join(_PRESEL, "etc", "old_config", "0Lep3FJ", f"0Lep3FJ_{run}-data.json")
+# The central sample jsons store file paths relative to a site prefix. The committed
+# templates were made from the UAF copy of the v30 skims.
+FILE_PREFIX = "/ceph/cms/store/user/aaarora/"
+
+
+def sample_jsons(run):
+    """The central data jsons the preselection itself is run on for this CR's skim."""
+    return sorted(glob.glob(os.path.join(_PRESEL, "etc", "input_sample_jsons", run, "data", "0lep_3FJ", "*.json")))
+
+
+def jerc_era(year, sample_name):
+    """JEC era key for a data sample. The central jsons tag 2022/2023 data by year only,
+    but the JEC payloads are split by run era (Run2022C/D -> BCD, Run2022E/F/G -> E+PromptFG,
+    Run2023C -> PromptC, Run2023D -> PromptD)."""
+    m = re.search(r"_Run(2022|2023)([A-Z])", sample_name)
+    if m is None:
+        return year
+    run_year, letter = m.groups()
+    if run_year == "2022":
+        return "2022Re-recoBCD" if letter in "CD" else "2022Re-recoE+PromptFG"
+    return "2023PromptC" if letter == "C" else "2023PromptD"
 
 
 def era_met_filters(era):
@@ -93,22 +121,23 @@ def era_met_filters(era):
 def groups_for_run(run):
     """Era groups (files, era key, MET filter, is2016) to sum.
 
-    Taken from the production spec JSON rather than a path glob so that the input file
+    Taken from the central sample jsons rather than a path glob so that the input file
     list is exactly the preselection's, and so that every file carries the `year` key
-    that selects its JEC payload (2022Re-recoBCD, 2023PromptD, ...) -- a glob cannot tell
-    Run2022D from Run2022E, which sit in different JME era directories."""
+    that selects its JEC payload (see jerc_era)."""
     if run not in HADRONIC_PD:
         raise ValueError(f"unknown run '{run}'")
     pd = HADRONIC_PD[run]
-    with open(spec_path(run)) as fp:
-        spec = json.load(fp)
     by_era = {}
-    for name, entry in spec["samples"].items():
-        if not name.startswith(pd):
-            continue
-        by_era.setdefault(entry["metadata"]["year"], []).extend(entry["files"])
+    for path in sample_jsons(run):
+        with open(path) as fp:
+            spec = json.load(fp)
+        for name, entry in spec["samples"].items():
+            if not name.startswith(pd):
+                continue
+            era = jerc_era(entry["metadata"]["year"], name)
+            by_era.setdefault(era, []).extend(FILE_PREFIX + f for f in entry["files"])
     if not by_era:
-        raise RuntimeError(f"no {pd} samples found in {spec_path(run)}")
+        raise RuntimeError(f"no {pd} samples found in the {run} 0lep_3FJ data jsons")
     return [dict(name=f"{era}-{pd}", files=sorted(files), era=era,
                  met=era_met_filters(era), is2016=era.startswith("2016"),
                  # 2016 switched HT menu mid-year, so those files need the
@@ -526,7 +555,7 @@ for score in SCORES:
 for ipt in range(1, n_pt + 1):
     joint[ipt].Write()  # raw counts; GetRandom uses the integral
 
-# OUT_ROOT already lives at preselection/data/resampling_pdfs*.root, which is the
+# OUT_ROOT already lives at preselection/data/resampling_pdfs_QCD_*.root, which is the
 # relative path the C++ QCD score resampling (utils.cpp applyQCDScoreResampling) loads
 # and the path condor/submit.py packages into the job tarball -- nothing to copy.
 print(f"[resampling] wrote {OUT_ROOT}")
