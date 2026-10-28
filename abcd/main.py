@@ -1115,6 +1115,90 @@ def _plot_score_densities(data, flavor, output_path):
     plt.savefig(output_path, dpi=200)
     plt.close()
 
+# Weighted two-sample Kolmogorov-Smirnov test. The p-value uses the effective number of
+# events (sum(w)^2 / sum(w^2)) of each sample, since the event weights are not uniform.
+def _weighted_ks_test(x1, w1, x2, w2):
+    from scipy.special import kolmogorov
+    if len(x1) == 0 or len(x2) == 0:
+        return np.nan, np.nan
+    values = np.sort(np.concatenate([x1, x2]))
+    def _cdf(x, w):
+        order = np.argsort(x)
+        cum_w = np.concatenate([[0.0], np.cumsum(w[order])]) / np.sum(w)
+        return cum_w[np.searchsorted(x[order], values, side="right")]
+    ks_stat = np.max(np.abs(_cdf(x1, w1) - _cdf(x2, w2)))
+    n1_eff = np.sum(w1)**2 / np.sum(w1**2)
+    n2_eff = np.sum(w2)**2 / np.sum(w2**2)
+    p_value = kolmogorov(ks_stat * np.sqrt(n1_eff * n2_eff / (n1_eff + n2_eff)))
+    return ks_stat, p_value
+
+# Overtraining check: compare the score distributions of the events used in the training
+# (filled histograms) with the events not used in the training (validation, points), for
+# signal and background separately. If the model is not overtrained the shapes should agree.
+# Also returns the AUC on the train and val events, and the KS test results.
+def _plot_overtraining_check(data, flavor, output_path, n_bins=25):
+    score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
+    labels = np.asarray(data["label"])
+    weights = np.asarray(data["weight"], dtype=np.float64) if "weight" in data else np.ones(len(labels))
+    split = np.asarray(data["split"])
+    is_train = split == "train"
+    is_val = split == "val"
+    bins = np.linspace(0, 1, n_bins + 1)
+    centers = 0.5 * (bins[:-1] + bins[1:])
+
+    results = {}
+    fig, axes = plt.subplots(2, len(score_cols), figsize=(8 * len(score_cols), 8), squeeze=False,
+                             gridspec_kw={"height_ratios": [3, 1]}, sharex="col")
+    for idx, col in enumerate(score_cols):
+        ax, ax_ratio = axes[0, idx], axes[1, idx]
+        scores = np.asarray(data[col], dtype=np.float64)
+        results[col] = {}
+
+        for cls_name, cls_label, color in [("Signal", 1, "tab:red"), ("Background", 0, "tab:blue")]:
+            train_mask = is_train & (labels == cls_label)
+            val_mask = is_val & (labels == cls_label)
+
+            # Weighted histograms normalized to unit area, with stat errors sqrt(sum w^2)
+            train_counts, _ = np.histogram(scores[train_mask], bins=bins, weights=weights[train_mask])
+            val_counts, _ = np.histogram(scores[val_mask], bins=bins, weights=weights[val_mask])
+            val_sumw2, _ = np.histogram(scores[val_mask], bins=bins, weights=weights[val_mask]**2)
+            train_norm = train_counts / (train_counts.sum() * np.diff(bins))
+            val_norm = val_counts / (val_counts.sum() * np.diff(bins))
+            val_err = np.sqrt(val_sumw2) / (val_counts.sum() * np.diff(bins))
+
+            ks_stat, ks_p = _weighted_ks_test(scores[train_mask], weights[train_mask], scores[val_mask], weights[val_mask])
+            results[col][cls_name] = {"ks_stat": ks_stat, "ks_p": ks_p}
+
+            ax.hist(bins[:-1], bins=bins, weights=train_norm, histtype="stepfilled", alpha=0.3, color=color,
+                    label=f"{cls_name} train (n={train_mask.sum()})")
+            ax.errorbar(centers, val_norm, yerr=val_err, fmt="o", markersize=4, color=color,
+                        label=f"{cls_name} val (n={val_mask.sum()}), KS p={ks_p:.3f}")
+
+            ratio = np.where(train_norm > 0, val_norm / np.where(train_norm > 0, train_norm, 1), np.nan)
+            ratio_err = np.where(train_norm > 0, val_err / np.where(train_norm > 0, train_norm, 1), np.nan)
+            ax_ratio.errorbar(centers, ratio, yerr=ratio_err, fmt="o", markersize=3, color=color)
+
+        # AUC on the train and on the val events
+        for split_name, mask in [("train", is_train), ("val", is_val)]:
+            fpr, tpr, _ = roc_curve(labels[mask], scores[mask], sample_weight=weights[mask])
+            results[col][f"auc_{split_name}"] = auc(fpr, tpr)
+
+        ax.set_ylabel("Normalized (weighted)")
+        ax.set_title(f"Overtraining check: {col}  (AUC train={results[col]['auc_train']:.4f}, val={results[col]['auc_val']:.4f})")
+        ax.legend(loc="upper center", fontsize=9)
+        ax.set_ylim(bottom=0, top=1.4 * ax.get_ylim()[1])
+        ax.grid(True, alpha=0.3)
+        ax_ratio.axhline(1.0, color="black", linewidth=1)
+        ax_ratio.set_ylim(0, 2)
+        ax_ratio.set_xlabel(col)
+        ax_ratio.set_ylabel("val / train")
+        ax_ratio.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+    return results
+
 # Compute permutation importance by shuffling each feature one at a time and measuring
 # the resulting drop in AUC, averaged over n_repeats shuffles. Features with a larger
 # AUC drop are more important to the model's discrimination.
@@ -1238,6 +1322,15 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         _plot_score_densities(full_inference_data, flavor=flavor, output_path=density_path)
         logging.info("Saved ROC plot to %s", roc_path)
         logging.info("Saved score density plot to %s", density_path)
+
+        # Overtraining check: score distributions of train vs val events (only if the split is known)
+        if train_idx is not None and val_idx is not None:
+            overtraining_path = output_csv.with_name(f"{output_csv.stem}_overtraining.png")
+            ot_results = _plot_overtraining_check(full_inference_data, flavor=flavor, output_path=overtraining_path)
+            logging.info("Saved overtraining check plot to %s", overtraining_path)
+            for col, res in ot_results.items():
+                logging.info("Overtraining check %s: AUC train=%.4f val=%.4f | KS p-value sig=%.3f bkg=%.3f",
+                             col, res["auc_train"], res["auc_val"], res["Signal"]["ks_p"], res["Background"]["ks_p"])
 
         # Make ABCD plane and decorrelation plots (for all events, for train only, and for val only)
         plot_subsets = [("all", full_inference_data)]
