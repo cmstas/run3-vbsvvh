@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "DYto2Mu_MLL-10to50_TuneCP5_13p6TeV_powheg-pythia8_2023_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_3Lep/DYto2Mu_MLL-10to50_TuneCP5_13p6TeV_powheg-pythia8_2023_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2023PromptC",
+                "xsec": 6744.0,
+                "lumi": 17.794,
+                "shortname": "DYto2Mu_MLL-10to50_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 20238632889.040028
+            }
+        }
+    }
+}

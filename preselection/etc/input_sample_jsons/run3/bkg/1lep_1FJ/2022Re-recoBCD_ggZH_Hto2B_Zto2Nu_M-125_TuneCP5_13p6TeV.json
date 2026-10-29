@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "ggZH_Hto2B_Zto2Nu_M-125_TuneCP5_13p6TeV_powheg-pythia8_2022_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022_Bkg_v14_v42_1Lep1FJ/ggZH_Hto2B_Zto2Nu_M-125_TuneCP5_13p6TeV_powheg-pythia8_2022_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoBCD",
+                "xsec": 0.01351,
+                "lumi": 7.9804,
+                "shortname": "ggZH_Hto2B_Zto2Nu_M-125_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 58989.24358400002
+            }
+        }
+    }
+}

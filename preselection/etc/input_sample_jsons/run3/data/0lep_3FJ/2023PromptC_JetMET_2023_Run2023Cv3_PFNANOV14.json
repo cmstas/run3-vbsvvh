@@ -1,0 +1,31 @@
+{
+    "samples": {
+        "JetMET_2023_Run2023Cv3_PFNANOV14": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_1.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_10.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_2.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_3.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_4.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_5.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_6.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_7.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_8.root",
+                "VBSVVH_skim_v42/Run3_2023_Data_v14_v42_0Lep3FJ/JetMET_2023_Run2023Cv3_PFNANOV14/output_9.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptC",
+                "xsec": 1.0,
+                "lumi": 17.794,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 0.0
+            }
+        }
+    }
+}

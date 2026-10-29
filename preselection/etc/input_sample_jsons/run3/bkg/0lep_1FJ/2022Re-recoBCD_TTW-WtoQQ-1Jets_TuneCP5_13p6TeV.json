@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV_amcatnloFXFXold-pythia8_2022_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022_Bkg_v14_v42_0Lep1FJ/TTW-WtoQQ-1Jets_TuneCP5_13p6TeV_amcatnloFXFXold-pythia8_2022_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoBCD",
+                "xsec": 0.4678,
+                "lumi": 7.9804,
+                "shortname": "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 462939.91855100024
+            }
+        }
+    }
+}

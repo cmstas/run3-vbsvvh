@@ -42,6 +42,20 @@ xsec_dict = {
             "VBSWWH_SS_c2v1p0_c3_10p0": 5.075e-04,
             "VBSWZH_c2v1p0_c3_10p0"   : 7.107e-04,
             "VBSZZH_c2v1p0_c3_10p0"   : 4.690e-04,
+
+            # 22/23 samples (PFNano v14 skim v40) - same cross sections as above
+            "VBSWWH_OSWW_C2V_1p0_C3_1p0_13p6TeV": 7.233e-04,
+            "VBSWWH_OSWW_C2V_1p5_C3_1p0_13p6TeV": 1.277e-03,
+            "VBSWWH_OSWW_C2V_1p0_C3_10p0_13p6TeV": 1.789e-03,
+            "VBSWWH_SSWW_C2V_1p0_C3_1p0_13p6TeV": 3.590e-04,
+            "VBSWWH_SSWW_C2V_1p5_C3_1p0_13p6TeV": 7.359e-04,
+            "VBSWWH_SSWW_C2V_1p0_C3_10p0_13p6TeV": 5.075e-04,
+            "VBSWZH_C2V_1p0_C3_1p0_13p6TeV": 4.740e-04,
+            "VBSWZH_C2V_1p5_C3_1p0_13p6TeV": 8.252e-04,
+            "VBSWZH_C2V_1p0_C3_10p0_13p6TeV": 7.107e-04,
+            "VBSZZH_C2V_1p0_C3_1p0_13p6TeV": 1.250e-04,
+            "VBSZZH_C2V_1p5_C3_1p0_13p6TeV": 4.378e-04,
+            "VBSZZH_C2V_1p0_C3_10p0_13p6TeV": 4.690e-04,
         },
 
         "bkg" : {
@@ -112,6 +126,7 @@ xsec_dict = {
             # new xsec values from HZZ, multiplied by 1.7 (original values in comments)
             # https://github.com/CJLST/ZZAnalysis/blob/Run3/NanoAnalysis/test/prod/samplesNano_2024_MC.csv#L45
             "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01061067, # 0.00624157 from HZZ * 1.7
+            "GluGlutoContinto2Zto2E2Mu_TuneCP5_13p6TeV": 0.01061067, # 22/23 sample (2022EE/2023/2023BPix spelling) - same cross section as above
             "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV": 0.00516078, # 0.00303575 from HZZ * 1.7
             "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV": 0.00516078, # 0.00303575 from HZZ * 1.7
             "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV": 0.00516078, # 0.00303575 from HZZ * 1.7
@@ -203,6 +218,7 @@ xsec_dict = {
             "TTWW_TuneCP5_13p6TeV" : 0.008203, # XSDB also lists 0.008191
             "TTWZ_TuneCP5_13p6TeV" : 0.002715,
             "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV" : 0.07968,
+            "TZQB-Zto2L-4FS_MLL-30_TuneCP5_13p6TeV" : 0.07968, # 22/23 sample - same cross section as above
             "VBS-SSWW-LL_TuneCP5_13p6TeV" : 0.002179,
             "VBS-SSWW_PolarizationLL_TuneCP5_13p6TeV" : 0.002179, # 22/23 sample - same cross section as above
             "VBS-SSWW-TL_TuneCP5_13p6TeV" : 0.01151,
@@ -302,6 +318,7 @@ xsec_dict = {
             # from twiki (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap)
             "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.3334,
             "TTHto2B_M-125_TuneCP5_13p6TeV" : 0.3334, # 22/23 sample - same cross section as above
+            "TTH_Hto2B_M-125_TuneCP5_13p6TeV" : 0.3334, # 22/23 sample (2022/2022EE spelling) - same cross section as above
             "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV" : 0.2412,
             "TTHtoNon2B_M-125_TuneCP5_13p6TeV" : 0.2412, # 22/23 sample - same cross section as above
             "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV" : 0.0638,

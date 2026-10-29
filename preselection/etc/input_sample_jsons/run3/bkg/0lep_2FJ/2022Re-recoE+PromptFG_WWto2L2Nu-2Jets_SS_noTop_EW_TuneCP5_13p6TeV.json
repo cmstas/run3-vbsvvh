@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "WWto2L2Nu-2Jets_SS_noTop_EW_TuneCP5_13p6TeV_madgraph-pythia8_2022EE_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_0Lep2FJ/WWto2L2Nu-2Jets_SS_noTop_EW_TuneCP5_13p6TeV_madgraph-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoE+PromptFG",
+                "xsec": 0.02955,
+                "lumi": 26.6717,
+                "shortname": "WWto2L2Nu-2Jets_SS_noTop_EW_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 347804.0
+            }
+        }
+    }
+}

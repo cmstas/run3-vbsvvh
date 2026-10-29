@@ -1,0 +1,35 @@
+{
+    "samples": {
+        "QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_1.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_10.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_11.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_12.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_13.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_14.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_2.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_3.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_4.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_5.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_6.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_7.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_8.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_2Lep1FJ/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_9.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoE+PromptFG",
+                "xsec": 2992.0,
+                "lumi": 26.6717,
+                "shortname": "QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 2595844755196.708
+            }
+        }
+    }
+}

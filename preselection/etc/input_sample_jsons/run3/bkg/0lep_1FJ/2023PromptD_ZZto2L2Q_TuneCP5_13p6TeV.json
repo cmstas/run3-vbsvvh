@@ -1,0 +1,23 @@
+{
+    "samples": {
+        "ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8_2023BPix_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2023BPix_Bkg_v14_v42_0Lep1FJ/ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8_2023BPix_PFNanoV14_PFNANOSIM/output_1.root",
+                "VBSVVH_skim_v42/Run3_2023BPix_Bkg_v14_v42_0Lep1FJ/ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8_2023BPix_PFNanoV14_PFNANOSIM/output_2.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2023PromptD",
+                "xsec": 6.788,
+                "lumi": 9.451,
+                "shortname": "ZZto2L2Q_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 101294708.41100009
+            }
+        }
+    }
+}

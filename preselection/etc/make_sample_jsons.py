@@ -7,53 +7,59 @@ import xsec_ref
 import dataset_names_ref
 
 
-# Dictionary of the paths to the skim sets
+# 2022/2023 skims (PFNano v14) are split per era, so a Run 3 entry below may list several dirs
+ERAS_2022_2023 = ["2022", "2022EE", "2023", "2023BPix"]
+def skims_2022_2023(skim_tag, kind, skim_set):
+    return [f"/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_{skim_tag}/Run3_{era}_{kind}_v14_{skim_tag}_{skim_set}"
+            for era in ERAS_2022_2023]
+
+# Dictionary of the paths to the skim sets (a path, or a list of paths whose datasets are merged)
 SKIM_PATH_DICT = {
     "all_events" : {
         ("run2", "sig")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Sig_v15_v30_Sig",
-        ("run3", "sig")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Sig_v15_v30_Sig",
+        ("run3", "sig")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Sig_v15_v30_Sig"] + skims_2022_2023("v40", "Sig", "Sig"),
     },
     "0lep_0FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_0Lep0FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_0Lep0FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep0FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep0FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep0FJ"] + skims_2022_2023("v42", "Bkg", "0Lep0FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep0FJ"] + skims_2022_2023("v42", "Data", "0Lep0FJ"),
     },
     "0lep_1FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_0Lep1FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_0Lep1FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep1FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep1FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep1FJ"] + skims_2022_2023("v42", "Bkg", "0Lep1FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep1FJ"] + skims_2022_2023("v42", "Data", "0Lep1FJ"),
     },
     "0lep_2FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_0Lep2FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_0Lep2FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep2FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep2FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep2FJ"] + skims_2022_2023("v42", "Bkg", "0Lep2FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep2FJ"] + skims_2022_2023("v42", "Data", "0Lep2FJ"),
     },
     "0lep_3FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_0Lep3FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_0Lep3FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep3FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_0Lep3FJ"] + skims_2022_2023("v42", "Bkg", "0Lep3FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_0Lep3FJ"] + skims_2022_2023("v42", "Data", "0Lep3FJ"),
     },
     "1lep_1FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_1Lep1FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_1Lep1FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_1Lep1FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_1Lep1FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_1Lep1FJ"] + skims_2022_2023("v42", "Bkg", "1Lep1FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_1Lep1FJ"] + skims_2022_2023("v42", "Data", "1Lep1FJ"),
     },
     "2lep_1FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_2Lep1FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_2Lep1FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_2Lep1FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_2Lep1FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_2Lep1FJ"] + skims_2022_2023("v42", "Bkg", "2Lep1FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_2Lep1FJ"] + skims_2022_2023("v42", "Data", "2Lep1FJ"),
     },
     "2lep_2FJ" : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_2Lep2FJ",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_2Lep2FJ",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_2Lep2FJ",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_2Lep2FJ",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_2Lep2FJ"] + skims_2022_2023("v42", "Bkg", "2Lep2FJ"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_2Lep2FJ"] + skims_2022_2023("v42", "Data", "2Lep2FJ"),
     },
     "2lep_SS" : {
         #("run2", "bkg")  : "",
@@ -64,14 +70,14 @@ SKIM_PATH_DICT = {
     "3lep"    : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_3Lep",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_3Lep",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_3Lep",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_3Lep",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_3Lep"] + skims_2022_2023("v42", "Bkg", "3Lep"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_3Lep"] + skims_2022_2023("v42", "Data", "3Lep"),
     },
     "4lep"    : {
         ("run2", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep",
         ("run2", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run2_Data_v15_v30_4Lep",
-        ("run3", "bkg")  : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_4Lep",
-        ("run3", "data") : "/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_4Lep",
+        ("run3", "bkg")  : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Bkg_v15_v30_4Lep"] + skims_2022_2023("v42", "Bkg", "4Lep"),
+        ("run3", "data") : ["/cmsuf/data/store/user/phchang/skim/VBSVVH_skim_v30/Run3_Data_v15_v30_4Lep"] + skims_2022_2023("v42", "Data", "4Lep"),
     },
 }
 
@@ -84,6 +90,11 @@ LUMI_DICT = {
     # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
     "2022": 34.76,
     "2023": 28.28,
+    # Per era, keyed like the C++ corrections (golden JSON lumi per run range)
+    "2022Re-recoBCD": 7.9804,
+    "2022Re-recoE+PromptFG": 26.6717,
+    "2023PromptC": 17.794,
+    "2023PromptD": 9.451,
     "2024Prompt": 109.95,
     "2025": 110.84
 }
@@ -135,7 +146,7 @@ def strip_prefixes(fullpaths_lst,split_on="VBSVVH_skim_"):
     return [before, out_lst]
 
 
-# Rebuild the runs_summary dict for one skim file from its Runs tree. The skimmer's
+# Rebuild the scalar part of the runs_summary dict for one skim file from its Runs tree. The skimmer's
 # runs_summary_N.json is only a cache of the Runs tree of output_N.root, so the two agree
 # exactly; this is the fallback when the json cannot be read.
 def runs_summary_from_root(root_fpath):
@@ -144,9 +155,9 @@ def runs_summary_from_root(root_fpath):
         out_dict = {"eventCount": float(f["Events"].num_entries)}
         for branch in ["genEventCount", "genEventSumw", "genEventSumw2"]:
             out_dict[branch] = float(runs[branch].array(library="np").sum())
-        for branch in ["LHEScaleSumw", "LHEPdfSumw", "PSSumw"]:
-            if branch in runs:
-                out_dict[branch] = [float(x) for x in np.sum(runs[branch].array(library="np"), axis=0)]
+        # The per-variation sums (LHEScaleSumw, LHEPdfSumw, PSSumw) are left out: their length
+        # can differ between Runs entries of one file (some are empty), so they cannot be summed
+        # elementwise, and only genEventSumw is written to the jsons.
     return out_dict
 
 
@@ -303,10 +314,17 @@ def main():
             xsec_dict = xsec_ref.xsec_dict[run_tag][kind]
 
             # Get the list of datasets we actaully have at this skim path, and list we expect
-            path_to_skims = SKIM_PATH_DICT[skim_set_name][(run_tag,kind)]
+            paths_to_skims = SKIM_PATH_DICT[skim_set_name][(run_tag,kind)]
+            if isinstance(paths_to_skims, str): paths_to_skims = [paths_to_skims]
+            skim_path_for_ds = {}
+            for path_to_skims in paths_to_skims:
+                for ds in os.listdir(path_to_skims):
+                    if ds in skim_path_for_ds:
+                        raise Exception(f"Dataset {ds} is in both {skim_path_for_ds[ds]} and {path_to_skims}")
+                    skim_path_for_ds[ds] = path_to_skims
             paths_to_current_jsons = f"input_sample_jsons/{run_tag}/{kind}/{skim_set_name}"
             havejson_ds_set = set(get_ds_names_from_jsons(paths_to_current_jsons))
-            haveskim_ds_set = set(os.listdir(path_to_skims))
+            haveskim_ds_set = set(skim_path_for_ds)
             haveref_ds_set  = set(d["dataset_name"] for d in known_datasets_lst)
 
             # Do some checks of the list of skims we have against what we expect
@@ -342,7 +360,7 @@ def main():
                 print(f"{i+1}/{len(datasets_lst)}: {dataset_info['dataset_name']}")
 
                 # Build the output json
-                jsons_to_write.append(make_json_for_dataset(dataset_info, path_to_skims, kind, xsec_dict, skim_set_name, run_tag))
+                jsons_to_write.append(make_json_for_dataset(dataset_info, skim_path_for_ds[dataset_info['dataset_name']], kind, xsec_dict, skim_set_name, run_tag))
 
         # This skim set is complete: write all of its jsons
         print(f"\nWriting {len(jsons_to_write)} jsons for skim set {skim_set_name}")

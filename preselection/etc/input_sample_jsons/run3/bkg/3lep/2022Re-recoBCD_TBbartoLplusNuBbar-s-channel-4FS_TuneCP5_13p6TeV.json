@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV_amcatnlo-pythia8_2022_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022_Bkg_v14_v42_3Lep/TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV_amcatnlo-pythia8_2022_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoBCD",
+                "xsec": 2.359,
+                "lumi": 7.9804,
+                "shortname": "TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 2891578.6485762
+            }
+        }
+    }
+}

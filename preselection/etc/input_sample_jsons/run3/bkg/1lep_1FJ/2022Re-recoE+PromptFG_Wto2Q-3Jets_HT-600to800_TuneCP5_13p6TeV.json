@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "Wto2Q-3Jets_HT-600to800_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_1Lep1FJ/Wto2Q-3Jets_HT-600to800_TuneCP5_13p6TeV_madgraphMLM-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoE+PromptFG",
+                "xsec": 63.9,
+                "lumi": 26.6717,
+                "shortname": "Wto2Q-3Jets_HT-600to800_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 391678.0
+            }
+        }
+    }
+}

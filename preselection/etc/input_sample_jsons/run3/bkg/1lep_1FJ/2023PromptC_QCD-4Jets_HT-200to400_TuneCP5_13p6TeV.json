@@ -1,0 +1,23 @@
+{
+    "samples": {
+        "QCD-4Jets_HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8_2023_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_1Lep1FJ/QCD-4Jets_HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8_2023_PFNanoV14_PFNANOSIM/output_1.root",
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_1Lep1FJ/QCD-4Jets_HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8_2023_PFNanoV14_PFNANOSIM/output_2.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2023PromptC",
+                "xsec": 1963000.0,
+                "lumi": 17.794,
+                "shortname": "QCD-4Jets_HT-200to400_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 643596317725000.0
+            }
+        }
+    }
+}

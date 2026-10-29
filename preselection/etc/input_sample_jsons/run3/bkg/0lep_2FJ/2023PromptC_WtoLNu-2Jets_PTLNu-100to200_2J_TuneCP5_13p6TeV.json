@@ -1,0 +1,27 @@
+{
+    "samples": {
+        "WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_0Lep2FJ/WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM/output_1.root",
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_0Lep2FJ/WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM/output_2.root",
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_0Lep2FJ/WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM/output_3.root",
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_0Lep2FJ/WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM/output_4.root",
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_0Lep2FJ/WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM/output_5.root",
+                "VBSVVH_skim_v42/Run3_2023_Bkg_v14_v42_0Lep2FJ/WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2023_PFNanoV14_PFNANOSIM/output_6.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2023PromptC",
+                "xsec": 411.1,
+                "lumi": 17.794,
+                "shortname": "WtoLNu-2Jets_PTLNu-100to200_2J_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 228013680820.59006
+            }
+        }
+    }
+}

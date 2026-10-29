@@ -1,0 +1,24 @@
+{
+    "samples": {
+        "WW_TuneCP5_13p6TeV_pythia8_2022EE_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_4Lep/WW_TuneCP5_13p6TeV_pythia8_2022EE_PFNanoV14_PFNANOSIM/output_1.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_4Lep/WW_TuneCP5_13p6TeV_pythia8_2022EE_PFNanoV14_PFNANOSIM/output_2.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_4Lep/WW_TuneCP5_13p6TeV_pythia8_2022EE_PFNanoV14_PFNANOSIM/output_3.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoE+PromptFG",
+                "xsec": 80.42,
+                "lumi": 26.6717,
+                "shortname": "WW_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 53029676.970611766
+            }
+        }
+    }
+}

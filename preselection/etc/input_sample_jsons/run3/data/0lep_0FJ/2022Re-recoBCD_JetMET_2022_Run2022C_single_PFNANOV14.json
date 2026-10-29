@@ -1,0 +1,28 @@
+{
+    "samples": {
+        "JetMET_2022_Run2022C_single_PFNANOV14": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_1.root",
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_2.root",
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_3.root",
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_4.root",
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_5.root",
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_6.root",
+                "VBSVVH_skim_v42/Run3_2022_Data_v14_v42_0Lep0FJ/JetMET_2022_Run2022C_single_PFNANOV14/output_7.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2022Re-recoBCD",
+                "xsec": 1.0,
+                "lumi": 7.9804,
+                "shortname": "JetMET",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 0.0
+            }
+        }
+    }
+}

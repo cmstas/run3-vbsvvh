@@ -1,0 +1,23 @@
+{
+    "samples": {
+        "ZH_Hto2B_Zto2L_M-125_TuneCP5_13p6TeV_powheg-pythia8_2022EE_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_1Lep1FJ/ZH_Hto2B_Zto2L_M-125_TuneCP5_13p6TeV_powheg-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_1.root",
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_1Lep1FJ/ZH_Hto2B_Zto2L_M-125_TuneCP5_13p6TeV_powheg-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_2.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoE+PromptFG",
+                "xsec": 0.03174,
+                "lumi": 26.6717,
+                "shortname": "ZH_Hto2B_Zto2L_M-125_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 1280734.1965056015
+            }
+        }
+    }
+}

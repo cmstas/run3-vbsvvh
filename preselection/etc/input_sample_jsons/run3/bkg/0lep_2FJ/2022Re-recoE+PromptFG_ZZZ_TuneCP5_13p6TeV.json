@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "ZZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE_PFNanoV14_PFNANOSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2022EE_Bkg_v14_v42_0Lep2FJ/ZZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE_PFNanoV14_PFNANOSIM/output_1.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2022Re-recoE+PromptFG",
+                "xsec": 0.01591,
+                "lumi": 26.6717,
+                "shortname": "ZZZ_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 90746.3069865821
+            }
+        }
+    }
+}
