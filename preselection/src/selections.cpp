@@ -1,4 +1,5 @@
 #include "selections.h"
+#include "btag_settings.h"
 #include "cutflow.h"
 #include "weights.h"
 #include "wqq_sf.h"
@@ -299,11 +300,17 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
 RNode AK4JetProperties(RNode df_)
 {
     df_ = applyJetVetoMaps(df_);
-    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isExtraTightBTag", isbTagExtraTight, {"year", "Jet_btagUParTAK4B"})
-              .Define("Jet_isExtraExtraTightBTag", isbTagExtraExtraTight, {"year", "Jet_btagUParTAK4B"});
+    // Jets outside the b-tagging acceptance (|eta| < 2.4 in 2016, 2.5 otherwise),
+    // where SFs and efficiencies are not defined, never pass a b-tagging WP.
+    df_ = df_.Define("_Jet_btagUParTAK4B_inEta",
+                     [](const std::string &year, const RVec<float> &score, const RVec<float> &eta) {
+                         return Where(abs(eta) < bTagMaxAbsEta(year), score, -1.f);
+                     }, {"year", "Jet_btagUParTAK4B", "Jet_eta"});
+    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "_Jet_btagUParTAK4B_inEta"})
+              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "_Jet_btagUParTAK4B_inEta"})
+              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "_Jet_btagUParTAK4B_inEta"})
+              .Define("Jet_isExtraTightBTag", isbTagExtraTight, {"year", "_Jet_btagUParTAK4B_inEta"})
+              .Define("Jet_isExtraExtraTightBTag", isbTagExtraExtraTight, {"year", "_Jet_btagUParTAK4B_inEta"});
 }
 
 
@@ -419,7 +426,7 @@ RNode VBSTagging(RNode df_, std::string jetCollectionName = "jet")
 
 
 ///////////////// Main channel selection block /////////////////
-RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
+RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, std::string run_number)
 {
 
     Cutflow::Add(df_, "All events");
@@ -442,8 +449,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
     // Get ahold of the relevant lepton SFs (will choose which ones to actually apply in each channel)
     df = applyMuonWorkingPointSFs(df, isData, {
         "_weight_muon_looseid_looseiso",
-        "_weight_muon_mediumid_tightiso",
-        "_weight_muon_tightid_tightiso"
+        "_weight_muon_mediumid_tightiso"
     });
     df = applyElectronWorkingPointSFs(df, isData, {
         "_weight_electron_reco_looseid",
@@ -573,19 +579,23 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
 
     // 0lep_3FJ
     else if (channel == "0lep_3FJ"){
+        df = applyQCDScoreResampling(df, run_number);
 
         df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
-        df = TriggerSelections(df,trigger_logic_string_ht);
+        df = TriggerSelections(df, trigger_logic_string_ht);
         Cutflow::Add(df, "C1: Trigger selection");
 
         // Channel orthogonality selection
         df = definePerVariationPassFlags(df, "0lep_3FJ", [](const std::string& sfx){
             const std::string fjCountCol = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
-            return "(nLep_Sel == 0) && (" + fjCountCol + " == 3)";
+            const std::string jCountCol  = sfx.empty() ? "njet"     : "njet_"     + sfx;
+            return "(nLep_Sel == 0) && (" + fjCountCol + " >= 3) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "0lep_3FJ"), "C2: 0lep_3FJ");
+
+        Cutflow::Add(df, "C2: 0 lepton + 3 fatjet selection");
     }
 
     // 1lep_1FJ - fatjet + njet cuts must combine inside a single per-variation pass flag,
@@ -600,13 +610,13 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
+        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso", /*include_trigger_sf=*/ false);
 
         // Channel orthogonality selection
         df = df.Filter("(nLep_Sel == 1)", "C2: 1lep_1FJ");
 
-        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
-                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
+        df = df.Filter("((nMuon_Loose == 1 && nMuon_Tight == 1 && nElectron_Veto == 0 && nElectron_Loose == 0 && nElectron_Tight == 0) || "
+                       "(nMuon_Loose == 0 && nMuon_Tight == 0 && nElectron_Veto == 1 && nElectron_Loose == 1 && nElectron_Tight == 1)) && "
                        "(lepton_pt[0] > 40)");
         Cutflow::Add(df, "C2: 1-lepton selection");
 
@@ -616,18 +626,19 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " == 1) && (" + jCountCol + " >= 4)";
         });
         df = df.Filter(orPassExpr(df, "1lep_1FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
     }
 
     // 1lep_2FJ - same caveat as 1lep_1FJ (C3 + C4 collapsed).
     else if (channel == "1lep_2FJ"){
 
-        df = VBSTagging(df, "jetNoFJClean");
+        df = VBSTagging(df);
         Cutflow::Add(df, "VBS pair candidate found");
 
         df = TriggerSelections(df,trigger_logic_string_singlelep);
         Cutflow::Add(df, "C1: Trigger selection");
 
-        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_tightid_tightiso", /*include_trigger_sf=*/ true);
+        df = lepSFWrapper(df,isData, /*ele_sf_name=*/ "_weight_electron_reco_tightid", /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso", /*include_trigger_sf=*/ false);
 
         // Channel orthogonality selection
         df = df.Filter("(nLep_Sel == 1)", "C2: 1lep_2FJ");
@@ -644,6 +655,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
             return "(" + fjCountCol + " >= 2) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "1lep_2FJ"), "C3: jet selection (any variation)");
+        Cutflow::Add(df, "C3: jet selection (any variation)");
+
     }
 
     // 1lep_WSF - GloParT W-tagging and JMS/JMR calibration region.
@@ -662,7 +675,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = lepSFWrapper(df, isData,
                           /*ele_sf_name=*/ "_weight_electron_reco_tightid",
                           /*muo_sf_name=*/ "_weight_muon_mediumid_tightiso",
-                          /*include_trigger_sf=*/ true);
+                          /*include_trigger_sf=*/ false);
 
         // Tag: exactly one muon in the event, and it is tight. nMuon_Tight alone would
         // not veto a second, softer loose muon, and muon_pt[0] indexes the loose
