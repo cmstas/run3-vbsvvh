@@ -112,10 +112,10 @@ RNode applyObjectMaskNewAffix(RNode df, const std::string &maskName, const std::
             // Skip per-source systematic-variation columns. Those carry their own per-
             // variation good-jet masks (Jet_isGood_jes*) and downstream coffea reads them
             // at the all-jet level, so they must NOT be aliased through the nominal mask.
+            // JMS/JMR variations (FatJet_massGloParT3_jms*/_jmr*) only change the mass, not the
+            // mask, so they are aliased like the nominal.
             if (suffix.find("_jes") != std::string::npos
                 || suffix.find("_jer") != std::string::npos
-                || suffix.find("_jms") != std::string::npos
-                || suffix.find("_jmr") != std::string::npos
                 || suffix.find("_unclust") != std::string::npos) {
                 continue;
             }

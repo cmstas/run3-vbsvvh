@@ -54,17 +54,13 @@ JET MASS SCALE (JMS) AND RESOLUTION (JMR) — GloParT mass
 ############################################
 
 Per era and fat-jet pt, from the Wqq tag-and-probe fit (payload and formulas: corrections.cpp).
-  - JMS : multiplicative scale on the target mass column.
-  - JMR : resolution factor wrt the gen-jet mass (hybrid: gen-matched scaling, else stochastic).
-Column-agnostic: the mass, pt and (for JMR) gen mass + gen-index columns are passed in.
-Called for MC in AK8JetsSelection on FatJet_massGloParT3: the scale first, then the resolution.
+  - JMS : multiplicative scale.
+  - JMR : stochastic smearing by the resolution factor, the same for every jet.
+Keeps the input as <mass_col>_uncorr, redefines <mass_col> with nominal JMS then nominal JMR, and
+defines <mass_col>_{jmsUp,jmsDown} (JMS varied, nominal JMR) and <mass_col>_{jmrUp,jmrDown}
+(nominal JMS, JMR varied). Called for MC in AK8JetsSelection on FatJet_massGloParT3.
 */
-RNode applyJetMassScale(const std::string& mass_col, const std::string& pt_col, RNode df);
-RNode applyJetMassResolution(const std::string& mass_col,
-                          const std::string& pt_col,
-                          const std::string& gen_mass_col,
-                          const std::string& gen_idx_col,
-                          RNode df);
+RNode applyJetMassCorrections(const std::string& mass_col, const std::string& pt_col, RNode df);
 
 /*
 ############################################

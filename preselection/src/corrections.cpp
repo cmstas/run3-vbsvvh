@@ -1907,21 +1907,23 @@ JET MASS SCALE (JMS) AND RESOLUTION (JMR) — GloParT mass, from the Wqq tag-and
 
 Payload: corrections/scalefactors/JMSR/JMSR_rdf_correctionlib_etainclusive.json, written by the
 Wqq SF collector (get_SF_summary.py --export_json on a JMSR campaign). Per era and fat-jet pt:
-  JMS_scale     multiplicative mass scale s
-  JMR_factor    resolution factor f
+  JMS_scale     multiplicative mass scale s                (systematic nom / up / down)
+  JMR_factor    resolution factor f                        (systematic nom / up / down)
   JMR_sigmaRel  relative MC mass resolution of true W jets
 derived from the fitted tp2jms / tp2jmr on the fit's own true-W templates (ratios of Gaussian core
-mean / width of the morphed to the nominal template). Inputs era / WP / eta / pt; the fit is
-eta-inclusive (eta unused) and JMS/JMR are flat in WP, so WP 0.78 is used.
+mean / width of the morphed to the nominal template); up / down are the same conversion at the fitted
+theta +- 1 sigma. Inputs era / WP / eta / pt; the fit is eta-inclusive (eta unused) and JMS/JMR are
+flat in WP, so WP 0.78 is used. pt bins 250-300 / 300-400 / 400-800 GeV, clamped: jets above 800 GeV
+take the last bin's correction (and the few non-good jets below 250 GeV the first bin's).
 
   JMS  : m' = max(0, s(pt) * m)
-  JMR  : matched to a gen jet →  m'' = max(0, m_gen + f(pt) * (m' - m_gen))
-         unmatched           →  m'' = max(0, m' * (1 + √max(f²-1,0) * σrel(pt) * N(0,1)))
-                                (only widens; f < 1 leaves unmatched jets as they are)
+  JMR  : m'' = max(0, m' * (1 + √max(f²-1,0) * σrel(pt) * N(0,1)))   (stochastic, every jet; only
+         widens, so f < 1 leaves the mass as it is)
 
-Applied to every MC fat jet, at the nominal FatJet_pt: the scale first, then the resolution on the
-scaled mass (the order matters only for gen-matched jets). Eras without a fit (2022, 2023) are left
-uncorrected (warning once). No up/down variations yet: the payload carries central values only.
+Applied to every MC fat jet, at the nominal FatJet_pt; the scale first, then the resolution (both
+multiplicative, so the order does not matter). One N(0,1) per jet, seeded per event, is shared by the
+nominal and all variations, so a variation differs from the nominal only through s or f. Eras without
+a fit (2022, 2023) throw.
 */
 
 namespace {
@@ -1934,73 +1936,57 @@ const correction::CorrectionSet &jetMassCorrections() {
     return *cs;
 }
 
-// RDF year -> era key of the payload; "" (and a one-time warning) for an era without a fit.
-std::string jetMassEra(const std::string &year, const std::string &mass_col) {
+// RDF year -> era key of the payload; throws for an era without a fit.
+std::string jetMassEra(const std::string &year) {
     static const StrMap eras = {{"2016preVFP", "2016preVFP"}, {"2016postVFP", "2016postVFP"}, {"2017", "2017"},
                                 {"2018", "2018"}, {"2024Prompt", "2024"}, {"2025", "2025"}};
     const auto it = eras.find(year);
-    if (it != eras.end()) return it->second;
-    static std::unordered_set<std::string> warned;
-    static std::mutex mutex;
-    std::lock_guard<std::mutex> lock(mutex);
-    if (warned.insert(mass_col + "/" + year).second)
-        std::cout << "Warning: no JMS/JMR for year " << year << " on column " << mass_col
-                  << ", left uncorrected." << std::endl;
-    return "";
+    if (it == eras.end())
+        throw std::runtime_error("JMS/JMR: no correction for year '" + year + "' in " + kJMSRPayload);
+    return it->second;
 }
 
 } // anonymous namespace
 
-RNode applyJetMassScale(const std::string& mass_col, const std::string& pt_col, RNode df) {
+RNode applyJetMassCorrections(const std::string& mass_col, const std::string& pt_col, RNode df) {
     const auto scale = jetMassCorrections().at("JMS_scale");
-    auto eval = [scale, mass_col](const std::string &year, RVec<float> m, const RVec<float> &pt) {
-        const std::string era = jetMassEra(year, mass_col);
-        if (era.empty()) return m;
-        for (size_t i = 0; i < m.size(); ++i)
-            m[i] = std::max(0.0f, static_cast<float>(
-                m[i] * scale->evaluate({era, kJMSRWorkingPoint, 0.0, static_cast<double>(pt[i])})));
-        return m;
-    };
-    return df.Redefine(mass_col, eval, {"year", mass_col, pt_col});
-}
-
-RNode applyJetMassResolution(const std::string& mass_col,
-                          const std::string& pt_col,
-                          const std::string& gen_mass_col,
-                          const std::string& gen_idx_col,
-                          RNode df) {
     const auto factor = jetMassCorrections().at("JMR_factor");
     const auto sigma_rel = jetMassCorrections().at("JMR_sigmaRel");
-    auto eval = [factor, sigma_rel, mass_col](const std::string &year,
-                             RVec<float> m, const RVec<float> &pt,
-                             const RVec<short> &gen_idx, const RVec<float> &gen_mass,
-                             unsigned int lumi, unsigned long long event) {
-        const std::string era = jetMassEra(year, mass_col);
-        if (era.empty() || m.empty()) return m;
-        TRandom3 rng((static_cast<unsigned long long>(lumi) << 10) ^ event);
-        for (size_t i = 0; i < m.size(); ++i) {
-            const double jet_pt = static_cast<double>(pt[i]);
-            const float f = static_cast<float>(factor->evaluate({era, kJMSRWorkingPoint, 0.0, jet_pt}));
-            const bool matched = (gen_idx[i] >= 0
-                                  && gen_idx[i] < static_cast<int>(gen_mass.size()));
-            if (matched) {
-                const float m_gen = gen_mass[gen_idx[i]];
-                m[i] = std::max(0.0f, m_gen + f * (m[i] - m_gen));
-            } else {
-                // One draw per unmatched jet whatever f is, so the random sequence does not depend on it.
-                const float kick = static_cast<float>(rng.Gaus(0.0, 1.0));
+    const std::string uncorr_col = mass_col + "_uncorr";
+    const std::string kick_col = "_" + mass_col + "_jmrKick";
+
+    df = df.Define(uncorr_col, [](const RVec<float> &m) { return m; }, {mass_col})
+           .Define(kick_col, [](const RVec<float> &m, unsigned int lumi, unsigned long long event) {
+               TRandom3 rng((static_cast<unsigned long long>(lumi) << 10) ^ event);
+               RVec<float> kick(m.size());
+               for (auto &k : kick) k = static_cast<float>(rng.Gaus(0.0, 1.0));
+               return kick;
+           }, {mass_col, "luminosityBlock", "event"});
+
+    auto corrected = [scale, factor, sigma_rel](const std::string &jms_syst, const std::string &jmr_syst) {
+        return [=](const std::string &year, RVec<float> m, const RVec<float> &pt, const RVec<float> &kick) {
+            if (m.empty()) return m;
+            const std::string era = jetMassEra(year);
+            for (size_t i = 0; i < m.size(); ++i) {
+                const double jet_pt = static_cast<double>(pt[i]);
+                const float s = static_cast<float>(scale->evaluate({era, kJMSRWorkingPoint, 0.0, jet_pt, jms_syst}));
+                const float f = static_cast<float>(factor->evaluate({era, kJMSRWorkingPoint, 0.0, jet_pt, jmr_syst}));
+                m[i] = std::max(0.0f, s * m[i]);
                 const float widen = std::sqrt(std::max(f * f - 1.0f, 0.0f));
                 if (widen > 0.0f) {
                     const float sr = static_cast<float>(sigma_rel->evaluate({era, kJMSRWorkingPoint, 0.0, jet_pt}));
-                    m[i] = std::max(0.0f, m[i] * (1.0f + widen * sr * kick));
+                    m[i] = std::max(0.0f, m[i] * (1.0f + widen * sr * kick[i]));
                 }
             }
-        }
-        return m;
+            return m;
+        };
     };
-    return df.Redefine(mass_col, eval,
-                       {"year", mass_col, pt_col, gen_idx_col, gen_mass_col,
-                        "luminosityBlock", "event"});
+    const std::vector<std::string> inputs = {"year", uncorr_col, pt_col, kick_col};
+    df = df.Define(mass_col + "_jmsUp",   corrected("up",   "nom"),  inputs)
+           .Define(mass_col + "_jmsDown", corrected("down", "nom"),  inputs)
+           .Define(mass_col + "_jmrUp",   corrected("nom",  "up"),   inputs)
+           .Define(mass_col + "_jmrDown", corrected("nom",  "down"), inputs);
+    return df.Redefine(mass_col, corrected("nom", "nom"), inputs);
 }
 
 /*

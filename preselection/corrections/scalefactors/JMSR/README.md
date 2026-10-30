@@ -2,8 +2,9 @@
 
 Both files: inputs `era` (string), `WP` (string, `0.78` only in this version; the previous one had `0.40`, `0.60`,
 `0.78`, `0.90`, `0.96`, `0.98`; same GloParT-3 Wqq score as `../WqqSF`), `eta` (real, unused: inclusive in |eta| < 2.5), `pt` (real). Eras `2016preVFP`, `2016postVFP`,
-`2017`, `2018`, `2024`, `2025`, plus `r2comb`; no 2022/2023 yet. pt bins [250, 300), [300, 400), [400, 800) GeV,
-clamped outside. Central values only, no uncertainty.
+`2017`, `2018`, `2024`, `2025`, plus `r2comb`; no 2022/2023 yet (the RDF producer stops with an error for them).
+pt bins [250, 300), [300, 400), [400, 800) GeV, clamped outside: jets above 800 GeV use the correction of the
+400-800 GeV bin (to be stated in the AN).
 
 Mass: GloParT-3 X2p-corrected mass, `FatJet_globalParT3_massCorrX2p * FatJet_rawmass` (= `FatJet_massGloParT3` /
 `fj_1_massGloParT3` of the RDF producer).
@@ -11,13 +12,26 @@ Mass: GloParT-3 X2p-corrected mass, `FatJet_globalParT3_massCorrX2p * FatJet_raw
 ## `JMSR_rdf_correctionlib_etainclusive.json` (what to apply to MC)
 
 Corrections `JMS_scale` (s), `JMR_factor` (f), `JMR_sigmaRel` (sigma_rel):
-- scale first: m' = s * m;
-- then the resolution (hybrid) on the scaled mass: gen-matched jets m'' = m_gen + f * (m' - m_gen); unmatched jets
-  m'' = m' * (1 + sqrt(f^2 - 1) * sigma_rel * N(0,1)) for f > 1.
+- scale: m' = s * m;
+- resolution, stochastic, the same for every jet (no gen matching): m'' = m' * (1 + sqrt(f^2 - 1) * sigma_rel * N(0,1))
+  for f > 1; f <= 1 leaves the mass unchanged (a smear can only widen).
 
-The order only matters for gen-matched jets: scale-then-smear moves their peak by f (s - 1) mu instead of (s - 1) mu
-(<= ~0.1 GeV with the current values); the width becomes f s sigma either way. s and f are derived independently
-(each from its own nuisance), so the payload does not depend on the order.
+Both are multiplicative, so the order does not matter. `JMS_scale` and `JMR_factor` take a fifth input `systematic`
+(`nom`, `up`, `down`, as `../WqqSF`): `up` / `down` are the fitted theta +- 1 sigma (Hesse error of `tp2jms` /
+`tp2jmr` in the FitDiagnostics `fit_s` result), converted to s and f exactly like the nominal (below). `JMR_sigmaRel`
+comes from the nominal template only and has no `systematic` input.
+
+The RDF producer (`applyJetMassCorrections`) writes, for MC:
+
+| Branch | Content |
+|---|---|
+| `fatjet_massGloParT3` | nominal JMS, then nominal JMR |
+| `fatjet_massGloParT3_uncorr` | `FatJet_globalParT3_massCorrX2p * _FatJet_rawmass`, before JMS/JMR |
+| `fatjet_massGloParT3_jmsUp` / `_jmsDown` | JMS up / down, nominal JMR |
+| `fatjet_massGloParT3_jmrUp` / `_jmrDown` | nominal JMS, JMR up / down |
+
+(plus the all-jet `FatJet_massGloParT3*`). All use the same N(0,1) per jet, so a variation differs from the nominal
+only through s or f. Data keeps only the uncorrected `fatjet_massGloParT3`.
 ## How the fitted JMS/JMR (theta) are converted to s, f and sigma_rel
 
 The fit does not measure s and f directly. It fits two shape nuisances of the true-W (tp2) mass template,
@@ -53,8 +67,9 @@ collector (`wqq_sf` `get_SF_summary.py --export_json`, `compute_jmsr_rdf`):
 
 These are exactly the s, f, sigma_rel used in the equations above: s scales the mass so that the MC peak position
 moves as the fitted template does; f widens (f > 1) or narrows (f < 1) the MC peak by the same factor as the fitted
-template, and sigma_rel sets the size of the random smear for jets without a gen match (sqrt(f^2 - 1) * sigma_rel is
-the extra relative smear that turns a width sigma_rel into f * sigma_rel).
+template, and sigma_rel sets the size of the random smear (sqrt(f^2 - 1) * sigma_rel is the extra relative smear
+that turns a width sigma_rel into f * sigma_rel; f < 1 cannot be applied this way and leaves the mass unchanged).
+The `up` / `down` values repeat steps 3-4 with theta_JMS +- sigma_JMS and theta_JMR +- sigma_JMR.
 
 ### Core bins: what they are and how they are found
 
@@ -104,12 +119,29 @@ Examples at WP 0.78:
 
 ### Conversion code
 
-Verbatim from `wqq_sf` `ParticleNetSF-WqqSF/get_SF_summary.py` (commit 57651cb), run by the collector with
+Verbatim from `wqq_sf` `ParticleNetSF-WqqSF/get_SF_summary.py` (commit 17fabb3), run by the collector with
 `--export_json` for `mass_to_use = "globalpart"` campaigns. `m["templates"]` are the fit's pass and fail template ROOT
 files of one era / WP / pt bin (histograms `tp2`, `tp2_tp2jmsUp`, `tp2_tp2jmsDown`, `tp2_tp2jmrUp`, `tp2_tp2jmrDown`),
-`m["jms"]` / `m["jmr"]` the fitted `tp2jms` / `tp2jmr`.
+`m["jms"]` / `m["jmr"]` the fitted `tp2jms` / `tp2jmr`, `m["jms_err"]` / `m["jmr_err"]` their `get_jmsr_err` errors
+(from `fitdiagnostics_<tag>.root` next to `multidimfit_<tag>.root`).
 
 ```python
+def get_jmsr_err(file_path):
+    """Hesse errors of tp2jms and tp2jmr from the FitDiagnostics fit_s result (the MultiDimFit 'limit' tree only
+    profiles them, without an error). (None, None) if the file or fit_s is missing."""
+    if not os.path.exists(file_path):
+        return None, None
+    f = ROOT.TFile.Open(file_path, "READ")
+    r = f.Get("fit_s") if f and not f.IsZombie() else None
+    if not r:
+        if f:
+            f.Close()
+        return None, None
+    pars = r.floatParsFinal()
+    errs = tuple(pars.find(n).getError() if pars.find(n) else None for n in ("tp2jms", "tp2jmr"))
+    f.Close()
+    return errs
+
 def _template_hist(paths, name):
     """Sum of histogram `name` over the pass and fail template files -> (contents, bin centres) as numpy arrays."""
     import numpy as np
@@ -167,10 +199,15 @@ def compute_jmsr_rdf(data):
     own true-W (tp2) templates (pass + fail summed), all fitted on the nominal's core bins (+-2 sigma):
         JMS_scale    = core mean of the JMS-morphed template / core mean of the nominal   (m' = s * m)
         JMR_factor   = core width of the JMR-morphed template / core width of the nominal (f, hybrid smearing)
-        JMR_sigmaRel = core width / core mean of the nominal (MC relative resolution, unmatched-jet branch)
-    Stored as data[key]['jms_scale'|'jmr_factor'|'jmr_sigma_rel']."""
+        JMR_sigmaRel = core width / core mean of the nominal (MC relative resolution of the stochastic smearing)
+    JMS_scale and JMR_factor also at theta +- 1 sigma (fit_s Hesse error), converted the same way, as
+    {'nom', 'up', 'down'}; sigma_rel comes from the nominal template only and has no variation.
+    Stored as data[key]['jms_scale'|'jmr_factor'] (dicts) and data[key]['jmr_sigma_rel']."""
     for key, m in data.items():
         if m.get("jms") is None or m.get("jmr") is None or not m.get("templates"):
+            continue
+        if m.get("jms_err") is None or m.get("jmr_err") is None:
+            print(f"Warning: no fit_s error on tp2jms/tp2jmr for {key}, no RDF values", file=sys.stderr)
             continue
         nom, c = _template_hist(m["templates"], "tp2")
         hists = {n: _template_hist(m["templates"], f"tp2_tp2{n}")[0] for n in ("jmsUp", "jmsDown", "jmrUp", "jmrDown")}
@@ -180,12 +217,17 @@ def compute_jmsr_rdf(data):
         if win is None:
             print(f"Warning: JMS/JMR core fit failed for {key}, no RDF values", file=sys.stderr)
             continue
-        mu_s, _ = _gauss_fit(_morph(nom, hists["jmsUp"], hists["jmsDown"], m["jms"]), c, win)
-        _, s_r = _gauss_fit(_morph(nom, hists["jmrUp"], hists["jmrDown"], m["jmr"]), c, win)
-        if None in (mu_s, s_r):
+        scale, factor = {}, {}
+        for syst, sign in (("nom", 0), ("up", 1), ("down", -1)):
+            mu_s, _ = _gauss_fit(_morph(nom, hists["jmsUp"], hists["jmsDown"], m["jms"] + sign * m["jms_err"]), c, win)
+            _, s_r = _gauss_fit(_morph(nom, hists["jmrUp"], hists["jmrDown"], m["jmr"] + sign * m["jmr_err"]), c, win)
+            if None in (mu_s, s_r):
+                break
+            scale[syst], factor[syst] = mu_s / mu0, s_r / s0
+        if len(scale) < 3:
             print(f"Warning: JMS/JMR core fit failed for {key}, no RDF values", file=sys.stderr)
             continue
-        m["jms_scale"], m["jmr_factor"], m["jmr_sigma_rel"] = mu_s / mu0, s_r / s0, s0 / mu0
+        m["jms_scale"], m["jmr_factor"], m["jmr_sigma_rel"] = scale, factor, s0 / mu0
 ```
 
 ## `JMSR_correctionlib_etainclusive.json` (raw fit nuisances)
@@ -203,3 +245,5 @@ W+jets instead of NLO). Both: X2p mass fit, free "other" normalisation with lnU 
 same candle as `../WqqSF` (new gen matching + soft-drop JEC; the Wqq SFs there come from the soft-drop-mass fit on the
 same MC). Every fit checked: no failed fit, deployed theta never at its range edge, theta +- 1 sigma inside [-1, 1].
 vs 116c67844 (kappa 6, NLO): Run 2 back to the d07a64def values; 2024/2025 vs d07a64def: s within 0.002, f within 0.03.
+`JMSR_rdf_correctionlib_etainclusive.json` re-exported from the same two campaigns with collector 17fabb3 to add the
+`systematic` up/down; its `nom` values are identical to the previous (central-only) file.
