@@ -1185,7 +1185,7 @@ def _weighted_ks_test(x1, w1, x2, w2):
 # (filled histograms) with the events not used in the training (validation, points), for
 # signal and background separately. If the model is not overtrained the shapes should agree.
 # Also returns the AUC on the train and val events, and the KS test results.
-def _plot_overtraining_check(data, flavor, output_path, n_bins=25):
+def _plot_overtraining_check(data, flavor, output_path, n_bins=25, log_y=False):
     score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
     labels = np.asarray(data["label"])
     weights = np.asarray(data["weight"], dtype=np.float64) if "weight" in data else np.ones(len(labels))
@@ -1235,7 +1235,13 @@ def _plot_overtraining_check(data, flavor, output_path, n_bins=25):
         ax.set_ylabel("Normalized (weighted)")
         ax.set_title(f"Overtraining check: {col}  (AUC train={results[col]['auc_train']:.4f}, val={results[col]['auc_val']:.4f})")
         ax.legend(loc="upper center", fontsize=9)
-        ax.set_ylim(bottom=0, top=1.4 * ax.get_ylim()[1])
+        if log_y:
+            # Log scale to see the tails; leave room above for the legend
+            ax.set_yscale("log")
+            ymin, ymax = ax.get_ylim()
+            ax.set_ylim(bottom=max(ymin, 1e-3), top=ymax * 30)
+        else:
+            ax.set_ylim(bottom=0, top=1.4 * ax.get_ylim()[1])
         ax.grid(True, alpha=0.3)
         ax_ratio.axhline(1.0, color="black", linewidth=1)
         ax_ratio.set_ylim(0, 2)
@@ -1405,6 +1411,9 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
             overtraining_path = output_csv.with_name(f"{output_csv.stem}_overtraining.png")
             ot_results = _plot_overtraining_check(full_inference_data, flavor=flavor, output_path=overtraining_path)
             logging.info("Saved overtraining check plot to %s", overtraining_path)
+            overtraining_log_path = output_csv.with_name(f"{output_csv.stem}_overtraining_log.png")
+            _plot_overtraining_check(full_inference_data, flavor=flavor, output_path=overtraining_log_path, log_y=True)
+            logging.info("Saved overtraining check plot (log scale) to %s", overtraining_log_path)
             overtraining_roc_path = output_csv.with_name(f"{output_csv.stem}_overtraining_roc.png")
             _plot_overtraining_roc(full_inference_data, flavor=flavor, output_path=overtraining_roc_path)
             logging.info("Saved overtraining check ROC plot to %s", overtraining_roc_path)
