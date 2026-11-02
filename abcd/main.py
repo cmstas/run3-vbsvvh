@@ -449,9 +449,7 @@ def save_tensorboard_plots(log_dir, output_dir):
         plt.close()
         print(f"Saved {output_dir / safe_tag}.png")
 
-# Overtraining check on the losses: train and val loss vs epoch on the same plot, with the val - train
-# difference below, to see at which epoch they start to separate. The x axis is the real epoch number
-# (the scalars are logged per optimizer step, which differs from the epoch if an epoch has several batches).
+# Overtraining check on the losses: train and val loss vs epoch on the same plot, with the val - train points
 def save_train_val_loss_plots(log_dir, output_dir):
     ea = EventAccumulator(str(log_dir))
     ea.Reload()
@@ -1164,8 +1162,7 @@ def _plot_score_densities(data, flavor, output_path):
     plt.savefig(output_path, dpi=200)
     plt.close()
 
-# Weighted two-sample Kolmogorov-Smirnov test. The p-value uses the effective number of
-# events (sum(w)^2 / sum(w^2)) of each sample, since the event weights are not uniform.
+# Weighted two-sample Kolmogorov-Smirnov test, the p-value uses the effective number of events (sum(w)^2 / sum(w^2)) of each sample
 def _weighted_ks_test(x1, w1, x2, w2):
     from scipy.special import kolmogorov
     if len(x1) == 0 or len(x2) == 0:
@@ -1181,10 +1178,7 @@ def _weighted_ks_test(x1, w1, x2, w2):
     p_value = kolmogorov(ks_stat * np.sqrt(n1_eff * n2_eff / (n1_eff + n2_eff)))
     return ks_stat, p_value
 
-# Overtraining check: compare the score distributions of the events used in the training
-# (filled histograms) with the events not used in the training (validation, points), for
-# signal and background separately. If the model is not overtrained the shapes should agree.
-# Also returns the AUC on the train and val events, and the KS test results.
+# Overtraining check: compare the score distributions of the events used in the training with AUC and the KS results.
 def _plot_overtraining_check(data, flavor, output_path, n_bins=25, log_y=False):
     score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
     labels = np.asarray(data["label"])
@@ -1254,8 +1248,7 @@ def _plot_overtraining_check(data, flavor, output_path, n_bins=25, log_y=False):
     plt.close()
     return results
 
-# Overtraining check with ROC curves: the ROC of the events used in the training (solid) and of
-# the events not used in the training (val, dashed). If the model is not overtrained they should agree.
+# Overtraining check: the ROC of the validation and trainign events
 def _plot_overtraining_roc(data, flavor, output_path):
     score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
     colors = ["tab:blue", "tab:orange"]
