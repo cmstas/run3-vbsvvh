@@ -1586,8 +1586,11 @@ def main():
                                    np.asarray(raw_combined_subsampled["label"]) == 0)
 
     # Save scaler params alongside the output so inference can apply identical scaling
+    # Not written in --infer mode: that run would refit min/max on whatever data it was
+    # given and overwrite the params belonging to the trained model.
     scaler_path = Path(cfg.get("output", "simple_abcdisco_output")) / "scaler_params.json"
-    data = preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=scaler_path)
+    data = preprocess_data(data, training_features, feature_transforms, constraint_var,
+                           scaler_output_path=None if args.infer else scaler_path)
 
     if args.infer:
         logging.info("Skipping training. Running inference only...")
