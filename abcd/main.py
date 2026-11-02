@@ -449,6 +449,54 @@ def save_tensorboard_plots(log_dir, output_dir):
         plt.close()
         print(f"Saved {output_dir / safe_tag}.png")
 
+# Overtraining check on the losses: train and val loss vs epoch on the same plot, with the val - train
+# difference below, to see at which epoch they start to separate. The x axis is the real epoch number
+# (the scalars are logged per optimizer step, which differs from the epoch if an epoch has several batches).
+def save_train_val_loss_plots(log_dir, output_dir):
+    ea = EventAccumulator(str(log_dir))
+    ea.Reload()
+    tags = ea.Tags().get("scalars", [])
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Map each logged step to its epoch
+    step_to_epoch = {e.step: int(e.value) for e in ea.Scalars("epoch")} if "epoch" in tags else {}
+
+    for name in ["loss", "bce", "disco"]:
+        if f"train_{name}" not in tags or f"val_{name}" not in tags:
+            continue
+        curves = {}
+        for split in ["train", "val"]:
+            events = ea.Scalars(f"{split}_{name}")
+            curves[split] = {step_to_epoch.get(e.step, e.step): e.value for e in events}
+        epochs = sorted(set(curves["train"]) & set(curves["val"]))
+        if not epochs:
+            continue
+        train_vals = np.array([curves["train"][ep] for ep in epochs])
+        val_vals = np.array([curves["val"][ep] for ep in epochs])
+
+        fig, (ax, ax_diff) = plt.subplots(2, 1, figsize=(9, 7), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
+        ax.plot(epochs, train_vals, linewidth=1.5, color="tab:blue", label=f"train_{name}")
+        ax.plot(epochs, val_vals, linewidth=1.5, color="tab:orange", label=f"val_{name}")
+        if name == "loss":
+            best_epoch = epochs[int(np.argmin(val_vals))]
+            for a in (ax, ax_diff):
+                a.axvline(best_epoch, color="gray", linestyle="--", linewidth=1)
+            ax.plot([], [], color="gray", linestyle="--", label=f"min val_loss (epoch {best_epoch})")
+        ax.set_ylabel(name)
+        ax.set_title(f"Train vs val {name}")
+        ax.legend(loc="best")
+        ax.grid(True, alpha=0.3)
+        ax_diff.plot(epochs, val_vals - train_vals, linewidth=1.5, color="black")
+        ax_diff.axhline(0, color="gray", linewidth=1)
+        ax_diff.set_xlabel("Epoch")
+        ax_diff.set_ylabel("val - train")
+        ax_diff.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(output_dir / f"train_vs_val_{name}.png", dpi=150)
+        plt.close()
+        print(f"Saved {output_dir / f'train_vs_val_{name}.png'}")
+
 def run_training(
     model,
     train_loader,
@@ -499,6 +547,7 @@ def run_training(
 
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
     save_tensorboard_plots(logger.log_dir, logger.log_dir)
+    save_train_val_loss_plots(logger.log_dir, logger.log_dir)
     return trainer
 
 
@@ -1169,7 +1218,7 @@ def _plot_overtraining_check(data, flavor, output_path, n_bins=25):
             ks_stat, ks_p = _weighted_ks_test(scores[train_mask], weights[train_mask], scores[val_mask], weights[val_mask])
             results[col][cls_name] = {"ks_stat": ks_stat, "ks_p": ks_p}
 
-            ax.hist(bins[:-1], bins=bins, weights=train_norm, histtype="stepfilled", alpha=0.3, color=color,
+            ax.hist(bins[:-1], bins=bins, weights=train_norm, histtype="step", linewidth=2, color=color,
                     label=f"{cls_name} train (n={train_mask.sum()})")
             ax.errorbar(centers, val_norm, yerr=val_err, fmt="o", markersize=4, color=color,
                         label=f"{cls_name} val (n={val_mask.sum()}), KS p={ks_p:.3f}")
@@ -1198,6 +1247,34 @@ def _plot_overtraining_check(data, flavor, output_path, n_bins=25):
     plt.savefig(output_path, dpi=200)
     plt.close()
     return results
+
+# Overtraining check with ROC curves: the ROC of the events used in the training (solid) and of
+# the events not used in the training (val, dashed). If the model is not overtrained they should agree.
+def _plot_overtraining_roc(data, flavor, output_path):
+    score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
+    colors = ["tab:blue", "tab:orange"]
+    labels = np.asarray(data["label"])
+    weights = np.asarray(data["weight"], dtype=np.float64) if "weight" in data else np.ones(len(labels))
+    split = np.asarray(data["split"])
+
+    plt.figure(figsize=(8, 7))
+    for score_col, color in zip(score_cols, colors):
+        scores = np.asarray(data[score_col])
+        for split_name, linestyle in [("train", "-"), ("val", "--")]:
+            mask = split == split_name
+            fpr, tpr, _ = roc_curve(labels[mask], scores[mask], sample_weight=weights[mask])
+            plt.plot(fpr, tpr, linewidth=2, linestyle=linestyle, color=color,
+                     label=f"{score_col} {split_name} (AUC={auc(fpr, tpr):.4f})")
+
+    plt.plot([0, 1], [0, 1], "k:", linewidth=1)
+    plt.xlabel("False Positive Rate (background efficiency)")
+    plt.ylabel("True Positive Rate (signal efficiency)")
+    plt.title(f"Overtraining check: ROC train vs val ({flavor} flavor)")
+    plt.legend(loc="lower right")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()
 
 # Compute permutation importance by shuffling each feature one at a time and measuring
 # the resulting drop in AUC, averaged over n_repeats shuffles. Features with a larger
@@ -1328,6 +1405,9 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
             overtraining_path = output_csv.with_name(f"{output_csv.stem}_overtraining.png")
             ot_results = _plot_overtraining_check(full_inference_data, flavor=flavor, output_path=overtraining_path)
             logging.info("Saved overtraining check plot to %s", overtraining_path)
+            overtraining_roc_path = output_csv.with_name(f"{output_csv.stem}_overtraining_roc.png")
+            _plot_overtraining_roc(full_inference_data, flavor=flavor, output_path=overtraining_roc_path)
+            logging.info("Saved overtraining check ROC plot to %s", overtraining_roc_path)
             for col, res in ot_results.items():
                 logging.info("Overtraining check %s: AUC train=%.4f val=%.4f | KS p-value sig=%.3f bkg=%.3f",
                              col, res["auc_train"], res["auc_val"], res["Signal"]["ks_p"], res["Background"]["ks_p"])
