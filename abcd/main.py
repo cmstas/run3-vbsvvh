@@ -381,6 +381,53 @@ def make_dataloaders(data, training_features, constraint_var, batch_size):
     # Also return indices so callers can tag events by their split for later analysis
     return train_loader, val_loader, train_idx, val_idx
 
+def subsample_data_stratified(data, fraction, stratify_keys=("label", "sample_idx"), random_state=42):
+    if fraction <= 0 or fraction > 1:
+        raise ValueError(f"fraction must be in (0, 1], got {fraction}")
+
+    n_total = _data_length(data)
+    if fraction == 1.0 or n_total == 0:
+        return data, np.arange(n_total)
+
+    rng = np.random.default_rng(random_state)
+
+    strat_arrays = []
+    for key in stratify_keys:
+        if key not in data:
+            raise KeyError(f"Stratification key '{key}' not found in data")
+        strat_arrays.append(np.asarray(data[key]).astype(str))
+
+    strata = strat_arrays[0]
+    for arr in strat_arrays[1:]:
+        strata = np.char.add(np.char.add(strata, "||"), arr)
+
+    keep_indices = []
+    unique_strata = np.unique(strata)
+
+    for s in unique_strata:
+        idx = np.where(strata == s)[0]
+        n_keep = int(np.floor(len(idx) * fraction))
+
+        # keep at least one event from non-empty strata if fraction > 0
+        if len(idx) > 0 and n_keep == 0:
+            n_keep = 1
+
+        chosen = rng.choice(idx, size=n_keep, replace=False)
+        keep_indices.append(np.sort(chosen))
+
+    if keep_indices:
+        keep_indices = np.sort(np.concatenate(keep_indices))
+    else:
+        keep_indices = np.array([], dtype=np.int64)
+
+    out = {k: np.asarray(v)[keep_indices] for k, v in data.items()}
+    logging.info(
+        "Subsampled data with fraction=%.3f: kept %d / %d events",
+        fraction, len(keep_indices), n_total
+    )
+    return out, keep_indices
+
+
 def save_tensorboard_plots(log_dir, output_dir):
     ea = EventAccumulator(str(log_dir))
     ea.Reload()
@@ -401,6 +448,52 @@ def save_tensorboard_plots(log_dir, output_dir):
         plt.savefig(output_dir / f"{safe_tag}.png", dpi=150)
         plt.close()
         print(f"Saved {output_dir / safe_tag}.png")
+
+# Overtraining check on the losses: train and val loss vs epoch on the same plot, with the val - train points
+def save_train_val_loss_plots(log_dir, output_dir):
+    ea = EventAccumulator(str(log_dir))
+    ea.Reload()
+    tags = ea.Tags().get("scalars", [])
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Map each logged step to its epoch
+    step_to_epoch = {e.step: int(e.value) for e in ea.Scalars("epoch")} if "epoch" in tags else {}
+
+    for name in ["loss", "bce", "disco"]:
+        if f"train_{name}" not in tags or f"val_{name}" not in tags:
+            continue
+        curves = {}
+        for split in ["train", "val"]:
+            events = ea.Scalars(f"{split}_{name}")
+            curves[split] = {step_to_epoch.get(e.step, e.step): e.value for e in events}
+        epochs = sorted(set(curves["train"]) & set(curves["val"]))
+        if not epochs:
+            continue
+        train_vals = np.array([curves["train"][ep] for ep in epochs])
+        val_vals = np.array([curves["val"][ep] for ep in epochs])
+
+        fig, (ax, ax_diff) = plt.subplots(2, 1, figsize=(9, 7), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
+        ax.plot(epochs, train_vals, linewidth=1.5, color="tab:blue", label=f"train_{name}")
+        ax.plot(epochs, val_vals, linewidth=1.5, color="tab:orange", label=f"val_{name}")
+        if name == "loss":
+            best_epoch = epochs[int(np.argmin(val_vals))]
+            for a in (ax, ax_diff):
+                a.axvline(best_epoch, color="gray", linestyle="--", linewidth=1)
+            ax.plot([], [], color="gray", linestyle="--", label=f"min val_loss (epoch {best_epoch})")
+        ax.set_ylabel(name)
+        ax.set_title(f"Train vs val {name}")
+        ax.legend(loc="best")
+        ax.grid(True, alpha=0.3)
+        ax_diff.plot(epochs, val_vals - train_vals, linewidth=1.5, color="black")
+        ax_diff.axhline(0, color="gray", linewidth=1)
+        ax_diff.set_xlabel("Epoch")
+        ax_diff.set_ylabel("val - train")
+        ax_diff.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(output_dir / f"train_vs_val_{name}.png", dpi=150)
+        plt.close()
+        print(f"Saved {output_dir / f'train_vs_val_{name}.png'}")
 
 def run_training(
     model,
@@ -452,6 +545,7 @@ def run_training(
 
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
     save_tensorboard_plots(logger.log_dir, logger.log_dir)
+    save_train_val_loss_plots(logger.log_dir, logger.log_dir)
     return trainer
 
 
@@ -586,15 +680,15 @@ def _build_model_from_config(cfg, flavor, input_size, checkpoint_path, device):
     return model
 
 
-def _copy_input_plots_to_version_dir(source_dir, version_dir):
+def _move_input_plots_to_version_dir(source_dir, version_dir):
     source_dir = Path(source_dir)
     version_dir = Path(version_dir)
     version_dir.mkdir(parents=True, exist_ok=True)
 
     for plot_path in source_dir.glob("inputs_*.png"):
         dest = version_dir / plot_path.name
-        shutil.copy(str(plot_path), str(dest))
-        logging.info("Copied input plot to %s", dest)
+        shutil.move(str(plot_path), str(dest))
+        logging.info("Moved input plot to %s", dest)
 
 
 def _batched_scores(model, features_tensor, batch_size, flavor, device):
@@ -1068,6 +1162,119 @@ def _plot_score_densities(data, flavor, output_path):
     plt.savefig(output_path, dpi=200)
     plt.close()
 
+# Weighted two-sample Kolmogorov-Smirnov test, the p-value uses the effective number of events (sum(w)^2 / sum(w^2)) of each sample
+def _weighted_ks_test(x1, w1, x2, w2):
+    from scipy.special import kolmogorov
+    if len(x1) == 0 or len(x2) == 0:
+        return np.nan, np.nan
+    values = np.sort(np.concatenate([x1, x2]))
+    def _cdf(x, w):
+        order = np.argsort(x)
+        cum_w = np.concatenate([[0.0], np.cumsum(w[order])]) / np.sum(w)
+        return cum_w[np.searchsorted(x[order], values, side="right")]
+    ks_stat = np.max(np.abs(_cdf(x1, w1) - _cdf(x2, w2)))
+    n1_eff = np.sum(w1)**2 / np.sum(w1**2)
+    n2_eff = np.sum(w2)**2 / np.sum(w2**2)
+    p_value = kolmogorov(ks_stat * np.sqrt(n1_eff * n2_eff / (n1_eff + n2_eff)))
+    return ks_stat, p_value
+
+# Overtraining check: compare the score distributions of the events used in the training with AUC and the KS results.
+def _plot_overtraining_check(data, flavor, output_path, n_bins=25, log_y=False):
+    score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
+    labels = np.asarray(data["label"])
+    weights = np.asarray(data["weight"], dtype=np.float64) if "weight" in data else np.ones(len(labels))
+    split = np.asarray(data["split"])
+    is_train = split == "train"
+    is_val = split == "val"
+    bins = np.linspace(0, 1, n_bins + 1)
+    centers = 0.5 * (bins[:-1] + bins[1:])
+
+    results = {}
+    fig, axes = plt.subplots(2, len(score_cols), figsize=(8 * len(score_cols), 8), squeeze=False,
+                             gridspec_kw={"height_ratios": [3, 1]}, sharex="col")
+    for idx, col in enumerate(score_cols):
+        ax, ax_ratio = axes[0, idx], axes[1, idx]
+        scores = np.asarray(data[col], dtype=np.float64)
+        results[col] = {}
+
+        for cls_name, cls_label, color in [("Signal", 1, "tab:red"), ("Background", 0, "tab:blue")]:
+            train_mask = is_train & (labels == cls_label)
+            val_mask = is_val & (labels == cls_label)
+
+            # Weighted histograms normalized to unit area, with stat errors sqrt(sum w^2)
+            train_counts, _ = np.histogram(scores[train_mask], bins=bins, weights=weights[train_mask])
+            val_counts, _ = np.histogram(scores[val_mask], bins=bins, weights=weights[val_mask])
+            val_sumw2, _ = np.histogram(scores[val_mask], bins=bins, weights=weights[val_mask]**2)
+            train_norm = train_counts / (train_counts.sum() * np.diff(bins))
+            val_norm = val_counts / (val_counts.sum() * np.diff(bins))
+            val_err = np.sqrt(val_sumw2) / (val_counts.sum() * np.diff(bins))
+
+            ks_stat, ks_p = _weighted_ks_test(scores[train_mask], weights[train_mask], scores[val_mask], weights[val_mask])
+            results[col][cls_name] = {"ks_stat": ks_stat, "ks_p": ks_p}
+
+            ax.hist(bins[:-1], bins=bins, weights=train_norm, histtype="step", linewidth=2, color=color,
+                    label=f"{cls_name} train (n={train_mask.sum()})")
+            ax.errorbar(centers, val_norm, yerr=val_err, fmt="o", markersize=4, color=color,
+                        label=f"{cls_name} val (n={val_mask.sum()}), KS p={ks_p:.3f}")
+
+            ratio = np.where(train_norm > 0, val_norm / np.where(train_norm > 0, train_norm, 1), np.nan)
+            ratio_err = np.where(train_norm > 0, val_err / np.where(train_norm > 0, train_norm, 1), np.nan)
+            ax_ratio.errorbar(centers, ratio, yerr=ratio_err, fmt="o", markersize=3, color=color)
+
+        # AUC on the train and on the val events
+        for split_name, mask in [("train", is_train), ("val", is_val)]:
+            fpr, tpr, _ = roc_curve(labels[mask], scores[mask], sample_weight=weights[mask])
+            results[col][f"auc_{split_name}"] = auc(fpr, tpr)
+
+        ax.set_ylabel("Normalized (weighted)")
+        ax.set_title(f"Overtraining check: {col}  (AUC train={results[col]['auc_train']:.4f}, val={results[col]['auc_val']:.4f})")
+        ax.legend(loc="upper center", fontsize=9)
+        if log_y:
+            # Log scale to see the tails; leave room above for the legend
+            ax.set_yscale("log")
+            ymin, ymax = ax.get_ylim()
+            ax.set_ylim(bottom=max(ymin, 1e-3), top=ymax * 30)
+        else:
+            ax.set_ylim(bottom=0, top=1.4 * ax.get_ylim()[1])
+        ax.grid(True, alpha=0.3)
+        ax_ratio.axhline(1.0, color="black", linewidth=1)
+        ax_ratio.set_ylim(0, 2)
+        ax_ratio.set_xlabel(col)
+        ax_ratio.set_ylabel("val / train")
+        ax_ratio.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+    return results
+
+# Overtraining check: the ROC of the validation and trainign events
+def _plot_overtraining_roc(data, flavor, output_path):
+    score_cols = ["dnn_score"] if flavor == "single" else ["dnn_0_score", "dnn_1_score"]
+    colors = ["tab:blue", "tab:orange"]
+    labels = np.asarray(data["label"])
+    weights = np.asarray(data["weight"], dtype=np.float64) if "weight" in data else np.ones(len(labels))
+    split = np.asarray(data["split"])
+
+    plt.figure(figsize=(8, 7))
+    for score_col, color in zip(score_cols, colors):
+        scores = np.asarray(data[score_col])
+        for split_name, linestyle in [("train", "-"), ("val", "--")]:
+            mask = split == split_name
+            fpr, tpr, _ = roc_curve(labels[mask], scores[mask], sample_weight=weights[mask])
+            plt.plot(fpr, tpr, linewidth=2, linestyle=linestyle, color=color,
+                     label=f"{score_col} {split_name} (AUC={auc(fpr, tpr):.4f})")
+
+    plt.plot([0, 1], [0, 1], "k:", linewidth=1)
+    plt.xlabel("False Positive Rate (background efficiency)")
+    plt.ylabel("True Positive Rate (signal efficiency)")
+    plt.title(f"Overtraining check: ROC train vs val ({flavor} flavor)")
+    plt.legend(loc="lower right")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+
 # Compute permutation importance by shuffling each feature one at a time and measuring
 # the resulting drop in AUC, averaged over n_repeats shuffles. Features with a larger
 # AUC drop are more important to the model's discrimination.
@@ -1191,6 +1398,21 @@ def run_inference(args, cfg, flavor, sig_data, bkg_data, training_features, feat
         _plot_score_densities(full_inference_data, flavor=flavor, output_path=density_path)
         logging.info("Saved ROC plot to %s", roc_path)
         logging.info("Saved score density plot to %s", density_path)
+
+        # Overtraining check: score distributions of train vs val events (only if the split is known)
+        if train_idx is not None and val_idx is not None:
+            overtraining_path = output_csv.with_name(f"{output_csv.stem}_overtraining.png")
+            ot_results = _plot_overtraining_check(full_inference_data, flavor=flavor, output_path=overtraining_path)
+            logging.info("Saved overtraining check plot to %s", overtraining_path)
+            overtraining_log_path = output_csv.with_name(f"{output_csv.stem}_overtraining_log.png")
+            _plot_overtraining_check(full_inference_data, flavor=flavor, output_path=overtraining_log_path, log_y=True)
+            logging.info("Saved overtraining check plot (log scale) to %s", overtraining_log_path)
+            overtraining_roc_path = output_csv.with_name(f"{output_csv.stem}_overtraining_roc.png")
+            _plot_overtraining_roc(full_inference_data, flavor=flavor, output_path=overtraining_roc_path)
+            logging.info("Saved overtraining check ROC plot to %s", overtraining_roc_path)
+            for col, res in ot_results.items():
+                logging.info("Overtraining check %s: AUC train=%.4f val=%.4f | KS p-value sig=%.3f bkg=%.3f",
+                             col, res["auc_train"], res["auc_val"], res["Signal"]["ks_p"], res["Background"]["ks_p"])
 
         # Make ABCD plane and decorrelation plots (for all events, for train only, and for val only)
         plot_subsets = [("all", full_inference_data)]
@@ -1346,9 +1568,29 @@ def main():
         for key in combined_keys
     }
     data = apply_derived_vars(data, derived_vars_cfg)
+
+    training_event_fraction = float(cfg.get("training_event_fraction", 1.0))
+    if training_event_fraction < 1.0:
+        data, kept_idx = subsample_data_stratified(
+            data,
+            fraction=training_event_fraction,
+            stratify_keys=("label", "sample_idx"),
+            random_state=42,
+        )
+        # Keep raw copies in sync with the subsampled training data
+        raw_combined = _concat_sig_bkg(raw_sig_data, raw_bkg_data)
+        raw_combined_subsampled = _apply_mask(raw_combined, kept_idx)
+        raw_sig_data = _apply_mask(raw_combined_subsampled,
+                                   np.asarray(raw_combined_subsampled["label"]) == 1)
+        raw_bkg_data = _apply_mask(raw_combined_subsampled,
+                                   np.asarray(raw_combined_subsampled["label"]) == 0)
+
     # Save scaler params alongside the output so inference can apply identical scaling
+    # Not written in --infer mode: that run would refit min/max on whatever data it was
+    # given and overwrite the params belonging to the trained model.
     scaler_path = Path(cfg.get("output", "simple_abcdisco_output")) / "scaler_params.json"
-    data = preprocess_data(data, training_features, feature_transforms, constraint_var, scaler_output_path=scaler_path)
+    data = preprocess_data(data, training_features, feature_transforms, constraint_var,
+                           scaler_output_path=None if args.infer else scaler_path)
 
     if args.infer:
         logging.info("Skipping training. Running inference only...")
@@ -1420,18 +1662,18 @@ def main():
 
     # Copy scaler params to the versioned checkpoint directory so they stay with the model
     scaler_path_final = version_dir / "scaler_params.json"
-    shutil.copy(str(scaler_path), str(scaler_path_final))
-    logging.info("Copied scaler params to %s", scaler_path_final)
+    shutil.move(str(scaler_path), str(scaler_path_final))
+    logging.info("Moved scaler params to %s", scaler_path_final)
 
     # Copy input diagnostic plots to the versioned directory for reference
-    shutil.copy(str(weight_plot_path), str(version_dir / "input_weight_distributions.png"))
-    logging.info("Copied weight distribution plot to %s", version_dir / "input_weight_distributions.png")
+    shutil.move(str(weight_plot_path), str(version_dir / "input_weight_distributions.png"))
+    logging.info("Moved weight distribution plot to %s", version_dir / "input_weight_distributions.png")
 
     constraint_plot_path_src = Path(cfg.get("output", "simple_abcdisco_output")) / "constraint_var_distribution.png"
-    shutil.copy(str(constraint_plot_path_src), str(version_dir / "constraint_var_distribution.png"))
-    logging.info("Copied constraint var distribution plot to %s", version_dir / "constraint_var_distribution.png")
+    shutil.move(str(constraint_plot_path_src), str(version_dir / "constraint_var_distribution.png"))
+    logging.info("Moved constraint var distribution plot to %s", version_dir / "constraint_var_distribution.png")
 
-    _copy_input_plots_to_version_dir(
+    _move_input_plots_to_version_dir(
         source_dir=Path(cfg.get("output", "simple_abcdisco_output")),
         version_dir=version_dir,
     )
