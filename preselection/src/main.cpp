@@ -104,6 +104,7 @@ int main(int argc, char** argv) {
         "0lep_3FJ",
         "1lep_1FJ",
         "1lep_2FJ",
+        "1lep_WSF", // W-tagging / JMS-JMR calibration; NOT orthogonal to the 1lep_* channels
         "2lep_1FJ", // Currently shared between SF and OF
         "2lepSS",
         "2lep_2FJ",

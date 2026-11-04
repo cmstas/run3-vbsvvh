@@ -1,0 +1,472 @@
+{
+  "schema_version": 2,
+  "description": "JMS and JMR corrections from the ParticleNet Wqq tagger fit",
+  "corrections": [
+    {
+      "name": "JMS",
+      "description": "Jet mass scale correction from the ParticleNet Wqq tagger fit.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "era",
+          "type": "string",
+          "description": "Data-taking era"
+        },
+        {
+          "name": "WP",
+          "type": "string",
+          "description": "ParticleNet Wqq tagger working point"
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": "Jet |eta| (unused: eta-inclusive, |eta| < 2.5)"
+        },
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Jet pt [GeV]"
+        }
+      ],
+      "output": {
+        "name": "jms",
+        "type": "real"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "era",
+        "content": [
+          {
+            "key": "2016postVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.46109870076179504,
+                      -0.4712827801704407,
+                      -0.3895358741283417
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.452715128660202,
+                      -0.4044598937034607,
+                      -0.13615722954273224
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2017",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.4064960777759552,
+                      -0.512736976146698,
+                      -0.4746665358543396
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.285988450050354,
+                      -0.38836613297462463,
+                      -0.2153637558221817
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.31380388140678406,
+                      -0.3209494948387146,
+                      -0.1624007225036621
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2025",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.7719208598136902,
+                      -0.7997819781303406,
+                      -0.5176319479942322
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.3442879319190979,
+                      -0.41906973719596863,
+                      -0.2849943935871124
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "JMR",
+      "description": "Jet mass resolution correction from the ParticleNet Wqq tagger fit.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "era",
+          "type": "string",
+          "description": "Data-taking era"
+        },
+        {
+          "name": "WP",
+          "type": "string",
+          "description": "ParticleNet Wqq tagger working point"
+        },
+        {
+          "name": "eta",
+          "type": "real",
+          "description": "Jet |eta| (unused: eta-inclusive, |eta| < 2.5)"
+        },
+        {
+          "name": "pt",
+          "type": "real",
+          "description": "Jet pt [GeV]"
+        }
+      ],
+      "output": {
+        "name": "jmr",
+        "type": "real"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "era",
+        "content": [
+          {
+            "key": "2016postVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.09155255556106567,
+                      -0.012512480840086937,
+                      0.061076946556568146
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2016preVFP",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.042442526668310165,
+                      -0.2150610238313675,
+                      0.26689136028289795
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2017",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.1066661849617958,
+                      -0.11381930112838745,
+                      -0.08272719383239746
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2018",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.20987898111343384,
+                      -0.24384351074695587,
+                      -0.0101150618866086
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2024",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      0.01694820076227188,
+                      0.04837785288691521,
+                      0.19442445039749146
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "2025",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.03188803046941757,
+                      -0.13145990669727325,
+                      0.04434880241751671
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": "r2comb",
+            "value": {
+              "nodetype": "category",
+              "input": "WP",
+              "content": [
+                {
+                  "key": "0.78",
+                  "value": {
+                    "nodetype": "binning",
+                    "input": "pt",
+                    "edges": [
+                      250.0,
+                      300.0,
+                      400.0,
+                      800.0
+                    ],
+                    "flow": "clamp",
+                    "content": [
+                      -0.18692028522491455,
+                      -0.19260232150554657,
+                      0.012869074009358883
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
