@@ -156,27 +156,26 @@ Edit `applywqqsf.yaml` to choose the working points each channel needs; every ch
 
 ```yaml
 0lep_1FJ_met:
-  cut:   [0.80]                        # hard cut on the score
-  flags: [[0.60], [0.40, 0.60, 0.80]]  # WPs used as flags (e.g. NN inputs)
+  flags: [[0.60], [0.40, 0.60, 0.80]]  # WPs used as a hard cut or as flags (e.g. NN inputs)
 ```
 
-Pick the key by how your analysis uses the score of that jet:
+Pick the set by how your analysis uses the score of that jet:
 
 | Use of the score | Config | Per-jet value for a true W jet |
 |---|---|---|
-| Hard cut, score > WP (failing events are discarded) | `cut: [WP]` | passes: SF(WP); fails: 1 |
-| One WP as a flag (passing and failing events both kept) | `flags: [[WP]]` | passes: SF(WP); fails: (1 − SF·ε)/(1 − ε) |
-| Several WPs as flags on the same jet | `flags: [[WP1, WP2, ...]]` | the weight of the score interval the jet falls in (below WP1, between two adjacent WPs, or above the last) |
+| One WP, as a hard cut or as a flag | `flags: [[WP]]` | passes: SF(WP); fails: (1 − SF·ε)/(1 − ε) |
+| Several WPs on the same jet | `flags: [[WP1, WP2, ...]]` | the weight of the score interval the jet falls in (below WP1, between two adjacent WPs, or above the last) |
 
 ε is the candle MC efficiency of true W jets for score > WP.
 
-If your NN uses several WPs as flags on the same jet, request them together as one set, e.g. `flags: [[0.60, 0.80]]`, and use that single branch. Do not request them as separate sets `[[0.60], [0.80]]` and multiply the two branches: the flags are not independent (a jet above 0.80 always passes 0.60 too), so the product applies the correction for the shared part twice and biases the yield. Several sets per channel are allowed so that the same production can serve different downstream uses, for example two NNs with different WPs, or a study comparing WP choices. Each use takes exactly **one** of the branches.
+With a hard cut, score > WP, the failing jets are discarded, so only SF(WP) enters and ε has no effect on the result. Without a cut, the pass and fail values average to 1 over true W jets (ε·SF + (1 − ε)·(1 − SF·ε)/(1 − ε) = 1), so the total true-W yield of the candle is preserved.
 
-`flags` needs `Wqq_eff_MC` in the era json files; every era file has it (the candle MC efficiency from the same fits as the SFs, see `corrections/scalefactors/WqqSF/README.md`). A file without it stops a `flags` job with an error.
+If you use several WPs on the same jet, for example NN flags, or a hard cut at 0.60 with a flag at 0.80, request them together as one set, e.g. `flags: [[0.60, 0.80]]`, and use that single branch. Do not request them as separate sets `[[0.60], [0.80]]` and multiply the two branches: the flags are not independent (a jet above 0.80 always passes 0.60 too), so the product applies the correction for the shared part twice and biases the yield. Several sets per channel are allowed so that the same production can serve different downstream uses, for example two NNs with different WPs, or a study comparing WP choices. Each use takes exactly **one** of the branches.
+
+The weights need `Wqq_eff_MC` in the era json files; every era file has it (the candle MC efficiency from the same fits as the SFs, see `corrections/scalefactors/WqqSF/README.md`). A file without it stops the job with an error.
 
 Branches, each a `{nom, up, down}` triple on `FatJet_` and on the selected-jet `fatjet_` collection:
 
-- `FatJet_WqqSF_cut0p80_{nom,up,down}`
 - `FatJet_WqqSF_flags0p60_{nom,up,down}`
 - `FatJet_WqqSF_flags0p40_0p60_0p80_{nom,up,down}`
 

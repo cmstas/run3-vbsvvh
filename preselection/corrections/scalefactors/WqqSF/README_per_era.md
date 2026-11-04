@@ -21,14 +21,14 @@ The file name is the RDF `year` string, so RDF needs no era mapping.
 - **pt:** bins [250, 300, 400, 800, 13000), clamped. Above 800 GeV: the 400–800 nominal, with its up/down distances multiplied by 3.
 - **eta:** unused (inclusive in |eta| < 2.5); kept so an |eta|-binned version can be dropped in later.
 
-`Wqq_eff_MC`: inputs `WP`, `pt`; output: the candle MC efficiency of true W jets (tp2) to pass score > WP, built the same way. It's present only when `make_wqq_sf_jsons.py --eff` was given an efficiency table. RDF needs it for the `flags` use case (`applywqqsf.yaml`); `cut` works without it.
+`Wqq_eff_MC`: inputs `WP`, `pt`; output: the candle MC efficiency of true W jets (tp2) to pass score > WP, built the same way. It's present only when `make_wqq_sf_jsons.py --eff` was given an efficiency table. RDF needs it for any channel that requests Wqq SFs (`applywqqsf.yaml`).
 
 The current files carry it, from `Wqq_effMC_correctionlib_etainclusive.json` (correction `particleNet_Wqq_effMC`): the pre-fit tp2 yield pass / (pass + fail) of the same campaigns as the SFs (Run 2: `particlenetmd_sf_15oct_noov_Wnlo_msdjec_wpgrid_etaincl`, 2024/2025: `particlenetmd_sf_15oct_noov_Wlo_msdjec_wpgrid_etaincl`; overlap-free MC, true W = `fj_1_genMatch` 1 or 2, |eta| < 2.5, candle selection; W->lnu + jets has no true hadronic W, so the NLO/LO W choice does not change it), written by the provider's `get_SF_summary.py --export_json` next to the SF file. It has no uncertainty. When the SFs are remeasured, regenerate both files from the same campaign.
 
 ## Regenerate
 
 ```bash
-python3 make_wqq_sf_jsons.py                    # SFs only
+python3 make_wqq_sf_jsons.py                    # SFs only (RDF stops on these if a channel requests Wqq SFs)
 python3 make_wqq_sf_jsons.py --eff Wqq_effMC_correctionlib_etainclusive.json   # plus Wqq_eff_MC (current files)
 ```
 

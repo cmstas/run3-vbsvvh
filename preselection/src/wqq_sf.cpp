@@ -26,11 +26,8 @@ constexpr double kDenominatorEpsilon = 1.e-8;
 // Probe pt for checking at graph construction that every requested WP is in range.
 constexpr double kProbePt = 300.;
 
-struct WqqSFConfig {
-    std::vector<double> cut;
-    std::vector<std::vector<double>> flags;
-    bool empty() const { return cut.empty() && flags.empty(); }
-};
+// The flags sets of one channel.
+using WqqSFConfig = std::vector<std::vector<double>>;
 
 struct WqqSFPayload {
     correction::Correction::Ref sf;
@@ -90,11 +87,11 @@ std::vector<std::vector<double>> parseNestedList(const std::string &text, const 
     return out;
 }
 
-void validateWorkingPoints(const std::vector<double> &wps, const std::string &what, const std::string &channel) {
-    if (wps.empty()) throw std::runtime_error("Empty " + what + " working-point set for channel " + channel + " in applywqqsf.yaml");
+void validateWorkingPoints(const std::vector<double> &wps, const std::string &channel) {
+    if (wps.empty()) throw std::runtime_error("Empty flags working-point set for channel " + channel + " in applywqqsf.yaml");
     for (std::size_t i = 1; i < wps.size(); ++i)
         if (!(wps[i - 1] < wps[i]))
-            throw std::runtime_error(what + " working points must be strictly increasing for channel " + channel + " in applywqqsf.yaml");
+            throw std::runtime_error("flags working points must be strictly increasing for channel " + channel + " in applywqqsf.yaml");
 }
 
 const std::map<std::string, WqqSFConfig> &applyWqqSFConfig() {
@@ -122,25 +119,16 @@ const std::map<std::string, WqqSFConfig> &applyWqqSFConfig() {
                 continue;
             }
             if (channel.empty()) throw std::runtime_error("applywqqsf.yaml entry before any channel: " + raw);
-            auto &entry = parsed.at(channel);
-            if (key == "cut") {
-                if (!entry.cut.empty()) throw std::runtime_error("Duplicate cut entry for channel " + channel + " in applywqqsf.yaml");
-                entry.cut = parseNumberList(value, raw);
-                auto sorted = entry.cut;
-                std::sort(sorted.begin(), sorted.end());
-                if (std::adjacent_find(sorted.begin(), sorted.end()) != sorted.end())
-                    throw std::runtime_error("Duplicate cut working point for channel " + channel + " in applywqqsf.yaml");
-            } else if (key == "flags") {
-                if (!entry.flags.empty()) throw std::runtime_error("Duplicate flags entry for channel " + channel + " in applywqqsf.yaml");
-                entry.flags = parseNestedList(value, raw);
-                for (const auto &set : entry.flags) validateWorkingPoints(set, "flags", channel);
-                for (std::size_t i = 0; i < entry.flags.size(); ++i)
-                    for (std::size_t j = i + 1; j < entry.flags.size(); ++j)
-                        if (entry.flags[i] == entry.flags[j])
-                            throw std::runtime_error("Duplicate flags set for channel " + channel + " in applywqqsf.yaml");
-            } else {
-                throw std::runtime_error("Unknown key '" + key + "' for channel " + channel + " in applywqqsf.yaml (expected cut or flags)");
-            }
+            if (key != "flags")
+                throw std::runtime_error("Unknown key '" + key + "' for channel " + channel + " in applywqqsf.yaml (expected flags)");
+            auto &sets = parsed.at(channel);
+            if (!sets.empty()) throw std::runtime_error("Duplicate flags entry for channel " + channel + " in applywqqsf.yaml");
+            sets = parseNestedList(value, raw);
+            for (const auto &set : sets) validateWorkingPoints(set, channel);
+            for (std::size_t i = 0; i < sets.size(); ++i)
+                for (std::size_t j = i + 1; j < sets.size(); ++j)
+                    if (sets[i] == sets[j])
+                        throw std::runtime_error("Duplicate flags set for channel " + channel + " in applywqqsf.yaml");
         }
         if (parsed.empty()) throw std::runtime_error("applywqqsf.yaml contains no channels");
         return parsed;
@@ -185,16 +173,35 @@ bool isTrueW(int gen_match) { return gen_match == 1 || gen_match == 2; }
 } // namespace
 
 RNode applyWqqScaleFactors(RNode df, const std::string &channel, bool isData) {
-    const auto &config = wqqSFConfigForChannel(channel);
-    if (config.empty()) return df;
+    const WqqSFConfig flag_sets = wqqSFConfigForChannel(channel);
+    if (flag_sets.empty()) return df;
 
-    // One branch triple per cut WP, then one per flags set; output index = 3*triple + systematic.
+    // One branch triple per flags set; output index = 3*triple + systematic.
     std::vector<std::string> stems;
-    for (const double wp : config.cut) stems.push_back("FatJet_WqqSF_cut" + wpToken(wp));
-    for (const auto &set : config.flags) {
+    for (const auto &set : flag_sets) {
         std::string stem = "FatJet_WqqSF_flags";
         for (std::size_t i = 0; i < set.size(); ++i) stem += (i ? "_" : "") + wpToken(set[i]);
         stems.push_back(stem);
+    }
+
+    // Checked before the data branch: one configuration is valid for data and MC alike.
+    const auto payloads = std::make_shared<const std::map<std::string, WqqSFPayload>>(loadPayloads());
+    if (payloads->empty()) throw std::runtime_error("No Wqq SF payloads found in " + std::string(kPayloadDir));
+    for (const auto &[year, payload] : *payloads) {
+        if (!payload.eff)
+            throw std::runtime_error("Channel " + channel + " requests Wqq SF flags, but Wqq_SF_" + year +
+                                     ".json has no Wqq_eff_MC (the candle MC efficiency the fail SF needs)");
+        for (const auto &set : flag_sets) {
+            for (const double wp : set) {
+                try {
+                    payload.sf->evaluate({wp, kProbePt, 0., std::string("nom")});
+                    payload.eff->evaluate({wp, kProbePt});
+                } catch (const std::exception &) {
+                    throw std::runtime_error("Wqq working point " + std::to_string(wp) + " requested by channel " + channel +
+                                             " is outside the measured range of Wqq_SF_" + year + ".json");
+                }
+            }
+        }
     }
 
     if (isData) {
@@ -205,31 +212,9 @@ RNode applyWqqScaleFactors(RNode df, const std::string &channel, bool isData) {
         return df;
     }
 
-    const auto payloads = std::make_shared<const std::map<std::string, WqqSFPayload>>(loadPayloads());
-    if (payloads->empty()) throw std::runtime_error("No Wqq SF payloads found in " + std::string(kPayloadDir));
-    for (const auto &[year, payload] : *payloads) {
-        if (!config.flags.empty() && !payload.eff)
-            throw std::runtime_error("Channel " + channel + " requests Wqq SF flags, but Wqq_SF_" + year +
-                                     ".json has no Wqq_eff_MC (the candle MC efficiency the fail SF needs)");
-        std::vector<double> requested = config.cut;
-        for (const auto &set : config.flags) requested.insert(requested.end(), set.begin(), set.end());
-        for (const double wp : requested) {
-            try {
-                payload.sf->evaluate({wp, kProbePt, 0., std::string("nom")});
-                if (!config.flags.empty()) payload.eff->evaluate({wp, kProbePt});
-            } catch (const std::exception &) {
-                throw std::runtime_error("Wqq working point " + std::to_string(wp) + " requested by channel " + channel +
-                                         " is outside the measured range of Wqq_SF_" + year + ".json");
-            }
-        }
-    }
-
-    const std::vector<double> cut_wps = config.cut;
-    const std::vector<std::vector<double>> flag_sets = config.flags;
-    auto evaluate = [payloads, cut_wps, flag_sets](const std::string &year, const RVec<float> &pt, const RVec<float> &eta,
-                                                   const RVec<float> &score, const RVec<int> &gen_match) {
-        const std::size_t n_triples = cut_wps.size() + flag_sets.size();
-        std::vector<RVec<float>> out(3 * n_triples, RVec<float>(pt.size(), 1.f));
+    auto evaluate = [payloads, flag_sets](const std::string &year, const RVec<float> &pt, const RVec<float> &eta,
+                                          const RVec<float> &score, const RVec<int> &gen_match) {
+        std::vector<RVec<float>> out(3 * flag_sets.size(), RVec<float>(pt.size(), 1.f));
         const auto entry = payloads->find(year);
         for (std::size_t jet = 0; jet < pt.size(); ++jet) {
             if (!isTrueW(gen_match[jet])) continue;
@@ -237,17 +222,8 @@ RNode applyWqqScaleFactors(RNode df, const std::string &channel, bool isData) {
                 throw std::runtime_error("No Wqq SF payload Wqq_SF_" + year + ".json for a true W jet");
             const auto &payload = entry->second;
             const double jet_pt = pt[jet], jet_eta = eta[jet];
-            const auto sf = [&](double wp, const std::string &syst) {
-                return payload.sf->evaluate({wp, jet_pt, jet_eta, syst});
-            };
 
             std::size_t triple = 0;
-            for (const double wp : cut_wps) {
-                if (score[jet] > wp)
-                    for (std::size_t s = 0; s < kSystematics.size(); ++s)
-                        out[3 * triple + s][jet] = static_cast<float>(sf(wp, kSystematics[s]));
-                ++triple;
-            }
             for (const auto &set : flag_sets) {
                 std::vector<double> eff;
                 std::vector<bool> passed;
@@ -257,7 +233,7 @@ RNode applyWqqScaleFactors(RNode df, const std::string &channel, bool isData) {
                 }
                 for (std::size_t s = 0; s < kSystematics.size(); ++s) {
                     std::vector<double> sfs;
-                    for (const double wp : set) sfs.push_back(sf(wp, kSystematics[s]));
+                    for (const double wp : set) sfs.push_back(payload.sf->evaluate({wp, jet_pt, jet_eta, kSystematics[s]}));
                     const auto result = cumulativeWPCategoryWeight(sfs, eff, passed, kDenominatorEpsilon);
                     if (result.status != CategoryWeightStatus::Ok) {
                         std::ostringstream message;
