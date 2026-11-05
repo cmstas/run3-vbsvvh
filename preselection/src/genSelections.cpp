@@ -1,5 +1,10 @@
 #include "genSelections.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+
 // Match a gen quark to an AK4 jet.
 //
 // Overlap removal is deliberately limited to two things:
@@ -246,4 +251,195 @@ RNode GenSelections(RNode df_) {
         .Define("truth_v2q2_idx", "_v2q2_idx_temp >= 0 && _v2q2_idx_temp < 10 ? _v2q2_idx_temp : -1");
 
     return df;
+}
+
+namespace {
+
+using ROOT::VecOps::RVec;
+
+// ---------------------------------------------------------------------------
+// Per-fat-jet gen-truth (MC only), computed for every FatJet so any channel can
+// read it and the per-variation FatJet_isGood_<sfx> masks select it like any other
+// FatJet_ attribute. It depends on eta/phi only, so it is the same in every JES/JER
+// variation.
+//
+// Strategy: JET-FIRST. Ask what truth object, if any, is contained in this jet --
+// never start from the sample's expected topology and check containment afterwards.
+// The second direction forces an a priori choice exactly where it is least safe: in
+// tW->4Q, TTW-WtoQQ, TTWW and TTWZ a top-W and a prompt W are both hadronic in the
+// same event, and any fixed priority between them is applied blind.
+//
+// IDENTITY BEFORE CONTAINMENT. The candidate is the hadronic W or Z, or the H->bb,
+// whose two quarks best match the jet (smallest max dR); what it is then decides
+// which containment test applies. The answer is one code:
+//
+//   FatJet_genMatch   0 nothing   1 prompt W   2 W from top   3 top   4 prompt Z
+//                     5 H->bb
+//
+// 0 covers both "no candidate boson in the record" and "one exists but is not in
+// the cone"; FatJet_genDrVqMax (999 vs finite-but->=kMatchDR) separates them.
+//
+//   FatJet_genDrVqMax    max dR(jet, q) over the candidate boson's two quarks
+//   FatJet_genDrTopB     dR(jet, b) for the b from the candidate W's top (999 if the
+//                        W is not from a top, or the top has no b daughter)
+//   FatJet_genVqFlavour  0 light, 1 at least one c and no b, 2 at least one b,
+//                        -1 no candidate boson in the event
+//
+// Only H->bb is a Higgs candidate; other Higgs decays never match.
+//
+// The W quarks are contained within kMatchDR. The top's b is tested against the full
+// AK8 radius, kTopBDR, so the top / W-from-top split leaves no b partly in the cone:
+//   top          both W quarks within kMatchDR AND dR(jet, b) <  kTopBDR
+//   W from top   both W quarks within kMatchDR AND dR(jet, b) >= kTopBDR
+// Only a b counts as the top's partner: a CKM-suppressed t->sW / t->dW is labelled by
+// its W alone.
+//
+// NanoAOD v15 types, verified against the v30 skims:
+//   GenPart_pdgId            Int_t    -> int
+//   GenPart_genPartIdxMother Short_t  -> short
+//   GenPart_statusFlags      UShort_t -> unsigned short
+// isLastCopy is bit 13 of statusFlags.
+namespace gentruth {
+
+// Containment radius for the candidate boson's two quarks.
+constexpr float kMatchDR = 0.6f;
+
+// The top's b counts as inside the jet anywhere within the AK8 radius.
+constexpr float kTopBDR = 0.8f;
+
+constexpr float kNone = 999.f;
+
+enum : int { kMatchNone = 0, kMatchPromptW = 1, kMatchTopW = 2, kMatchTop = 3, kMatchPromptZ = 4, kMatchHbb = 5 };
+
+enum : int { kFlavNoV = -1, kFlavLight = 0, kFlavCharm = 1, kFlavBottom = 2 };
+
+struct FatJetTruth {
+    RVec<int>   match;
+    RVec<float> drVqMax;
+    RVec<float> drTopB;
+    RVec<int>   vqFlavour;
+};
+
+enum class Boson { W, Z, H };
+
+// A last-copy W or Z decaying to quarks, or H->bb: its two quarks, and for a W from
+// a top, the top's b.
+struct HadronicV {
+    int q1, q2;
+    Boson kind;
+    bool fromTop;
+    int topB;
+};
+
+} // namespace gentruth
+
+gentruth::FatJetTruth fatjet_gen_truth(
+    const RVec<float>& fj_eta, const RVec<float>& fj_phi,
+    const RVec<int>& pdg,
+    const RVec<short>& mom,
+    const RVec<unsigned short>& flags,
+    const RVec<float>& geta,
+    const RVec<float>& gphi)
+{
+    using namespace gentruth;
+    const int n = static_cast<int>(pdg.size());
+    auto isLastCopy = [&](int i) { return (flags[i] >> 13) & 1; };
+
+    // Walk the mother chain from i up to a |pdg|==6 top; return its index or -1.
+    auto topAncestor = [&](int i) -> int {
+        int cur = static_cast<int>(mom[i]);
+        for (int guard = 0; cur >= 0 && cur < n && guard < 50; ++guard) {
+            if (std::abs(pdg[cur]) == 6) return cur;
+            cur = static_cast<int>(mom[cur]);
+        }
+        return -1;
+    };
+
+    // The quark daughters of the boson at index v. A last-copy W/Z/H decays either to
+    // quarks or to leptons, never both -- downstream radiation attaches to the quarks,
+    // not back to the boson -- so no lepton guard is needed. (Measured on 240k
+    // last-copy W in tW: the quark multiplicity is exactly 0 or 2, never 1 or 3.) A
+    // count != 2 is a record we do not understand, so it is rejected rather than
+    // silently truncated to the first two.
+    auto quarkDaughters = [&](int v, int& q1, int& q2) -> bool {
+        q1 = -1; q2 = -1; int nq = 0;
+        for (int j = 0; j < n; ++j) {
+            if (static_cast<int>(mom[j]) != v) continue;
+            const int ad = std::abs(pdg[j]);
+            if (ad < 1 || ad > 5) continue;
+            ++nq;
+            if      (q1 < 0) q1 = j;
+            else if (q2 < 0) q2 = j;
+        }
+        return nq == 2;
+    };
+
+    // Candidates are found once per event; every jet is then compared to all of them.
+    std::vector<HadronicV> cands;
+    for (int i = 0; i < n; ++i) {
+        const int ad = std::abs(pdg[i]);
+        if ((ad != 24 && ad != 23 && ad != 25) || !isLastCopy(i)) continue;
+        const Boson kind = ad == 24 ? Boson::W : ad == 23 ? Boson::Z : Boson::H;
+        HadronicV v{-1, -1, kind, false, -1};
+        if (!quarkDaughters(i, v.q1, v.q2)) continue;   // no quark decay, or rejected
+        if (kind == Boson::H && (std::abs(pdg[v.q1]) != 5 || std::abs(pdg[v.q2]) != 5)) continue;
+        if (kind == Boson::W) {
+            const int top = topAncestor(i);
+            if (top >= 0) {
+                v.fromTop = true;
+                for (int j = 0; j < n; ++j) {
+                    if (static_cast<int>(mom[j]) == top && std::abs(pdg[j]) == 5) { v.topB = j; break; }
+                }
+            }
+        }
+        cands.push_back(v);
+    }
+
+    const size_t nfj = fj_eta.size();
+    FatJetTruth out{RVec<int>(nfj, kMatchNone), RVec<float>(nfj, kNone),
+                    RVec<float>(nfj, kNone), RVec<int>(nfj, kFlavNoV)};
+    if (cands.empty()) return out;
+
+    for (size_t k = 0; k < nfj; ++k) {
+        auto dRjet = [&](int i) { return ROOT::VecOps::DeltaR(fj_eta[k], geta[i], fj_phi[k], gphi[i]); };
+
+        const HadronicV* best = nullptr;
+        float best_dr = 1e9f;
+        for (const auto& v : cands) {
+            const float dr = std::max(dRjet(v.q1), dRjet(v.q2));
+            if (dr < best_dr) { best_dr = dr; best = &v; }
+        }
+
+        const int a1 = std::abs(pdg[best->q1]), a2 = std::abs(pdg[best->q2]);
+        const int flav = (a1 == 5 || a2 == 5) ? kFlavBottom
+                       : (a1 == 4 || a2 == 4) ? kFlavCharm
+                       :                        kFlavLight;
+        const float dr_top_b = (best->fromTop && best->topB >= 0) ? dRjet(best->topB) : kNone;
+
+        int match;
+        if      (best_dr >= kMatchDR)        match = kMatchNone;
+        else if (best->kind == Boson::H)     match = kMatchHbb;
+        else if (best->kind == Boson::Z)     match = kMatchPromptZ;
+        else if (!best->fromTop)             match = kMatchPromptW;
+        else if (dr_top_b < kTopBDR)         match = kMatchTop;
+        else                                 match = kMatchTopW;
+
+        out.match[k]     = match;
+        out.drVqMax[k]   = best_dr;
+        out.drTopB[k]    = dr_top_b;
+        out.vqFlavour[k] = flav;
+    }
+    return out;
+}
+
+} // anonymous namespace
+
+RNode FatJetGenTruth(RNode df_) {
+    return df_.Define("_fatjet_gen_truth", fatjet_gen_truth,
+                      {"FatJet_eta", "FatJet_phi", "GenPart_pdgId", "GenPart_genPartIdxMother",
+                       "GenPart_statusFlags", "GenPart_eta", "GenPart_phi"})
+              .Define("FatJet_genMatch",     [](const gentruth::FatJetTruth& t) { return t.match; },     {"_fatjet_gen_truth"})
+              .Define("FatJet_genDrVqMax",   [](const gentruth::FatJetTruth& t) { return t.drVqMax; },   {"_fatjet_gen_truth"})
+              .Define("FatJet_genDrTopB",    [](const gentruth::FatJetTruth& t) { return t.drTopB; },    {"_fatjet_gen_truth"})
+              .Define("FatJet_genVqFlavour", [](const gentruth::FatJetTruth& t) { return t.vqFlavour; }, {"_fatjet_gen_truth"});
 }

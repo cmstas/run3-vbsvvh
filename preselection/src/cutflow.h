@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -27,11 +28,21 @@ private:
     struct Entry {
         std::string label;
         mutable ROOT::RDF::RResultPtr<double> wResult;
+        mutable ROOT::RDF::RResultPtr<double> w2Result;
         mutable ROOT::RDF::RResultPtr<ULong64_t> cResult;
         bool isCount{false};
 
         double value() const {
             return isCount ? static_cast<double>(*cResult) : *wResult;
+        }
+
+        double sumw2() const {
+            return isCount ? static_cast<double>(*cResult) : *w2Result;
+        }
+
+        double error() const {
+            const double s2 = sumw2();
+            return s2 > 0. ? std::sqrt(s2) : 0.;
         }
     };
 
