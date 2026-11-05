@@ -31,7 +31,8 @@ DEFAULT_NCPUS = 4
 DEFAULT_MEMORY = "8gb"
 DEFAULT_PARTITION = "hpg-default"
 DEFAULT_TIME = "04:00:00"
-SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
+SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2022Re-recoBCD",
+                            "2022Re-recoE+PromptFG", "2023PromptC", "2023PromptD", "2024Prompt"}
 
 
 # ============================================================================

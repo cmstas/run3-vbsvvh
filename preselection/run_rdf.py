@@ -24,7 +24,8 @@ ANA_CHANNELS = {
 # excluded from final channel merging by the b-tag YAML, but are valid raw
 # production channels here.
 B_TAG_EFF_EXCLUDED_CHANNELS = {"all_events"}
-SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
+SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2022Re-recoBCD",
+                            "2022Re-recoE+PromptFG", "2023PromptC", "2023PromptD", "2024Prompt"}
 
 # Where RDF productions go by default on Hipergator (/cmsuf). A single channel
 # production is O(TB), so it belongs on /cmsuf rather than the much smaller shared
