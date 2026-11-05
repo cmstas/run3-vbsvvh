@@ -23,10 +23,10 @@ std::atomic<unsigned long long> g_btag_invalid_probability{0};
 std::mutex g_btag_diagnostic_mutex;
 std::map<std::string, unsigned long long> g_btag_failure_details;
 
-constexpr std::array<std::string_view, 30> kBTagHFSources = {
+constexpr std::array<std::string_view, 31> kBTagHFSources = {
     "correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
     "muf", "mur", "pdf", "as", "pdfas", "ttbar", "jes", "jer", "type3",
-    "bfragmentation", "bdecays", "topmass", "hdamp",
+    "bfragmentation", "bdecays", "topmass", "hdamp", "colorreconnection",
     "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
     "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
     "jesRegrouped_EC2", "jesRegrouped_EC2_2024",
@@ -43,6 +43,15 @@ const std::map<std::string, std::set<std::string>> kBTagHFAvailableSources = {
               "muf", "mur", "pdf", "as", "ttbar"}},
     {"2018", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
               "muf", "mur", "pdf", "as", "ttbar"}},
+    // The 2022/2023 particleNet payloads have total JES; only 2022 has bfragmentation.
+    {"2022Re-recoBCD", {"correlated", "uncorrelated", "statistic", "pileup", "pdf", "jes", "jer",
+                         "type3", "bfragmentation", "topmass", "hdamp", "colorreconnection"}},
+    {"2022Re-recoE+PromptFG", {"correlated", "uncorrelated", "statistic", "pileup", "pdf", "jes", "jer",
+                                "type3", "bfragmentation", "topmass", "hdamp", "colorreconnection"}},
+    {"2023PromptC", {"correlated", "uncorrelated", "statistic", "pileup", "pdf", "jes", "jer",
+                      "type3", "topmass", "hdamp", "colorreconnection"}},
+    {"2023PromptD", {"correlated", "uncorrelated", "statistic", "pileup", "pdf", "jes", "jer",
+                      "type3", "topmass", "hdamp", "colorreconnection"}},
     // The 2024 payload labels topmass as mass and its regrouped JES sources as
     // jes_<source> (see kBTagJES2025Mapping).
     {"2024Prompt", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
@@ -350,9 +359,8 @@ BTagFamilyConfig loadBTagFamilyConfig(const std::string &path) {
 
 const BTagFamilyConfig &bTagFamilyConfig(const std::string &year) {
     static const BTagFamilyConfig config = loadBTagFamilyConfig(kBTagFamilyConfig);
-    if (year == "2016preVFP" || year == "2016postVFP" || year == "2017" ||
-        year == "2018" || year == "2024Prompt") return config;
-    throw std::runtime_error("No b-tag efficiency YAML is configured for unsupported year " + year);
+    (void)bTagEraConfig(year); // throws for an era without a configured tagger
+    return config;
 }
 
 std::string bTagEfficiencyPayloadYear(std::string_view year) {
@@ -438,13 +446,8 @@ BTagEfficiencyContexts prepareBTagEfficiencyContexts(
     BTagEfficiencyContexts contexts;
     std::map<std::string, std::shared_ptr<correction::CorrectionSet>> efficiency_sets;
     for (const auto &entry : metadata) {
-        const auto sf_set = bTaggingScaleFactors.find(entry.year);
-        const auto hf_name = bTaggingScaleFactors_HF_corrname.find(entry.year);
-        const auto lf_name = bTaggingScaleFactors_LF_corrname.find(entry.year);
-        if (sf_set == bTaggingScaleFactors.end() || hf_name == bTaggingScaleFactors_HF_corrname.end() ||
-            lf_name == bTaggingScaleFactors_LF_corrname.end())
-            throw std::runtime_error("B-tag SF application is unsupported for year " + entry.year +
-                                     " or its HF/LF payload names are not configured");
+        const auto &tagger = bTagEraConfig(entry.year);
+        const auto &sf_set = bTagPayload(entry.year);
 
         const std::string efficiency_year = bTagEfficiencyPayloadYear(entry.year);
         const std::string efficiency_channel = bTagEfficiencyChannel(channel, efficiency_year);
@@ -461,8 +464,8 @@ BTagEfficiencyContexts prepareBTagEfficiencyContexts(
                                      ", efficiency_payload_year=" + efficiency_year +
                                      ", requested_correction=" + efficiency_name);
         }
-        const auto hf_sf = sf_set->second.at(hf_name->second);
-        const auto lf_sf = sf_set->second.at(lf_name->second);
+        const auto hf_sf = sf_set.at(tagger.payload_prefix + "_comb");
+        const auto lf_sf = sf_set.at(tagger.payload_prefix + "_light");
         for (const auto &wp : working_points) {
             try {
                 (void)hf_sf->evaluate({"central", wp, 5, 0., 30.});

@@ -1,4 +1,5 @@
-# Select the inclusive UParTAK4 working points used for runtime SF application.
+# Select the inclusive b-tag working points used for runtime SF application.
+# The tagger of each era is set in corrections/scalefactors/btagging/btag_taggers.yaml.
 # Use [] to disable b-tag SFs for a channel. Lists must be ordered L,M,T,XT,XXT.
 all_events: []
 0lep_0FJ: [L, M, T, XT, XXT]

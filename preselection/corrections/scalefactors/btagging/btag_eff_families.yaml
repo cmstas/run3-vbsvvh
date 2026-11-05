@@ -27,8 +27,11 @@ preliminary_families:
     - ZH_
     - VBFWH
     - VHToNonbb
+    - VH_HtoNonbb
   ttH:
     - TTH-
+    - TTH_
+    - TTHto
     - ttHT
     - ttHTo
   ttV_rare:

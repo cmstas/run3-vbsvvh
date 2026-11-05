@@ -85,7 +85,8 @@ def btag_max_abs_eta(year):
     """Eta acceptance used by both production and the correction payload."""
     if year in ("2016preVFP", "2016postVFP"):
         return 2.4
-    if year in ("2017", "2018", "2024Prompt"):
+    if year in ("2017", "2018", "2022Re-recoBCD", "2022Re-recoE+PromptFG",
+                "2023PromptC", "2023PromptD", "2024Prompt"):
         return 2.5
     raise ValueError(f"Unsupported b-tag efficiency year: {year}")
 
@@ -748,9 +749,9 @@ def grouped_specs(prefix, grouped_counts, grouped_variances, grouped_edges, memb
                 print(f"fallback {prefix} {group} {flavor} {lo}-{hi} {bins} {source} {reason}")
         specs.extend([
             (prefix, sample_category(group, efficiency_values, grouped_edges[group]),
-             "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
+             "Selected-AK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
             (f"{prefix}_mcstat_unc", sample_category(group, mcstat_uncertainties, grouped_edges[group]),
-             "Weighted-binomial MC-statistical uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+             "Weighted-binomial MC-statistical uncertainty of selected-AK4 b-tag efficiency", "uncertainty",
              "Weighted-binomial MC tagging-efficiency uncertainty"),
         ])
     return specs, fallbacks, adaptive_merges
@@ -914,9 +915,9 @@ def main():
     mcstat_uncertainties = compute_mcstat_uncertainties(counts, variances)
     update_output(args.output, [
         (prefix, sample_category(args.sample, efficiency_values, edges),
-         "Selected-AK4 UParTAK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
+         "Selected-AK4 b-tag efficiency", "efficiency", "MC tagging efficiency"),
         (f"{prefix}_mcstat_unc", sample_category(args.sample, mcstat_uncertainties, edges),
-         "Weighted-binomial MC-statistical uncertainty of selected-AK4 UParTAK4 b-tag efficiency", "uncertainty",
+         "Weighted-binomial MC-statistical uncertainty of selected-AK4 b-tag efficiency", "uncertainty",
          "Weighted-binomial MC tagging-efficiency uncertainty"),
     ])
 

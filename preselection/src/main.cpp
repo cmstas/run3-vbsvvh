@@ -125,20 +125,11 @@ int main(int argc, char** argv) {
         std::find(channels.begin(), channels.end(), args.ana) != channels.end()
         ? bTagScaleFactorsEnabled(args.ana) : false;
 
-    // UParTAK4 has no matching fixed-WP calibration for the NanoAODv12
-    // 2022/2023 eras.  Do not derive efficiencies from the unrelated 2024
-    // thresholds used by the legacy selection configuration.
+    // Efficiencies are derived for the tagger configured for the era (btag_taggers.yaml).
     std::optional<BTagEfficiencyMetadata> btag_efficiency_metadata;
     if (args.makeBTagEfficiencies) {
         btag_efficiency_metadata = getSingleSampleBTagEfficiencyMetadata(input_spec);
-        const auto &year = btag_efficiency_metadata->year;
-        if (year == "2022Re-recoBCD" || year == "2022Re-recoE+PromptFG" ||
-            year == "2023PromptC" || year == "2023PromptD") {
-            throw std::runtime_error(
-                "--btag_eff is not supported for " + year +
-                ": UParTAK4 fixed-WP thresholds/SFs are unavailable for NanoAODv12. "
-                "Use a supported tagger with a matched implementation, or run 2024/2025 production.");
-        }
+        (void)bTagEraConfig(btag_efficiency_metadata->year); // throws for an era without a configured tagger
     }
 
     // Create output only after validating the requested b-tag workflow.

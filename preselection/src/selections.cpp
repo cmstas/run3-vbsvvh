@@ -297,17 +297,25 @@ RNode AK4JetsSelection(RNode df_, bool cleanAgainstFJ, std::string affix)
 RNode AK4JetProperties(RNode df_)
 {
     df_ = applyJetVetoMaps(df_);
-    // Jets outside the b-tagging acceptance (|eta| < 2.4 in 2016, 2.5 otherwise),
-    // where SFs and efficiencies are not defined, never pass a b-tagging WP.
-    df_ = df_.Define("_Jet_btagUParTAK4B_inEta",
-                     [](const std::string &year, const RVec<float> &score, const RVec<float> &eta) {
-                         return Where(abs(eta) < bTagMaxAbsEta(year), score, -1.f);
-                     }, {"year", "Jet_btagUParTAK4B", "Jet_eta"});
-    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "_Jet_btagUParTAK4B_inEta"})
-              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "_Jet_btagUParTAK4B_inEta"})
-              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "_Jet_btagUParTAK4B_inEta"})
-              .Define("Jet_isExtraTightBTag", isbTagExtraTight, {"year", "_Jet_btagUParTAK4B_inEta"})
-              .Define("Jet_isExtraExtraTightBTag", isbTagExtraExtraTight, {"year", "_Jet_btagUParTAK4B_inEta"});
+    // Each era reads the discriminant of its tagger (btag_taggers.yaml). Jets outside
+    // the b-tagging acceptance (|eta| < 2.4 in 2016, 2.5 otherwise), where SFs and
+    // efficiencies are not defined, never pass a b-tagging WP.
+    df_ = df_.Define("_Jet_btagB_inEta", [](const std::string &year, const RVec<float> &eta) {
+                         (void)bTagEraConfig(year); // throws for an era without a configured tagger
+                         return RVec<float>(eta.size(), -1.f);
+                     }, {"year", "Jet_eta"});
+    for (const auto &branch : bTagScoreBranches())
+        df_ = df_.Redefine("_Jet_btagB_inEta",
+                           [branch](const std::string &year, const RVec<float> &previous,
+                                    const RVec<float> &score, const RVec<float> &eta) {
+                               if (bTagEraConfig(year).score_branch != branch) return previous;
+                               return RVec<float>(Where(abs(eta) < bTagMaxAbsEta(year), score, -1.f));
+                           }, {"year", "_Jet_btagB_inEta", branch, "Jet_eta"});
+    return df_.Define("Jet_isTightBTag", isbTagTight, {"year", "_Jet_btagB_inEta"})
+              .Define("Jet_isMediumBTag", isbTagMedium, {"year", "_Jet_btagB_inEta"})
+              .Define("Jet_isLooseBTag", isbTagLoose, {"year", "_Jet_btagB_inEta"})
+              .Define("Jet_isExtraTightBTag", isbTagExtraTight, {"year", "_Jet_btagB_inEta"})
+              .Define("Jet_isExtraExtraTightBTag", isbTagExtraExtraTight, {"year", "_Jet_btagB_inEta"});
 }
 
 

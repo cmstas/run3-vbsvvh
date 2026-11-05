@@ -60,7 +60,7 @@ struct HistogramSet {
         if (std::abs(eta) >= max_abs_eta) return;
         for (std::size_t wp = 1; wp < passed.size(); ++wp) {
             if (passed[wp] && !passed[wp - 1])
-                throw std::runtime_error("Non-nested UParTAK4 working-point flags: XXT => XT => T => M => L was violated");
+                throw std::runtime_error("Non-nested b-tag working-point flags: XXT => XT => T => M => L was violated");
         }
         const int flavor = flavorIndex(hadron_flavor);
         histograms[flavor][0]->Fill(pt, eta, weight); // denominator
