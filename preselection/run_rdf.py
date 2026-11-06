@@ -192,6 +192,7 @@ def main():
     parser.add_argument('-f', '--files-per-job',       help = 'Number of input files per job (default: 10)', default=10, type=int)
     parser.add_argument('-d', '--dry-run',             help = 'Do not actually execute the run command', action='store_true')
     parser.add_argument('--store-hlt',                 help = 'Store HLT trigger branches in output', action='store_true')
+    parser.add_argument('--lhe',                       help = 'Store LHEPart pdgId/pt/eta/phi/mass in output (signal MC only)', action='store_true')
     # --systs is a property of the submission, not of a sample kind,
     # so it applies to every MC sample in each runAnalysis call (it
     # is a no-op on data). There is therefore no single command that
@@ -293,6 +294,7 @@ def main():
 
             # Construct the backend command.
             hlt_flag = " --store_hlt" if args.store_hlt else ""
+            lhe_flag = " --lhe" if args.lhe else ""
             systs_flag = " --systs" if args.systs else ""
             jetveto_flag = " --no_jetveto" if args.no_jetveto else ""
             btag_eff_flag = " --btag-eff" if args.btag_eff else ""
@@ -300,14 +302,14 @@ def main():
             sample_flag = f" --sample '{args.sample}'" if args.sample else ""
             if args.mode == "local":
                 local_name = args.outname
-                command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {local_name} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}{systs_flag}{jetveto_flag}{' --btag_eff' if args.btag_eff else ''}{' --skip-btag-sf' if args.skip_btag_sf else ''}"
+                command = f"bin/runAnalysis -i {merged_json_name} -o {outdir} -n {local_name} -a {chan_name} -j {args.n_cores or 64} --run_number {args.run} --progress{hlt_flag}{lhe_flag}{systs_flag}{jetveto_flag}{' --btag_eff' if args.btag_eff else ''}{' --skip-btag-sf' if args.skip_btag_sf else ''}"
                 print(f"  -> Now running command \"{command}\"...\n")
                 if not args.dry_run:
                     subprocess.run(command, shell=True, check=True)
             elif args.mode == "condor":
                 dry_run_flag = " --dry-run" if args.dry_run else ""
                 ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
-                command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{systs_flag}{jetveto_flag}{btag_eff_flag}{skip_btag_sf_flag}{sample_flag}{dry_run_flag}"
+                command = f"python3 condor/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job}{ncores_flag}{hlt_flag}{lhe_flag}{systs_flag}{jetveto_flag}{btag_eff_flag}{skip_btag_sf_flag}{sample_flag}{dry_run_flag}"
                 print(f"  -> Running command \"{command}\"...\n")
                 subprocess.run(command, shell=True, check=True)
             elif args.mode == "slurm":
@@ -317,7 +319,7 @@ def main():
                 ncores_flag = f" -j {args.n_cores}" if args.n_cores else ""
                 year_flag = f" --year {args.year}" if args.btag_eff else ""
                 qos_flag = f" --qos {args.qos}" if args.qos else ""
-                command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} --account avery{qos_flag} -o {outdir}{year_flag}{hlt_flag}{systs_flag}{jetveto_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
+                command = f"python3 slurm/submit.py -c {merged_json_name} -a {chan_name} --run_number {args.run} --files-per-job {args.files_per_job} --account avery{qos_flag} -o {outdir}{year_flag}{hlt_flag}{lhe_flag}{systs_flag}{jetveto_flag}{btag_eff_flag}{skip_btag_sf_flag}{dry_run_flag}{memory_flag}{time_flag}{ncores_flag}{sample_flag}"
                 print(f"  -> Running command \"{command}\"...\n")
                 subprocess.run(command, shell=True, check=True)
 

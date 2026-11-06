@@ -170,6 +170,8 @@ Examples:
                         help="Run SPANet inference (--spanet_infer flag)")
     parser.add_argument("--store-hlt", "--store_hlt", dest="store_hlt", action="store_true",
                         help="Store HLT trigger branches in output")
+    parser.add_argument("--lhe", action="store_true",
+                        help="Store LHEPart pdgId/pt/eta/phi/mass for signal MC (--lhe flag)")
     parser.add_argument("--btag-eff", action="store_true",
                         help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
     parser.add_argument("--year",
@@ -250,6 +252,8 @@ def generate_slurm_script(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --spanet_infer"
     if args.store_hlt:
         extra_flags += " --store_hlt"
+    if args.lhe:
+        extra_flags += " --lhe"
     if args.systs:
         extra_flags += " --systs"
     if args.btag_eff:
@@ -311,6 +315,8 @@ def generate_array_sbatch(task_dir: Path, job_entries: List[dict],
         extra_flags += " --spanet_infer"
     if args.store_hlt:
         extra_flags += " --store_hlt"
+    if args.lhe:
+        extra_flags += " --lhe"
     if args.systs:
         extra_flags += " --systs"
     if args.btag_eff:

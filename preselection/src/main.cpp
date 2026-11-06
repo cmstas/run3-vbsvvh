@@ -35,6 +35,7 @@ struct MyArgs : public argparse::Args {
     bool &makeSpanetTrainingdata = flag("spanet_training", "Only make training data for SPANet").set_default(false);
     bool &runSPANetInference     = flag("spanet_infer", "Run SPANet inference").set_default(false);
     bool &storeHLT = flag("store_hlt", "Store HLT trigger branches in output").set_default(false);
+    bool &storeLHE = flag("lhe", "Store LHEPart pdgId/pt/eta/phi/mass in output (signal MC only)").set_default(false);
     bool &cutflow = flag("cutflow", "Print cutflow").set_default(false);
     bool &makeBTagEfficiencies = flag("btag_eff", "Write selected-AK4 b-tag efficiency histograms (MC only)").set_default(false);
     bool &skipBTagScaleFactors = flag("skip_btag_sf,skip-btag-sf", "Skip b-tag SF application (normally enabled)").set_default(false);
@@ -293,7 +294,7 @@ int main(int argc, char** argv) {
         return 0; // Exit after saving training data
     }
 
-    saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput, args.storeHLT);
+    saveSnapshot(df, output_dir, output_file, isSignal, args.dumpInput, args.storeHLT, args.storeLHE);
     Cutflow::Print();
     printBTagDiagnostics();
 
