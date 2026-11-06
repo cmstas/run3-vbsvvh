@@ -17,8 +17,10 @@ Corrections `JMS_scale` (s), `JMR_factor` (f), `JMR_sigmaRel` (sigma_rel):
   for f > 1; f <= 1 leaves the mass unchanged (a smear can only widen).
 
 Both are multiplicative, so the order does not matter. `JMS_scale` and `JMR_factor` take a fifth input `systematic`
-(`nom`, `up`, `down`, as `../WqqSF`): `up` / `down` are the fitted theta +- 1 sigma (Hesse error of `tp2jms` /
-`tp2jmr` in the FitDiagnostics `fit_s` result), converted to s and f exactly like the nominal (below). `JMR_sigmaRel`
+(`nom`, `up`, `down`, as `../WqqSF`): `up` / `down` are the fitted theta at its profile-likelihood +- 1 sigma edges
+(the `fit` interval of `tp2jms` / `tp2jmr` in the fit's impacts json: the parameter scanned with everything else
+re-fitted, edges at 2 DeltaNLL = 1, the same method as the Wqq SF uncertainties; asymmetric), converted to s and f
+exactly like the nominal (below). `JMR_sigmaRel`
 comes from the nominal template only and has no `systematic` input.
 
 The RDF producer (`applyJetMassCorrections`) writes, for MC:
@@ -69,7 +71,8 @@ These are exactly the s, f, sigma_rel used in the equations above: s scales the 
 moves as the fitted template does; f widens (f > 1) or narrows (f < 1) the MC peak by the same factor as the fitted
 template, and sigma_rel sets the size of the random smear (sqrt(f^2 - 1) * sigma_rel is the extra relative smear
 that turns a width sigma_rel into f * sigma_rel; f < 1 cannot be applied this way and leaves the mass unchanged).
-The `up` / `down` values repeat steps 3-4 with theta_JMS +- sigma_JMS and theta_JMR +- sigma_JMR.
+The `up` / `down` values repeat steps 3-4 with theta_JMS and theta_JMR at the upper / lower edge of their
+profile-likelihood +- 1 sigma interval.
 
 ### Core bins: what they are and how they are found
 
@@ -77,12 +80,12 @@ The true-W template is not a Gaussian over the whole 50-220 GeV range: it has a 
 and a long high-mass tail. Example, nominal tp2 template (pass + fail) of 2018, WP 0.78, pt 300-400 GeV, per 5-GeV bin
 (bin centre: events):
 
-    52:48  57:70  62:124  67:221  72:502  77:1226  82:2301  87:2718  92:2102  97:1320  102:821
-    107:549  112:384  117:291  122:219  127:163  ...  182:6  ...  217:1
+    52:45  57:67  62:117  67:207  72:470  77:1140  82:2136  87:2542  92:1974  97:1241  102:774
+    107:514  112:357  117:268  122:202  127:148  ...  182:5  ...  217:1
 
-A single Gaussian fitted to all 34 bins gives sigma = 22.5 GeV, because the tail drags it wide; that says nothing about
+A single Gaussian fitted to all 34 bins gives sigma = 21.9 GeV, because the tail drags it wide; that says nothing about
 the peak resolution. The **core bins** are the bins around the peak where the shape is Gaussian, here 70-105 GeV
-(7 bins), where the fit gives sigma = 8.86 GeV.
+(7 bins), where the fit gives sigma = 8.87 GeV.
 
 The window depends on mu and sigma (bins with centres in mu +- 2 sigma), but mu and sigma come from the fit inside the
 window, so `_core_window` iterates:
@@ -97,14 +100,14 @@ The Gaussian fit is a parabola fitted to log(counts), since the log of a Gaussia
 above it settles at once, because the starting guess is already close:
 
     start:  mu = 87.5,  sigma = 10 (guess)
-    iter 1: window 70-105 GeV (7 bins) -> mu = 88.09, sigma = 8.86
-    iter 2: window 70-105 GeV (7 bins) -> mu = 88.09, sigma = 8.86   (unchanged from here on)
+    iter 1: window 70-105 GeV (7 bins) -> mu = 88.13, sigma = 8.87
+    iter 2: window 70-105 GeV (7 bins) -> mu = 88.13, sigma = 8.87   (unchanged from here on)
 
-so mu_0 = 88.09 GeV, sigma_0 = 8.86 GeV, sigma_rel = 8.86 / 88.09 = 0.101. In bins where the first guess is further
+so mu_0 = 88.13 GeV, sigma_0 = 8.87 GeV, sigma_rel = 8.87 / 88.13 = 0.101. In bins where the first guess is further
 off, the window moves for a step or two before it settles.
 
 The window found on the nominal (here the 7 bins 70-105 GeV) is then **kept fixed**: T_JMS and T_JMR are fitted on
-exactly these bins, s = mu_JMS / 88.09, f = sigma_JMR / 8.86. Re-finding the window for each morphed template could
+exactly these bins, s = mu_JMS / 88.13, f = sigma_JMR / 8.87. Re-finding the window for each morphed template could
 make it gain or lose one 5-GeV bin at the edge and change f by several percent between nearly identical templates;
 with a fixed window, s and f reflect only the change in shape.
 
@@ -112,35 +115,38 @@ Examples at WP 0.78:
 
 | era, pt [GeV] | theta_JMS | theta_JMR | s | f | sigma_rel |
 |---|---|---|---|---|---|
-| 2018, 300-400 | -0.203 | +0.006 | 0.991 | 1.002 | 0.101 |
-| 2018, 400-800 | -0.027 | +0.225 | 0.999 | 1.075 | 0.098 |
-| 2024, 300-400 | -0.257 | +0.174 | 0.987 | 1.047 | 0.110 |
-| 2017, 250-300 | -0.305 | -0.114 | 0.986 | 0.972 | 0.108 |
+| 2018, 300-400 | -0.196 | +0.009 | 0.991 | 1.003 | 0.101 |
+| 2018, 400-800 | -0.024 | +0.212 | 0.999 | 1.070 | 0.098 |
+| 2024, 300-400 | -0.265 | +0.205 | 0.987 | 1.057 | 0.110 |
+| 2017, 250-300 | -0.302 | -0.143 | 0.986 | 0.966 | 0.108 |
 
 ### Conversion code
 
-Verbatim from `wqq_sf` `ParticleNetSF-WqqSF/get_SF_summary.py` (commit 17fabb3), run by the collector with
-`--export_json` for `mass_to_use = "globalpart"` campaigns. `m["templates"]` are the fit's pass and fail template ROOT
-files of one era / WP / pt bin (histograms `tp2`, `tp2_tp2jmsUp`, `tp2_tp2jmsDown`, `tp2_tp2jmrUp`, `tp2_tp2jmrDown`),
-`m["jms"]` / `m["jmr"]` the fitted `tp2jms` / `tp2jmr`, `m["jms_err"]` / `m["jmr_err"]` their `get_jmsr_err` errors
-(from `fitdiagnostics_<tag>.root` next to `multidimfit_<tag>.root`).
+Verbatim from `wqq_sf` `ParticleNetSF-WqqSF-ptbinfix/get_SF_summary.py` (branch `pyli/wqqsf-ptbinfix`, commit f898ec4),
+run by the collector with `--export_json` for `mass_to_use = "globalpart"` campaigns. `m["templates"]` are the fit's pass
+and fail template ROOT files of one era / WP / pt bin (histograms `tp2`, `tp2_tp2jmsUp`, `tp2_tp2jmsDown`, `tp2_tp2jmrUp`,
+`tp2_tp2jmrDown`), `m["jms"]` / `m["jmr"]` the fitted `tp2jms` / `tp2jmr` (MultiDimFit best fit), `m["jms_err"]` /
+`m["jmr_err"]` their `get_jmsr_err` (down, up) distances (from `impacts_<tag>.json` next to `multidimfit_<tag>.root`).
 
 ```python
 def get_jmsr_err(file_path):
-    """Hesse errors of tp2jms and tp2jmr from the FitDiagnostics fit_s result (the MultiDimFit 'limit' tree only
-    profiles them, without an error). (None, None) if the file or fit_s is missing."""
+    """Profile-likelihood +-1 sigma of tp2jms and tp2jmr: the "fit" field [lo, best fit, hi] of the impacts json
+    (combineTool Impacts, MultiDimFit --algo impact: the parameter scanned with everything else re-fitted, edges at
+    2 DeltaNLL = 1; the same method as the SF_tp2 errors). Returns ((dn, up), (dn, up)) as positive distances from the
+    best fit, or None for a parameter that is missing or has a one-sided interval (an edge equal to the best fit: the
+    crossing was not found)."""
     if not os.path.exists(file_path):
         return None, None
-    f = ROOT.TFile.Open(file_path, "READ")
-    r = f.Get("fit_s") if f and not f.IsZombie() else None
-    if not r:
-        if f:
-            f.Close()
-        return None, None
-    pars = r.floatParsFinal()
-    errs = tuple(pars.find(n).getError() if pars.find(n) else None for n in ("tp2jms", "tp2jmr"))
-    f.Close()
-    return errs
+    with open(file_path) as fj:
+        par = {q["name"]: q["fit"] for q in json.load(fj).get("params", [])}
+    out = []
+    for n in ("tp2jms", "tp2jmr"):
+        q = par.get(n)
+        if q is None or q[1] - q[0] < 1e-6 or q[2] - q[1] < 1e-6:
+            out.append(None)
+        else:
+            out.append((q[1] - q[0], q[2] - q[1]))
+    return tuple(out)
 
 def _template_hist(paths, name):
     """Sum of histogram `name` over the pass and fail template files -> (contents, bin centres) as numpy arrays."""
@@ -200,14 +206,16 @@ def compute_jmsr_rdf(data):
         JMS_scale    = core mean of the JMS-morphed template / core mean of the nominal   (m' = s * m)
         JMR_factor   = core width of the JMR-morphed template / core width of the nominal (f, hybrid smearing)
         JMR_sigmaRel = core width / core mean of the nominal (MC relative resolution of the stochastic smearing)
-    JMS_scale and JMR_factor also at theta +- 1 sigma (fit_s Hesse error), converted the same way, as
+    JMS_scale and JMR_factor also at the profile-likelihood +-1 sigma edges of theta (impacts json, applied around the
+    MultiDimFit best fit: up = theta + d_up, down = theta - d_dn), converted the same way, as
     {'nom', 'up', 'down'}; sigma_rel comes from the nominal template only and has no variation.
     Stored as data[key]['jms_scale'|'jmr_factor'] (dicts) and data[key]['jmr_sigma_rel']."""
     for key, m in data.items():
         if m.get("jms") is None or m.get("jmr") is None or not m.get("templates"):
             continue
         if m.get("jms_err") is None or m.get("jmr_err") is None:
-            print(f"Warning: no fit_s error on tp2jms/tp2jmr for {key}, no RDF values", file=sys.stderr)
+            print(f"Warning: no two-sided profile-likelihood interval of tp2jms/tp2jmr in the impacts json for {key}, "
+                  f"no RDF values", file=sys.stderr)
             continue
         nom, c = _template_hist(m["templates"], "tp2")
         hists = {n: _template_hist(m["templates"], f"tp2_tp2{n}")[0] for n in ("jmsUp", "jmsDown", "jmrUp", "jmrDown")}
@@ -218,9 +226,9 @@ def compute_jmsr_rdf(data):
             print(f"Warning: JMS/JMR core fit failed for {key}, no RDF values", file=sys.stderr)
             continue
         scale, factor = {}, {}
-        for syst, sign in (("nom", 0), ("up", 1), ("down", -1)):
-            mu_s, _ = _gauss_fit(_morph(nom, hists["jmsUp"], hists["jmsDown"], m["jms"] + sign * m["jms_err"]), c, win)
-            _, s_r = _gauss_fit(_morph(nom, hists["jmrUp"], hists["jmrDown"], m["jmr"] + sign * m["jmr_err"]), c, win)
+        for syst, sign, i in (("nom", 0, 1), ("up", 1, 1), ("down", -1, 0)):
+            mu_s, _ = _gauss_fit(_morph(nom, hists["jmsUp"], hists["jmsDown"], m["jms"] + sign * m["jms_err"][i]), c, win)
+            _, s_r = _gauss_fit(_morph(nom, hists["jmrUp"], hists["jmrDown"], m["jmr"] + sign * m["jmr_err"][i]), c, win)
             if None in (mu_s, s_r):
                 break
             scale[syst], factor[syst] = mu_s / mu0, s_r / s0
@@ -237,13 +245,15 @@ Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
 - JMR: theta = +1 corresponds to an extra Gaussian smearing with sigma = 10%; the Down template is the
   symmetrized mirror (2*nominal - up), so negative theta is constrained.
 
-Sources (`wqq_sf/ParticleNetSF-WqqSF-nooverlap-genmatch/single_pass_results/<campaign>/SFsummary_jsons/`
+Sources (`wqq_sf/ParticleNetSF-WqqSF-ptbinfix/single_pass_results/<campaign>/SFsummary_jsons/`
 `JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`, WP 0.78 kept; joined with `wqq_sf/small_tools/splice_sf_jsons.py`):
-`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from `particlenetmd_sf_15oct_noov_Wnlo_JMSR_x2p_msdjec_wpgrid`
-(= d07a64def), `2024`, `2025` from `particlenetmd_sf_15oct_noov_Wlo_JMSR_x2p_msdjec_wpgrid` (LO `WtoLNu-4Jets` Run 3
-W+jets instead of NLO). Both: X2p mass fit, free "other" normalisation with lnU kappa = 2, MC without overlapping samples,
-same candle as `../WqqSF` (new gen matching + soft-drop JEC; the Wqq SFs there come from the soft-drop-mass fit on the
-same MC). Every fit checked: no failed fit, deployed theta never at its range edge, theta +- 1 sigma inside [-1, 1].
-vs 116c67844 (kappa 6, NLO): Run 2 back to the d07a64def values; 2024/2025 vs d07a64def: s within 0.002, f within 0.03.
-`JMSR_rdf_correctionlib_etainclusive.json` re-exported from the same two campaigns with collector 17fabb3 to add the
-`systematic` up/down; its `nom` values are identical to the previous (central-only) file.
+`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from `particlenetmd_sf_25oct_ptfix_noov_Wnlo_JMSR_x2p_msdjec_wpgrid`,
+`2024`, `2025` from `particlenetmd_sf_25oct_ptfix_noov_Wlo_JMSR_x2p_msdjec_wpgrid` (LO `WtoLNu-4Jets` Run 3 W+jets instead of
+NLO). Both: X2p mass fit, free "other" normalisation with lnU kappa = 2, MC without overlapping samples, the fit's pt
+projection on exact bin edges (wqq_sf 7737f2d), same candle as `../WqqSF` (new gen matching + soft-drop JEC; the Wqq SFs
+come from the soft-drop-mass fit on the same MC). The nominal s, f, sigma_rel and the theta file are identical to the
+deployed `sf-corrlib-json` 6f87a3399; this version adds the profile-likelihood `up` / `down` (re-exported 2026-11-06 with
+collector f898ec4). Every fit checked: no failed fit, no grid-scan fallback, deployed theta never at its range edge,
+profile-likelihood interval two-sided in every deployed bin. The 2018 400-800 GeV fit has a second, slightly better
+minimum (2 DeltaNLL = -2.6, theta_JMS = -0.34 instead of -1 for the "other" process; f 1.080 instead of 1.070), within its
+up / down, which are visibly asymmetric there.

@@ -1911,8 +1911,8 @@ Wqq SF collector (get_SF_summary.py --export_json on a JMSR campaign). Per era a
   JMR_factor    resolution factor f                        (systematic nom / up / down)
   JMR_sigmaRel  relative MC mass resolution of true W jets
 derived from the fitted tp2jms / tp2jmr on the fit's own true-W templates (ratios of Gaussian core
-mean / width of the morphed to the nominal template); up / down are the same conversion at the fitted
-theta +- 1 sigma. Inputs era / WP / eta / pt; the fit is eta-inclusive (eta unused) and JMS/JMR are
+mean / width of the morphed to the nominal template); up / down are the same conversion at the edges of
+the fitted theta's profile-likelihood +- 1 sigma interval. Inputs era / WP / eta / pt; the fit is eta-inclusive (eta unused) and JMS/JMR are
 flat in WP, so WP 0.78 is used. pt bins 250-300 / 300-400 / 400-800 GeV, clamped: jets above 800 GeV
 take the last bin's correction (and the few non-good jets below 250 GeV the first bin's).
 
