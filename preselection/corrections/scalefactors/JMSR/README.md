@@ -115,10 +115,10 @@ Examples at WP 0.78:
 
 | era, pt [GeV] | theta_JMS | theta_JMR | s | f | sigma_rel |
 |---|---|---|---|---|---|
-| 2018, 300-400 | -0.196 | +0.009 | 0.991 | 1.003 | 0.101 |
-| 2018, 400-800 | -0.024 | +0.212 | 0.999 | 1.070 | 0.098 |
-| 2024, 300-400 | -0.265 | +0.205 | 0.987 | 1.057 | 0.110 |
-| 2017, 250-300 | -0.302 | -0.143 | 0.986 | 0.966 | 0.108 |
+| 2018, 300-400 | -0.174 | -0.010 | 0.992 | 0.997 | 0.101 |
+| 2018, 400-800 | -0.033 | +0.145 | 0.999 | 1.047 | 0.098 |
+| 2024, 300-400 | -0.182 | +0.163 | 0.991 | 1.044 | 0.110 |
+| 2017, 250-300 | -0.290 | -0.218 | 0.987 | 0.948 | 0.108 |
 
 ### Conversion code
 
@@ -247,13 +247,23 @@ Corrections `JMS` and `JMR` = post-fit `tp2jms` / `tp2jmr`:
 
 Sources (`wqq_sf/ParticleNetSF-WqqSF-ptbinfix/single_pass_results/<campaign>/SFsummary_jsons/`
 `JMSR_rdf_correctionlib.json`, `JMSR_correctionlib.json`, WP 0.78 kept; joined with `wqq_sf/small_tools/splice_sf_jsons.py`):
-`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from `particlenetmd_sf_25oct_ptfix_noov_Wnlo_JMSR_x2p_msdjec_wpgrid`,
-`2024`, `2025` from `particlenetmd_sf_25oct_ptfix_noov_Wlo_JMSR_x2p_msdjec_wpgrid` (LO `WtoLNu-4Jets` Run 3 W+jets instead of
-NLO). Both: X2p mass fit, free "other" normalisation with lnU kappa = 2, MC without overlapping samples, the fit's pt
-projection on exact bin edges (wqq_sf 7737f2d), same candle as `../WqqSF` (new gen matching + soft-drop JEC; the Wqq SFs
-come from the soft-drop-mass fit on the same MC). The nominal s, f, sigma_rel and the theta file are identical to the
-deployed `sf-corrlib-json` 6f87a3399; this version adds the profile-likelihood `up` / `down` (re-exported 2026-11-06 with
-collector f898ec4). Every fit checked: no failed fit, no grid-scan fallback, deployed theta never at its range edge,
-profile-likelihood interval two-sided in every deployed bin. The 2018 400-800 GeV fit has a second, slightly better
-minimum (2 DeltaNLL = -2.6, theta_JMS = -0.34 instead of -1 for the "other" process; f 1.080 instead of 1.070), within its
-up / down, which are visibly asymmetric there.
+`2016preVFP`, `2016postVFP`, `2017`, `2018`, `r2comb` from
+`particlenetmd_sf_04nov_ptfix_noov_Wnlo_JMSR_x2p_msdjec_wp0p60_0p78_0p90_otherlnU6`, `2024`, `2025` from
+`particlenetmd_sf_15nov_ptfix_noov_Wlo_JMSR_x2p_msdjec_wpgrid_otherlnU6` (LO `WtoLNu-4Jets` Run 3 W+jets instead of NLO).
+Both: X2p mass fit, MC without overlapping samples, the fit's pt projection on exact bin edges, same candle and fit code
+as `../WqqSF` (wqq_sf f898ec4; the Wqq SFs come from the soft-drop-mass fit on the same MC). Every fit checked: no
+failed fit, no grid-scan fallback, deployed theta never at its range edge, profile-likelihood interval two-sided in
+every deployed bin.
+
+"Other" normalisation: lnU kappa = 6 (x1/6 to x6, `WSF_OTHER_LNU=6`), against kappa = 4 in the soft-drop fit of
+`../WqqSF`. The reason is the same (see `../WqqSF/README.md`): the MC underpredicts the data at the low-mass edge of
+the fit window, and "other" is the only process that can absorb it. The GloParT X2p mass is more mismodelled there than
+the soft-drop mass: before the fit, the fail region at 50-65 GeV has data/MC 1.15-1.41 with the X2p mass, against
+0.99-1.14 with the soft-drop mass. So the X2p fit asks for more "other": x2.4-x5.0 at kappa = 6. At kappa = 2 it is at the
+limit in all 21 bins, and at kappa = 4 still in 5 of the 6 Run 3 bins; at kappa = 6 in none. From kappa = 4 to 6, s
+changes by at most 0.005 and f by at most 0.037; the largest change is in 2025 400-800 GeV, the bin where "other" was
+pinned at x4 (it moves to x5.0). Every other bin changes by at most 0.013 in f.
+
+vs 6f87a3399 ("other" kappa = 2, nominal only): s within 0.008 (largest 2025 250-300, 0.965 -> 0.973), f mean |shift| 0.019,
+largest 2025 400-800 (1.066 -> 0.979), sigma_rel unchanged (nominal template only). f < 1 (no smearing applied) in 6 of
+21 bins: 2016preVFP / 2016postVFP / 2018 300-400, 2017 250-300 and 400-800, 2025 400-800.
