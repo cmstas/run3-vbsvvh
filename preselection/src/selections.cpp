@@ -327,6 +327,11 @@ RNode AK8JetsSelection(RNode df_, bool isData, const std::string &channel)
     // for AK8 and is not stacked on top of it. Defined before applyObjectMaskNewAffix so the
     // masked fatjet_massGloParT3 alias is created with the rest of the collection.
     df = df.Define("FatJet_massGloParT3", "FatJet_globalParT3_massCorrX2p * _FatJet_rawmass");
+    // GloParT JMS/JMR (MC, every fat jet, see corrections.h), at the nominal FatJet_pt. Also defines
+    // FatJet_massGloParT3_uncorr and the _jmsUp/_jmsDown/_jmrUp/_jmrDown variations, here so they get
+    // fatjet_ aliases too (they do not change the good-fat-jet mask).
+    if (!isData)
+        df = applyJetMassCorrections("FatJet_massGloParT3", "FatJet_pt", df);
 
     // GloParT tagging discriminants, built from the raw score outputs as signal / (signal + QCD):
     //   Hbb = Xbb / (Xbb + QCD)
