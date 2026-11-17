@@ -1,0 +1,27 @@
+{
+    "samples": {
+        "MuonEG_2023BPix_Run2023D_PFNANOV14": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v42/Run3_2023BPix_Data_v14_v42_2Lep1FJ/MuonEG_2023BPix_Run2023D_PFNANOV14/output_1.root",
+                "VBSVVH_skim_v42/Run3_2023BPix_Data_v14_v42_2Lep1FJ/MuonEG_2023BPix_Run2023D_PFNANOV14/output_2.root",
+                "VBSVVH_skim_v42/Run3_2023BPix_Data_v14_v42_2Lep1FJ/MuonEG_2023BPix_Run2023D_PFNANOV14/output_3.root",
+                "VBSVVH_skim_v42/Run3_2023BPix_Data_v14_v42_2Lep1FJ/MuonEG_2023BPix_Run2023D_PFNANOV14/output_4.root",
+                "VBSVVH_skim_v42/Run3_2023BPix_Data_v14_v42_2Lep1FJ/MuonEG_2023BPix_Run2023D_PFNANOV14/output_5.root",
+                "VBSVVH_skim_v42/Run3_2023BPix_Data_v14_v42_2Lep1FJ/MuonEG_2023BPix_Run2023D_PFNANOV14/output_6.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2023PromptD",
+                "xsec": 1.0,
+                "lumi": 9.451,
+                "shortname": "MuonEG",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 0.0
+            }
+        }
+    }
+}
