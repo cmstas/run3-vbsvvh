@@ -5,21 +5,23 @@ base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_1FJ_r3
 local_base_path: "/groups/cjessop/users/jkil/HVV_2L_RDF/run3_1FJ/"
 
 training_features:
-  - lepton_pt: log
-  - lepton_eta: minmax
-  - lepton_phi: minmax
-  - lepton_mass: log
+  - L1_pt: log
+  - L2_pt: log
+  - L1_eta: minmax
+  - L2_eta: minmax
+  - L1_phi: minmax
+  - L2_phi: minmax
+  - L1_mass: log
+  - L2_mass: log
   - met_pt: log
   - met_phi: minmax
-  - fatjet_pt: log
-  - fatjet_eta: minmax
-  - fatjet_phi: minmax
-  - fatjet_massGloParT3: log
-  - fatjet_msoftdrop: log
-  - fatjet_tau2: none
-  - fatjet_tau1: none
-
-split_features: ["lepton_"]
+  - FJ1_pt: log
+  - FJ1_eta: minmax
+  - FJ1_phi: minmax
+  - FJ1_massGloParT3: log
+  - FJ1_msoftdrop: log
+  - FJ1_tau2: none
+  - FJ1_tau1: none
 
 derived_vars: {}
 auto_include_derived_vars: false
@@ -29,14 +31,13 @@ extra_vars:
   - weight
   # - boosted_h_candidate_score
   # - boosted_v_candidate_score
-  - fatjet_globalParT3_Xbb
-  - fatjet_globalParT3_QCD
+  - FJ1_Hbb
   - vbs_detajj
 
 constraint_var: "vbs_score"
 
 # preselection: "(boosted_h_candidate_score >= 0.1) & (boosted_v_candidate_score >= 0.1)"
-preselection: "((fatjet_globalParT3_Xbb/(fatjet_globalParT3_Xbb+fatjet_globalParT3_QCD)) >= 0.1)"
+preselection: "(FJ1_Hbb >= 0.1)"
 
 learning_rate: 0.001
 batch_size: 2048

@@ -55,7 +55,7 @@ ax1.set_ylim(min((h for mc in nSGMC.values() for h in mc['hist'] if h > 0), defa
 ax1.grid()
 ax1.legend(ncol=3, fontsize='14', loc='upper right')
 hep.cms.label("Preliminary", data=nDATA is not None, rlabel=lumitext, ax=ax1)
-plt.text(0.15, 0.83, channel, size='x-small', color='darkslategray', transform=fig.transFigure)
+plt.text(0.15, 0.81, channel, size='x-small', color='darkslategray', transform=fig.transFigure)
 
 # plotting ratio (ax2)
 if nDATA is not None:

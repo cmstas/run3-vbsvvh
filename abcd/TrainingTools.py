@@ -1,6 +1,6 @@
 import os, argparse, sys
 import numpy as np
-import awkward as ak
+import awkward as ak # camlnd complains if this is being imported.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -78,7 +78,10 @@ def doTraining(model, train_loader, valid_loader, optimizer, scheduler, device, 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             epochs_since_best = 0
-            torch.save({"state_dict": model.state_dict(), "inputs": train_loader.dataset.inputs}, best_model_path) # inputs: transform & min/max per column, so inference scales like training
+            torch.save({
+                "state_dict": model.state_dict(), 
+                "inputs": train_loader.dataset.inputs
+            }, best_model_path) # inputs: transform & min/max per column, so inference scales like training
             result_str += f"  \033[1;32mSaved best model to {best_model_path}\033[0m"
         else:
             epochs_since_best += 1

@@ -1,3 +1,10 @@
+"""
+Problem: the scan should use only events the network never saw, 
+either the validation split with its weights scaled up by 1/0.2 to recover the full yield, 
+or better a k-fold setup where each event is scored by a network that didn't train on it, 
+so the full sample is used without bias.
+"""
+
 from TrainingTools import *
 
 def prettyPrint(matrix, name='', binEdges=None):
@@ -27,11 +34,24 @@ def regionYields(xVar, yVar, weights, binEdges):
     D = A[0, 0] - A[0:1, :] - A[:, 0:1] + A
     return A, B, C, D
 
+SIGNALS = ("c2v1p0_c3_1p0", "c2v1p0_c3_10p0", "c2v1p5_c3_1p0")
+
+def crossBenchmarkSignif(abcdCut, vbsCut, tag, signals=SIGNALS):
+    """ Asimov significance of each benchmark in region A defined by (abcdCut, vbsCut). Each parq carries its own benchmark's scores, so this is that benchmark evaluated at another's cuts, not a common score space. """
+    out = {}
+    for signal in signals:
+        events = ak.from_parquet(f"{os.path.dirname(os.path.abspath(__file__))}/dataset/{signal}/{tag}.parq")
+        inA = (events.ABCDscore >= abcdCut) & (events.VBSscore >= vbsCut)
+        s, b = (ak.sum(events.weight[inA & (events.label == lbl)]) for lbl in (1, 0))
+        out[signal] = np.sqrt(2*((s + b)*np.log1p(s/b) - s)) if b > 0 else np.nan
+    return out
+
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--tag"   , default='run2_2L_1FJ'  , choices=["run2_2L_1FJ", "run2_2L_2FJ", "run3_2L_1FJ", "run3_2L_2FJ"])
-    parser.add_argument("-s", "--signal", default='c2v1p0_c3_1p0', choices=["c2v1p0_c3_1p0", "c2v1p0_c3_10p0", "c2v1p5_c3_1p0"])
-    parser.add_argument("-n", "--minCount" , default=10 , type=int  , help="Guardrail: min unweighted MC events required in every region.")
+    parser.add_argument("-s", "--signal", default='c2v1p0_c3_1p0', choices=SIGNALS)
+    parser.add_argument("-n", "--minCount" , default=10000 , type=int  , help="Guardrail: min unweighted MC events required in every region.")
+    parser.add_argument("-w", "--minYield" , default=10 , type=float, help="Guardrail: min expected (weighted) bkg yield required in B, C and D, which are read from data.")
     parser.add_argument("-c", "--maxNonClosure", default=0.2, type=float, help="Guardrail: max |B*C/D / A - 1| tolerated in background MC.")
     parser.add_argument("-x", "--maxSigConta" , default=0.01, type=float, help="Guardrail: max sig/bkg tolerated in any control region, since signal there biases B*C/D.")
     args = parser.parse_args()
@@ -87,16 +107,19 @@ if __name__=="__main__":
 
     # —————————— Apply guardrails and rank ——————————————————————————————————————————————————
     minCountGuard = np.minimum.reduce([rawA, rawB, rawC, rawD]) >= args.minCount # takes min of A,B,C, and D at all cutPairs.
+    weightedGuard = np.minimum.reduce([bkgB, bkgC, bkgD]) >= args.minYield # data Poisson stats in the control regions limit predA, so keep their expected yields up
     nonCloseGuard = np.abs(closure) <= args.maxNonClosure
     finitSigGuard = np.isfinite(signif)
     sigContaGuard = sigConta <= args.maxSigConta # nan (empty control region) fails this, as it should
-    passes = minCountGuard & nonCloseGuard & finitSigGuard & sigContaGuard
-    if not passes.any(): sys.exit(f"\033[1;31mNo cut pair passes minCount={args.minCount}, maxNonClosure={args.maxNonClosure} and maxSigConta={args.maxSigConta}.\033[0m")
+    passes = minCountGuard & weightedGuard & nonCloseGuard & finitSigGuard & sigContaGuard
+    if not passes.any(): sys.exit(f"\033[1;31mNo cut pair passes minCount={args.minCount}, minYield={args.minYield}, maxNonClosure={args.maxNonClosure} and maxSigConta={args.maxSigConta}.\033[0m")
 
     ranksToDisplay = 3
     ranked = np.argsort(np.where(passes, signif, -np.inf), axis=None)[::-1][:ranksToDisplay]
-    print(f"\n\033[1mTop {ranksToDisplay} of {passes.sum()} cut pairs passing minCount={args.minCount}, |nonClosure|<={args.maxNonClosure}, sigConta<={args.maxSigConta}\033[0m")
-    print(f"{'ABCD>':>6}{'VBS>':>6}{'signif':>8}{'sigA':>10}{'bkgA':>10}{'predA':>10}{'closure':>9}{'sigConta':>10}{'rawA':>8}")
+    print(f"\n\033[1mTop {ranksToDisplay} of {passes.sum()} cut pairs passing minCount={args.minCount}, minYield={args.minYield}, |nonClosure|<={args.maxNonClosure}, sigConta<={args.maxSigConta}\033[0m")
+    otherSignals = [signal for signal in SIGNALS if signal != args.signal]
+    print(f"{'ABCD>':>6}{'VBS>':>6}{'signif':>8}{'sigA':>10}{'bkgA':>10}{'predA':>10}{'closure':>9}{'sigConta':>10}{'rawA':>8}" + "".join(f"{signal:>17}" for signal in otherSignals))
     for idx in ranked:
         i, j = np.unravel_index(idx, signif.shape)
-        print(f"{binEdges[i]:>6.2f}{binEdges[j]:>6.2f}{signif[i,j]:>8.3f}{sigA[i,j]:>10.4f}{bkgA[i,j]:>10.3f}{predA[i,j]:>10.3f}{closure[i,j]:>+9.3f}{sigConta[i,j]:>10.5f}{int(rawA[i,j]):>8d}")
+        crossSignif = crossBenchmarkSignif(binEdges[i], binEdges[j], args.tag, otherSignals) # same cuts, other benchmarks' own nets
+        print(f"{binEdges[i]:>6.2f}{binEdges[j]:>6.2f}{signif[i,j]:>8.3f}{sigA[i,j]:>10.4f}{bkgA[i,j]:>10.3f}{predA[i,j]:>10.3f}{closure[i,j]:>+9.3f}{sigConta[i,j]:>10.5f}{int(rawA[i,j]):>8d}" + "".join(f"{crossSignif[signal]:>17.3f}" for signal in otherSignals))

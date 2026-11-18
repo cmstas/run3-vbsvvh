@@ -5,22 +5,31 @@ base_path: "root://eosuser.cern.ch//eos/user/r/rband/HVV2LRDF/merged_2lep_2FJ_r3
 local_base_path: "/groups/cjessop/users/jkil/HVV_2L_RDF/run3_2FJ/"
 
 training_features:
-  - lepton_pt: log
-  - lepton_eta: minmax
-  - lepton_phi: minmax
-  - lepton_mass: log
+  - L1_pt: log
+  - L2_pt: log
+  - L1_eta: minmax
+  - L2_eta: minmax
+  - L1_phi: minmax
+  - L2_phi: minmax
+  - L1_mass: log
+  - L2_mass: log
   - met_pt: log
   - met_phi: minmax
-  - fatjet_pt: log
-  - fatjet_eta: minmax
-  - fatjet_phi: minmax
-  - fatjet_massGloParT3: log
-  - fatjet_msoftdrop: log # only in 2FJ maybe
-  - fatjet_tau2: none
-  - fatjet_tau1: none
+  - FJ1_pt: log
+  - FJ2_pt: log
+  - FJ1_eta: minmax
+  - FJ2_eta: minmax
+  - FJ1_phi: minmax
+  - FJ2_phi: minmax
+  - FJ1_massGloParT3: log
+  - FJ2_massGloParT3: log
+  - FJ1_msoftdrop: log # only in 2FJ maybe
+  - FJ2_msoftdrop: log
+  - FJ1_tau2: none
+  - FJ2_tau2: none
+  - FJ1_tau1: none
+  - FJ2_tau1: none
   - ht_fatjets: log # only in 2FJ good
-
-split_features: ["lepton_", "fatjet_"]
 
 derived_vars: {}
 # auto_include_derived_vars: false
@@ -28,12 +37,12 @@ derived_vars: {}
 
 extra_vars:
   - weight
-  - fatjet_globalParT3_Xbb
-  - fatjet_globalParT3_QCD
+  - FJ1_Hbb
+  - FJ2_Hbb
 
 constraint_var: "vbs_score"
 
-preselection: "((fatjet_globalParT3_Xbb_1/(fatjet_globalParT3_Xbb_1+fatjet_globalParT3_QCD_1)) >= 0.1) | ((fatjet_globalParT3_Xbb_2/(fatjet_globalParT3_Xbb_2+fatjet_globalParT3_QCD_2)) >= 0.1)"
+preselection: "(FJ1_Hbb >= 0.1) | (FJ2_Hbb >= 0.1)"
 
 learning_rate: 0.001
 batch_size: 4096

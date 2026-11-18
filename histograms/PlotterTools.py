@@ -26,32 +26,41 @@ def CategorizeSamples(events, exclude=[]):
 SIGNAL_COLORS = {'c2v1p0_c3_1p0': 'blue', 'c2v1p5_c3_1p0': 'green', 'c2v1p0_c3_10p0': 'red'} # split out of CategorizeSamples' VBSVVH by process name
 LUMI = {"run2": 19.52 + 16.81 + 41.48 + 59.83, "run3": 109.95 + 110.84}
 
-def getBinEdges(varName):
-    binEdges = {
-        'lepton_pt'             : np.arange(20, 501, 20),
-        'lepton_pt_2'           : np.arange(10, 301, 10),
-        'lepton_eta'            : np.round(np.arange(-2.5, 2.6, 0.2), 1),
-        'lepton_phi'            : np.round(np.arange(-3.2, 3.3, 0.2), 1),
-        'met_pt'                : np.arange(0, 401, 10),
-        'met_phi'               : np.round(np.arange(-3.2, 3.3, 0.2), 1),
-        'fatjet_pt'             : np.arange(250, 1001, 25),
-        'fatjet_eta'            : np.round(np.arange(-2.5, 2.6, 0.2), 1),
-        'fatjet_phi'            : np.round(np.arange(-3.2, 3.3, 0.2), 1),
-        'fatjet_massGloParT3'   : np.arange(0, 301, 10),
-        'fatjet_msoftdrop'      : np.arange(40, 301, 10),
-        'fatjet_tau1'           : np.linspace(0, 0.7, 29),
-        'fatjet_tau2'           : np.linspace(0, 0.4, 33),
-        'fatjet_Hbb'            : np.linspace(0, 1, 21),
-        'ht_fatjets'            : np.arange(250, 2001, 50),
-        'vbs_score'             : np.linspace(0, 1, 21),
-        'vbs_mjj'               : np.arange(0, 3001, 100),
-        'vbs_detajj'            : np.arange(0, 9.1, 0.5),
-        'njet'                  : np.arange(-0.5, 10.5, 1),
-        'jet_pt'                : np.arange(20, 801, 20),
-        'jet_pt_2'              : np.arange(20, 401, 10),
-        'jet_eta'               : np.arange(-5, 5.1, 0.5),
+def getBinning(varName):
+    binning = {
+        'L1_pt'           : (np.arange(20, 501, 20)                 , r'$p_T(L_1)$'),
+        'L2_pt'           : (np.arange(10, 301, 10)                 , r'$p_T(L_2)$'),
+        'L1_eta'          : (np.round(np.arange(-2.5, 2.6, 0.2), 1) , r'$\eta(L_1)$'),
+        'L1_phi'          : (np.round(np.arange(-3.2, 3.3, 0.2), 1) , r'$\phi(L_1)$'),
+        'L1_mass'         : (np.round(np.arange(-0.2, 0.21, 0.01), 2), r'$m(L_1)$'),
+        'dilep_dR'        : (np.round(np.arange(0, 6.1, 0.2), 1)    , r'$\Delta R(L_1, L_2)$'),
+        'dilep_dphi'      : (np.round(np.arange(0, 3.3, 0.2), 1)    , r'$\Delta\phi(L_1, L_2)$'),
+        'dilep_mass'      : (np.arange(0, 501, 10)                  , r'$m(L_1, L_2)$'),
+        'met_pt'          : (np.arange(0, 401, 10)                  , r'$p_T^{miss}$'),
+        'met_phi'         : (np.round(np.arange(-3.2, 3.3, 0.2), 1) , r'$\phi(p_T^{miss})$'),
+        'FJ1_pt'          : (np.arange(250, 1001, 25)               , r'$p_T(\mathrm{FJ}_1)$'),
+        'FJ1_eta'         : (np.round(np.arange(-2.5, 2.6, 0.2), 1) , r'$\eta(\mathrm{FJ}_1)$'),
+        'FJ1_phi'         : (np.round(np.arange(-3.2, 3.3, 0.2), 1) , r'$\phi(\mathrm{FJ}_1)$'),
+        'FJ1_massGloParT3': (np.arange(0, 301, 10)                  , r'$m_{\mathrm{GloParT}}(\mathrm{FJ}_1)$'),
+        'FJ1_msoftdrop'   : (np.arange(40, 301, 10)                 , r'$m_{\mathrm{SD}}(\mathrm{FJ}_1)$'),
+        'FJ1_tau1'        : (np.linspace(0, 0.7, 29)                , r'$\tau_1(\mathrm{FJ}_1)$'),
+        'FJ1_tau2'        : (np.linspace(0, 0.4, 33)                , r'$\tau_2(\mathrm{FJ}_1)$'),
+        'FJ1_Hbb'         : (np.linspace(0, 1, 21)                  , r'Hbb score$(\mathrm{FJ}_1)$'),
+        'ht_fatjets'      : (np.arange(250, 2001, 50)               , r'$H_T(\mathrm{FJ})$'),
+        'vbs_score'       : (np.linspace(0, 1, 21)                  , r'VBS score'),
+        'vbs_mjj'         : (np.arange(0, 3001, 100)                , r'$m_{jj}^{\mathrm{VBS}}$'),
+        'vbs_detajj'      : (np.arange(0, 9.1, 0.5)                 , r'$\Delta\eta_{jj}^{\mathrm{VBS}}$'),
+        'njet'            : (np.arange(-0.5, 10.5, 1)               , r'$N_{\mathrm{jet}}$'),
+        'nbjet'           : (np.arange(-0.5, 6.5, 1)                , r'$N_{\mathrm{b\,jet}}$'),
+        'VBSJ1_pt'        : (np.arange(20, 801, 20)                 , r'$p_T(j^{\mathrm{VBS}}_1)$'),
+        'VBSJ2_pt'        : (np.arange(20, 401, 10)                 , r'$p_T(j^{\mathrm{VBS}}_2)$'),
+        'VBSJ1_eta'       : (np.arange(-5, 5.1, 0.5)                , r'$\eta(j^{\mathrm{VBS}}_1)$'),
+        'VBSJ1_phi'       : (np.round(np.arange(-3.2, 3.3, 0.2), 1) , r'$\phi(j^{\mathrm{VBS}}_1)$'),
+        'VBSJ1_mass'      : (np.arange(0, 101, 5)                   , r'$m(j^{\mathrm{VBS}}_1)$'),
     }
-    return binEdges[varName] if varName in binEdges else binEdges[varName.rsplit('_', 1)[0]] # e.g. lepton_eta_2 falls back to lepton_eta
+    if varName in binning: return binning[varName]
+    edges, label = binning[varName.replace('2_', '1_', 1)] # e.g. FJ2_eta falls back to FJ1_eta
+    return edges, label.replace('_1)', '_2)')
 
 SHORT_TO_FULL = {
     "DYJetsToLL_M-10to50_UL16": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM",

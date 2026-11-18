@@ -686,7 +686,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = definePerVariationPassFlags(df, "2lep_1FJ", [](const std::string& sfx){
             const std::string fjCountCol = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
             const std::string jCountCol  = sfx.empty() ? "njet"     : "njet_"     + sfx;
-            return "(nLep_Sel == 2) && (" + fjCountCol + " == 1) && (" + jCountCol + " >= 2)";
+            return "(nLep_Sel == 2) && (nElectron_Veto == nElectron_Loose) && (" + fjCountCol + " == 1) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "2lep_1FJ"), "C2: 2lep_1FJ");
     }
@@ -706,7 +706,7 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData)
         df = definePerVariationPassFlags(df, "2lep_2FJ", [](const std::string& sfx){
             const std::string fjCountCol = sfx.empty() ? "nfatjet" : "nfatjet_" + sfx;
             const std::string jCountCol  = sfx.empty() ? "njet"     : "njet_"     + sfx;
-            return "(nLep_Sel == 2) && (" + fjCountCol + " == 2) && (" + jCountCol + " >= 2)";
+            return "(nLep_Sel == 2) && (nElectron_Veto == nElectron_Loose) && (" + fjCountCol + " == 2) && (" + jCountCol + " >= 2)";
         });
         df = df.Filter(orPassExpr(df, "2lep_2FJ"), "C2: 2lep_2FJ");
     }

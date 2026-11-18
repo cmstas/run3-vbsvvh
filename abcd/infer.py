@@ -1,55 +1,46 @@
 """
-Assigns ABCDNet scores to every MC event and writes them back into the parquet,
-so downstream scripts (decorrelation.py, abcd_scan.py) never reload the model.
+Assigns the ABCDNet score of each benchmark model to every event (sig, bkg and data) in PARQ_PATH/{tag}/*.parq,
+and writes them back into the same parquet as ABCDscore_{signal}.
 """
 
+import glob
 from TrainingTools import *
+from makeDataset_parq import log_transform, PARQ_PATH
+
+SIGNALS = ["c2v1p0_c3_1p0", "c2v1p0_c3_10p0", "c2v1p5_c3_1p0"]
+
+def loadModel(path):
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    model = makeModel(len(checkpoint["inputs"]))[0]
+    model.load_state_dict(checkpoint["state_dict"])
+    return model.eval(), checkpoint["inputs"] # eval: dropout off, batch-norm uses its stored running stats
 
 @torch.no_grad()
-def inferABCDscore(model, loader):
-    """ Returns SCORES [0,1] avg 0.315, DISCOS (vbs_score) [0,1] avg 0.237, LABELS, WEIGHTS O[1e-10, 1e-2]. """
+def inferABCDscore(model, inputs, events):
+    """ Scales each input like makeDataset_parq.preprocess; events with a None input (e.g. no FJ2) get NaN. """
+    scale = lambda x, s: ((log_transform(x) if s["transform"] == "log" else x) - s["min"]) / (s["max"] - s["min"])
+    features = np.column_stack([ak.to_numpy(ak.fill_none(scale(events[f], s), np.nan)) for f, s in inputs.items()]).astype(np.float32)
     device = next(model.parameters()).device
-    SCORES, DISCOS, LABELS, WEIGHTS = [], [], [], []
-    for features, disco, labels, weights in loader: # Loops over batches. nIteration = nEvents / batch_size
-        SCORES.append(torch.sigmoid(model(features.to(device))).cpu()) # This is where ABCDNet Score is assigned.
-        DISCOS.append(disco)
-        LABELS.append(labels)
-        WEIGHTS.append(weights)
-    SCORES  = torch.cat(SCORES).reshape(-1).numpy()
-    DISCOS  = torch.cat(DISCOS).reshape(-1).numpy()
-    LABELS  = torch.cat(LABELS).reshape(-1).numpy()
-    WEIGHTS = torch.cat(WEIGHTS).reshape(-1).numpy()
-    return SCORES, DISCOS, LABELS, WEIGHTS
+    return torch.cat([torch.sigmoid(model(batch.to(device))).cpu() for batch in torch.split(torch.from_numpy(features), 65536)]).reshape(-1).numpy()
+
+def ScoredRowGroups(path, models):
+    # one row group at a time keeps memory bounded
+    for i in range(ak.metadata_from_parquet(path)["num_row_groups"]):
+        events = ak.from_parquet(path, row_groups=[i])
+        for signal, (model, inputs) in models.items():
+            events[f"ABCDscore_{signal}"] = inferABCDscore(model, inputs, events)
+        yield events
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--tag"   , default='run2_2L_1FJ'  , choices=["run2_2L_1FJ", "run2_2L_2FJ", "run3_2L_1FJ", "run3_2L_2FJ"])
-    parser.add_argument("-s", "--signal", default='c2v1p0_c3_1p0', choices=["c2v1p0_c3_1p0", "c2v1p0_c3_10p0", "c2v1p5_c3_1p0"])
+    parser.add_argument("-t", "--tag", default='run2_1FJ', choices=["run2_1FJ", "run2_2FJ", "run3_1FJ", "run3_2FJ"])
     args = parser.parse_args()
 
-    # —————————— Load Dataset ——————————————————————————————————————————————————
+    run, nFJ = args.tag.split("_")
     scriptPath = os.path.dirname(os.path.abspath(__file__))
-    basePath = f"{scriptPath}/dataset/{args.signal}/{args.tag}"
-    splits = [torch.load(f"{basePath}_{split}.pt", map_location="cpu", weights_only=False) for split in ("train", "valid")]
-    loader = torch.utils.data.DataLoader(torch.utils.data.ConcatDataset(splits), batch_size=4096, shuffle=False) # [train, valid] order, matching the parquet rows
+    models = {signal: loadModel(f"{scriptPath}/models/{signal}/{run}_2L_{nFJ}_best_model.pt") for signal in SIGNALS}
 
-    # —————————— Load Model ——————————————————————————————————————————————————
-    nFeatures = splits[0].data.shape[1]
-    model = makeModel(nFeatures)[0]
-    modelPath = f"{scriptPath}/models/{args.signal}/{args.tag}_best_model.pt"
-    model.load_state_dict(torch.load(modelPath, map_location=next(model.parameters()).device))
-    model.eval() # switch from train mode to eval mode. Dropout stops dropping neurons, and batch-norm uses stored running stats.
-
-    # —————————— Evaluate ABCDNet Score ——————————————————————————————————————————————————
-    SCORES, DISCOS, LABELS, WEIGHTS = inferABCDscore(model, loader) # DISCOS=norm_VBSscore, LABELS=label, WEIGHTS=norm_weight are only for checking alignment.
-    print(f"\n\033[1m—————————— {args.tag} | {args.signal} ——————————\033[0m")
-    print(f"nEvents={len(SCORES)} | nFeatures={nFeatures} | ABCDscore avg={SCORES.mean():.3f}")
-
-    # —————————— Write back ——————————————————————————————————————————————————
-    parqPath = f"{basePath}.parq"
-    events = ak.from_parquet(parqPath)
-    aligned = np.array_equal(ak.to_numpy(events.label), LABELS) and np.allclose(events.norm_weight, WEIGHTS) and np.allclose(events.norm_VBSscore, DISCOS)
-    assert aligned, f"{parqPath} rows are not aligned with the .pt files"
-    events = ak.with_field(events, SCORES, where="ABCDscore")
-    ak.to_parquet(events, parqPath)
-    print(f"\033[1;32mSaved ABCDscore into abcd/{os.path.relpath(parqPath, scriptPath)}!\033[0m")
+    for path in sorted(glob.glob(f"{PARQ_PATH}/{args.tag}/*.parq")):
+        ak.to_parquet_row_groups(ScoredRowGroups(path, models), f"{path}.tmp")
+        os.replace(f"{path}.tmp", path) # an interrupted write never corrupts the original parquet
+        print(f"\033[1;32mSaved ABCDscore_* into {path}\033[0m", flush=True)

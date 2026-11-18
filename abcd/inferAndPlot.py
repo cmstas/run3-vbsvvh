@@ -273,7 +273,7 @@ def main():
         lr_scheduler_factor=0.5,
         lr_scheduler_min_lr=1e-6,
     )
-    model.load_state_dict(torch.load(base / "models" / args.signal / f"{tag}_best_model.pt", map_location="cpu"))
+    model.load_state_dict(torch.load(base / "models" / args.signal / f"{tag}_best_model.pt", map_location="cpu")["state_dict"])
 
     plot_validation_roc(
         model,
