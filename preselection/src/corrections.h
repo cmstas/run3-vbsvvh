@@ -107,8 +107,8 @@ RNode applyJetEnergyCorrections(const std::unordered_map<std::string, correction
 //
 // Writes Jet_pt_<suffix>, Jet_mass_<suffix> and the per-jet full variation factor
 // _Jet_var_<suffix> (consumed by applyType1MET for the per-variation MET), plus
-// FatJet_pt_<suffix>, FatJet_mass_<suffix> (NOT FatJet_msoftdrop — that has its own JEC
-// recipe; no MET propagation from AK8 because Type-I MET is built from AK4 only).
+// FatJet_pt_<suffix>, FatJet_mass_<suffix> (NOT FatJet_msoftdrop — nominal only, via
+// applySoftDropMassCorrections; no MET propagation from AK8 because Type-I MET is built from AK4 only).
 //
 // <suffix> = "jes" + column_label + direction, e.g. "jesAbsoluteUp", "jesAbsoluteYearDn".
 RNode applyJESVariations(RNode df);
@@ -157,6 +157,14 @@ RNode applyJetEnergyResolution(const std::unordered_map<std::string, correction:
 // AK8 (FatJet_*) variants — same recipe as AK4 but reading FatJet_* / GenJetAK8_* branches
 // and the AK8PFPuppi compound from fatJet_jerc.json.gz.
 RNode applyFatJetEnergyCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
+                                   const std::unordered_map<std::string, std::string>& jec_prefix_map,
+                                   const std::unordered_map<std::string, std::string>& jec_suffix_map,
+                                   RNode df, bool isData);
+
+// Rebuilds FatJet_msoftdrop from its SoftDrop subjets re-corrected with the AK4PFPuppi
+// L2Relative * L3Absolute (* L2L3Residual on data) levels from jet_jerc.json.gz; the input
+// value is kept as FatJet_msoftdrop_nano. Nominal only.
+RNode applySoftDropMassCorrections(const std::unordered_map<std::string, correction::CorrectionSet>& cset_jerc,
                                    const std::unordered_map<std::string, std::string>& jec_prefix_map,
                                    const std::unordered_map<std::string, std::string>& jec_suffix_map,
                                    RNode df, bool isData);

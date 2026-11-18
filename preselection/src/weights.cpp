@@ -1,5 +1,6 @@
 #include "weights.h"
 #include "btag_settings.h"
+#include "category_weight.h"
 #include "corrections.h"
 
 #include <algorithm>
@@ -23,10 +24,10 @@ std::atomic<unsigned long long> g_btag_invalid_probability{0};
 std::mutex g_btag_diagnostic_mutex;
 std::map<std::string, unsigned long long> g_btag_failure_details;
 
-constexpr std::array<std::string_view, 29> kBTagHFSources = {
+constexpr std::array<std::string_view, 30> kBTagHFSources = {
     "correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
     "muf", "mur", "pdf", "as", "pdfas", "ttbar", "jes", "jer", "type3",
-    "bfragmentation", "topmass", "hdamp",
+    "bfragmentation", "bdecays", "topmass", "hdamp",
     "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
     "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
     "jesRegrouped_EC2", "jesRegrouped_EC2_2024",
@@ -43,13 +44,20 @@ const std::map<std::string, std::set<std::string>> kBTagHFAvailableSources = {
               "muf", "mur", "pdf", "as", "ttbar"}},
     {"2018", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
               "muf", "mur", "pdf", "as", "ttbar"}},
+    // The 2024 payload labels topmass as mass and its regrouped JES sources as
+    // jes_<source> (see kBTagJES2025Mapping).
     {"2024Prompt", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
-                     "muf", "mur", "pdfas", "jes", "jer", "type3", "bfragmentation",
-                     "topmass", "hdamp"}},
-    // The 2025 payload uses the same logical sources except that topmass is
-    // labelled mass, while generic pdfas/jes/bfragmentation are absent.
+                     "muf", "mur", "pdf", "as", "ttbar", "jer", "type3", "bfragmentation",
+                     "bdecays", "topmass", "hdamp",
+                     "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
+                     "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
+                     "jesRegrouped_EC2", "jesRegrouped_EC2_2024",
+                     "jesRegrouped_FlavorQCD", "jesRegrouped_HF", "jesRegrouped_HF_2024",
+                     "jesRegrouped_RelativeBal", "jesRegrouped_RelativeSample_2024"}},
+    // The 2025 payload uses the same logical sources as 2024.
     {"2025", {"correlated", "uncorrelated", "statistic", "pileup", "isrdef", "fsrdef",
-               "muf", "mur", "pdf", "as", "ttbar", "jer", "type3", "topmass", "hdamp",
+               "muf", "mur", "pdf", "as", "ttbar", "jer", "type3", "bfragmentation",
+               "bdecays", "topmass", "hdamp",
                "jesRegrouped_Absolute", "jesRegrouped_Absolute_2024",
                "jesRegrouped_BBEC1", "jesRegrouped_BBEC1_2024",
                "jesRegrouped_EC2", "jesRegrouped_EC2_2024",
@@ -59,30 +67,33 @@ const std::map<std::string, std::set<std::string>> kBTagHFAvailableSources = {
 
 enum class BTagJESScheme { None, Total, Regrouped11 };
 
+// Also used for 2024: payload_source is the 2025 payload label and logical
+// source name; payload_2024 is the corresponding label in the 2024 payload.
 struct BTagJESMapping {
     std::string_view analysis_source;
     std::string_view payload_source;
+    std::string_view payload_2024;
 };
 
 constexpr std::array<BTagJESMapping, 11> kBTagJES2025Mapping = {{
-    {"Absolute", "jesRegrouped_Absolute"},
-    {"BBEC1", "jesRegrouped_BBEC1"},
-    {"EC2", "jesRegrouped_EC2"},
-    {"HF", "jesRegrouped_HF"},
-    {"RelativeBal", "jesRegrouped_RelativeBal"},
-    {"FlavorQCD", "jesRegrouped_FlavorQCD"},
-    {"AbsoluteYear", "jesRegrouped_Absolute_2024"},
-    {"BBEC1Year", "jesRegrouped_BBEC1_2024"},
-    {"EC2Year", "jesRegrouped_EC2_2024"},
-    {"HFYear", "jesRegrouped_HF_2024"},
-    {"RelativeSampleYear", "jesRegrouped_RelativeSample_2024"},
+    {"Absolute", "jesRegrouped_Absolute", "jes_absolute"},
+    {"BBEC1", "jesRegrouped_BBEC1", "jes_bbec1"},
+    {"EC2", "jesRegrouped_EC2", "jes_ec2"},
+    {"HF", "jesRegrouped_HF", "jes_hf"},
+    {"RelativeBal", "jesRegrouped_RelativeBal", "jes_relativebal"},
+    {"FlavorQCD", "jesRegrouped_FlavorQCD", "jes_flavorqcd"},
+    {"AbsoluteYear", "jesRegrouped_Absolute_2024", "jes_absolute_2024"},
+    {"BBEC1Year", "jesRegrouped_BBEC1_2024", "jes_bbec1_2024"},
+    {"EC2Year", "jesRegrouped_EC2_2024", "jes_ec2_2024"},
+    {"HFYear", "jesRegrouped_HF_2024", "jes_hf_2024"},
+    {"RelativeSampleYear", "jesRegrouped_RelativeSample_2024", "jes_relativesample_2024"},
 }};
 
 bool bTagHFSourceAvailable(const std::string &year, std::string_view source);
 
 BTagJESScheme bTagJESSchemeForYear(std::string_view year) {
-    if (year == "2025") return BTagJESScheme::Regrouped11;
-    if (year == "2024Prompt" || bTagHFSourceAvailable(std::string(year), "jes"))
+    if (year == "2024Prompt" || year == "2025") return BTagJESScheme::Regrouped11;
+    if (bTagHFSourceAvailable(std::string(year), "jes"))
         return BTagJESScheme::Total;
     return BTagJESScheme::None;
 }
@@ -99,10 +110,13 @@ bool bTagHFSourceAvailable(const std::string &year, std::string_view source) {
     return year_it != kBTagHFAvailableSources.end() && year_it->second.count(std::string(source));
 }
 
-// Keep public branch names logical and translate only the 2025 payload label.
+// Keep public branch names logical and translate only the payload labels.
 std::string bTagHFPayloadSource(const std::string &year, std::string_view source) {
     if (!bTagHFSourceAvailable(year, source)) return {};
-    if (year == "2025" && source == "topmass") return "mass";
+    if ((year == "2024Prompt" || year == "2025") && source == "topmass") return "mass";
+    if (year == "2024Prompt")
+        for (const auto &mapping : kBTagJES2025Mapping)
+            if (mapping.payload_source == source) return std::string(mapping.payload_2024);
     return std::string(source);
 }
 
@@ -169,12 +183,6 @@ std::string bTagObservedCategory(const std::vector<bool> &passed,
            std::string(kBTagInclusiveWorkingPoints[indices[static_cast<std::size_t>(passed_index + 1)]]);
 }
 
-int bTagTightestPassed(const std::vector<bool> &passed) {
-    for (int index = static_cast<int>(passed.size()) - 1; index >= 0; --index)
-        if (passed[static_cast<std::size_t>(index)]) return index;
-    return -1;
-}
-
 double bTagCategoryWeight(const std::vector<double> &sf, const std::vector<double> &eff,
                           const std::vector<bool> &passed,
                           const std::vector<std::size_t> &indices,
@@ -183,45 +191,24 @@ double bTagCategoryWeight(const std::vector<double> &sf, const std::vector<doubl
     if (sf.empty() || sf.size() != eff.size() || sf.size() != passed.size() || sf.size() != indices.size())
         throw std::runtime_error("Inconsistent b-tag working-point vector sizes");
     const std::string category = bTagObservedCategory(passed, indices);
+    const auto result = cumulativeWPCategoryWeight(sf, eff, passed, kBTagDenominatorEpsilon);
     const auto fail = [&](const char *reason, std::atomic<unsigned long long> &counter) {
         recordBTagFailure(reason, source, direction, flavor, category.c_str());
         return unityForInvalidBTagWeight(counter);
     };
-    for (std::size_t index = 0; index < passed.size(); ++index) {
-        if (!std::isfinite(sf[index]) || !std::isfinite(eff[index]))
+    switch (result.status) {
+        case CategoryWeightStatus::Ok:
+            return result.value;
+        case CategoryWeightStatus::InvalidProbability:
             return fail("invalid_probability", g_btag_invalid_probability);
-        if (index > 0 && passed[index] && !passed[index - 1])
+        case CategoryWeightStatus::NonnestedWorkingPoints:
             return fail("nonnested_working_points", g_btag_invalid_probability);
-        if (!(0. <= eff[index] && eff[index] <= 1.))
-            return fail("invalid_probability", g_btag_invalid_probability);
-    }
-    for (std::size_t index = 1; index < eff.size(); ++index)
-        if (eff[index - 1] < eff[index])
-            return fail("invalid_probability", g_btag_invalid_probability);
-
-    std::vector<double> q(sf.size());
-    for (std::size_t index = 0; index < q.size(); ++index) {
-        q[index] = sf[index] * eff[index];
-        if (!std::isfinite(q[index]) || q[index] < 0. || q[index] > 1.)
-            return fail("invalid_probability", g_btag_invalid_probability);
-        if (index > 0 && q[index - 1] < q[index])
-            return fail("invalid_probability", g_btag_invalid_probability);
-    }
-
-    const int passed_index = bTagTightestPassed(passed);
-    if (passed_index < 0) {
-        if (std::abs(1. - eff[0]) < kBTagDenominatorEpsilon)
+        case CategoryWeightStatus::NegativeIntermediate:
+            return fail("negative_intermediate", g_btag_negative_intermediate);
+        case CategoryWeightStatus::TinyDenominator:
             return fail("tiny_denominator", g_btag_tiny_denominator);
-        return (1. - q[0]) / (1. - eff[0]);
     }
-    if (passed_index == static_cast<int>(passed.size()) - 1) return sf.back();
-    const std::size_t next = static_cast<std::size_t>(passed_index + 1);
-    if (q[static_cast<std::size_t>(passed_index)] < q[next])
-        return fail("negative_intermediate", g_btag_negative_intermediate);
-    if (std::abs(eff[static_cast<std::size_t>(passed_index)] - eff[next]) < kBTagDenominatorEpsilon)
-        return fail("tiny_denominator", g_btag_tiny_denominator);
-    return (q[static_cast<std::size_t>(passed_index)] - q[next]) /
-           (eff[static_cast<std::size_t>(passed_index)] - eff[next]);
+    throw std::logic_error("Unhandled b-tag category weight status");
 }
 
 std::size_t bTagHFSourceIndex(std::string_view source) {
@@ -377,7 +364,11 @@ std::string bTagEfficiencyFamily(const std::string &sample, const std::string &y
 std::string bTagEfficiencyChannel(const std::string &channel, const std::string &year) {
     const std::string canonical_channel =
         channel == "0lep_1FJ_met" ? "0lep_1FJ" :
-        channel == "0lep_2FJ_met" ? "0lep_2FJ" : channel;
+        channel == "0lep_2FJ_met" ? "0lep_2FJ" :
+        // 1lep_WSF is a variant of 1lep_1FJ -- same pre-skim, same
+        // leptonic topology -- and never gets an efficiency payload of its own, so it
+        // canonicalises onto 1lep_1FJ exactly as the _met variants do onto theirs.
+        channel == "1lep_WSF" ? "1lep_1FJ" : channel;
     if (canonical_channel == "all_events")
         throw std::runtime_error("all_events has no channel-specific b-tag efficiency payload. "
                                  "Specify an analysis channel, or rerun with --skip-btag-sf.");
@@ -486,7 +477,9 @@ BTagEfficiencyContexts prepareBTagEfficiencyContexts(
                 for (const auto &mapping : kBTagJES2025Mapping)
                     for (const auto direction : {std::string("up_"), std::string("down_")})
                         for (const int flavor : {5, 4})
-                            validate_hf_jes(mapping.analysis_source, mapping.payload_source, direction, flavor);
+                            validate_hf_jes(mapping.analysis_source,
+                                            bTagHFPayloadSource(entry.year, mapping.payload_source),
+                                            direction, flavor);
             }
         }
         for (const auto flavor : {std::string("B"), std::string("C"), std::string("L")}) {
@@ -893,7 +886,7 @@ RNode applyElectronTriggerScaleFactors(std::unordered_map<std::string, correctio
         }
         return electron_sf_weights;
     };
-    return df.Define("_weight_electrontrigger", eval_correction, {"year", "electron_SC_eta", "electron_pt"});
+    return df.Define("_weight_electrontrigger", eval_correction, {"year", "_electronSel_SC_eta", "_electronSel_pt"});
 }
 
 /*
@@ -1252,7 +1245,7 @@ RNode applyMCWeights(RNode df_, const std::string &channel, bool apply_btag_sf,
             df = df.Define("weightsyst_jer", bTagKinematicVariationRatios,
                            {bTagHFInternalBranchName("jer")});
 
-        // 2025 BTV JES responses are companions of the matching analysis JES
+        // 2024/2025 BTV JES responses are companions of the matching analysis JES
         // variations, not independent nuisances. Only materialize them when
         // the corresponding analysis JES columns are being stored.
         if (!jesVariationSuffixes().empty()) {

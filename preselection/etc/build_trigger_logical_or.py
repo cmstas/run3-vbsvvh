@@ -1,28 +1,63 @@
 # Script to build a giant string of logic for RDF to evaluate
 
 
+# Used by 0lep_2FJ and 0lep_3FJ. Only the hadronic PD is read, so events from the other PDs
+# skimmed for these channels (e.g. MET, SingleMuon) are not double counted.
 DS_DICT_HT = {
     "2016" : {
         "ds_prio_lst" : None,
         "ds_trg_dict" : {
-            "ds_name_1" : [
-                "trg_name_1",
+            "JetHT" : [
+                "HLT_PFHT800",
+                "HLT_PFHT900",
             ],
         },
     },
     "2017" : {
         "ds_prio_lst" : None,
         "ds_trg_dict" : {
-            "ds_name_1" : [
-                "trg_name_1",
+            "JetHT" : [
+                "HLT_PFHT1050",
             ],
         },
     },
     "2018" : {
         "ds_prio_lst" : None,
         "ds_trg_dict" : {
-            "ds_name_1" : [
-                "trg_name_1",
+            "JetHT" : [
+                "HLT_PFHT1050",
+            ],
+        },
+    },
+    "2022" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_PFHT1050",
+            ],
+        },
+    },
+    "2023" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_PFHT1050",
+            ],
+        },
+    },
+    "2024" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_PFHT1050",
+            ],
+        },
+    },
+    "2025" : {
+        "ds_prio_lst" : None,
+        "ds_trg_dict" : {
+            "JetMET" : [
+                "HLT_PFHT1050",
             ],
         },
     },
@@ -302,16 +337,9 @@ DS_DICT_SINGLELEP = {
             "SingleMuon" : [
                 "HLT_IsoMu24",
                 "HLT_IsoTkMu24",
-                "HLT_IsoMu22",
-                "HLT_IsoTkMu22",
-                "HLT_IsoMu20",
-                "HLT_IsoTkMu20",
             ],
             "SingleElectron" : [
                 "HLT_Ele27_eta2p1_WPTight_Gsf",
-                "HLT_Ele27_WPTight_Gsf",
-                "HLT_Ele25_eta2p1_WPTight_Gsf",
-                "HLT_Ele27_eta2p1_WPLoose_Gsf",
             ],
         },
     },
@@ -323,9 +351,6 @@ DS_DICT_SINGLELEP = {
             ],
             "SingleElectron" : [
                 "HLT_Ele32_WPTight_Gsf_L1DoubleEG",
-                "HLT_Ele35_WPTight_Gsf",
-                "HLT_Ele38_WPTight_Gsf",
-                "HLT_Ele40_WPTight_Gsf",
             ],
         },
     },
@@ -337,6 +362,28 @@ DS_DICT_SINGLELEP = {
             ],
             "EGamma" : [
                 "HLT_Ele32_WPTight_Gsf",
+            ],
+        },
+    },
+    "2022" : {
+        "ds_prio_lst" : ["Muon", "EGamma"],
+        "ds_trg_dict" : {
+            "Muon" : [
+                "HLT_IsoMu24",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
+            ],
+        },
+    },
+    "2023" : {
+        "ds_prio_lst" : ["Muon", "EGamma"],
+        "ds_trg_dict" : {
+            "Muon" : [
+                "HLT_IsoMu24",
+            ],
+            "EGamma" : [
+                "HLT_Ele30_WPTight_Gsf",
             ],
         },
     },
@@ -362,7 +409,6 @@ DS_DICT_SINGLELEP = {
             ],
         },
     },
-
 }
 DS_DICT_MULTILEP = {
     "2016" : {
@@ -628,10 +674,10 @@ def dump_logical_or_string(ds_dict,do_overlap_removal):
 
 def main():
 
-    # dump_logical_or_string(DS_DICT_HT,do_overlap_removal=False)
+    dump_logical_or_string(DS_DICT_HT,do_overlap_removal=False)
     # dump_logical_or_string(DS_DICT_MET,do_overlap_removal=False)
-    # dump_logical_or_string(DS_DICT_SINGLELEP,do_overlap_removal=True)
-    dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_removal=True)
+    dump_logical_or_string(DS_DICT_SINGLELEP,do_overlap_removal=True)
+    # dump_logical_or_string(DS_DICT_MULTILEP,do_overlap_removal=True)
     # dump_logical_or_string(DS_DICT_0lep0FJ, do_overlap_removal=False)
     # dump_logical_or_string(DS_DICT_0lep1FJ, do_overlap_removal=False)
 

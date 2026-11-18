@@ -40,6 +40,8 @@ void Cutflow::Add(RNode df, const std::string &label) {
         e.isCount = true;
     } else {
         e.wResult = df.Sum<double>(weightCol());
+        const std::string w2col = "_cutflow_w2_" + std::to_string(entries().size());
+        e.w2Result = df.Define(w2col, weightCol() + " * " + weightCol()).Sum<double>(w2col);
         e.isCount = false;
     }
     entries().push_back(std::move(e));
@@ -62,9 +64,13 @@ void Cutflow::Print(std::ostream &out) {
     }
 
     std::vector<double> vals;
+    std::vector<double> errs;
     vals.reserve(ents.size());
-    for (auto &e : ents)
+    errs.reserve(ents.size());
+    for (auto &e : ents) {
         vals.push_back(e.value());
+        errs.push_back(e.error());
+    }
 
     const double first = vals.front();
 
@@ -76,7 +82,7 @@ void Cutflow::Print(std::ostream &out) {
 
     tabulate::Table table;
 
-    table.add_row({"#", "Cut name", "Sum(w)", "rel. eff.", "abs. eff."});
+    table.add_row({"#", "Cut name", "Sum(w)", "+/- stat", "rel. eff.", "abs. eff."});
 
     for (std::size_t i = 0; i < ents.size(); ++i) {
         const double prev   = (i == 0) ? vals[0] : vals[i - 1];
@@ -87,6 +93,7 @@ void Cutflow::Print(std::ostream &out) {
             std::to_string(i),
             ents[i].label,
             fmt(vals[i]),
+            fmt(errs[i]),
             fmt(relEff),
             fmt(absEff)
         });
@@ -98,7 +105,7 @@ void Cutflow::Print(std::ostream &out) {
 
     const std::size_t nrows = ents.size() + 1;
     for (std::size_t r = 1; r < nrows; ++r) {
-        for (std::size_t c : {0, 2, 3, 4})
+        for (std::size_t c : {0, 2, 3, 4, 5})
             table[r][c].format().font_align(tabulate::FontAlign::right);
     }
 

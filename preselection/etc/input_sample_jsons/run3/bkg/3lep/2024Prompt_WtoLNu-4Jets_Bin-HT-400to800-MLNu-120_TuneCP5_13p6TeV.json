@@ -1,0 +1,23 @@
+{
+    "samples": {
+        "WtoLNu-4Jets_Bin-HT-400to800-MLNu-120_TuneCP5_13p6TeV_madgraphMLM-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v30/Run3_Bkg_v15_v30_3Lep/WtoLNu-4Jets_Bin-HT-400to800-MLNu-120_TuneCP5_13p6TeV_madgraphMLM-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM/output_1.root",
+                "VBSVVH_skim_v30/Run3_Bkg_v15_v30_3Lep/WtoLNu-4Jets_Bin-HT-400to800-MLNu-120_TuneCP5_13p6TeV_madgraphMLM-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM/output_2.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2024Prompt",
+                "xsec": 0.5268,
+                "lumi": 109.95,
+                "shortname": "WtoLNu-4Jets_Bin-HT-400to800-MLNu-120_TuneCP5_13p6TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 92307006.54161903
+            }
+        }
+    }
+}

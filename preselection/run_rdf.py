@@ -14,17 +14,67 @@ ANA_CHANNELS = {
         "0lep_3FJ"     : "0lep_3FJ",
         "1lep_1FJ"     : "1lep_1FJ",
         "1lep_2FJ"     : "1lep_1FJ",
+        "1lep_WSF"     : "1lep_1FJ",
         #"2lepSS"       : "2lepSS", # DNE yet
         "2lep_1FJ"     : "2lep_1FJ", # Analysis channel shared between SF and OF
         "2lep_2FJ"     : "2lep_2FJ",
         "3lep"         : "3lep",
         "4lep"         : "4lep",
 }
+# Calibration / measurement regions that RDF knows how to run but that are NOT part of
+# the analysis. Unlike the analysis channels, these are not mutually orthogonal -- they
+# deliberately overlap the channels they are measured from -- so they must never be swept
+# up by "--channels all", which is how the routine full production is submitted. Run them
+# explicitly by name instead: run_rdf.py -c 1lep_WSF.
+NON_ANALYSIS_CHANNELS = {"1lep_WSF"}
+
 # MET-trigger subsets may have their own efficiency payloads.  They remain
 # excluded from final channel merging by the b-tag YAML, but are valid raw
-# production channels here.
-B_TAG_EFF_EXCLUDED_CHANNELS = {"all_events"}
+# production channels here.  The non-analysis channels are excluded too: they apply
+# another channel's efficiency payload and never produce one.
+B_TAG_EFF_EXCLUDED_CHANNELS = {"all_events"} | NON_ANALYSIS_CHANNELS
 SUPPORTED_BTAG_EFF_YEARS = {"2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt"}
+
+# Where RDF productions go by default on Hipergator (/cmsuf). A single channel
+# production is O(TB), so it belongs on /cmsuf rather than the much smaller shared
+# /blue project filesystem. This is a convenience, never a requirement: off
+# Hipergator, or for anyone without a writable /cmsuf area, we fall back to the
+# ordinary "." default. Pass -o to override in either case.
+CMSUF_USER_BASE = "/cmsuf/data/store/user"
+
+
+def _is_creatable(path):
+    """True if path is writable, or could be created under an existing ancestor."""
+    path = os.path.abspath(path)
+    while not os.path.exists(path):
+        parent = os.path.dirname(path)
+        if parent == path:
+            return False
+        path = parent
+    return os.path.isdir(path) and os.access(path, os.W_OK | os.X_OK)
+
+
+def default_rdf_outpath():
+    """<CMSUF_USER_BASE>/<user>/vbsvvh/rdf on Hipergator, else "." .
+
+    CMSUF_USER_BASE itself is not writable, so a usable area means the account's
+    own directory already exists and is writable by whoever is running. The
+    /cmsuf account name may drop the dot in $USER (first.last -> firstlast), so
+    try both spellings and take whichever is actually usable.
+    """
+    if not os.path.isdir(CMSUF_USER_BASE):
+        return "."
+
+    user = os.environ.get("USER", "")
+    seen = set()
+    for candidate in (user, user.replace(".", "")):
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        outpath = os.path.join(CMSUF_USER_BASE, candidate, "vbsvvh", "rdf")
+        if _is_creatable(outpath):
+            return outpath
+    return "."
 
 # Merge the input jsons into one dictionary
 def merge_jsons(input_paths_lst):
@@ -133,7 +183,8 @@ def main():
     parser.add_argument('--kinds', nargs='+',          help = 'Which sample kinds to auto-resolve when -i is not given (default: all three). Use it to submit signal separately, e.g. with --systs',
                         choices=['sig','bkg','data'], default=['sig','bkg','data'])
     parser.add_argument('-m', '--mode',                help = 'Which mode to run in (local, condor, or slurm)', choices=['local','condor','slurm'])
-    parser.add_argument('-o', '--outpath',             help = 'Output directory', default=".")
+    parser.add_argument('-o', '--outpath',             help = 'Output directory (default: %(default)s)',
+                        default=default_rdf_outpath())
     parser.add_argument('-n', '--outname',             help = 'Output name', default="rdf_output")
     parser.add_argument('-r', '--run',                 help = 'Which run (2 or 3)', choices=['2','3'])
     parser.add_argument('-p', '--prefix',              help = 'Prefix to append to the file paths', default="/ceph/cms/")
@@ -170,7 +221,8 @@ def main():
     # Get the list of channels to run over (if we ask for "all", use known analysis channels)
     if args.channels == ["all"]:
         channels_to_run = [channel for channel in ANA_CHANNELS
-                           if not args.btag_eff or channel not in B_TAG_EFF_EXCLUDED_CHANNELS]
+                           if channel not in NON_ANALYSIS_CHANNELS
+                           and (not args.btag_eff or channel not in B_TAG_EFF_EXCLUDED_CHANNELS)]
     else: channels_to_run = args.channels
 
     # Run RDF once for each specified channel

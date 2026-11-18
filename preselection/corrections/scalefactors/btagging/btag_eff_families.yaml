@@ -79,6 +79,11 @@ preliminary_families:
   DY:
     - DYto
     - DYJetsTo
+    # Z(->nunu)+jets: jets are ISR/FSR as in DY, so the flavour composition matches.
+    # "Zto2Nu-4Jets" not "Zto2Nu" -- the latter is also a substring of the VH
+    # samples (GluGluZH-Zto2Nu-Hto2B, ZH-Zto2Nu-Hto2B) and of ZZto2Nu2Q.
+    - Zto2Nu-4Jets
+    - ZJetsToNuNu
   W_leptonic:
     - WtoLNu
     - WJetsToLNu
@@ -155,3 +160,6 @@ excluded_source_channels:
   - all_events
   - 0lep_1FJ_met
   - 0lep_2FJ_met
+  # Calibration region, not an analysis channel: it applies 1lep_1FJ's payload
+  # (bTagEfficiencyChannel canonicalises it) and never contributes one of its own.
+  - 1lep_WSF

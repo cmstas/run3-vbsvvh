@@ -74,7 +74,7 @@ B-tag efficiencies have been derived for all retained analysis channels and all 
 - `2024Prompt`
 
 The final year-scoped payloads are `corrections/scalefactors/btagging/btag_eff_<year>.json`. The `_met` trigger subsets and `all_events` are intentionally excluded from the payload construction. The stored `*_mcstat_unc` values are diagnostic only and are not consumed by the analysis.
-For normal b-tag SF application, 2025 resolves its efficiency family, channel, and correction from the 2024Prompt payload (`btag_eff_2024Prompt.json`), while using the official 2025 BTV SF payload. Branches are emitted only for sources present in at least one input year; sources unavailable for a particular event year receive the central value in that branch, while sources absent from the input are not written. The 2025 payload maps logical `topmass` to `mass`. Its 11 regrouped BTV JES responses are emitted only as companions named for the matching analysis JES source (for example, `weightsyst_jesAbsolute`) when `--systs` is enabled; they are not independent nuisances. The 2024 payload keeps one separate inclusive BTV JES-total response (`weightsyst_jes`). Run-2 legacy granular BTV JES sources are not exposed, and no BTV JES branch is written unless a supported inclusive/total source exists.
+For normal b-tag SF application, 2025 resolves its efficiency family, channel, and correction from the 2024Prompt payload (`btag_eff_2024Prompt.json`), while using the official 2025 BTV SF payload. Branches are emitted only for sources present in at least one input year; sources unavailable for a particular event year receive the central value in that branch, while sources absent from the input are not written. The 2024 and 2025 payloads map logical `topmass` to `mass`. Their 11 regrouped BTV JES responses are emitted only as companions named for the matching analysis JES source (for example, `weightsyst_jesAbsolute`) when `--systs` is enabled; they are not independent nuisances. The BTV SF payloads are pinned to dated versions instead of `latest` (`src/weights.h` and `src/corrections.cpp`). Run-2 legacy granular BTV JES sources are not exposed, and no BTV JES branch is written unless a supported inclusive/total source exists.
 
 <details>
 <summary>Derivation instructions and tutorial</summary>
@@ -140,14 +140,48 @@ Systematic branches are `{central, up, down}` vectors. Recommended branches to u
   - With JES variation responses: simply use nominal event weight `weight`
 
 - **Full breakdown (where AK4 b-tag systematics are found to be dominant):**
-  - HF: `weightsyst_btag_HF_pdf`, `weightsyst_btag_HF_as`, `weightsyst_btag_HF_pdfas`, `weightsyst_btag_HF_ttbar`, `weightsyst_btag_HF_type3`, `weightsyst_btag_HF_bfragmentation`, `weightsyst_btag_HF_topmass`, `weightsyst_btag_HF_hdamp`, and `weightsyst_btag_HF_statistic_<year>`
+  - HF: `weightsyst_btag_HF_pdf`, `weightsyst_btag_HF_as`, `weightsyst_btag_HF_ttbar`, `weightsyst_btag_HF_type3`, `weightsyst_btag_HF_bfragmentation`, `weightsyst_btag_HF_bdecays`, `weightsyst_btag_HF_topmass`, `weightsyst_btag_HF_hdamp`, and `weightsyst_btag_HF_statistic_<year>`
   - LF: `weightsyst_btag_LF_correlated`, `weightsyst_btag_LF_uncorrelated_<year>`
   - Other SFs: `weightsyst_pileup_withbSF`, `weightsyst_PSISR_withbSF`, `weightsyst_PSFSR_withbSF`, `weightsyst_muF_withbSF`, and `weightsyst_muR_withbSF`
   - JES responses:
-    - 2025: `weightsyst_jesAbsolute`, `weightsyst_jesBBEC1`, `weightsyst_jesEC2`, `weightsyst_jesHF`, `weightsyst_jesRelativeBal`, `weightsyst_jesFlavorQCD`, `weightsyst_jesAbsoluteYear`, `weightsyst_jesBBEC1Year`, `weightsyst_jesEC2Year`, `weightsyst_jesHFYear`, and `weightsyst_jesRelativeSampleYear` are companions of the corresponding analysis JES nuisances, not independent BTV nuisances.
-    - 2024: `weightsyst_jes` is one separate inclusive BTV JES-total nuisance; do not duplicate it across the 11 analysis JES sources.
+    - 2024 and 2025: `weightsyst_jesAbsolute`, `weightsyst_jesBBEC1`, `weightsyst_jesEC2`, `weightsyst_jesHF`, `weightsyst_jesRelativeBal`, `weightsyst_jesFlavorQCD`, `weightsyst_jesAbsoluteYear`, `weightsyst_jesBBEC1Year`, `weightsyst_jesEC2Year`, `weightsyst_jesHFYear`, and `weightsyst_jesRelativeSampleYear` are companions of the corresponding analysis JES nuisances, not independent BTV nuisances.
     - Run 2: no BTV JES branch is written for payloads without a supported inclusive/total source; legacy granular sources are intentionally not exposed.
     - `weightsyst_jer` remains the BTV JER response where available.
+
+## Wqq tagging SF application
+
+GloParT-3 Wqq tagging SFs are written **per fat jet**, not folded into `weight`: which jets enter the event weight depends on each analysis's selection. The SFs are cumulative (measured for score > WP, with score = `FatJet_Wqq` = (Xcs + Xqq/3)/(Xcs + Xqq/3 + QCD)). Only true W jets (`FatJet_genMatch` 1 = prompt W, 2 = W from a top) are corrected; every other jet, and every jet in data, gets 1. The SFs are evaluated at the nominal JEC/JER `FatJet_pt` and are the same in every JES/JER variation.
+
+Edit `applywqqsf.yaml` to choose the working points each channel needs; every channel must be listed, and a channel with no keys gets no Wqq branches. Any WP between the measured points (0.40 to 0.98) can be requested: the SF is linearly interpolated between adjacent measured WPs.
+
+```yaml
+0lep_1FJ_met:
+  flags: [[0.60], [0.40, 0.60, 0.80]]  # WPs used as a hard cut or as flags (e.g. NN inputs)
+```
+
+Pick the set by how your analysis uses the score of that jet:
+
+| Use of the score | Config | Per-jet value for a true W jet |
+|---|---|---|
+| One WP, as a hard cut or as a flag | `flags: [[WP]]` | passes: SF(WP); fails: (1 − SF·ε)/(1 − ε) |
+| Several WPs on the same jet | `flags: [[WP1, WP2, ...]]` | the weight of the score interval the jet falls in (below WP1, between two adjacent WPs, or above the last) |
+
+ε is the candle MC efficiency of true W jets for score > WP.
+
+With a hard cut, score > WP, the failing jets are discarded, so only SF(WP) enters and ε has no effect on the result. Without a cut, the pass and fail values average to 1 over true W jets (ε·SF + (1 − ε)·(1 − SF·ε)/(1 − ε) = 1), so the total true-W yield of the candle is preserved.
+
+If you use several WPs on the same jet, for example NN flags, or a hard cut at 0.60 with a flag at 0.80, request them together as one set, e.g. `flags: [[0.60, 0.80]]`, and use that single branch. Do not request them as separate sets `[[0.60], [0.80]]` and multiply the two branches: the flags are not independent (a jet above 0.80 always passes 0.60 too), so the product applies the correction for the shared part twice and biases the yield. Several sets per channel are allowed so that the same production can serve different downstream uses, for example two NNs with different WPs, or a study comparing WP choices. Each use takes exactly **one** of the branches.
+
+The weights need `Wqq_eff_MC` in the era json files; every era file has it (the candle MC efficiency from the same fits as the SFs, see `corrections/scalefactors/WqqSF/README.md`). A file without it stops the job with an error.
+
+Branches, each a `{nom, up, down}` triple on `FatJet_` and on the selected-jet `fatjet_` collection:
+
+- `FatJet_WqqSF_flags0p60_{nom,up,down}`
+- `FatJet_WqqSF_flags0p40_0p60_0p80_{nom,up,down}`
+
+In the postprocessor, multiply `_nom` into the event weight for every fat jet whose score your selection uses, and use `_up` / `_down` the same way for the systematic variation. The variation shifts the SFs of every WP in a set together.
+
+Payloads are `corrections/scalefactors/WqqSF/Wqq_SF_<year>.json` (2016preVFP, 2016postVFP, 2017, 2018, 2024Prompt, 2025), see [`corrections/scalefactors/WqqSF/README_per_era.md`](corrections/scalefactors/WqqSF/README_per_era.md). pT is clamped to the measured bins; above 800 GeV the 400–800 GeV value is used with 3× its uncertainty. A WP outside 0.40–0.98 is an error, so looser cuts (e.g. score > 0.1) get no Wqq SF.
 
 
 ---

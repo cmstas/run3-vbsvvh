@@ -223,6 +223,12 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, ru
         dataset_name_short, xsec_val = dataset_name, 1.0
     else:
         dataset_name_short, xsec_val = match_xsec(dataset_name,xsec_dict)
+        # Refuse to write a json whose xsec is still a placeholder. Catching it here
+        # names the sample and stops before submission; letting it through would
+        # produce a production that finishes with every yield scaled wrong.
+        if isinstance(xsec_val, xsec_ref.UnsetXsec):
+            raise Exception(f"No xsec is set for sample \"{dataset_name}\" (xsec_ref key "
+                            f"\"{dataset_name_short}\"). Fill in the value in etc/xsec_ref.py.")
 
     # Get full paths to all root and json files for this dataset
     dataset_fullpath = os.path.join(path,dataset_name)
@@ -249,7 +255,9 @@ def make_json_for_dataset(dataset_info, path, kind, xsec_dict, skim_set_name, ru
     metadata_dict = {}
     metadata_dict["kind"] = kind
     metadata_dict["year"] = year
-    metadata_dict["xsec"] = xsec_val
+    # float() on purpose: an integral xsec would serialise as a bare int and RDF
+    # rejects it ("Metadata value found at key 'xsec' is not of type double").
+    metadata_dict["xsec"] = float(xsec_val)
     metadata_dict["lumi"] = lumi
     metadata_dict["shortname"] = name_for_metadata
     metadata_dict["do_ewk_corr"] = do_ewk_corr
@@ -322,6 +330,9 @@ def main():
                     if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("MuonEG"): continue
                     if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("DoubleMuon"): continue
                     if skim_set_name == "1lep_1FJ" and ds_dict["dataset_name"].startswith("DoubleEG"): continue
+                    # Samples superseded by another description of the same process, see
+                    # datasets_excluded in dataset_names_ref.py. Skipped for every channel.
+                    if dataset_names_ref.is_excluded(ds_dict["dataset_name"]): continue
                     # Otherwise append to the list we want to make jsons for
                     datasets_lst.append(ds_dict)
 
