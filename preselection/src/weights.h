@@ -295,6 +295,24 @@ const ElectronIDConfig electronID_loose = {
     "Loose"
 };
 
+// Veto working point, same correction sets as electronID_loose. Used by the mixed-WP path;
+// electronID_loose and electronID_tight are unchanged.
+const ElectronIDConfig electronID_veto = {
+    {
+        {"2016preVFP",            "UL-Electron-ID-SF"},
+        {"2016postVFP",           "UL-Electron-ID-SF"},
+        {"2017",                  "UL-Electron-ID-SF"},
+        {"2018",                  "UL-Electron-ID-SF"},
+        {"2022Re-recoBCD",        "Electron-ID-SF"},
+        {"2022Re-recoE+PromptFG", "Electron-ID-SF"},
+        {"2023PromptC",           "Electron-ID-SF"},
+        {"2023PromptD",           "Electron-ID-SF"},
+        {"2024Prompt",            "Electron-ID-SF"},
+        {"2025",                  "Electron-ID-SF"}
+    },
+    "Veto"
+};
+
 const ElectronIDConfig electronID_tight = {
     {
         {"2016preVFP",            "UL-Electron-ID-SF"},
@@ -319,6 +337,12 @@ const std::unordered_map<std::string, std::vector<std::string>> electronWorkingP
     {"_weight_electron_reco_tightid", {
         "_weight_electron_reco",
         "_weight_electron_id_tight"
+    }},
+    // Reco + per-electron mixed loose/veto ID, evaluated over the full veto-electron
+    // collection rather than its loose subset.
+    {"_weight_electron_recoall_mixedid", {
+        "_weight_electron_reco_all",
+        "_weight_electron_id_mixed"
     }}
 };
 
@@ -338,8 +362,20 @@ const std::unordered_map<std::string, std::string> electronTriggerScaleFactors_y
 };
 
 // New reco+ID WP machinery
-RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, RNode df, std::string output_name = "_weight_electron_reco");
+// NOTE: eta_col/pt_col default to the existing loose-subset columns, so every current call
+// site is unchanged. The mixed-WP path passes the full-collection columns instead.
+RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, RNode df, std::string output_name = "_weight_electron_reco",
+                                    std::string eta_col = "_electronSel_SC_eta", std::string pt_col = "_electronSel_pt");
 RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, ElectronIDConfig config, std::string output_name, RNode df);
+// Per-electron working point: electrons passing the tighter ID get config_pass's WP, the
+// rest get config_fail's. Evaluated over the columns named by eta_col/pt_col/isPass_col, so
+// the caller chooses which collection is used.
+RNode applyElectronMixedIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron,
+                                       ElectronIDConfig config_pass, ElectronIDConfig config_fail,
+                                       std::string output_name, RNode df,
+                                       std::string eta_col    = "_electronSelAll_SC_eta",
+                                       std::string pt_col     = "_electronSelAll_pt",
+                                       std::string isPass_col = "_electronSelAll_isLoose");
 RNode combineElectronScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys);
 RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::string> wp_keys);
 

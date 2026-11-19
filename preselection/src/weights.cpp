@@ -715,7 +715,8 @@ static std::string egmYearKey(const std::string& year) {
 }
 
 
-RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, RNode df, std::string output_name) {
+RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, RNode df, std::string output_name,
+                                    std::string eta_col, std::string pt_col) {
     auto eval_correction = [cset_electron] (std::string year, const RVec<float> eta, const RVec<float> pt) {
         RVec<double> electron_sf_weights = {1., 1., 1.};
         if (eta.empty()) {
@@ -771,37 +772,16 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
         }
         return electron_sf_weights;
     };
-    return df.Define(output_name, eval_correction, {"year", "_electronSel_SC_eta", "_electronSel_pt"});
+    return df.Define(output_name, eval_correction, {"year", eta_col, pt_col});
 }
 
 RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, ElectronIDConfig config, std::string output_name, RNode df) {
-    auto eval_correction = [cset_electron, config] (std::string year, const RVec<float> eta, const RVec<float> pt) {
-        RVec<double> electron_sf_weights = {1., 1., 1.};
-        if (eta.empty()) {
-            return electron_sf_weights;
-        }
-        if (cset_electron.find(year) == cset_electron.end()) {
-            static std::unordered_set<std::string> warned_years;
-            if (warned_years.find(year) == warned_years.end()) {
-                std::cout << "Warning: Electron ID correction set for year " << year << " not found. Setting electron ID weights to 1." << std::endl;
-                warned_years.insert(year);
-            }
-            return electron_sf_weights;
-        }
-        if (config.correction_name_map.find(year) == config.correction_name_map.end()) {
-            return electron_sf_weights;
-        }
-
-        auto correctionset = cset_electron.at(year).at(config.correction_name_map.at(year));
-        const std::string egm_year = egmYearKey(year);
-        for (size_t i = 0; i < eta.size(); i++) {
-            electron_sf_weights[0] *= correctionset->evaluate({egm_year, "sf",     config.working_point, eta[i], pt[i]});
-            electron_sf_weights[1] *= correctionset->evaluate({egm_year, "sfup",   config.working_point, eta[i], pt[i]});
-            electron_sf_weights[2] *= correctionset->evaluate({egm_year, "sfdown", config.working_point, eta[i], pt[i]});
-        }
-        return electron_sf_weights;
-    };
-    return df.Define(output_name, eval_correction, {"year", "_electronSel_SC_eta", "_electronSel_pt"});
+    // One working point for every electron is the per-electron form with both configs equal:
+    // _electronSel_isLoose is true for every entry of the loose subset by construction, so
+    // applyElectronMixedIDScaleFactors always takes config, and there is a single
+    // implementation of the scale factor loop.
+    return applyElectronMixedIDScaleFactors(cset_electron, config, config, output_name, df,
+                                            "_electronSel_SC_eta", "_electronSel_pt", "_electronSel_isLoose");
 }
 
 RNode combineElectronScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys)
@@ -818,6 +798,72 @@ RNode combineElectronScaleFactorWeightsByKey(RNode df, std::string output_name, 
     return df.Define(output_name, combine, input_keys);
 }
 
+/*
+Electron ID scale factors, with the working point chosen per electron.
+
+Electron i is corrected with config_pass's working point when isPass_col is non-zero for it and
+config_fail's when it is zero, so passing config_pass == config_fail (and any all-true flag)
+gives the ordinary single-working-point behaviour. applyElectronIDScaleFactors above is exactly
+that case, which is why this is the only implementation of the loop.
+
+The two-working-point case exists because a channel that keeps veto electrons as analysis
+objects can contain electrons that pass Veto but not Loose. Those are absent from the loose
+subset that the single-working-point callers pass in, so they would otherwise receive no reco
+and no ID scale factor at all, i.e. an implicit weight of 1. They should be corrected with the
+Veto working point rather than dropped.
+
+Systematics: the three returned weights are {nominal, up, down} with the up (down) variations of
+both working points multiplied together, i.e. when two working points are in play their ID
+uncertainties are treated as fully correlated.
+*/
+RNode applyElectronMixedIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron,
+                                       ElectronIDConfig config_pass, ElectronIDConfig config_fail,
+                                       std::string output_name, RNode df,
+                                       std::string eta_col, std::string pt_col, std::string isPass_col) {
+    auto eval_correction = [cset_electron, config_pass, config_fail, output_name] (std::string year,
+                                                                      const RVec<float> eta,
+                                                                      const RVec<float> pt,
+                                                                      const RVec<int> isPass) {
+        RVec<double> electron_sf_weights = {1., 1., 1.};
+        if (eta.empty()) {
+            return electron_sf_weights;
+        }
+        if (cset_electron.find(year) == cset_electron.end()) {
+            static std::unordered_set<std::string> warned_years;
+            if (warned_years.find(year) == warned_years.end()) {
+                std::cout << "Warning: Electron ID correction set for year " << year << " not found. Setting electron ID weights to 1." << std::endl;
+                warned_years.insert(year);
+            }
+            return electron_sf_weights;
+        }
+        if (config_pass.correction_name_map.find(year) == config_pass.correction_name_map.end()) {
+            return electron_sf_weights;
+        }
+        if (config_fail.correction_name_map.find(year) == config_fail.correction_name_map.end()) {
+            return electron_sf_weights;
+        }
+        if (eta.size() != pt.size() || eta.size() != isPass.size()) {
+            throw std::runtime_error("applyElectronMixedIDScaleFactors: input columns for '"
+                                     + output_name + "' have mismatched lengths");
+        }
+
+        const std::string egm_year = egmYearKey(year);
+        auto cs_pass = cset_electron.at(year).at(config_pass.correction_name_map.at(year));
+        auto cs_fail = cset_electron.at(year).at(config_fail.correction_name_map.at(year));
+
+        for (size_t i = 0; i < eta.size(); i++) {
+            const bool passes = (isPass[i] != 0);
+            const auto& cs = passes ? cs_pass : cs_fail;
+            const std::string& wp = passes ? config_pass.working_point : config_fail.working_point;
+            electron_sf_weights[0] *= cs->evaluate({egm_year, "sf",     wp, eta[i], pt[i]});
+            electron_sf_weights[1] *= cs->evaluate({egm_year, "sfup",   wp, eta[i], pt[i]});
+            electron_sf_weights[2] *= cs->evaluate({egm_year, "sfdown", wp, eta[i], pt[i]});
+        }
+        return electron_sf_weights;
+    };
+    return df.Define(output_name, eval_correction, {"year", eta_col, pt_col, isPass_col});
+}
+
 RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::string> wp_keys)
 {
     if (isData) return df;
@@ -825,6 +871,8 @@ RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::strin
     bool need_reco = false;
     bool need_id_loose = false;
     bool need_id_tight = false;
+    bool need_reco_all = false;   // reco over the full veto-electron collection
+    bool need_id_mixed = false;   // per-electron loose/veto working point
 
     for (const auto& wp_key : wp_keys) {
         if (wp_key == "_weight_electron_reco_looseid") {
@@ -834,6 +882,10 @@ RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::strin
         else if (wp_key == "_weight_electron_reco_tightid") {
             need_reco = true;
             need_id_tight = true;
+        }
+        else if (wp_key == "_weight_electron_recoall_mixedid") {
+            need_reco_all = true;
+            need_id_mixed = true;
         }
         else {
             throw std::runtime_error("applyElectronWorkingPointSFs: unknown WP key '" + wp_key + "'");
@@ -848,6 +900,14 @@ RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::strin
     }
     if (need_id_tight) {
         df = applyElectronIDScaleFactors(electronScaleFactors, electronID_tight, "_weight_electron_id_tight", df);
+    }
+    if (need_reco_all) {
+        df = applyElectronRecoScaleFactors(electronScaleFactors, df, "_weight_electron_reco_all",
+                                           "_electronSelAll_SC_eta", "_electronSelAll_pt");
+    }
+    if (need_id_mixed) {
+        df = applyElectronMixedIDScaleFactors(electronScaleFactors, electronID_loose, electronID_veto,
+                                              "_weight_electron_id_mixed", df);
     }
 
     for (const auto& wp_key : wp_keys) {
