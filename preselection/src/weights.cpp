@@ -907,7 +907,9 @@ RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::strin
     }
     if (need_id_mixed) {
         df = applyElectronMixedIDScaleFactors(electronScaleFactors, electronID_loose, electronID_veto,
-                                              "_weight_electron_id_mixed", df);
+                                              "_weight_electron_id_mixed", df,
+                                              "_electronSelAll_SC_eta", "_electronSelAll_pt",
+                                              "_electronSelAll_isLoose");
     }
 
     for (const auto& wp_key : wp_keys) {

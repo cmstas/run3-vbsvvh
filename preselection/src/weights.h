@@ -368,14 +368,14 @@ RNode applyElectronRecoScaleFactors(std::unordered_map<std::string, correction::
                                     std::string eta_col = "_electronSel_SC_eta", std::string pt_col = "_electronSel_pt");
 RNode applyElectronIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron, ElectronIDConfig config, std::string output_name, RNode df);
 // Per-electron working point: electrons passing the tighter ID get config_pass's WP, the
-// rest get config_fail's. Evaluated over the columns named by eta_col/pt_col/isPass_col, so
-// the caller chooses which collection is used.
+// rest get config_fail's. The columns are named explicitly rather than defaulted, because
+// this function and applyElectronRecoScaleFactors are used over different electron
+// collections (the full veto collection and its loose subset) and a default here would make
+// a call site that covers two different sets of electrons look like one that does not.
 RNode applyElectronMixedIDScaleFactors(std::unordered_map<std::string, correction::CorrectionSet> cset_electron,
                                        ElectronIDConfig config_pass, ElectronIDConfig config_fail,
                                        std::string output_name, RNode df,
-                                       std::string eta_col    = "_electronSelAll_SC_eta",
-                                       std::string pt_col     = "_electronSelAll_pt",
-                                       std::string isPass_col = "_electronSelAll_isLoose");
+                                       std::string eta_col, std::string pt_col, std::string isPass_col);
 RNode combineElectronScaleFactorWeightsByKey(RNode df, std::string output_name, std::vector<std::string> input_keys);
 RNode applyElectronWorkingPointSFs(RNode df, bool isData, std::vector<std::string> wp_keys);
 

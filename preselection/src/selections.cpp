@@ -217,7 +217,6 @@ RNode LeptonSelections(RNode df_)
     // reco or ID scale factor at all. See applyElectronMixedIDScaleFactors, which assigns the
     // working point per electron.
     df = df.Define("_electronSelAll_pt",      "electron_pt")
-           .Define("_electronSelAll_eta",     "electron_eta")
            .Define("_electronSelAll_SC_eta",  "electron_SC_eta")
            .Define("_electronSelAll_isLoose", "electron_isLoose");
     // Counter for these selection level leptons
