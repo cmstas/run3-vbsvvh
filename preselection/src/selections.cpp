@@ -206,7 +206,19 @@ RNode LeptonSelections(RNode df_)
            .Define("_muonSel_eta", "muon_eta");
     df = df.Define("_electronSel_pt",     "electron_pt[electron_isLoose]")
            .Define("_electronSel_eta",    "electron_eta[electron_isLoose]")
-           .Define("_electronSel_SC_eta", "electron_SC_eta[electron_isLoose]");
+           .Define("_electronSel_SC_eta", "electron_SC_eta[electron_isLoose]")
+           // True for every entry by construction. Lets applyElectronIDScaleFactors reuse the
+           // per-electron machinery of applyElectronMixedIDScaleFactors for the single-WP case.
+           .Define("_electronSel_isLoose", "electron_isLoose[electron_isLoose]");
+    // The FULL veto-electron collection, plus a per-electron loose flag. The _electronSel_*
+    // columns above are its loose subset and are left untouched, so channels using them are
+    // unaffected. These are for channels that keep veto-but-not-loose electrons as analysis
+    // objects: such electrons are absent from the loose subset and would otherwise receive no
+    // reco or ID scale factor at all. See applyElectronMixedIDScaleFactors, which assigns the
+    // working point per electron.
+    df = df.Define("_electronSelAll_pt",      "electron_pt")
+           .Define("_electronSelAll_SC_eta",  "electron_SC_eta")
+           .Define("_electronSelAll_isLoose", "electron_isLoose");
     // Counter for these selection level leptons
     df = df.Define("nLep_Sel", "nMuon_Loose + nElectron_Loose");
 
@@ -453,7 +465,8 @@ RNode runPreselection(RNode df_, std::string channel, bool noCut, bool isData, s
     });
     df = applyElectronWorkingPointSFs(df, isData, {
         "_weight_electron_reco_looseid",
-        "_weight_electron_reco_tightid"
+        "_weight_electron_reco_tightid",
+        "_weight_electron_recoall_mixedid"   // reco over the full collection + mixed loose/veto ID
     });
 
 
