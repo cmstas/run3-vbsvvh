@@ -187,6 +187,8 @@ Examples:
                         help="Write raw selected-AK4 b-tag efficiency histograms (--btag_eff flag)")
     parser.add_argument("--store-hlt", "--store_hlt", dest="store_hlt", action="store_true",
                         help="Store HLT trigger branches in output (--store_hlt flag)")
+    parser.add_argument("--lhe", action="store_true",
+                        help="Store LHEPart pdgId/pt/eta/phi/mass for signal MC (--lhe flag)")
     parser.add_argument("--skip-btag-sf", action="store_true",
                         help="Skip b-tag SF application (normally enabled)")
     parser.add_argument("--systs", action="store_true",
@@ -428,6 +430,8 @@ def generate_submit_file(task_dir: Path, job_dir: Path, job_name: str,
         extra_flags += " --btag_eff"
     if args.store_hlt:
         extra_flags += " --store_hlt"
+    if args.lhe:
+        extra_flags += " --lhe"
     if args.skip_btag_sf:
         extra_flags += " --skip-btag-sf"
     if args.cutflow:

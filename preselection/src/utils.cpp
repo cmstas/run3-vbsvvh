@@ -443,7 +443,7 @@ std::string setOutputDirectory(const std::string &outdir, bool spanet_training) 
     return directory_path;
 }
 
-void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput, bool storeHLT)
+void saveSnapshot(RNode df, const std::string &outputDir, const std::string &outputFileName, bool isSig, bool dumpInput, bool storeHLT, bool storeLHE)
 {
     auto ColNames = df.GetDefinedColumnNames();
     std::vector<std::string> final_variables;
@@ -512,6 +512,16 @@ void saveSnapshot(RNode df, const std::string &outputDir, const std::string &out
             }
             if (std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
                 final_variables.push_back(colName);
+            }
+        }
+
+        // Optionally store LHE-level parton kinematics (signal only).
+        // ROOT creates the nLHEPart count branch automatically.
+        if (storeLHE) {
+            for (auto &&colName : {"LHEPart_pdgId", "LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass"}) {
+                if (std::find(final_variables.begin(), final_variables.end(), colName) == final_variables.end()) {
+                    final_variables.push_back(colName);
+                }
             }
         }
     }
