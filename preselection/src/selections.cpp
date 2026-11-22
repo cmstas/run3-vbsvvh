@@ -3,6 +3,7 @@
 #include "cutflow.h"
 #include "weights.h"
 #include "wqq_sf.h"
+#include "xbb_sf.h"
 #include "genSelections.h"
 
 namespace {
@@ -365,6 +366,11 @@ RNode AK8JetsSelection(RNode df_, bool isData, const std::string &channel)
     // wqq_sf.h). Needs FatJet_Wqq and FatJet_genMatch. 
     // SFs are retrieved at the nominal FatJet_pt.
     df = applyWqqScaleFactors(df, channel, isData);
+
+    // Xbb tagging SFs for the working points this channel lists in applyxbbsf.yaml (see
+    // xbb_sf.h). Needs FatJet_Hbb and FatJet_genMatch.
+    // SFs are retrieved at the nominal FatJet_pt.
+    df = applyXbbScaleFactors(df, channel, isData);
 
     df = applyObjectMaskNewAffix(df, "_good_ak8jets", "FatJet", "fatjet");
     df = df.Define("ht_fatjets", "Sum(fatjet_pt)");

@@ -183,6 +183,23 @@ In the postprocessor, multiply `_nom` into the event weight for every fat jet wh
 
 Payloads are `corrections/scalefactors/WqqSF/Wqq_SF_<year>.json` (2016preVFP, 2016postVFP, 2017, 2018, 2024Prompt, 2025), see [`corrections/scalefactors/WqqSF/README_per_era.md`](corrections/scalefactors/WqqSF/README_per_era.md). pT is clamped to the measured bins; above 800 GeV the 400–800 GeV value is used with 3× its uncertainty. A WP outside 0.40–0.98 is an error, so looser cuts (e.g. score > 0.1) get no Wqq SF.
 
+## Xbb tagging SF application
+
+GloParT-3 Xbb tagging SFs work exactly like the Wqq ones above (per fat jet, cumulative, `flags` sets in a per-channel yaml, the same pass / fail / interval weights from `category_weight.h`). The differences:
+
+- Score: `FatJet_Hbb` = Xbb / (Xbb + QCD).
+- True jets: only true b jets get SFs, `FatJet_genMatch` 5 (the jet contains both b quarks of an H→bb, see `genSelections.h`). Every other jet, and every jet in data, gets 1.
+- Config: `applyxbbsf.yaml`, every channel listed, all empty by default (no Xbb branches until a channel sets its WPs). Example for a channel cutting `FatJet_Hbb > 0.5`:
+
+```yaml
+2lep_1FJ:
+  flags: [[0.50]]
+```
+
+- Measured WPs: 0.50 to 0.99 (linear interpolation in between); a WP outside is an error.
+- Branches: `FatJet_XbbSF_flags0p50_{nom,up,down}` on `FatJet_` and on the selected-jet `fatjet_` collection; use them in the postprocessor as described for Wqq.
+- Payloads: `corrections/scalefactors/XbbSF/Xbb_SF_<year>.json` for all ten eras (2016preVFP, 2016postVFP, 2017, 2018, 2022Re-recoBCD, 2022Re-recoE+PromptFG, 2023PromptC, 2023PromptD, 2024Prompt, 2025), corrections `Xbb_SF` (WP, pT, systematic; no eta input) and `Xbb_eff_MC` (WP, pT), see [`corrections/scalefactors/XbbSF/README.md`](corrections/scalefactors/XbbSF/README.md). pT is clamped to the measured bins; above 800 GeV the last measured bin is used with 3× its uncertainty.
+
 
 ---
 ## Details on the condor batch submission
