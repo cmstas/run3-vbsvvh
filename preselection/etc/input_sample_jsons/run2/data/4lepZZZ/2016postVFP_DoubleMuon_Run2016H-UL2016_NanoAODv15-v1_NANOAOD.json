@@ -1,0 +1,25 @@
+{
+    "samples": {
+        "DoubleMuon_Run2016H-UL2016_NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v54/Run2_Data_v15_v54_4LepExtra/DoubleMuon_Run2016H-UL2016_NanoAODv15-v1_NANOAOD/output_1.root",
+                "VBSVVH_skim_v54/Run2_Data_v15_v54_4LepExtra/DoubleMuon_Run2016H-UL2016_NanoAODv15-v1_NANOAOD/output_2.root",
+                "VBSVVH_skim_v54/Run2_Data_v15_v54_4LepExtra/DoubleMuon_Run2016H-UL2016_NanoAODv15-v1_NANOAOD/output_3.root",
+                "VBSVVH_skim_v54/Run2_Data_v15_v54_4LepExtra/DoubleMuon_Run2016H-UL2016_NanoAODv15-v1_NANOAOD/output_4.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2016postVFP",
+                "xsec": 1.0,
+                "lumi": 16.81,
+                "shortname": "DoubleMuon",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 0.0
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "samples": {
+        "MuonEG_Run2016F-UL2016_NanoAODv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v54/Run2_Data_v15_v54_4LepExtra/MuonEG_Run2016F-UL2016_NanoAODv15-v1_NANOAOD/output_1.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2016postVFP",
+                "xsec": 1.0,
+                "lumi": 16.81,
+                "shortname": "MuonEG",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 0.0
+            }
+        }
+    }
+}
