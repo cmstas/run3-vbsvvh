@@ -1,0 +1,29 @@
+{
+    "samples": {
+        "Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_1.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_2.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_3.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_4.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_5.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_6.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_7.root",
+                "VBSVVH_skim_v54/Run3_Data_v15_v54_4LepExtra/Muon1_Run2024C-MINIv6NANOv15-v1_NANOAOD/output_8.root"
+            ],
+            "metadata": {
+                "kind": "data",
+                "year": "2024Prompt",
+                "xsec": 1.0,
+                "lumi": 109.95,
+                "shortname": "Muon",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 0.0
+            }
+        }
+    }
+}

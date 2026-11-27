@@ -1,0 +1,26 @@
+{
+    "samples": {
+        "ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v54/Run2_Bkg_v15_v54_4LepExtra/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_1.root",
+                "VBSVVH_skim_v54/Run2_Bkg_v15_v54_4LepExtra/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_2.root",
+                "VBSVVH_skim_v54/Run2_Bkg_v15_v54_4LepExtra/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_3.root",
+                "VBSVVH_skim_v54/Run2_Bkg_v15_v54_4LepExtra/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_4.root",
+                "VBSVVH_skim_v54/Run2_Bkg_v15_v54_4LepExtra/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_5.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2018",
+                "xsec": 13.74,
+                "lumi": 59.83,
+                "shortname": "ZZTo4L_M-1toInf_TuneCP5_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 887384416.6911001
+            }
+        }
+    }
+}
