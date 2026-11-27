@@ -11,7 +11,7 @@
             "metadata": {
                 "kind": "bkg",
                 "year": "2017",
-                "xsec": 0.2529,
+                "xsec": 0.31512,
                 "lumi": 41.48,
                 "shortname": "TTZToLLNuNu_M-10_TuneCP5_13TeV",
                 "do_ewk_corr": 0,

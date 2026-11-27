@@ -1,0 +1,29 @@
+{
+    "samples": {
+        "ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM": {
+            "trees": [
+                "Events"
+            ],
+            "files": [
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_1.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_2.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_3.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_4.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_5.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_6.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_7.root",
+                "VBSVVH_skim_v30/Run2_Bkg_v15_v30_4Lep/ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM/output_8.root"
+            ],
+            "metadata": {
+                "kind": "bkg",
+                "year": "2018",
+                "xsec": 1.3816,
+                "lumi": 59.83,
+                "shortname": "ZZTo4L_TuneCP5_13TeV",
+                "do_ewk_corr": 0,
+                "local_prefix": "/cmsuf/data/store/user/phchang/skim/",
+                "sumw": 131414241.01120001
+            }
+        }
+    }
+}
