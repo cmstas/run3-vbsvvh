@@ -1,0 +1,1808 @@
+{
+ "schema_version": 2,
+ "description": "GloParT-3 Xbb tagging scale factors, 2022Re-recoE+PromptFG",
+ "corrections": [
+  {
+   "name": "Xbb_SF",
+   "version": 1,
+   "description": "GloParT-3 Xbb (XbbVsQCD) tagging SF, 2022Re-recoE+PromptFG, for true b jets with m_SD in [40, 250] GeV (mu-tagged method). Cumulative: the SF of score > WP, score = Xbb / (Xbb + QCD). Piecewise linear in WP between the measured points 0.50, 0.60, 0.70, 0.80, 0.90, 0.99; a WP outside [0.50, 0.99] is an error. pt clamped; above 800 GeV the last measured bin's nominal with 3x its up/down distances. No eta dependence. systematic: nom/up/down, absolute SF values. Source: provider file Xbb_SF_2022_postEE.json",
+   "inputs": [
+    {
+     "name": "WP",
+     "type": "real",
+     "description": "Working point on the score (score > WP)"
+    },
+    {
+     "name": "pt",
+     "type": "real",
+     "description": "Fat jet pt (nominal JEC/JER), GeV"
+    },
+    {
+     "name": "systematic",
+     "type": "string",
+     "description": "nom, up or down"
+    }
+   ],
+   "output": {
+    "name": "sf",
+    "type": "real"
+   },
+   "data": {
+    "nodetype": "binning",
+    "input": "WP",
+    "edges": [
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9,
+     0.990001
+    ],
+    "content": [
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9879999999999993,
+            0.05000000000000117
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0189999999999992,
+            0.05000000000000117
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9569999999999987,
+            0.05000000000000228
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.011,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0539999999999998,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9679999999999999,
+            0.0
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9959999999999993,
+            0.07000000000000119
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0119999999999993,
+            0.11000000000000124
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9799999999999993,
+            0.030000000000001144
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.97,
+            0.12000000000000013
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9879999999999993,
+            0.1700000000000013
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.952,
+            0.07000000000000008
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.97,
+            0.12000000000000013
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.023999999999998,
+            0.2700000000000036
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9159999999999999,
+            -0.030000000000000034
+           ]
+          }
+         }
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0360000000000007,
+            -0.030000000000001144
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.061,
+            -0.02000000000000002
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0110000000000015,
+            -0.04000000000000226
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9689999999999992,
+            0.07000000000000119
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9879999999999991,
+            0.11000000000000124
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9499999999999998,
+            0.030000000000000034
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.002,
+            0.06000000000000007
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0120000000000007,
+            0.10999999999999902
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9920000000000007,
+            0.0099999999999989
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.982,
+            0.10000000000000012
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.994,
+            0.16000000000000017
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.97,
+            0.04000000000000004
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.982,
+            0.10000000000000012
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.018,
+            0.2800000000000003
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.946,
+            -0.08000000000000008
+           ]
+          }
+         }
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0359999999999991,
+            -0.02999999999999889
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0539999999999992,
+            -0.00999999999999889
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0179999999999991,
+            -0.04999999999999889
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0250000000000008,
+            -0.01000000000000111
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0300000000000007,
+            0.04999999999999889
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0199999999999991,
+            -0.0699999999999989
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.016,
+            0.04
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.019,
+            0.1
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0129999999999983,
+            -0.01999999999999778
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.01,
+            0.06
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0010000000000008,
+            0.14999999999999888
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0189999999999992,
+            -0.02999999999999889
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.01,
+            0.06
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9830000000000025,
+            0.3299999999999967
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0369999999999975,
+            -0.20999999999999666
+           ]
+          }
+         }
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.020000000000001,
+            -0.01000000000000112
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9660000000000017,
+            0.0999999999999979
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.074000000000001,
+            -0.12000000000000124
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.017,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9979999999999989,
+            0.0900000000000012
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.036000000000001,
+            -0.0900000000000012
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.032,
+            0.02000000000000002
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9389999999999998,
+            0.20000000000000023
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.1250000000000002,
+            -0.16000000000000017
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.130000000000001,
+            -0.0900000000000012
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.153,
+            -0.04000000000000004
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.107000000000002,
+            -0.14000000000000237
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.130000000000001,
+            -0.0900000000000012
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.198999999999998,
+            0.06000000000000229
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.061000000000004,
+            -0.2400000000000047
+           ]
+          }
+         }
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0009999999999988,
+            0.011111111111112359
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.7959999999999974,
+            0.2888888888888917
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.205999999999999,
+            -0.2666666666666658
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.017,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.079,
+            0.0
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9549999999999998,
+            0.0
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0200000000000011,
+            0.03333333333333214
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.009000000000001,
+            0.12222222222222114
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.0310000000000012,
+            -0.05555555555555686
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9389999999999987,
+            0.1222222222222236
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.7569999999999996,
+            0.40000000000000047
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.1209999999999978,
+            -0.15555555555555328
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "nodetype": "category",
+        "input": "systematic",
+        "content": [
+         {
+          "key": "nom",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.9389999999999987,
+            0.1222222222222236
+           ]
+          }
+         },
+         {
+          "key": "up",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            0.39300000000000124,
+            0.9555555555555543
+           ]
+          }
+         },
+         {
+          "key": "down",
+          "value": {
+           "nodetype": "formula",
+           "expression": "[0]+[1]*x",
+           "parser": "TFormula",
+           "variables": [
+            "WP"
+           ],
+           "parameters": [
+            1.484999999999996,
+            -0.711111111111107
+           ]
+          }
+         }
+        ]
+       }
+      ],
+      "flow": "clamp"
+     }
+    ],
+    "flow": "error"
+   }
+  },
+  {
+   "name": "Xbb_eff_MC",
+   "version": 1,
+   "description": "Candle MC efficiency of true b jets to pass score > WP, for the fail SF (1 - SF*eff)/(1 - eff) and the multi-WP category weights. Piecewise linear in WP between 0.50, 0.60, 0.70, 0.80, 0.90, 0.99; pt clamped, above 800 GeV the last measured bin. No uncertainty. Source: provider file Xbb_effMC_correctionlib.json, era 2022_postEE",
+   "inputs": [
+    {
+     "name": "WP",
+     "type": "real",
+     "description": "Working point on the score (score > WP)"
+    },
+    {
+     "name": "pt",
+     "type": "real",
+     "description": "Fat jet pt (nominal JEC/JER), GeV"
+    }
+   ],
+   "output": {
+    "name": "eff",
+    "type": "real"
+   },
+   "data": {
+    "nodetype": "binning",
+    "input": "WP",
+    "edges": [
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9,
+     0.990001
+    ],
+    "content": [
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.034436760586954,
+         -0.7656364102561555
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.9741446810927112,
+         -0.7440673779977381
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.92646399180655,
+         -0.7575837334835641
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.8547790328133253,
+         -0.7143231951194002
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.8547790328133253,
+         -0.7143231951194002
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.0990616900458803,
+         -0.8733446260210328
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.085135391738775,
+         -0.9290518957411777
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.9824693537448783,
+         -0.8509260033807777
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.9041944734829735,
+         -0.7966822629021472
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         0.9041944734829735,
+         -0.7966822629021472
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.3093523493516424,
+         -1.1737598536006928
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.2427837245062539,
+         -1.1542637996947187
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.120122330425309,
+         -1.04757311292425
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.0269260206723272,
+         -0.9720130446012237
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.0269260206723272,
+         -0.9720130446012237
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.6916518306429271,
+         -1.6516342052147988
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.5239467998796896,
+         -1.5057176439115134
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.3647901351821186,
+         -1.3534078688702622
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.2115314365193093,
+         -1.2027698144099512
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.2115314365193093,
+         -1.2027698144099512
+        ]
+       }
+      ],
+      "flow": "clamp"
+     },
+     {
+      "nodetype": "binning",
+      "input": "pt",
+      "edges": [
+       250.0,
+       300.0,
+       350.0,
+       425.0,
+       800.0,
+       13000.0
+      ],
+      "content": [
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         2.1265338307997594,
+         -2.1348364276112792
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.7429698954082649,
+         -1.7490766389432637
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.5160444495003496,
+         -1.521468218112741
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.3116610889449436,
+         -1.3140249837717672
+        ]
+       },
+       {
+        "nodetype": "formula",
+        "expression": "[0]+[1]*x",
+        "parser": "TFormula",
+        "variables": [
+         "WP"
+        ],
+        "parameters": [
+         1.3116610889449436,
+         -1.3140249837717672
+        ]
+       }
+      ],
+      "flow": "clamp"
+     }
+    ],
+    "flow": "error"
+   }
+  }
+ ]
+}

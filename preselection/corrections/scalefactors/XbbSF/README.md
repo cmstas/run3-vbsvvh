@@ -12,7 +12,36 @@ Run 2 (2016 PreVFP/PostVFP, 2017, 2018) and Run 3 (2022 preEE/postEE, 2023 preBP
 
 ## correctionlib files
 
-Files are named `Xbb_SF_<era>.json` (example `Xbb_SF_2022_preEE.json`).
+Files are named `Xbb_SF_<year>.json`, with `<year>` the RDF year string, so they can be loaded
+by concatenation on the `year` column (as `Wqq_SF_<year>.json`):
+
+| file | provider era |
+|---|---|
+| `Xbb_SF_2016preVFP.json` | 2016_PreVFP |
+| `Xbb_SF_2016postVFP.json` | 2016_PostVFP |
+| `Xbb_SF_2017.json` | 2017 |
+| `Xbb_SF_2018.json` | 2018 |
+| `Xbb_SF_2022Re-recoBCD.json` | 2022_preEE (2022 C+D) |
+| `Xbb_SF_2022Re-recoE+PromptFG.json` | 2022_postEE (2022 E+F+G) |
+| `Xbb_SF_2023PromptC.json` | 2023_preBPix (2023 C) |
+| `Xbb_SF_2023PromptD.json` | 2023_postBPix (2023 D) |
+| `Xbb_SF_2024Prompt.json` | 2024 |
+| `Xbb_SF_2025.json` | 2025 |
+
+They are written by `make_xbb_sf_jsons.py` from the files as delivered by the provider (PR #138,
+commit 837327abd: `Xbb_SF_<era>.json` and `Xbb_effMC_correctionlib.json`, with the provider's era
+names). Each file holds two corrections:
+
+- `Xbb_SF` (`WP`, `pt`, `systematic`): the scale factor, described below.
+- `Xbb_eff_MC` (`WP`, `pt`): the candle MC efficiency of true b jets to pass the WP, for the fail
+  SF `(1 - SF*eff)/(1 - eff)`. Same structure as `Xbb_SF` without the `systematic` level: `WP` is a
+  real number, piecewise linear between the measured WPs. No uncertainty.
+
+`Xbb_effMC_correctionlib.json` is the efficiency as derived (correction `Xbb_effMC`, inputs `era`,
+`WP`, `pt`), kept as the record, with the era keys renamed to the RDF year strings. There `WP` is one
+of the strings `"0.50"` ... `"0.99"`; the framework reads `Xbb_eff_MC` from the per-era files instead.
+
+With new files from the provider: `python3 make_xbb_sf_jsons.py --provider <folder with them>`.
 
 ### How to evaluate scale factor and variation
 
@@ -37,7 +66,11 @@ integers are rejected.
   `[0]+[1]*x` with `x = WP`: the straight line between the SF or up/down variation at the two neighbouring measured WPs.
 - A WP outside [0.5, 0.99] raises an error.
 - pT outside the bins is clamped: below 250 GeV the first bin is used, above the last bin edge
-  (13000 GeV) the last bin is used. The last pT bin is open-ended, so large pT uses its values.
+  (13000 GeV) the last bin is used.
+- High pT, as for Wqq: the provider's last pT bin (from 450 GeV in Run 2, 425 GeV in Run 3) is open-ended.
+  It is used up to 800 GeV; above 800 GeV the SF is the same nominal with 3x its up/down distances
+  (`HIGH_PT_EDGE` and `HIGH_PT_UNC_SCALE` in `make_xbb_sf_jsons.py`). The efficiency above 800 GeV is
+  the last bin's. The value tables below are the provider's (without the 3x).
 
 ## Values contained in files
 
