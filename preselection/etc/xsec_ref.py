@@ -349,7 +349,7 @@ xsec_dict = {
             "ZZto2L2Nu_TuneCP5_13p6TeV" : 1.031,
             "ZZto2L2Q_TuneCP5_13p6TeV" : 6.788,
             "ZZto2Nu2Q_TuneCP5_13p6TeV" : 4.826,
-            "ZZto4L_TuneCP5_13p6TeV" : 1.39,
+            "ZZto4L_TuneCP5_13p6TeV" : 1.529, # This is 1.39 (from HIG-25-015) * 1.1 k factor
             "ZZto4Q-1Jets_TuneCP5_13p6TeV" : 7.832,
             "ZZ_TuneCP5_13p6TeV" : 12.75, # XSDB Also quotes 12.85
             "ZZZ-5F_TuneCP5_13p6TeV" : 0.01591,
