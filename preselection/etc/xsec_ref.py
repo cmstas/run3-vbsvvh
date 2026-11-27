@@ -46,6 +46,13 @@ xsec_dict = {
 
         "bkg" : {
 
+            # From tWZ analysis https://cms-alcm.web.cern.ch/notes/CMS-AN-2024-226/AN2024_226_v13.pdf
+            "TWZ-TtoLNu-WtoLNu-Zto2L-DR1_TuneCP5_13p6TeV" : 0.00158,
+
+            # qq ZH from https://gitlab.cern.ch/LHCHIGGSXS/LHCHXSWG1/crosssections/-/tree/master/R5?ref_type=heads
+            # With H->ZZ BR of 0.0264, and nlep>=4 filter eff of 3*0.101*0.101*(1-0.101) + 0.101**3
+            "ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV": 0.000616,
+
             # V+jets HT-binned, LO. GenXSecAnalyzer over the complete datasets via CRAB
             # (Maria Mazza 2026-09-16). Quoted to 4 s.f.: the GenXSecAnalyzer statistical
             # error is ~0.03%, but the production-to-production scatter dominates at ~0.5% (median 0.22%, max 0.83%).
@@ -188,10 +195,10 @@ xsec_dict = {
             #"TTBBto2L2Nu_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBto4Q_TuneCP5_13p6TeV" : , # No xsdb number
             #"TTBBtoLNu2Q_TuneCP5_13p6TeV" : , # No xsdb number
-            "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.03949,
-            "TTLL_MLL-4to50_TuneCP5_13p6TeV" : 0.03949, # 22/23 sample - same cross section as above
-            "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.08646,
-            "TTLL_MLL-50_TuneCP5_13p6TeV" : 0.08646, # 22/23 sample - same cross section as above
+            "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV" : 0.04423, # aN3LO, From tWZ analysis https://cms-alcm.web.cern.ch/notes/CMS-AN-2024-226/AN2024_226_v13.pdf
+            "TTLL_MLL-4to50_TuneCP5_13p6TeV" : 0.04423, # 22/23 sample - same cross section as above
+            "TTLL_Bin-MLL-50_TuneCP5_13p6TeV" : 0.09684, # aN3LO, From tWZ analysis https://cms-alcm.web.cern.ch/notes/CMS-AN-2024-226/AN2024_226_v13.pdf
+            "TTLL_MLL-50_TuneCP5_13p6TeV" : 0.09684, # 22/23 sample - same cross section as above
             "TTLNu-1Jets_TuneCP5_13p6TeV" : 0.2505,
 
             # See Lara's comment on issue #45 (https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO)
@@ -402,6 +409,11 @@ xsec_dict = {
 
                 
         "bkg": {
+
+            # qq ZH from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV#ZH_Process
+            # With H->ZZ BR of 0.0264, and nlep>=4 filter eff of 3*0.101*0.101*(1-0.101) + 0.101**3
+            "ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV": 0.000574,
+
             # V+jets HT-binned, LO. GenXSecAnalyzer over the complete datasets via CRAB
             # (Maria Mazza 2026-09-16). Quoted to 4 s.f.: the GenXSecAnalyzer statistical
             # error is ~0.03%, but the production-to-production scatter dominates at ~0.5% (median 0.22%, max 0.83%). 
@@ -454,6 +466,9 @@ xsec_dict = {
             "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV"                      : 12.99,
             "ZZTo2Nu2Q_5f_TuneCP5_13TeV"                               : 4.58725,
             #-----------------------------------------------------------------------------
+
+            # The number used in tWZ analysis (https://cms-alcm.web.cern.ch/notes/CMS-AN-2024-226/AN2024_226_v13.pdf)
+            "TTZToLLNuNu_M-10_TuneCP5_13TeV"                           : 0.31512,
         
             #AN-23-016 v15 (https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=HIG-24-003)
             "TTTo2L2Nu_TuneCP5_13TeV"                                  : 88.29,
@@ -464,7 +479,6 @@ xsec_dict = {
             "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV": 32.26,
             "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV" : 39.33,
             "TTWJetsToLNu_TuneCP5_13TeV"                               : 0.2043,
-            "TTZToLLNuNu_M-10_TuneCP5_13TeV"                           : 0.2529,
             "TTbb_4f_TTTo2L2Nu"                                        : 0.04,
             "TTbb_4f_TTToSemiLeptonic"                                 : 0.62,
             "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV"    : 0.02656,
@@ -479,7 +493,7 @@ xsec_dict = {
             "ZZJJTo4L_TuneCP5_13TeV"                                   : 0.00884,
             "ZZTo2L2Nu_TuneCP5_13TeV"                                  : 0.564,
             "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV"                     : 0.0024614,
-            "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.00884, 
+            "ZZJJTo4L_EWKnotop_TuneCP5_13TeV"                          : 0.0009922, # XSDB
             # for numbers below we use averages
             "WJetsToLNu_HT-70To100_TuneCP5_13TeV"                      : 1308.9025,
             "WJetsToLNu_HT-100To200_TuneCP5_13TeV"                     : 1324.85,
@@ -561,6 +575,11 @@ xsec_dict = {
             "DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV": 0.1333,
             "DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV" : 0.002987,
 
+            # From HIG-21-009 (1.1 k factor applied)
+            "ZZTo4L_TuneCP5_13TeV" : 1.3816,
+
+            # From XSDB (averaging the two values) 
+            "TTZToLL_M-1to10_TuneCP5_13TeV" : 0.0535, 
 
         }
     },

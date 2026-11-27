@@ -191,7 +191,8 @@ datasets = {
         {"year": "2016preVFP", "dataset_name": "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
         {"year": "2016preVFP", "dataset_name": "ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
         {"year": "2016preVFP", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
-
+        {"year": "2016preVFP", "dataset_name": "ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
+        {"year": "2016preVFP", "dataset_name": "ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV_powheg2-minlo-HZJ_JHUGenV7011_pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
         # Z(->nunu)+jets, HT-binned (NanoAODv15). Bin edges differ between Run 2 and 2024;
         # the two sets are not bin-for-bin comparable. No HT<100 sample exists in any era.
         {"year": "2016preVFP", "dataset_name": "ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
@@ -201,7 +202,7 @@ datasets = {
         {"year": "2016preVFP", "dataset_name": "ZJetsToNuNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
         {"year": "2016preVFP", "dataset_name": "ZJetsToNuNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
         {"year": "2016preVFP", "dataset_name": "ZJetsToNuNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v2_NANOAODSIM"},
-
+        {"year": "2016preVFP", "dataset_name": "TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODAPVv15-150X_mcRun2_asymptotic_preVFP_v1-v1_NANOAODSIM"},
 
         {"year": "2016postVFP", "dataset_name": "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
         {"year": "2016postVFP", "dataset_name": "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
@@ -311,7 +312,9 @@ datasets = {
         {"year": "2016postVFP", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
         {"year": "2016postVFP", "dataset_name": "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
         {"year": "2016postVFP", "dataset_name": "ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
-
+        {"year": "2016postVFP", "dataset_name": "ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v2_NANOAODSIM"},
+        {"year": "2016postVFP", "dataset_name": "ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV_powheg2-minlo-HZJ_JHUGenV7011_pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
+        {"year": "2016postVFP", "dataset_name": "TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
         # Z(->nunu)+jets, HT-binned (NanoAODv15). Bin edges differ between Run 2 and 2024;
         # the two sets are not bin-for-bin comparable. No HT<100 sample exists in any era.
         {"year": "2016postVFP", "dataset_name": "ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL16NanoAODv15-150X_mcRun2_asymptotic_v1-v1_NANOAODSIM"},
@@ -430,7 +433,9 @@ datasets = {
         {"year": "2017", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
         {"year": "2017", "dataset_name": "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
         {"year": "2017", "dataset_name": "ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
-
+        {"year": "2017", "dataset_name": "ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+        {"year": "2017", "dataset_name": "ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV_powheg2-minlo-HZJ_JHUGenV7011_pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
+        {"year": "2017", "dataset_name": "TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v1_NANOAODSIM"},
         # Z(->nunu)+jets, HT-binned (NanoAODv15). Bin edges differ between Run 2 and 2024;
         # the two sets are not bin-for-bin comparable. No HT<100 sample exists in any era.
         {"year": "2017", "dataset_name": "ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL17NanoAODv15-150X_mc2017_realistic_v1-v2_NANOAODSIM"},
@@ -547,7 +552,9 @@ datasets = {
         {"year": "2018", "dataset_name": "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
         {"year": "2018", "dataset_name": "ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
         {"year": "2018", "dataset_name": "ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
-
+        {"year": "2018", "dataset_name": "ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+        {"year": "2018", "dataset_name": "ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV_powheg2-minlo-HZJ_JHUGenV7011_pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
+        {"year": "2018", "dataset_name": "TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
         # Z(->nunu)+jets, HT-binned (NanoAODv15). Bin edges differ between Run 2 and 2024;
         # the two sets are not bin-for-bin comparable. No HT<100 sample exists in any era.
         {"year": "2018", "dataset_name": "ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv15-150X_mc2018_realistic_v1-v1_NANOAODSIM"},
@@ -697,6 +704,8 @@ datasets = {
         {"year": "2024Prompt", "dataset_name": "ZZto4Q-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM"},
         {"year": "2024Prompt", "dataset_name": "ZZ_TuneCP5_13p6TeV_pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM"},
         {"year": "2024Prompt", "dataset_name": "ZZZ-5F_TuneCP5_13p6TeV_amcatnlo-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM"},
+        {"year": "2024Prompt", "dataset_name": "ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-jhugen-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM"},
+        {"year": "2024Prompt", "dataset_name": "TWZ-TtoLNu-WtoLNu-Zto2L-DR1_TuneCP5_13p6TeV_amcatnlo-pythia8_RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2_NANOAODSIM"},
 
         # Z(->nunu)+jets, HT-binned (NanoAODv15). Bin edges differ between Run 2 and 2024;
         # the two sets are not bin-for-bin comparable. No HT<100 sample exists in any era.
@@ -1068,6 +1077,7 @@ datasets = {
         {"year": "2025", "dataset_name": "MuonEG_Run2025F-PromptReco-v1_NANOAOD"},
         {"year": "2025", "dataset_name": "MuonEG_Run2025F-PromptReco-v2_NANOAOD"},
         {"year": "2025", "dataset_name": "MuonEG_Run2025G-PromptReco-v1_NANOAOD"},
+
     ]
 
 }
